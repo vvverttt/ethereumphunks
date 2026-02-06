@@ -5,8 +5,8 @@ import { InitialCollectionGuard } from '@/guards/initial-collection.guard';
 export const routes: Routes = [
   {
     path: '',
-    canActivate: [InitialCollectionGuard],
-    component: InitialCollectionGuard
+    redirectTo: 'ethereum-phunks',
+    pathMatch: 'full'
   },
   {
     path: 'market/:marketType',
