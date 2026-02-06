@@ -12,6 +12,7 @@
     "build": "yarn build:sepolia && yarn build:mainnet",
     "build:sepolia": "yarn prebuild && ng build --configuration sepolia",
     "build:mainnet": "yarn prebuild && ng build --configuration mainnet",
+    "build:production": "ng build --configuration production",
     "test": "ng test",
     "run-built": "http-server dist/etherphunks-market -p 8000",
     "translate": "ng extract-i18n --output-path src/locale",
