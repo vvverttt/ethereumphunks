@@ -3,7 +3,7 @@
   "name": "dystolabz-market",
   "buildCommand": "cd marketplace && npx ng build --configuration production",
   "outputDirectory": "marketplace/dist/etherphunks-market",
-  "installCommand": "npm install --prefix marketplace --legacy-peer-deps",
+  "installCommand": "cd marketplace && npm install --legacy-peer-deps",
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
