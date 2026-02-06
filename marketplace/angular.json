@@ -130,6 +130,34 @@
                 "output": "index.html"
               },
               "outputHashing": "all"
+            },
+            "production": {
+              "outputPath": {
+                "base": "dist/etherphunks-market"
+              },
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "10mb",
+                  "maximumError": "50mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "10mb",
+                  "maximumError": "50mb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.mainnet.ts"
+                }
+              ],
+              "index": {
+                "input": "src/index.mainnet.html",
+                "output": "index.html"
+              },
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"
