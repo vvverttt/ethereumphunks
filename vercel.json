@@ -2,7 +2,7 @@
   "version": 2,
   "name": "dystolabz-market",
   "buildCommand": "cd marketplace && npm run build",
-  "outputDirectory": "marketplace/dist/etherphunks-market/browser",
+  "outputDirectory": "marketplace/dist/etherphunks-market",
   "installCommand": "npm install --prefix marketplace --legacy-peer-deps",
   "framework": null,
   "rewrites": [
