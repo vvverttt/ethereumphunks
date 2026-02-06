@@ -5,6 +5,8 @@
   "outputDirectory": "marketplace/dist/etherphunks-market",
   "installCommand": "npm install --prefix marketplace --legacy-peer-deps",
   "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     {
       "source": "/(.*)",
