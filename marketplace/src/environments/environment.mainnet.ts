@@ -20,7 +20,7 @@ export const environment = {
   bridgeAddress: ''.toLowerCase(),
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
 
-  relayUrl: 'https://odd-rules-run.loca.lt',
+  relayUrl: 'https://ethereumphunks.onrender.com',
   staticUrl: 'https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/v1/object/public',
 
   supabaseUrl: 'https://hzpwkpjxhtpcygrwtwku.supabase.co',
