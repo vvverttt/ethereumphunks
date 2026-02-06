@@ -36,12 +36,12 @@ const marketAddressL2 = environment.marketAddressL2;
 const pointsAddress = environment.pointsAddress;
 const bridgeAddressL2 = environment.bridgeAddressL2;
 
-const projectId = 'd183619f342281fd3f3ff85716b6016a';
+const projectId = 'fb5073eb31498f38d17c73bcabc03255';
 
 const metadata = {
-  name: 'Ethereum Phunks Market',
+  name: 'DystoLabz Market',
   description: '',
-  url: 'https://etherphunks.eth.limo',
+  url: typeof window !== 'undefined' ? window.location.origin : 'https://etherphunks.eth.limo',
   icons: []
 };
 
