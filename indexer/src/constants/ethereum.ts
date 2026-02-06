@@ -88,10 +88,10 @@ export const l2Client = createPublicClient({
   },
 });
 
-export const l2WalletClient = createWalletClient({
+export const l2WalletClient = process.env.L2_RELAY_SIGNER_PK ? createWalletClient({
   chain: magma,
   transport: http(magma.rpcUrls.default.http[0]),
   account: privateKeyToAccount(`0x${process.env.L2_RELAY_SIGNER_PK}`),
-});
+}) : null;
 
-export const minterAddressL2 = l2WalletClient.account.address?.toLowerCase();
+export const minterAddressL2 = l2WalletClient?.account.address?.toLowerCase();

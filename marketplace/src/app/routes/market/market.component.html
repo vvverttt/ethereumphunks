@@ -152,7 +152,7 @@
           [observe]="true"
           [marketType]="marketType"
           [activeSort]="(activeSort$ | async).value"
-          [limit]="250"
+          [limit]="marketType === 'all' ? 10000 : 250"
           [traitFilters]="(activeTraitFilters$ | async)"
           [phunkData]="phunkData.data"
           [total]="phunkData.total"

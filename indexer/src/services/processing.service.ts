@@ -146,20 +146,26 @@ export class ProcessingService {
     // Sort by transaction index
     txns = txns.sort((a, b) => a.receipt.transactionIndex - b.receipt.transactionIndex);
 
-    let events: Event[] = [];
-
-    for (let i = 0; i < txns.length; i++) {
-      const transaction = txns[i].transaction as Transaction;
-      const receipt = txns[i].receipt as TransactionReceipt;
-
+    // Process all transactions in parallel for better performance
+    const eventPromises = txns.map(async ({ transaction, receipt }) => {
       try {
-        const transactionEvents = await this.processTransaction(transaction, receipt, createdAt);
-        if (transactionEvents?.length) events.push(...transactionEvents);
+        const transactionEvents = await this.processTransaction(
+          transaction as Transaction,
+          receipt as TransactionReceipt,
+          createdAt
+        );
+        return transactionEvents || [];
       } catch (error) {
         console.log(error);
-        await this.retryBlock(Number(transaction.blockNumber));
+        await this.retryBlock(Number((transaction as Transaction).blockNumber));
+        return [];
       }
-    }
+    });
+
+    // Wait for all transactions to complete
+    const eventsArrays = await Promise.all(eventPromises);
+    const events = eventsArrays.flat();
+
     return events;
   }
 

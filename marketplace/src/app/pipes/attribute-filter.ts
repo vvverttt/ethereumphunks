@@ -64,6 +64,11 @@ export class AttributeFilterPipe implements PipeTransform {
             return !attribute;
           }
 
+          // Handle array values (items with multiple values for same trait)
+          if (Array.isArray(attribute?.v)) {
+            return attribute.v.includes(value);
+          }
+
           // Handle regular case
           return attribute?.v === value;
         });

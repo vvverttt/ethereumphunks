@@ -77,3 +77,11 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Windows reserved filenames
+nul
+NUL
+CON
+PRN
+AUX
+**/nul

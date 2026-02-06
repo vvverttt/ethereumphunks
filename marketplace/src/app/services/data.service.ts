@@ -320,23 +320,31 @@ export class DataService {
 
     const query = supabase.rpc(
       'fetch_ethscriptions_owned_with_listings_and_bids' + this.suffix,
-      { address, collection_slug: slug }
+      { address, collection_slug: slug, max_results: 10000 }
     );
 
     const fetch$ = from(query).pipe(
-      map((res: any) => res.data),
+      map((res: any) => {
+        // RPC now returns JSONB directly to bypass PostgREST 1000 row limit
+        const data = res.data;
+        return Array.isArray(data) ? data : [];
+      }),
       map((res: any[]) => res.map((item: any) => {
-        const ethscription = item.ethscription;
+        // Handle both old TABLE format and new JSONB format
+        const phunk = item.ethscription?.phunk || item.phunk;
+        const listing = item.ethscription?.listing || item.listing;
+        const bid = item.ethscription?.bid || item.bid;
+
         return {
-          ...ethscription.phunk,
-          listing: ethscription.listing ? ethscription.listing[0] : null,
-          bid: ethscription.bid ? ethscription.bid[0] : null,
+          ...phunk,
+          listing: listing ? (Array.isArray(listing) ? listing[0] : listing) : null,
+          bid: bid ? (Array.isArray(bid) ? bid[0] : bid) : null,
           isEscrowed:
-            ethscription.phunk.owner === environment.marketAddress
-            && ethscription.phunk.prevOwner === address,
+            phunk.owner === environment.marketAddress
+            && phunk.prevOwner === address,
           isBridged:
-            ethscription.phunk.owner === environment.bridgeAddress
-            && ethscription.phunk.prevOwner === address,
+            phunk.owner === environment.bridgeAddress
+            && phunk.prevOwner === address,
           attributes: [],
         };
       })),
@@ -1032,12 +1040,24 @@ export class DataService {
         return this.getAttributes(slug).pipe(
           map((attributes) => {
             const data = res.data;
+            const mappedData = data.data.map((item: Phunk) => ({
+              ...item,
+              attributes: attributes?.[item.sha] || [],
+            } as Phunk));
+
+            // Workaround: If total_count is 0 but we have data, use data length
+            const total = data.total_count || mappedData.length;
+
+            console.log('fetchAllWithPagination:', {
+              dataLength: data.data?.length,
+              totalCount: data.total_count,
+              calculatedTotal: total,
+              filters
+            });
+
             return {
-              data: data.data.map((item: Phunk) => ({
-                ...item,
-                attributes: attributes?.[item.sha] || [],
-              } as Phunk)),
-              total: data.total_count
+              data: mappedData,
+              total
             }
           }),
         )

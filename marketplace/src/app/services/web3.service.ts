@@ -114,7 +114,7 @@ export class Web3Service {
     });
 
     this.modal = createWeb3Modal({
-      wagmiConfig: this.config,
+      wagmiConfig: this.config as any,
       projectId,
       enableAnalytics: false,
       themeVariables,

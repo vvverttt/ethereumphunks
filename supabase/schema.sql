@@ -410,7 +410,7 @@ END;$$;
 ALTER FUNCTION "public"."fetch_collections_with_previews_sepolia"("preview_limit" integer, "show_inactive" boolean) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."fetch_ethscriptions_owned_with_listings_and_bids"("address" "text", "collection_slug" "text" DEFAULT 'ethereum-phunks'::"text") RETURNS TABLE("ethscription" "json")
+CREATE OR REPLACE FUNCTION "public"."fetch_ethscriptions_owned_with_listings_and_bids"("address" "text", "collection_slug" "text" DEFAULT 'ethereum-phunks'::"text", "max_results" integer DEFAULT 10000) RETURNS TABLE("ethscription" "json")
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
@@ -442,7 +442,8 @@ BEGIN
     LEFT JOIN public.bids b ON p."hashId" = b."hashId"
     WHERE (p.owner = address OR (p.owner = "marketAddress" AND p."prevOwner" = address))
           AND p."slug" = collection_slug
-    GROUP BY p."hashId", p."tokenId", p.owner, p."prevOwner", p.slug, p.sha;
+    GROUP BY p."hashId", p."tokenId", p.owner, p."prevOwner", p.slug, p.sha
+    LIMIT max_results;
 END;
 $$;
 
@@ -884,28 +885,28 @@ $$;
 
 ALTER FUNCTION "public"."manage_buy_bans"() OWNER TO "postgres";
 
-
-CREATE OR REPLACE FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer DEFAULT NULL::integer, "filter" "jsonb" DEFAULT '{}'::"jsonb") RETURNS TABLE("id" bigint, "content" "text", "metadata" "jsonb", "embedding" "jsonb", "similarity" double precision)
-    LANGUAGE "plpgsql"
-    AS $$
-#variable_conflict use_column
-begin
-  return query
-  select
-    id,
-    content,
-    metadata,
-    (embedding::text)::jsonb as embedding,
-    1 - (documents.embedding <=> query_embedding) as similarity
-  from documents
-  where metadata @> filter
-  order by documents.embedding <=> query_embedding
-  limit match_count;
-end;
-$$;
-
-
-ALTER FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") OWNER TO "postgres";
+-- Disabled: Requires pgvector extension
+-- CREATE OR REPLACE FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer DEFAULT NULL::integer, "filter" "jsonb" DEFAULT '{}'::"jsonb") RETURNS TABLE("id" bigint, "content" "text", "metadata" "jsonb", "embedding" "jsonb", "similarity" double precision)
+--     LANGUAGE "plpgsql"
+--     AS $$
+-- #variable_conflict use_column
+-- begin
+--   return query
+--   select
+--     id,
+--     content,
+--     metadata,
+--     (embedding::text)::jsonb as embedding,
+--     1 - (documents.embedding <=> query_embedding) as similarity
+--   from documents
+--   where metadata @> filter
+--   order by documents.embedding <=> query_embedding
+--   limit match_count;
+-- end;
+-- $$;
+--
+--
+-- ALTER FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") OWNER TO "postgres";
 
 SET default_tablespace = '';
 
@@ -2017,10 +2018,9 @@ GRANT ALL ON FUNCTION "public"."manage_buy_bans"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."manage_buy_bans"() TO "service_role";
 
 
-
-GRANT ALL ON FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") TO "service_role";
+-- GRANT ALL ON FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") TO "anon";
+-- GRANT ALL ON FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") TO "authenticated";
+-- GRANT ALL ON FUNCTION "public"."match_documents"("query_embedding" "public"."vector", "match_count" integer, "filter" "jsonb") TO "service_role";
 
 
 

@@ -155,7 +155,8 @@ export class MarketStateEffects {
     ofType(marketStateActions.setMarketSlug),
     distinctUntilChanged((a, b) => a.marketSlug === b.marketSlug),
     switchMap(({ marketSlug }) => {
-      return this.dataSvc.fetchAllWithPagination(marketSlug, 0, 110, {}).pipe(
+      // Fetch all items (up to 10000) for /market/all view
+      return this.dataSvc.fetchAllWithPagination(marketSlug, 0, 10000, {}).pipe(
         map((data: MarketState['activeMarketRouteData']) => data.data)
       );
     }),
@@ -197,9 +198,12 @@ export class MarketStateEffects {
         traitFilters
       ).pipe(
         map((data: MarketState['activeMarketRouteData']) => {
+          const combinedData = [...routeData.data, ...data.data];
+          // Use the new total if it's greater than 0, otherwise preserve existing total or use combined data length
+          const total = data.total > 0 ? data.total : (routeData.total > 0 ? routeData.total : combinedData.length);
           return {
-            data: [...routeData.data, ...data.data],
-            total: data.total,
+            data: combinedData,
+            total: total,
           };
         })
       );
@@ -218,7 +222,11 @@ export class MarketStateEffects {
     ),
     filter(([action, marketType]) => marketType === 'all'),
     switchMap(([action, marketType, slug, traitFilters]) => {
-      return this.dataSvc.fetchAllWithPagination(slug, 0, this.defaultFetchLength, traitFilters).pipe(
+      // Always fetch all items (up to 10k) for 'all' market type
+      // This ensures all phunks are loaded on initial page load
+      const fetchLength = 10000;
+
+      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength, traitFilters).pipe(
         mergeMap((data: MarketState['activeMarketRouteData']) => [
           marketStateActions.setActiveMarketRouteData({ activeMarketRouteData: data })
         ]),
