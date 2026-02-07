@@ -25,10 +25,7 @@ import { chain } from '@/constants/ethereum';
     HttpModule,
     ...(Number(process.env.QUEUE) ? [
       BullModule.forRoot({
-        redis: {
-          host: 'localhost',
-          port: 6379
-        }
+        redis: process.env.REDIS_URL
       }),
       BullModule.registerQueue(
         {
