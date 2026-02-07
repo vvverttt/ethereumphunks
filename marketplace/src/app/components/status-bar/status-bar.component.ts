@@ -56,7 +56,7 @@ export class StatusBarComponent {
     3: 'behind3'
   };
 
-  expanded = signal(true);
+  expanded = signal(false);
 
   constructor(
     private store: Store<GlobalState>,
