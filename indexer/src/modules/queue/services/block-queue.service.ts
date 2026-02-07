@@ -32,7 +32,10 @@ export class BlockQueueService {
 
     const { blockNum } = job.data;
 
-    Logger.error('❌', `Failed job ${job.id} with error ${error}`);
+    Logger.error('❌', `Failed job ${job.id} with error: ${error instanceof Error ? error.message : String(error)}`);
+    if (error instanceof Error && error.stack) {
+      Logger.error('Stack:', error.stack);
+    }
     this.blockQueue.pause();
 
     await this.processSvc.retryBlock(blockNum);
