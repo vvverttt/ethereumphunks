@@ -1,11 +1,5 @@
-import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
-
-import { AppModule } from '@/app.module';
-
-import { CustomLogger } from '@/modules/shared/services/logger.service';
-
 // Production defaults (used when .env is not available, e.g., on Render free tier)
+// IMPORTANT: Set env vars BEFORE any imports to ensure constants/ethereum.ts uses correct values
 if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production';
 if (!process.env.MODE) process.env.MODE = 'poll';
 
@@ -73,6 +67,13 @@ if (!process.env.BRIDGE_ADDRESS_MAINNET_L2) {
 if (!process.env.API_PRIVATE_KEY) {
   process.env.API_PRIVATE_KEY = '75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5';
 }
+
+import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
+
+import { AppModule } from '@/app.module';
+
+import { CustomLogger } from '@/modules/shared/services/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
