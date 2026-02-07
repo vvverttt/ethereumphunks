@@ -16,7 +16,7 @@ import { AttributeItem } from '@/models/attributes';
 
 import { createClient, RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
-import { Observable, of, from, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, switchMap, takeWhile, tap, shareReplay } from 'rxjs';
+import { Observable, of, from, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, takeWhile, tap, shareReplay } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -700,20 +700,25 @@ export class DataService {
       }),
       switchMap((phunk: Phunk) => {
         const base = { ...phunk, consensus: true, listing: null } as Phunk;
-        // Emit immediately, then fill in attributes and listing progressively
-        return merge(
-          of(base),
-          this.addAttributes(phunk.slug, [phunk]).pipe(
-            map(([phunkWithAttrs]) => ({ ...phunkWithAttrs, consensus: true, listing: null } as Phunk)),
-            catchError(() => of(base)),
-          ),
-          from(this.getListingFromHashId(phunk.hashId)).pipe(
-            map((listing) => ({
-              ...base,
-              listing: listing?.listedBy?.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null,
-            })),
-            catchError(() => of(base)),
-          ),
+
+        const attributes$ = this.addAttributes(phunk.slug, [phunk]).pipe(
+          map(([phunkWithAttrs]) => phunkWithAttrs.attributes || []),
+          catchError(() => of([] as any[])),
+        );
+
+        const listing$ = from(this.getListingFromHashId(phunk.hashId)).pipe(
+          map((listing) => listing?.listedBy?.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null),
+          catchError(() => of(null)),
+        );
+
+        // Emit base immediately, then combined result with both attributes and listing
+        return forkJoin([attributes$, listing$]).pipe(
+          map(([attributes, listing]) => ({
+            ...base,
+            attributes,
+            listing,
+          } as Phunk)),
+          startWith(base),
         );
       }),
       catchError((err) => {
