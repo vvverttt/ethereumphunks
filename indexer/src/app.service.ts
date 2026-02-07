@@ -25,10 +25,11 @@ export class AppService implements OnModuleInit {
 
   async onModuleInit() {
     if (Number(process.env.INDEXER)) {
-      Promise.all([
-        this.blockQueue.clearQueue(),
-        this.bridgeQueue.clearQueue()
-      ]).then(() => {
+      const clearPromises = [];
+      if (this.blockQueue) clearPromises.push(this.blockQueue.clearQueue());
+      if (this.bridgeQueue) clearPromises.push(this.bridgeQueue.clearQueue());
+
+      Promise.all(clearPromises).then(() => {
         Logger.debug('Queue Cleared', chain.toUpperCase());
         this.startIndexer();
       });
