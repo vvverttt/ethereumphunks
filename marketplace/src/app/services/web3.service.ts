@@ -120,6 +120,10 @@ export class Web3Service {
    * @returns Promise that resolves when listeners are set up
    */
   createListeners(): void {
+    // Read restore data BEFORE watchAccount — it fires immediately with
+    // isDisconnected on page load, which would clear localStorage.
+    const savedWallet = localStorage.getItem('ep_wallet');
+    const savedType = localStorage.getItem('ep_wallet_type');
 
     this.connectedState = new Observable((observer) => watchAccount(this.config, {
       onChange: (account) => this.ngZone.run(() => observer.next(account))
@@ -130,8 +134,6 @@ export class Web3Service {
         this.store.dispatch(appStateActions.setConnected({ connected: account.isConnected }));
         this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: account.address?.toLowerCase() }));
 
-        // Persist connection ourselves — wagmi's store doesn't reliably save
-        // connections made through Reown AppKit dynamic connectors.
         if (account.isConnected && account.address) {
           localStorage.setItem('ep_wallet', account.address.toLowerCase());
         } else if (account.isDisconnected) {
@@ -145,48 +147,30 @@ export class Web3Service {
       }),
     ).subscribe();
 
-    // Restore wallet from our own storage. The injected provider (Phantom/MetaMask)
-    // remembers which sites are authorized — eth_accounts returns them without a popup.
-    this.restoreConnection();
+    // Restore wallet from our saved snapshot (immune to watchAccount clearing)
+    this.restoreConnection(savedWallet, savedType);
   }
 
-  private async restoreConnection(): Promise<void> {
-    const saved = localStorage.getItem('ep_wallet');
-    const savedType = localStorage.getItem('ep_wallet_type');
+  private async restoreConnection(saved: string | null, savedType: string | null): Promise<void> {
     if (!saved) return;
 
+    // Wait for wallet extensions to inject their providers
+    await new Promise(r => setTimeout(r, 300));
+
     try {
-      // Check both providers for the saved address
-      const eth = (window as any).ethereum;
       const phantom = (window as any).phantom?.ethereum;
-
-      let ethAccounts: string[] = [];
-      let phantomAccounts: string[] = [];
-
-      if (eth) {
-        try { ethAccounts = await eth.request({ method: 'eth_accounts' }) || []; } catch {}
-      }
-      if (phantom && phantom !== eth) {
-        try { phantomAccounts = await phantom.request({ method: 'eth_accounts' }) || []; } catch {}
-      }
-
-      const inEth = ethAccounts.some(a => a.toLowerCase() === saved);
-      const inPhantom = phantomAccounts.some(a => a.toLowerCase() === saved);
-
-      if (!inEth && !inPhantom) {
-        localStorage.removeItem('ep_wallet');
-        localStorage.removeItem('ep_wallet_type');
-        return;
-      }
-
-      // Restore with the correct connector
-      const connector = this.getConnectorForType(savedType, inPhantom);
+      const connector = this.getConnectorForType(savedType, !!phantom);
       await wagmiConnect(this.config, { connector });
-      console.log('[Web3Service] Restored connection with', savedType || 'injected');
+
+      // Verify the restored address matches what we saved
+      const account = getAccount(this.config);
+      if (account.address?.toLowerCase() !== saved) {
+        await disconnect(this.config);
+      } else {
+        console.log('[Web3Service] Restored connection with', savedType || 'injected');
+      }
     } catch (err) {
       console.error('[Web3Service] restoreConnection failed:', err);
-      localStorage.removeItem('ep_wallet');
-      localStorage.removeItem('ep_wallet_type');
     }
   }
 

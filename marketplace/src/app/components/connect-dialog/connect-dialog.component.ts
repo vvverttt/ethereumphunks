@@ -24,8 +24,12 @@ export class ConnectDialogComponent {
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
     const phantom = typeof window !== 'undefined' ? (window as any).phantom?.ethereum : null;
 
-    if (eth?.isMetaMask || eth?.isRainbow) {
+    // Check for Rainbow specifically — don't use isMetaMask (Phantom sets it too)
+    const hasRainbow = eth?.isRainbow || eth?.providers?.some((p: any) => p.isRainbow);
+    if (hasRainbow) {
       opts.push({ id: 'injected-rainbow', name: 'Rainbow', detected: true });
+    } else {
+      opts.push({ id: 'injected-rainbow', name: 'Rainbow', detected: false });
     }
     if (phantom || eth?.isPhantom) {
       opts.push({ id: 'injected-phantom', name: 'Phantom', detected: true });
