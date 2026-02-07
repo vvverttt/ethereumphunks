@@ -231,8 +231,8 @@ export class Web3Service {
         if (phantom) {
           connector = injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
         }
-      } else if (connectorId === 'injected-metamask') {
-        connector = injected({ target: 'metaMask' });
+      } else if (connectorId === 'injected-rainbow' || connectorId === 'injected-metamask') {
+        connector = injected();
       } else if (connectorId === 'walletConnect') {
         connector = this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
       } else if (connectorId === 'coinbaseWallet') {

@@ -25,8 +25,8 @@ export class ConnectDialogComponent {
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
     const phantom = typeof window !== 'undefined' ? (window as any).phantom?.ethereum : null;
 
-    if (eth?.isMetaMask) {
-      opts.push({ id: 'injected-metamask', name: 'MetaMask', icon: 'metamask', detected: true });
+    if (eth?.isMetaMask || eth?.isRainbow) {
+      opts.push({ id: 'injected-rainbow', name: 'Rainbow', icon: 'rainbow', detected: true });
     }
     if (phantom || eth?.isPhantom) {
       opts.push({ id: 'injected-phantom', name: 'Phantom', icon: 'phantom', detected: true });
