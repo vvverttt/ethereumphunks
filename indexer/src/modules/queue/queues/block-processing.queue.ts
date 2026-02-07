@@ -22,8 +22,13 @@ export class BlockProcessingQueue {
 
     const existingJob = await this.queue.getJob(jobId);
     if (existingJob) {
-      await existingJob.remove();
-      Logger.warn('⚠️', `Updated existing job [${jobId}]`);
+      try {
+        await existingJob.remove();
+        Logger.warn('⚠️', `Updated existing job [${jobId}]`);
+      } catch (error) {
+        // Job may have already been removed by removeOnComplete or is being processed
+        Logger.debug(`Could not remove job ${jobId}, adding new one anyway`);
+      }
     }
 
     await this.queue.add(
