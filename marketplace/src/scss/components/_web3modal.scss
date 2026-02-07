@@ -39,3 +39,24 @@
   font-size: 1.6rem !important;
   font-weight: 600 !important;
 }
+
+// Web3Modal v5 (web components) - Fix opacity issue
+// Only target the modal when it has the 'open' attribute, not the backdrop
+w3m-modal[open],
+wcm-modal[open] {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+w3m-modal[open]::part(modal),
+wcm-modal[open]::part(modal) {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+// Hide the modal when not open
+w3m-modal:not([open]),
+wcm-modal:not([open]) {
+  display: none !important;
+}

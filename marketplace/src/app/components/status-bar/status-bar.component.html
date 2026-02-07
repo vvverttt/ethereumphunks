@@ -5,7 +5,11 @@
 @if ((gasSvc.gas$ | async); as gas) {
   <div class="network-gas">
     <div class="gas">
-      {{ (gas?.ProposeGasPrice || 0) | number : '1.0-0' }} Gwei
+      @if (gas?.ProposeGasPrice === 'err' || gas?.ProposeGasPrice === '...') {
+        {{ gas.ProposeGasPrice }} Gwei
+      } @else {
+        {{ (gas?.ProposeGasPrice || 0) | number : '1.0-0' }} Gwei
+      }
     </div>
     <div class="network">
       {{ chain === 1 ? 'mainnet' : 'sepolia' }}

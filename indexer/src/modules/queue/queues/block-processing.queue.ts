@@ -27,7 +27,7 @@ export class BlockProcessingQueue {
         Logger.warn('⚠️', `Updated existing job [${jobId}]`);
       } catch (error) {
         // Job may have already been removed by removeOnComplete or is being processed
-        Logger.debug(`Could not remove job ${jobId}, adding new one anyway`);
+        // This is expected behavior - silently continue
       }
     }
 
