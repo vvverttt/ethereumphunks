@@ -1,82 +1,21 @@
 @if (open) {
   <div class="overlay" (click)="onBackdropClick()">
     <div class="dialog" (click)="onDialogClick($event)">
+      <button class="close" (click)="onBackdropClick()">
+        <svg height="15" viewBox="0 0 15 15" width="15" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="m6 6h3v3h-3z"/><path d="m3 3h3v3h-3z"/><path d="m3 9h3v3h-3z"/><path d="m0 0h3v3h-3z"/><path d="m0 12h3v3h-3z"/><path d="m12 3h-3v3h3z"/><path d="m12 9h-3v3h3z"/><path d="m15 0h-3v3h3z"/><path d="m15 12h-3v3h3z"/></g></svg>
+      </button>
 
-      <div class="dialog-header">
-        <h2>Connect a Wallet</h2>
-        <button class="close" (click)="onBackdropClick()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
+      <h2>Connect Wallet</h2>
 
-      @if (installedWallets.length) {
-        <div class="section-label">Installed</div>
-        <div class="wallet-list">
-          @for (wallet of installedWallets; track wallet.id) {
-            <button class="wallet-option" (click)="selectWallet(wallet.id)">
-              <div class="wallet-icon" [attr.data-icon]="wallet.icon">
-                @switch (wallet.icon) {
-                  @case ('rainbow') {
-                    <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="28" height="28" rx="6" fill="#174299"/>
-                      <path d="M5 19.5c0-5.247 4.253-9.5 9.5-9.5S24 14.253 24 19.5V22h-3v-2.5a6.5 6.5 0 00-13 0V22H5v-2.5z" fill="#FF4000"/>
-                      <path d="M8 19.5a6.5 6.5 0 0113 0V22h-3v-2.5a3.5 3.5 0 00-7 0V22H8v-2.5z" fill="#FFD600"/>
-                      <path d="M11 19.5a3.5 3.5 0 017 0V22h-7v-2.5z" fill="#00E676"/>
-                    </svg>
-                  }
-                  @case ('phantom') {
-                    <svg width="28" height="28" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="128" height="128" rx="26" fill="#AB9FF2"/>
-                      <path d="M110.58 64.58C110.58 92.22 89.8 110.58 62.5 110.58H29.42C27.04 110.58 25.1 108.64 25.1 106.26V72.54C25.1 55.82 38.62 42.3 55.34 42.3H62.5C89.8 42.3 110.58 52.5 110.58 64.58Z" fill="url(#phantom_grad)"/>
-                      <circle cx="52" cy="66" r="6" fill="white"/>
-                      <circle cx="76" cy="66" r="6" fill="white"/>
-                      <defs><linearGradient id="phantom_grad" x1="25.1" y1="76.44" x2="110.58" y2="76.44" gradientUnits="userSpaceOnUse"><stop stop-color="#534BB1"/><stop offset="1" stop-color="#551BF9"/></linearGradient></defs>
-                    </svg>
-                  }
-                  @case ('coinbase') {
-                    <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="28" height="28" rx="6" fill="#0052FF"/>
-                      <path d="M14 5C9.03 5 5 9.03 5 14s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm-2.5 11.5a2.5 2.5 0 010-5h5a2.5 2.5 0 010 5h-5z" fill="white"/>
-                    </svg>
-                  }
-                }
-              </div>
-              <span class="wallet-name">{{ wallet.name }}</span>
-            </button>
-          }
-        </div>
-      }
-
-      <div class="section-label">Popular</div>
       <div class="wallet-list">
-        @for (wallet of popularWallets; track wallet.id) {
+        @for (wallet of wallets; track wallet.id) {
           <button class="wallet-option" (click)="selectWallet(wallet.id)">
-            <div class="wallet-icon" [attr.data-icon]="wallet.icon">
-              @switch (wallet.icon) {
-                @case ('coinbase') {
-                  <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="28" height="28" rx="6" fill="#0052FF"/>
-                    <path d="M14 5C9.03 5 5 9.03 5 14s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm-2.5 11.5a2.5 2.5 0 010-5h5a2.5 2.5 0 010 5h-5z" fill="white"/>
-                  </svg>
-                }
-                @case ('walletconnect') {
-                  <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="28" height="28" rx="6" fill="#3B99FC"/>
-                    <path d="M8.34 11.2c3.12-3.05 8.2-3.05 11.32 0l.38.37a.39.39 0 010 .56l-1.28 1.26a.2.2 0 01-.28 0l-.52-.51c-2.18-2.13-5.72-2.13-7.9 0l-.56.54a.2.2 0 01-.28 0L7.94 12.2a.39.39 0 010-.56l.4-.44zm13.98 2.6l1.14 1.12a.39.39 0 010 .56l-5.14 5.03a.4.4 0 01-.57 0l-3.65-3.57a.1.1 0 00-.14 0l-3.65 3.57a.4.4 0 01-.57 0L4.6 15.48a.39.39 0 010-.56l1.14-1.12a.4.4 0 01.57 0l3.65 3.57a.1.1 0 00.14 0l3.65-3.57a.4.4 0 01.57 0l3.65 3.57a.1.1 0 00.14 0l3.65-3.57a.4.4 0 01.56 0z" fill="white"/>
-                  </svg>
-                }
-              }
-            </div>
             <span class="wallet-name">{{ wallet.name }}</span>
+            @if (wallet.detected) {
+              <span class="detected">Detected</span>
+            }
           </button>
         }
-      </div>
-
-      <div class="dialog-footer">
-        <span>New to Ethereum wallets?</span>
-        <a href="https://learn.rainbow.me/understanding-web3" target="_blank" rel="noopener">Learn More</a>
       </div>
     </div>
   </div>

@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 interface WalletOption {
   id: string;
   name: string;
-  icon: string;
   detected: boolean;
 }
 
@@ -20,31 +19,24 @@ export class ConnectDialogComponent {
   @Output() selected = new EventEmitter<string>();
   @Output() closed = new EventEmitter<void>();
 
-  get installedWallets(): WalletOption[] {
+  get wallets(): WalletOption[] {
     const opts: WalletOption[] = [];
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
     const phantom = typeof window !== 'undefined' ? (window as any).phantom?.ethereum : null;
 
     if (eth?.isMetaMask || eth?.isRainbow) {
-      opts.push({ id: 'injected-rainbow', name: 'Rainbow', icon: 'rainbow', detected: true });
+      opts.push({ id: 'injected-rainbow', name: 'Rainbow', detected: true });
     }
     if (phantom || eth?.isPhantom) {
-      opts.push({ id: 'injected-phantom', name: 'Phantom', icon: 'phantom', detected: true });
+      opts.push({ id: 'injected-phantom', name: 'Phantom', detected: true });
     }
     if (eth?.isCoinbaseWallet) {
-      opts.push({ id: 'coinbaseWallet', name: 'Coinbase Wallet', icon: 'coinbase', detected: true });
+      opts.push({ id: 'coinbaseWallet', name: 'Coinbase Wallet', detected: true });
+    } else {
+      opts.push({ id: 'coinbaseWallet', name: 'Coinbase Wallet', detected: false });
     }
-    return opts;
-  }
+    opts.push({ id: 'walletConnect', name: 'WalletConnect', detected: false });
 
-  get popularWallets(): WalletOption[] {
-    const opts: WalletOption[] = [];
-    const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
-
-    if (!eth?.isCoinbaseWallet) {
-      opts.push({ id: 'coinbaseWallet', name: 'Coinbase Wallet', icon: 'coinbase', detected: false });
-    }
-    opts.push({ id: 'walletConnect', name: 'WalletConnect', icon: 'walletconnect', detected: false });
     return opts;
   }
 
