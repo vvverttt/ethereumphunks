@@ -9,9 +9,9 @@ import { CustomLogger } from '@/modules/shared/services/logger.service';
 if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production';
 if (!process.env.MODE) process.env.MODE = 'poll';
 
-// Disable indexer and queue by default on Render to avoid OOM during first startup
-// Once app is stable, can be enabled via environment variables
-if (!process.env.INDEXER) process.env.INDEXER = '0';
+// Enable indexer now that production build is stable
+// Queue remains disabled (would require more memory)
+if (!process.env.INDEXER) process.env.INDEXER = '1';
 if (!process.env.QUEUE) process.env.QUEUE = '0';
 if (!process.env.DISCORD) process.env.DISCORD = '0';
 if (!process.env.TWITTER) process.env.TWITTER = '0';
