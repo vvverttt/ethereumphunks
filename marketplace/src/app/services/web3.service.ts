@@ -163,10 +163,9 @@ export class Web3Service {
       const accounts: string[] = await window.ethereum.request({ method: 'eth_accounts' });
       const match = accounts?.some(a => a.toLowerCase() === saved);
       if (match) {
-        this.ngZone.run(() => {
-          this.store.dispatch(appStateActions.setConnected({ connected: true }));
-          this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: saved }));
-        });
+        // Actually restore the wagmi connection so getWalletClient() works
+        // for transactions (escrow, listing, buying, etc.)
+        await wagmiConnect(this.config, { connector: injected() });
       } else {
         localStorage.removeItem('ep_wallet');
       }
