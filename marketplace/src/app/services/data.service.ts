@@ -714,7 +714,6 @@ export class DataService {
 
         const listing$ = from(this.getListingFromHashId(phunk.hashId)).pipe(
           catchError(() => of(null)),
-          startWith(null),
         );
 
         // Emit base immediately (consensus: false keeps takeWhile alive),
