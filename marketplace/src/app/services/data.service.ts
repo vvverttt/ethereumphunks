@@ -839,40 +839,42 @@ export class DataService {
   /**
    * Checks consensus status for Phunks
    * @param phunks Array of Phunks to check
+   * NOTE: Disabled FlooredApe API calls - just return phunks as-is
    */
   async checkConsensus(phunks: Phunk[]): Promise<Phunk[]> {
-    if (!phunks.length) return [];
+    // Disabled consensus checking - FlooredApe API is unreliable
+    // Just mark all items as having consensus
+    return phunks.map(phunk => ({ ...phunk, consensus: true }));
 
-    const prefix = this.suffix.replace('_', '');
-
-    const hashIds = phunks.map((item: Phunk) => item.hashId);
-    let params: any = new HttpParams().set('consensus', 'true');
-    for (let i = 0; i < hashIds.length; i++) {
-      params = params.append('transaction_hash[]', hashIds[i]);
-    }
-
-    const fetchPage = (key?: string): Observable<any> => {
-      if (key) {
-        params = params.set('page_key', key);
-      }
-      return this.http.get<any>(`https://ethscriptions-api${prefix ? ('-' + prefix) : ''}.flooredape.io/ethscriptions`, { params });
-    };
-
-    return await firstValueFrom(
-      fetchPage().pipe(
-        expand((res: any) => res.pagination.has_more ? fetchPage(res.pagination.page_key) : EMPTY),
-        reduce((acc: any, res) => res ? [...acc, ...res.result] : acc, []),
-        map((res: any) => res.map((item: any) => {
-          const phunk = phunks.find(p => p.hashId === item.transaction_hash);
-          const consensus = !!phunk && phunk.owner === item.current_owner && (phunk.prevOwner === item.previous_owner || !phunk.prevOwner);
-          return { ...phunk, consensus };
-        })),
-        catchError((err) => {
-          console.log('checkConsensus', err);
-          return of(phunks);
-        })
-      )
-    );
+    // Original implementation (disabled):
+    // if (!phunks.length) return [];
+    // const prefix = this.suffix.replace('_', '');
+    // const hashIds = phunks.map((item: Phunk) => item.hashId);
+    // let params: any = new HttpParams().set('consensus', 'true');
+    // for (let i = 0; i < hashIds.length; i++) {
+    //   params = params.append('transaction_hash[]', hashIds[i]);
+    // }
+    // const fetchPage = (key?: string): Observable<any> => {
+    //   if (key) {
+    //     params = params.set('page_key', key);
+    //   }
+    //   return this.http.get<any>(`https://ethscriptions-api${prefix ? ('-' + prefix) : ''}.flooredape.io/ethscriptions`, { params });
+    // };
+    // return await firstValueFrom(
+    //   fetchPage().pipe(
+    //     expand((res: any) => res.pagination.has_more ? fetchPage(res.pagination.page_key) : EMPTY),
+    //     reduce((acc: any, res) => res ? [...acc, ...res.result] : acc, []),
+    //     map((res: any) => res.map((item: any) => {
+    //       const phunk = phunks.find(p => p.hashId === item.transaction_hash);
+    //       const consensus = !!phunk && phunk.owner === item.current_owner && (phunk.prevOwner === item.previous_owner || !phunk.prevOwner);
+    //       return { ...phunk, consensus };
+    //     })),
+    //     catchError((err) => {
+    //       console.log('checkConsensus', err);
+    //       return of(phunks);
+    //     })
+    //   )
+    // );
   }
 
   ////////////////////////////////////////////////////////
