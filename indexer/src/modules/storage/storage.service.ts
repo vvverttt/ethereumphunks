@@ -44,7 +44,7 @@ export class StorageService implements OnModuleInit {
   /**
    * Gets the last processed block number for a network
    * @param network - The network ID to get the last block for
-   * @returns The last processed block number minus 10 blocks for safety, or current block minus 100 if no blocks processed
+   * @returns The last processed block number minus 10 blocks for safety, or null if no blocks processed
    */
   async getLastBlock(network: number): Promise<any> {
     const response = await this.supabase
@@ -55,13 +55,7 @@ export class StorageService implements OnModuleInit {
     const { data, error } = response;
     if (error) throw error;
     if (data?.length) return data[0]?.blockNumber - 10;
-
-    // On first run, start from current block minus 100 to avoid syncing millions of blocks
-    const { l1Client } = await import('@/constants/ethereum');
-    const latestBlock = await l1Client.getBlock();
-    const startFromBlock = Number(latestBlock.number) - 100;
-    Logger.log(`First run detected. Starting from block ${startFromBlock} (current minus 100)`);
-    return startFromBlock;
+    return null;
   }
 
   /**

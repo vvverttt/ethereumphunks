@@ -46,7 +46,15 @@ export class AppService implements OnModuleInit {
       await this.utilSvc.delay(10000);
       await this.blockQueue.pauseQueue();
 
-      const startBlock = (await this.storageSvc.getLastBlock(chainId));
+      let startBlock = (await this.storageSvc.getLastBlock(chainId));
+
+      // On first run, start from current block minus 100 to avoid OOM from syncing millions of blocks
+      if (startBlock === null) {
+        const latestBlock = await this.web3SvcL1.getBlock({});
+        startBlock = Number(latestBlock.number) - 100;
+        Logger.log(`First run detected. Starting from block ${startBlock} (current minus 100)`);
+      }
+
       await this.startBackfill(startBlock);
       await this.blockQueue.resumeQueue();
       await this.startPolling();
