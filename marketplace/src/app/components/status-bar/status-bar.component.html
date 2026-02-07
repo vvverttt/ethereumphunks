@@ -8,7 +8,7 @@
       @if (gas?.ProposeGasPrice === 'err' || gas?.ProposeGasPrice === '...') {
         {{ gas.ProposeGasPrice }} Gwei
       } @else {
-        {{ (gas?.ProposeGasPrice || 0) | number : '1.0-0' }} Gwei
+        {{ (gas?.ProposeGasPrice || 0) | number : '1.0-2' }} Gwei
       }
     </div>
     <div class="network">

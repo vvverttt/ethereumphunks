@@ -39,7 +39,6 @@ export class StatusBarComponent {
   logs$ = this.socketSvc.logs$.pipe(
     take(1),
     switchMap((logs: LogItem[]) => {
-      // console.log('logs', logs);
       return this.socketSvc.log$.pipe(
         startWith(...logs),
         scan((acc: LogItem[], log: LogItem) => [...acc, log], []),
@@ -72,9 +71,7 @@ export class StatusBarComponent {
   }
 
   expandCollapse() {
-    console.log('[StatusBar] expandCollapse called, current:', this.expanded());
     this.expanded.update(expanded => !expanded);
-    console.log('[StatusBar] expanded updated to:', this.expanded());
   }
 
   openChat() {
