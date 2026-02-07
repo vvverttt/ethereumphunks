@@ -198,10 +198,18 @@ export class Web3Service {
    * @throws Error if connection fails
    */
   async connect(): Promise<void> {
+    console.log('[Web3Service] connect() called');
+    console.log('[Web3Service] modal instance:', this.modal);
     try {
+      console.log('[Web3Service] Opening Web3Modal...');
       await this.modal.open();
+      console.log('[Web3Service] Web3Modal opened successfully');
     } catch (error) {
-      console.log(error);
+      console.error('[Web3Service] Error opening Web3Modal:', error);
+      if (error instanceof Error) {
+        console.error('[Web3Service] Error message:', error.message);
+        console.error('[Web3Service] Error stack:', error.stack);
+      }
       this.disconnectWeb3();
     }
   }
