@@ -713,7 +713,6 @@ export class DataService {
         );
 
         const listing$ = from(this.getListingFromHashId(phunk.hashId)).pipe(
-          map((listing) => listing?.listedBy?.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null),
           catchError(() => of(null)),
           startWith(null),
         );
@@ -754,7 +753,7 @@ export class DataService {
    */
   private watchSinglePhunk(hashId: string) {
     return new Observable<void>((subscriber) => {
-      const channel = supabase
+      const ethChannel = supabase
         .channel(`ethscription_changes__${hashId}`)
         .on(
           'postgres_changes',
@@ -764,15 +763,27 @@ export class DataService {
             table: 'ethscriptions' + this.suffix,
             filter: `hashId=eq.${hashId}`
           },
-          (payload: any) => {
-            // console.log('watchSinglePhunk', payload);
-            subscriber.next();
-          }
+          () => subscriber.next()
+        )
+        .subscribe();
+
+      const listingChannel = supabase
+        .channel(`listing_changes__${hashId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'listings' + this.suffix,
+            filter: `hashId=eq.${hashId}`
+          },
+          () => subscriber.next()
         )
         .subscribe();
 
       return () => {
-        channel.unsubscribe();
+        ethChannel.unsubscribe();
+        listingChannel.unsubscribe();
       };
     });
   }
@@ -830,36 +841,23 @@ export class DataService {
   }
 
   /**
-   * Gets listing data for a token
+   * Gets listing data for a token from Supabase
    * @param hashId Token hash ID
    */
   async getListingFromHashId(hashId: string | undefined): Promise<Listing | null> {
     if (!hashId) return null;
 
     try {
-      const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000));
+      const { data, error } = await supabase
+        .from('listings' + this.suffix)
+        .select('*')
+        .eq('hashId', hashId)
+        .limit(1)
+        .maybeSingle();
 
-      const fetchListing = async () => {
-        const [ callL1, callL2 ] = await Promise.all([
-          this.web3Svc.readMarketContract('phunksOfferedForSale', [hashId]),
-          this.web3Svc.phunksOfferedForSaleL2(hashId),
-        ]);
-
-        const offer = callL1?.[0] ? callL1 : callL2;
-        if (!offer?.[0]) return null;
-
-        return {
-          createdAt: new Date(),
-          hashId: offer[1],
-          minValue: offer[3].toString(),
-          listedBy: offer[2],
-          toAddress: offer[4],
-          listed: offer[0],
-        } as Listing;
-      };
-
-      return await Promise.race([fetchListing(), timeout]);
-    } catch (error) {
+      if (error || !data) return null;
+      return data as Listing;
+    } catch {
       return null;
     }
   }
