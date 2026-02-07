@@ -1,21 +1,90 @@
 @if (open) {
   <div class="overlay" (click)="onBackdropClick()">
     <div class="dialog" (click)="onDialogClick($event)">
-      <button class="close" (click)="onBackdropClick()">
-        <svg height="15" viewBox="0 0 15 15" width="15" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="m6 6h3v3h-3z"/><path d="m3 3h3v3h-3z"/><path d="m3 9h3v3h-3z"/><path d="m0 0h3v3h-3z"/><path d="m0 12h3v3h-3z"/><path d="m12 3h-3v3h3z"/><path d="m12 9h-3v3h3z"/><path d="m15 0h-3v3h3z"/><path d="m15 12h-3v3h3z"/></g></svg>
-      </button>
 
-      <h2>Connect Wallet</h2>
+      <div class="dialog-header">
+        <h2>Connect a Wallet</h2>
+        <button class="close" (click)="onBackdropClick()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
 
+      @if (installedWallets.length) {
+        <div class="section-label">Installed</div>
+        <div class="wallet-list">
+          @for (wallet of installedWallets; track wallet.id) {
+            <button class="wallet-option" (click)="selectWallet(wallet.id)">
+              <div class="wallet-icon" [attr.data-icon]="wallet.icon">
+                @switch (wallet.icon) {
+                  @case ('metamask') {
+                    <svg width="28" height="28" viewBox="0 0 35 33" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M32.96 1l-13.14 9.72 2.45-5.73L32.96 1z" fill="#E2761B" stroke="#E2761B" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2.66 1l13.02 9.8L13.35 4.99 2.66 1zM28.23 23.53l-3.5 5.34 7.49 2.06 2.15-7.28-6.14-.12zM1.27 23.65l2.13 7.28 7.47-2.06-3.48-5.34-6.12.12z" fill="#E4761B" stroke="#E4761B" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10.47 14.51l-2.09 3.17 7.44.34-.26-8-5.09 4.49zM25.17 14.51l-5.17-4.58-.17 8.09 7.44-.34-2.1-3.17zM10.87 28.87l4.49-2.16-3.88-3.02-.61 5.18zM20.28 26.71l4.46 2.16-.59-5.18-3.87 3.02z" fill="#E4761B" stroke="#E4761B" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M24.74 28.87l-4.46-2.16.36 2.9-.04 1.22 4.14-1.96zM10.87 28.87l4.16 1.96-.02-1.22.34-2.9-4.48 2.16z" fill="#D7C1B3" stroke="#D7C1B3" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M15.11 21.78l-3.74-1.1 2.64-1.21 1.1 2.31zM20.53 21.78l1.1-2.31 2.66 1.21-3.76 1.1z" fill="#233447" stroke="#233447" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10.87 28.87l.63-5.34-4.13.12 3.5 5.22zM24.12 23.53l.62 5.34 3.49-5.22-4.11-.12zM27.27 17.68l-7.44.34.69 3.76 1.1-2.31 2.66 1.21 2.99-3zM11.37 20.68l2.64-1.21 1.1 2.31.69-3.76-7.42-.34 2.99 3z" fill="#CD6116" stroke="#CD6116" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M8.38 17.68l3.12 6.06-.1-3.03-3.02-3.03zM24.28 20.71l-.12 3.03 3.11-6.06-2.99 3.03zM15.82 18.02l-.69 3.76.87 4.49.2-5.91-.38-2.34zM19.83 18.02l-.36 2.32.18 5.93.87-4.49-.69-3.76z" fill="#E4751F" stroke="#E4751F" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20.53 21.78l-.87 4.49.62.44 3.87-3.02.12-3.03-3.74 1.12zM11.37 20.68l.1 3.03 3.88 3.02.62-.44-.87-4.49-3.73-1.12z" fill="#F6851B" stroke="#F6851B" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20.57 30.83l.04-1.22-.34-.29h-4.9l-.32.29.02 1.22-4.16-1.96 1.46 1.19 2.95 2.04h4.98l2.97-2.04 1.44-1.19-4.14 1.96z" fill="#C0AD9E" stroke="#C0AD9E" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20.28 26.71l-.62-.44h-3.68l-.62.44-.34 2.9.32-.29h4.9l.34.29-.3-2.9z" fill="#161616" stroke="#161616" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M33.52 11.35l1.12-5.36L32.96 1l-12.68 9.4 4.87 4.11 6.89 2 1.52-1.77-.66-.48 1.05-.96-.8-.62 1.05-.8-.7-.54zM1 5.99l1.12 5.36-.72.54 1.07.8-.8.62 1.05.96-.66.48 1.52 1.77 6.87-2 4.89-4.11L2.66 1 1 5.99z" fill="#763D16" stroke="#763D16" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M32.04 16.51l-6.89-2 2.1 3.17-3.11 6.06 4.11-.05h6.14l-2.35-7.18zM10.47 14.51l-6.87 2-2.33 7.18h6.12l4.11.05-3.12-6.06 2.09-3.17zM19.83 18.02l.44-7.62 2-5.41h-8.9l2 5.41.44 7.62.17 2.36.02 5.89h3.68l.02-5.89.13-2.36z" fill="#F6851B" stroke="#F6851B" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                  @case ('phantom') {
+                    <svg width="28" height="28" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="128" height="128" rx="26" fill="#AB9FF2"/>
+                      <path d="M110.58 64.58C110.58 92.22 89.8 110.58 62.5 110.58H29.42C27.04 110.58 25.1 108.64 25.1 106.26V72.54C25.1 55.82 38.62 42.3 55.34 42.3H62.5C89.8 42.3 110.58 52.5 110.58 64.58Z" fill="url(#phantom_grad)"/>
+                      <circle cx="52" cy="66" r="6" fill="white"/>
+                      <circle cx="76" cy="66" r="6" fill="white"/>
+                      <defs><linearGradient id="phantom_grad" x1="25.1" y1="76.44" x2="110.58" y2="76.44" gradientUnits="userSpaceOnUse"><stop stop-color="#534BB1"/><stop offset="1" stop-color="#551BF9"/></linearGradient></defs>
+                    </svg>
+                  }
+                  @case ('coinbase') {
+                    <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="28" height="28" rx="6" fill="#0052FF"/>
+                      <path d="M14 5C9.03 5 5 9.03 5 14s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm-2.5 11.5a2.5 2.5 0 010-5h5a2.5 2.5 0 010 5h-5z" fill="white"/>
+                    </svg>
+                  }
+                }
+              </div>
+              <span class="wallet-name">{{ wallet.name }}</span>
+            </button>
+          }
+        </div>
+      }
+
+      <div class="section-label">Popular</div>
       <div class="wallet-list">
-        @for (wallet of wallets; track wallet.id) {
+        @for (wallet of popularWallets; track wallet.id) {
           <button class="wallet-option" (click)="selectWallet(wallet.id)">
+            <div class="wallet-icon" [attr.data-icon]="wallet.icon">
+              @switch (wallet.icon) {
+                @case ('coinbase') {
+                  <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="28" height="28" rx="6" fill="#0052FF"/>
+                    <path d="M14 5C9.03 5 5 9.03 5 14s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm-2.5 11.5a2.5 2.5 0 010-5h5a2.5 2.5 0 010 5h-5z" fill="white"/>
+                  </svg>
+                }
+                @case ('walletconnect') {
+                  <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="28" height="28" rx="6" fill="#3B99FC"/>
+                    <path d="M8.34 11.2c3.12-3.05 8.2-3.05 11.32 0l.38.37a.39.39 0 010 .56l-1.28 1.26a.2.2 0 01-.28 0l-.52-.51c-2.18-2.13-5.72-2.13-7.9 0l-.56.54a.2.2 0 01-.28 0L7.94 12.2a.39.39 0 010-.56l.4-.44zm13.98 2.6l1.14 1.12a.39.39 0 010 .56l-5.14 5.03a.4.4 0 01-.57 0l-3.65-3.57a.1.1 0 00-.14 0l-3.65 3.57a.4.4 0 01-.57 0L4.6 15.48a.39.39 0 010-.56l1.14-1.12a.4.4 0 01.57 0l3.65 3.57a.1.1 0 00.14 0l3.65-3.57a.4.4 0 01.57 0l3.65 3.57a.1.1 0 00.14 0l3.65-3.57a.4.4 0 01.56 0z" fill="white"/>
+                  </svg>
+                }
+              }
+            </div>
             <span class="wallet-name">{{ wallet.name }}</span>
-            @if (wallet.detected) {
-              <span class="detected">Detected</span>
-            }
           </button>
         }
+      </div>
+
+      <div class="dialog-footer">
+        <span>New to Ethereum wallets?</span>
+        <a href="https://learn.rainbow.me/understanding-web3" target="_blank" rel="noopener">Learn More</a>
       </div>
     </div>
   </div>

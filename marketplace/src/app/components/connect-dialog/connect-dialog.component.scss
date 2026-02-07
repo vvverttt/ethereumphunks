@@ -10,82 +10,142 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(var(--base-color), 0.35);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .dialog {
   position: relative;
   width: 100%;
-  max-width: 380px;
-  background-color: rgba(var(--background), 1);
-  box-shadow: 0 0 5rem rgba(0, 0, 0, 0.5);
-  padding: 2rem;
+  max-width: 360px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   @media (max-width: $mobile) {
-    max-width: 100%;
-    min-height: 100%;
-    padding-top: calc(var(--header-height) / 2 + 2rem);
+    max-width: 92%;
+    max-height: 85vh;
+  }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #25292e;
   }
 }
 
 button.close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   border: none;
-  padding: 1rem;
+  background: #f5f5f5;
+  color: #999;
   cursor: pointer;
+  padding: 0;
+  transition: background 0.15s;
 
-  svg path {
-    fill: rgba(var(--base-color), 1);
+  &:hover {
+    background: #e8e8e8;
+    color: #666;
   }
 }
 
-h2 {
-  margin: 0 0 1.5rem;
-  font-family: var(--secondary-font-stack), monospace;
-  font-size: 1.1rem;
-  color: rgba(var(--text-color), 1);
-  text-transform: uppercase;
+.section-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #999;
+  margin-bottom: 8px;
+  margin-top: 4px;
 }
 
 .wallet-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 4px;
+  margin-bottom: 16px;
 }
 
 .wallet-option {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   width: 100%;
-  padding: 1rem 1.25rem;
-  border: 1px solid rgba(var(--base-color), 0.15);
-  background: rgba(var(--base-color), 0.04);
-  color: rgba(var(--text-color), 1);
-  font-family: var(--primary-font-stack), sans-serif;
-  font-size: 0.95rem;
-  font-weight: 500;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #25292e;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 
   &:hover {
-    background: rgba(var(--highlight), 0.12);
-    border-color: rgba(var(--highlight), 0.5);
+    background: #f5f5f7;
+  }
+
+  .wallet-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    svg {
+      width: 36px;
+      height: 36px;
+    }
   }
 
   .wallet-name {
     flex: 1;
     text-align: left;
   }
+}
 
-  .detected {
-    font-size: 0.7rem;
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: #999;
+
+  a {
+    color: #7b3fe4;
+    text-decoration: none;
     font-weight: 600;
-    text-transform: uppercase;
-    color: rgba(var(--highlight), 1);
-    letter-spacing: 0.05em;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
