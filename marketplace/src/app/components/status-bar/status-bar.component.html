@@ -32,7 +32,7 @@
 
       <div
         class="block"
-        [class]="(blocks[0] - blocks[1]) < 4 ? levels[(blocks[0] - blocks[1])] : blocks[1] ? 'bad' : ''">
+        [class]="getIndexerClass(blocks[0] - blocks[1], blocks[1])">
 
         <div class="label">Indexer</div>
         <div class="value">{{ blocks[1] || 'waiting..' }}</div>

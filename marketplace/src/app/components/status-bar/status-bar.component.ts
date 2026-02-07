@@ -48,12 +48,7 @@ export class StatusBarComponent {
 
   chain = environment.chainId;
 
-  levels: any = {
-    0: 'sync',
-    1: 'behind1',
-    2: 'behind2',
-    3: 'behind3'
-  };
+  levels: any = {};
 
   expanded = signal(false);
 
@@ -68,6 +63,14 @@ export class StatusBarComponent {
         untracked(() => this.expanded.set(false));
       }
     });
+  }
+
+  getIndexerClass(diff: number, indexerBlock: number): string {
+    if (!indexerBlock) return '';
+    if (diff < 2) return 'sync';
+    if (diff < 10) return 'behind1';
+    if (diff < 20) return 'behind2';
+    return 'bad';
   }
 
   expandCollapse() {
