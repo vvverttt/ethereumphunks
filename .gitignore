@@ -85,3 +85,5 @@ CON
 PRN
 AUX
 **/nul
+.vercel
+.env*.local

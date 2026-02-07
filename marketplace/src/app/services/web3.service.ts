@@ -17,7 +17,7 @@ import { PointsABI } from '@/abi/Points';
 import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
 import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
 
-import { reconnect, http, createConfig, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType } from '@wagmi/core';
+import { reconnect, http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType } from '@wagmi/core';
 import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -110,7 +110,12 @@ export class Web3Service {
           appName: metadata.name,
           appLogoUrl: metadata.icons[0]
         })
-      ]
+      ],
+      storage: createStorage({
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        key: 'wagmi',
+      }),
+      ssr: false,
     });
 
     this.modal = createWeb3Modal({
@@ -138,6 +143,7 @@ export class Web3Service {
    */
   async createListeners(): Promise<void> {
 
+    // Set up watchAccount listener FIRST so it catches the reconnect event
     this.connectedState = new Observable((observer) => watchAccount(this.config, {
       onChange: (account) => this.ngZone.run(() => observer.next(account))
     }));
@@ -146,14 +152,14 @@ export class Web3Service {
       tap((account: GetAccountReturnType) => {
         this.store.dispatch(appStateActions.setConnected({ connected: account.isConnected }));
         this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: account.address?.toLowerCase() }));
-        // if (account.chainId !== environment.chainId) this.switchNetwork();
       }),
       catchError((err) => {
-        this.disconnectWeb3();
+        console.error('[Web3Service] watchAccount error:', err);
         return of(err);
       }),
     ).subscribe();
 
+    // Reconnect AFTER listener is set up — triggers watchAccount onChange
     await reconnect(this.config);
   }
 
@@ -199,7 +205,11 @@ export class Web3Service {
    */
   async connect(): Promise<void> {
     try {
+      console.log('[Web3Service] Opening wallet modal...');
+      console.log('[Web3Service] Current account before modal:', getAccount(this.config));
       await this.modal.open();
+      console.log('[Web3Service] Modal opened successfully');
+      console.log('[Web3Service] Current account after modal opened:', getAccount(this.config));
     } catch (error) {
       console.error('[Web3Service] Error opening modal:', error);
       this.disconnectWeb3();

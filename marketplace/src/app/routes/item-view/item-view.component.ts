@@ -138,6 +138,7 @@ export class ItemViewComponent {
 
   globalConfig$ = this.store.select(appStateSelectors.selectConfig);
   walletAddress$ = this.store.select(appStateSelectors.selectWalletAddress);
+  connected$ = this.store.select(appStateSelectors.selectConnected);
   theme$ = this.store.select(appStateSelectors.selectTheme);
   usd$ = this.store.select(dataStateSelectors.selectUsd);
 

@@ -62,6 +62,7 @@ export class MenuComponent {
   @ViewChild('menuCurated') menuCurated!: ElementRef;
 
   address$ = this.store.select(appStateSelectors.selectWalletAddress);
+  connected$ = this.store.select(appStateSelectors.selectConnected);
   menuActive$ = this.store.select(appStateSelectors.selectMenuActive).pipe(
     tap((active) => {
       active && this.store.dispatch(dataStateActions.fetchLeaderboard());

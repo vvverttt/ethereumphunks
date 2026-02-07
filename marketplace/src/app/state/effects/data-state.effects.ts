@@ -60,10 +60,33 @@ export class DataStateEffects {
     switchMap((action) => {
       return this.store.select(marketStateSelectors.selectMarketSlug).pipe(
         filter(() => !!action.collections),
-        // tap((slug) => console.log('setActiveCollection$', { slug })),
-        map((slug) => action.collections.find((c) => c.slug === slug)),
+        tap((slug) => console.log('setActiveCollection$', { slug, collections: action.collections })),
+        map((slug) => {
+          // If no slug from route, use default collection
+          const targetSlug = slug || environment.defaultCollection;
+          return action.collections.find((c) => c.slug === targetSlug);
+        }),
         filter((activeCollection) => !!activeCollection),
+        tap((activeCollection) => console.log('Setting active collection:', activeCollection)),
         map((activeCollection) => dataStateActions.setActiveCollection({ activeCollection: { ...activeCollection! } }))
+      );
+    }),
+  ));
+
+  setDefaultCollectionFallback$ = createEffect(() => this.actions$.pipe(
+    ofType(dataStateActions.setCollections),
+    filter((action) => !!action.collections && action.collections.length > 0),
+    switchMap((action) => {
+      // Check if we have an active collection already
+      return this.store.select(dataStateSelectors.selectActiveCollection).pipe(
+        take(1),
+        filter((activeCollection) => !activeCollection), // Only proceed if no active collection
+        map(() => {
+          // Find the default collection or fallback to first available
+          const defaultCollection = action.collections.find(c => c.slug === environment.defaultCollection) || action.collections[0];
+          console.log('Setting fallback default collection:', defaultCollection);
+          return dataStateActions.setActiveCollection({ activeCollection: defaultCollection });
+        })
       );
     }),
   ));

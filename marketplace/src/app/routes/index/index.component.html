@@ -30,7 +30,7 @@
       @defer {
         @if ((owned$ | async); as ownedData) {
           @if (ownedData.length) {
-            @if ((walletAddress$ | async); as address) {
+            @if ((connected$ | async) && (walletAddress$ | async); as address) {
               <section>
                 <div class="inner">
                   <h3 i18n>Owned</h3>

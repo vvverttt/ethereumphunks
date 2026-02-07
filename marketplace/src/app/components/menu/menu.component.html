@@ -1,6 +1,6 @@
 <section #menuMain class="main" [style]="{ 'opacity': '0' }">
 
-  @if (address$ | async; as address) {
+  @if ((connected$ | async) && (address$ | async); as address) {
     <div class="user-actions">
       <button
         (click)="withdraw()"
@@ -57,7 +57,7 @@
     }
   </div>
 
-  @if (address$ | async; as address) {
+  @if ((connected$ | async) && (address$ | async); as address) {
     @if (activeCollection$ | async; as activeCollection) {
       <div class="stats-wrapper" waIntersectionObserver waIntersectionThreshold="0.5">
         <!-- @if ((userOpenBids$ | async); as bids) {

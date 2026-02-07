@@ -16,7 +16,7 @@ import { AttributeItem } from '@/models/attributes';
 
 import { createClient, RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
-import { Observable, of, from, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, takeWhile, tap, shareReplay } from 'rxjs';
+import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, takeWhile, tap, shareReplay } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -699,7 +699,13 @@ export class DataService {
         return of(formatPhunkFromResponse(phunk, this.suffix));
       }),
       switchMap((phunk: Phunk) => {
-        const base = { ...phunk, consensus: true, listing: null } as Phunk;
+        const base = {
+          ...phunk,
+          consensus: false,
+          listing: null,
+          loading: true,
+          attributes: phunk.attributes || [],
+        } as Phunk;
 
         const attributes$ = this.addAttributes(phunk.slug, [phunk]).pipe(
           map(([phunkWithAttrs]) => phunkWithAttrs.attributes || []),
@@ -709,21 +715,25 @@ export class DataService {
         const listing$ = from(this.getListingFromHashId(phunk.hashId)).pipe(
           map((listing) => listing?.listedBy?.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null),
           catchError(() => of(null)),
+          startWith(null),
         );
 
-        // Emit base immediately, then combined result with both attributes and listing
-        return forkJoin([attributes$, listing$]).pipe(
+        // Emit base immediately (consensus: false keeps takeWhile alive),
+        // then emit as soon as attributes resolve (listing may still be null).
+        return combineLatest([attributes$, listing$]).pipe(
           map(([attributes, listing]) => ({
-            ...base,
+            ...phunk,
+            consensus: true,
             attributes,
             listing,
+            loading: false,
           } as Phunk)),
           startWith(base),
         );
       }),
       catchError((err) => {
         console.error('fetchSinglePhunk error:', err);
-        return of({ hashId, consensus: true } as Phunk);
+        return of({ hashId, consensus: true, loading: false } as Phunk);
       }),
     );
 

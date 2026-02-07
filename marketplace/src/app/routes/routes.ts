@@ -5,12 +5,12 @@ import { InitialCollectionGuard } from '@/guards/initial-collection.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'cryptophunksv67',
+    redirectTo: 'quantumphunks',
     pathMatch: 'full'
   },
   {
     path: 'market/:marketType',
-    redirectTo: 'cryptophunksv67/market/:marketType',
+    redirectTo: 'quantumphunks/market/:marketType',
     pathMatch: 'full'
   },
   {

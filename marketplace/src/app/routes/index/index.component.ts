@@ -48,6 +48,7 @@ import { tap } from 'rxjs';
 export class IndexComponent {
 
   walletAddress$ = this.store.select(appStateSelectors.selectWalletAddress);
+  connected$ = this.store.select(appStateSelectors.selectConnected);
   activeCollection$ = this.store.select(dataStateSelectors.selectActiveCollection);
 
   owned$ = this.store.select(marketStateSelectors.selectOwned);

@@ -89,7 +89,7 @@
                 class="actions-wrapper"
                 [class.disabled]="(blocksBehind$ | async)">
 
-                  @if ((walletAddress$ | async); as address) {
+                  @if ((connected$ | async) && (walletAddress$ | async); as address) {
                     @if (phunk.owner; as owner) {
                       @if (phunk.isSupported) {
                         @if (phunk.consensus) {
@@ -179,7 +179,7 @@
                             </button>
                           }
                         } @else {
-                          @if (!(isCooling$ | async)) {
+                          @if (!phunk.loading && !(isCooling$ | async)) {
                             <div class="notice">
                               <div class="consensus">This {{ phunk.collection?.singleName }} does not have consensus with one or more indexers. <a (click)="setChat()">Contact support</a> to resolve this issue.</div>
                             </div>
