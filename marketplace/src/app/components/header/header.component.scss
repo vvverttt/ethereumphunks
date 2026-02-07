@@ -321,7 +321,7 @@
 
   @media (max-width: $mobile) {
     .inner {
-      grid-template-columns: 4rem 1fr;
+      grid-template-columns: auto 1fr;
       grid-template-rows: 1fr 1fr;
       grid-template-areas: "logo user-tools" "search search";
 
@@ -329,24 +329,11 @@
       padding: 0 1.5rem;
 
       .logo {
-        overflow: hidden;
-        width: 3rem;
-        transform: translate(0, .25rem);
-
-        svg {
-          overflow: visible;
-          width: 20rem;
-
-          path {
-            &#wordmark {
-              // display: none;
-            }
-          }
-        }
+        width: auto;
 
         img {
-          height: auto;
-          width: 20rem;
+          height: 3.8rem;
+          width: auto;
         }
       }
 
