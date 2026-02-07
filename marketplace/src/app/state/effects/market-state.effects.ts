@@ -222,11 +222,12 @@ export class MarketStateEffects {
     ),
     filter(([action, marketType]) => marketType === 'all'),
     switchMap(([action, marketType, slug, traitFilters]) => {
-      // Always fetch all items (up to 10k) for 'all' market type
-      // This ensures all phunks are loaded on initial page load
+      // Fetch all items without trait filters — the Supabase RPC doesn't handle
+      // attribute-based filtering (attributes live in static JSON, not in DB).
+      // Client-side attributeFilter pipe handles trait filtering in the template.
       const fetchLength = 10000;
 
-      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength, traitFilters).pipe(
+      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength).pipe(
         mergeMap((data: MarketState['activeMarketRouteData']) => [
           marketStateActions.setActiveMarketRouteData({ activeMarketRouteData: data })
         ]),
