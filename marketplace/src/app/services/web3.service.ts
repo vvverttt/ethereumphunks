@@ -200,18 +200,28 @@ export class Web3Service {
   async connect(): Promise<void> {
     try {
       await this.modal.open();
-
-      // Force modal visible in case ad blockers (uBOL) hide it with display:none
-      setTimeout(() => {
-        const modal = document.querySelector('w3m-modal') || document.querySelector('wcm-modal');
-        if (modal instanceof HTMLElement) {
-          modal.style.setProperty('display', 'block', 'important');
-        }
-      }, 50);
+      this.forceModalVisible();
     } catch (error) {
       console.error('[Web3Service] Error opening modal:', error);
       this.disconnectWeb3();
     }
+  }
+
+  /**
+   * Forces the WalletConnect modal visible, combating ad blockers (uBOL)
+   * that apply display:none to w3m-modal via cosmetic filtering
+   */
+  private forceModalVisible(): void {
+    const interval = setInterval(() => {
+      const modal = document.querySelector('w3m-modal') || document.querySelector('wcm-modal');
+      if (modal instanceof HTMLElement) {
+        const computed = window.getComputedStyle(modal);
+        if (computed.display === 'none') {
+          modal.style.setProperty('display', 'block', 'important');
+        }
+      }
+    }, 100);
+    setTimeout(() => clearInterval(interval), 5000);
   }
 
   /**

@@ -699,17 +699,18 @@ export class DataService {
         return of(formatPhunkFromResponse(phunk, this.suffix));
       }),
       switchMap((phunk: Phunk) => forkJoin([
-        this.addAttributes(phunk.slug, [phunk]),
-        from(this.getListingFromHashId(phunk.hashId)),
+        this.addAttributes(phunk.slug, [phunk]).pipe(catchError(() => of([phunk]))),
+        from(this.getListingFromHashId(phunk.hashId)).pipe(catchError(() => of(null))),
         this.checkConsensus([phunk]),
       ])),
       map(([[phunk], listing, [consensus]]) => ({
         ...consensus,
         ...phunk,
-        listing: listing?.listedBy.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null,
+        listing: listing?.listedBy?.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null,
       })),
-      tap((phunk) => {
-        // console.log('fetchSinglePhunk', phunk);
+      catchError((err) => {
+        console.error('fetchSinglePhunk error:', err);
+        return of({ hashId, consensus: true } as Phunk);
       }),
     );
 

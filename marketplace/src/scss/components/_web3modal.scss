@@ -40,19 +40,5 @@
   font-weight: 600 !important;
 }
 
-// Web3Modal v5 (web components) - Override ad blocker cosmetic filtering
-// uBOL and similar ad blockers apply display:none to w3m-modal
-w3m-modal[open],
-wcm-modal[open] {
-  display: block !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  visibility: visible !important;
-  position: fixed !important;
-  z-index: 99999 !important;
-}
-
-w3m-modal:not([open]),
-wcm-modal:not([open]) {
-  display: none !important;
-}
+// Web3Modal v5 - the JS forceModalVisible() handles ad blocker overrides
+// via inline styles. No CSS overrides needed since w3m-modal doesn't use [open] attribute.
