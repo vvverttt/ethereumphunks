@@ -24,7 +24,7 @@
       ]
     },
     "lib": [
-      "es2018",
+      "ES2022",
       "dom",
       "esnext.asynciterable"
     ],

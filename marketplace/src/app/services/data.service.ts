@@ -693,23 +693,29 @@ export class DataService {
       .limit(1);
 
     const fetch$ = from(query).pipe(
-      tap(({ data }: any) => console.log('fetchSinglePhunk: supabase data', data?.[0]?.hashId)),
       switchMap(({ data }: any) => {
         const phunk = data[0];
         if (!phunk) return this.fetchUnsupportedItem(hashId);
         return of(formatPhunkFromResponse(phunk, this.suffix));
       }),
-      switchMap((phunk: Phunk) => forkJoin([
-        this.addAttributes(phunk.slug, [phunk]).pipe(catchError(() => of([phunk]))),
-        from(this.getListingFromHashId(phunk.hashId)).pipe(catchError(() => of(null))),
-        this.checkConsensus([phunk]),
-      ])),
-      tap(() => console.log('fetchSinglePhunk: forkJoin completed')),
-      map(([[phunk], listing, [consensus]]) => ({
-        ...consensus,
-        ...phunk,
-        listing: listing?.listedBy?.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null,
-      })),
+      switchMap((phunk: Phunk) => {
+        const base = { ...phunk, consensus: true, listing: null } as Phunk;
+        // Emit immediately, then fill in attributes and listing progressively
+        return merge(
+          of(base),
+          this.addAttributes(phunk.slug, [phunk]).pipe(
+            map(([phunkWithAttrs]) => ({ ...phunkWithAttrs, consensus: true, listing: null } as Phunk)),
+            catchError(() => of(base)),
+          ),
+          from(this.getListingFromHashId(phunk.hashId)).pipe(
+            map((listing) => ({
+              ...base,
+              listing: listing?.listedBy?.toLowerCase() === phunk.prevOwner?.toLowerCase() ? listing : null,
+            })),
+            catchError(() => of(base)),
+          ),
+        );
+      }),
       catchError((err) => {
         console.error('fetchSinglePhunk error:', err);
         return of({ hashId, consensus: true } as Phunk);

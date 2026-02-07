@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { ApplicationRef, Injectable } from '@angular/core';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
 import { tap } from 'rxjs';
 
@@ -49,8 +49,8 @@ export class SocketService extends Socket {
   /** Observable stream of pending inscription SHAs */
   // pendingInscriptionShas$ = this.fromEvent<Map<string, string>, 'pendingInscriptionShas'>('pendingInscriptionShas');
 
-  constructor() {
-    super(socketConfig);
+  constructor(appRef: ApplicationRef) {
+    super(socketConfig, appRef);
 
     this.onMessage().subscribe(({ id, message }) => {
       console.log('received message', { id, message });

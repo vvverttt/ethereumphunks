@@ -71,6 +71,10 @@
     "webpack": "^5.47.1",
     "zone.js": "~0.15.0"
   },
+  "resolutions": {
+    "lit": "^3.1.0",
+    "@lit/reactive-element": "^2.0.0"
+  },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.10",
     "@angular/build": "19.2.10",
