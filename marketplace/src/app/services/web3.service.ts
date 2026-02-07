@@ -25,7 +25,7 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
 
-import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, custom, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
+import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 
@@ -74,10 +74,7 @@ export class Web3Service {
   ) {
     this.l1Client = createPublicClient({
       chain: this.chains[0],
-      transport: fallback([
-        ...(typeof window !== 'undefined' && window.ethereum ? [custom(window.ethereum)] : []),
-        http(environment.rpcHttpProvider)
-      ])
+      transport: http(environment.rpcHttpProvider)
     });
 
     this.l2Client = createPublicClient({
@@ -88,10 +85,7 @@ export class Web3Service {
     this.config = createConfig({
       chains: this.chains,
       transports: {
-        [environment.chainId]: fallback([
-          ...(typeof window !== 'undefined' && window.ethereum ? [custom(window.ethereum)] : []),
-          http(environment.rpcHttpProvider)
-        ]),
+        [environment.chainId]: http(environment.rpcHttpProvider),
         6969696969: http(environment.magmaRpcHttpProvider)
       },
       connectors: [
@@ -142,6 +136,7 @@ export class Web3Service {
           localStorage.setItem('ep_wallet', account.address.toLowerCase());
         } else if (account.isDisconnected) {
           localStorage.removeItem('ep_wallet');
+          localStorage.removeItem('ep_wallet_type');
         }
       }),
       catchError((err) => {
@@ -157,21 +152,78 @@ export class Web3Service {
 
   private async restoreConnection(): Promise<void> {
     const saved = localStorage.getItem('ep_wallet');
-    if (!saved || !window.ethereum) return;
+    const savedType = localStorage.getItem('ep_wallet_type');
+    if (!saved) return;
 
     try {
-      const accounts: string[] = await window.ethereum.request({ method: 'eth_accounts' });
-      const match = accounts?.some(a => a.toLowerCase() === saved);
-      if (match) {
-        // Actually restore the wagmi connection so getWalletClient() works
-        // for transactions (escrow, listing, buying, etc.)
-        await wagmiConnect(this.config, { connector: injected() });
-      } else {
-        localStorage.removeItem('ep_wallet');
+      // Check both providers for the saved address
+      const eth = (window as any).ethereum;
+      const phantom = (window as any).phantom?.ethereum;
+
+      let ethAccounts: string[] = [];
+      let phantomAccounts: string[] = [];
+
+      if (eth) {
+        try { ethAccounts = await eth.request({ method: 'eth_accounts' }) || []; } catch {}
       }
-    } catch {
+      if (phantom && phantom !== eth) {
+        try { phantomAccounts = await phantom.request({ method: 'eth_accounts' }) || []; } catch {}
+      }
+
+      const inEth = ethAccounts.some(a => a.toLowerCase() === saved);
+      const inPhantom = phantomAccounts.some(a => a.toLowerCase() === saved);
+
+      if (!inEth && !inPhantom) {
+        localStorage.removeItem('ep_wallet');
+        localStorage.removeItem('ep_wallet_type');
+        return;
+      }
+
+      // Restore with the correct connector
+      const connector = this.getConnectorForType(savedType, inPhantom);
+      await wagmiConnect(this.config, { connector });
+      console.log('[Web3Service] Restored connection with', savedType || 'injected');
+    } catch (err) {
+      console.error('[Web3Service] restoreConnection failed:', err);
       localStorage.removeItem('ep_wallet');
+      localStorage.removeItem('ep_wallet_type');
     }
+  }
+
+  /**
+   * Returns the correct wagmi connector for a saved wallet type
+   */
+  private getConnectorForType(type: string | null, phantomHasAccount = false): any {
+    if (type === 'injected-phantom' || (!type && phantomHasAccount)) {
+      const phantom = (window as any).phantom?.ethereum;
+      if (phantom) {
+        return injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
+      }
+    }
+    if (type === 'injected-rainbow') {
+      const provider = this.findRainbowProvider();
+      if (provider) {
+        return injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
+      }
+    }
+    // Default: generic injected (uses window.ethereum)
+    return injected();
+  }
+
+  /**
+   * Finds the Rainbow provider from window.ethereum or its providers array
+   */
+  private findRainbowProvider(): any {
+    const eth = (window as any).ethereum;
+    if (!eth) return null;
+    // Multi-provider: EIP-5749 / EIP-6963 style
+    if (eth.providers?.length) {
+      const rainbow = eth.providers.find((p: any) => p.isRainbow);
+      if (rainbow) return rainbow;
+    }
+    // Single provider
+    if (eth.isRainbow) return eth;
+    return null;
   }
 
   /**
@@ -225,13 +277,18 @@ export class Web3Service {
       let connector;
 
       if (connectorId === 'injected-phantom') {
-        // Phantom exposes its own provider at window.phantom.ethereum
         const phantom = (window as any).phantom?.ethereum;
         if (phantom) {
           connector = injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
         }
-      } else if (connectorId === 'injected-rainbow' || connectorId === 'injected-metamask') {
-        connector = injected();
+      } else if (connectorId === 'injected-rainbow') {
+        const provider = this.findRainbowProvider();
+        if (provider) {
+          connector = injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
+        } else {
+          // Rainbow not found in providers — fallback to generic injected
+          connector = injected();
+        }
       } else if (connectorId === 'walletConnect') {
         connector = this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
       } else if (connectorId === 'coinbaseWallet') {
@@ -239,12 +296,13 @@ export class Web3Service {
       }
 
       if (!connector) {
-        // Fallback: try injected
         connector = injected();
       }
 
       await wagmiConnect(this.config, { connector });
+      localStorage.setItem('ep_wallet_type', connectorId);
       this.connectDialogOpen.set(false);
+      console.log('[Web3Service] Connected with', connectorId);
     } catch (error) {
       console.error('[Web3Service] Connection error:', error);
     }
@@ -394,6 +452,7 @@ export class Web3Service {
     const walletClient = await getWalletClient(this.config, { chainId });
     const publicClient = getPublicClient(this.config, { chainId });
 
+    if (!walletClient) throw new Error('No wallet connected. Please reconnect your wallet.');
     if (!publicClient) throw new Error('No public client');
 
     const { maintenance } = await firstValueFrom(this.globalConfig$);
@@ -404,12 +463,12 @@ export class Web3Service {
       abi: EtherPhunksMarketABI,
       functionName,
       args,
-      account: walletClient?.account?.address as `0x${string}`,
+      account: walletClient.account.address as `0x${string}`,
     };
     if (value) tx.value = value;
 
     const { request, result } = await publicClient.simulateContract(tx);
-    return await walletClient?.writeContract(request);
+    return await walletClient.writeContract(request);
   }
 
   /**
