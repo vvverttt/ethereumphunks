@@ -19,7 +19,11 @@
 
 <app-footer />
 <app-notifications />
-<w3m-modal></w3m-modal>
+
+<app-connect-dialog
+  [open]="web3Svc.connectDialogOpen()"
+  (selected)="web3Svc.connectWithConnector($event)"
+  (closed)="web3Svc.connectDialogOpen.set(false)" />
 
 <div
   class="status-wrapper"

@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, signal } from '@angular/core';
 
 import { Store } from '@ngrx/store';
 
@@ -17,15 +17,13 @@ import { PointsABI } from '@/abi/Points';
 import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
 import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
 
-import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType } from '@wagmi/core';
+import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType, connect as wagmiConnect } from '@wagmi/core';
 import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
-
-import { createWeb3Modal } from '@web3modal/wagmi';
 
 import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, custom, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
@@ -45,13 +43,6 @@ const metadata = {
   icons: ['https://etherphunks.eth.limo/favicon.ico']
 };
 
-const themeVariables = {
-  '--w3m-font-family': 'Montserrat, sans-serif',
-  '--w3m-accent': 'rgba(var(--highlight), 1)',
-  '--w3m-z-index': 99999,
-  '--w3m-border-radius-master': '0',
-};
-
 @Injectable({
   providedIn: 'root'
 })
@@ -66,7 +57,7 @@ export class Web3Service {
   l2Client!: PublicClient;
 
   config!: Config;
-  modal;
+  connectDialogOpen = signal(false);
 
   globalConfig$ = this.store.select(state => state.appState.config).pipe(
     map((res) => ({
@@ -105,7 +96,7 @@ export class Web3Service {
       },
       connectors: [
         injected({ shimDisconnect: true }),
-        walletConnect({ projectId, metadata, showQrModal: false }),
+        walletConnect({ projectId, metadata, showQrModal: true }),
         coinbaseWallet({
           appName: metadata.name,
           appLogoUrl: metadata.icons[0]
@@ -116,13 +107,6 @@ export class Web3Service {
         key: 'wagmi',
       }),
       ssr: false,
-    });
-
-    this.modal = createWeb3Modal({
-      wagmiConfig: this.config as any,
-      projectId,
-      enableAnalytics: false,
-      themeVariables,
     });
 
     this.createListeners();
@@ -228,19 +212,42 @@ export class Web3Service {
   }
 
   /**
-   * Opens the Web3Modal for wallet connection
-   * @throws Error if connection fails
+   * Opens the custom connect dialog
    */
-  async connect(): Promise<void> {
+  connect(): void {
+    this.connectDialogOpen.set(true);
+  }
+
+  /**
+   * Connects with a specific wallet connector chosen from the dialog
+   */
+  async connectWithConnector(connectorId: string): Promise<void> {
     try {
-      console.log('[Web3Service] Opening wallet modal...');
-      console.log('[Web3Service] Current account before modal:', getAccount(this.config));
-      await this.modal.open();
-      console.log('[Web3Service] Modal opened successfully');
-      console.log('[Web3Service] Current account after modal opened:', getAccount(this.config));
+      let connector;
+
+      if (connectorId === 'injected-phantom') {
+        // Phantom exposes its own provider at window.phantom.ethereum
+        const phantom = (window as any).phantom?.ethereum;
+        if (phantom) {
+          connector = injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
+        }
+      } else if (connectorId === 'injected-metamask') {
+        connector = injected({ target: 'metaMask' });
+      } else if (connectorId === 'walletConnect') {
+        connector = this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
+      } else if (connectorId === 'coinbaseWallet') {
+        connector = this.config.connectors.find(c => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
+      }
+
+      if (!connector) {
+        // Fallback: try injected
+        connector = injected();
+      }
+
+      await wagmiConnect(this.config, { connector });
+      this.connectDialogOpen.set(false);
     } catch (error) {
-      console.error('[Web3Service] Error opening modal:', error);
-      this.disconnectWeb3();
+      console.error('[Web3Service] Connection error:', error);
     }
   }
 

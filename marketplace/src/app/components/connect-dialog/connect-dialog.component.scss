@@ -1,0 +1,91 @@
+@use 'abstracts/variables' as *;
+
+.overlay {
+  position: fixed;
+  z-index: 19999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--base-color), 0.35);
+}
+
+.dialog {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background-color: rgba(var(--background), 1);
+  box-shadow: 0 0 5rem rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+
+  @media (max-width: $mobile) {
+    max-width: 100%;
+    min-height: 100%;
+    padding-top: calc(var(--header-height) / 2 + 2rem);
+  }
+}
+
+button.close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  padding: 1rem;
+  cursor: pointer;
+
+  svg path {
+    fill: rgba(var(--base-color), 1);
+  }
+}
+
+h2 {
+  margin: 0 0 1.5rem;
+  font-family: var(--secondary-font-stack), monospace;
+  font-size: 1.1rem;
+  color: rgba(var(--text-color), 1);
+  text-transform: uppercase;
+}
+
+.wallet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(var(--base-color), 0.15);
+  background: rgba(var(--base-color), 0.04);
+  color: rgba(var(--text-color), 1);
+  font-family: var(--primary-font-stack), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: rgba(var(--highlight), 0.12);
+    border-color: rgba(var(--highlight), 0.5);
+  }
+
+  .wallet-name {
+    flex: 1;
+    text-align: left;
+  }
+
+  .detected {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: rgba(var(--highlight), 1);
+    letter-spacing: 0.05em;
+  }
+}

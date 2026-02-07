@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router, RouterModule } from '@angular/router';
 
@@ -14,6 +14,7 @@ import { NotificationsComponent } from '@/components/notifications/notifications
 import { StatusBarComponent } from '@/components/status-bar/status-bar.component';
 import { ModalComponent } from '@/components/modal/modal.component';
 import { ChatComponent } from '@/components/chat/chat.component';
+import { ConnectDialogComponent } from '@/components/connect-dialog/connect-dialog.component';
 
 import { Web3Service } from '@/services/web3.service';
 import { DataService } from '@/services/data.service';
@@ -44,11 +45,11 @@ import { environment } from 'src/environments/environment';
     StatusBarComponent,
     ModalComponent,
     ChatComponent,
+    ConnectDialogComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 
 export class AppComponent implements OnInit {
