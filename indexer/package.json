@@ -6,7 +6,7 @@
     "build": "nest build mainnet",
     "build:mainnet": "nest build mainnet",
     "build:sepolia": "nest build sepolia",
-    "start": "NODE_OPTIONS='--max-old-space-size=400' node dist/main",
+    "start": "NODE_OPTIONS='--max-old-space-size=400' node dist/mainnet/main",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "engage": "yarn build && pm2 start pm2.config.js && pm2 log",
