@@ -17,7 +17,7 @@ import { PointsABI } from '@/abi/Points';
 import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
 import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
 
-import { reconnect, http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType } from '@wagmi/core';
+import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType } from '@wagmi/core';
 import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -141,9 +141,8 @@ export class Web3Service {
    * Creates and initializes Web3 event listeners for account changes and blockchain events
    * @returns Promise that resolves when listeners are set up
    */
-  async createListeners(): Promise<void> {
+  createListeners(): void {
 
-    // Set up watchAccount listener FIRST so it catches the reconnect event
     this.connectedState = new Observable((observer) => watchAccount(this.config, {
       onChange: (account) => this.ngZone.run(() => observer.next(account))
     }));
@@ -152,6 +151,14 @@ export class Web3Service {
       tap((account: GetAccountReturnType) => {
         this.store.dispatch(appStateActions.setConnected({ connected: account.isConnected }));
         this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: account.address?.toLowerCase() }));
+
+        // Persist connection ourselves — wagmi's store doesn't reliably save
+        // connections made through Reown AppKit dynamic connectors.
+        if (account.isConnected && account.address) {
+          localStorage.setItem('ep_wallet', account.address.toLowerCase());
+        } else if (account.isDisconnected) {
+          localStorage.removeItem('ep_wallet');
+        }
       }),
       catchError((err) => {
         console.error('[Web3Service] watchAccount error:', err);
@@ -159,8 +166,29 @@ export class Web3Service {
       }),
     ).subscribe();
 
-    // Reconnect AFTER listener is set up — triggers watchAccount onChange
-    await reconnect(this.config);
+    // Restore wallet from our own storage. The injected provider (Phantom/MetaMask)
+    // remembers which sites are authorized — eth_accounts returns them without a popup.
+    this.restoreConnection();
+  }
+
+  private async restoreConnection(): Promise<void> {
+    const saved = localStorage.getItem('ep_wallet');
+    if (!saved || !window.ethereum) return;
+
+    try {
+      const accounts: string[] = await window.ethereum.request({ method: 'eth_accounts' });
+      const match = accounts?.some(a => a.toLowerCase() === saved);
+      if (match) {
+        this.ngZone.run(() => {
+          this.store.dispatch(appStateActions.setConnected({ connected: true }));
+          this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: saved }));
+        });
+      } else {
+        localStorage.removeItem('ep_wallet');
+      }
+    } catch {
+      localStorage.removeItem('ep_wallet');
+    }
   }
 
   /**
