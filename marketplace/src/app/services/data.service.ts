@@ -39,6 +39,7 @@ export class DataService {
   walletAddress$ = this.store.select(state => state.appState.walletAddress);
 
   private attributeCache = new Map<string, Observable<AttributeItem | null>>();
+  rarityCache = new Map<string, Record<string, number>>();
 
   constructor(
     @Inject(Web3Service) private web3Svc: Web3Service,
@@ -159,6 +160,9 @@ export class DataService {
           if (res) return of(res);
           return this.fetchAttributes(slug);
         }),
+        tap((res) => {
+          if (res && !this.rarityCache.has(slug)) this.buildRarityCache(slug, res);
+        }),
         shareReplay({ bufferSize: 1, refCount: true })
       );
       this.attributeCache.set(slug, attributes$);
@@ -264,6 +268,24 @@ export class DataService {
     // Store the filters object in local storage and return it
     const stored = await this.storageSvc.setItem(`${slug}__filters`, attributeObject);
     return stored;
+  }
+
+  /**
+   * Builds flat value→count map from attributes for TraitCountPipe lookups.
+   * Called from getAttributes (covers both cache-hit and fetch paths).
+   */
+  private buildRarityCache(slug: string, attributes: AttributeItem): void {
+    const flatRarity: Record<string, number> = {};
+    Object.values(attributes).forEach((item: Attribute[]) => {
+      item.forEach((attr: Attribute) => {
+        if (attr.k === 'Description' || attr.k === 'Name') return;
+        const values = Array.isArray(attr.v) ? attr.v : [attr.v];
+        values.forEach(v => {
+          flatRarity[v] = (flatRarity[v] || 0) + 1;
+        });
+      });
+    });
+    this.rarityCache.set(slug, flatRarity);
   }
 
   /**
