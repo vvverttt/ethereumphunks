@@ -11,6 +11,6 @@ export class TraitCountPipe implements PipeTransform {
 
   transform(value: string, slug: string): string {
     // console.log({value, slug});
-    return rarityData[slug][value];
+    return rarityData[slug]?.[value] ?? '';
   }
 }

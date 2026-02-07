@@ -693,6 +693,7 @@ export class DataService {
       .limit(1);
 
     const fetch$ = from(query).pipe(
+      tap(({ data }: any) => console.log('fetchSinglePhunk: supabase data', data?.[0]?.hashId)),
       switchMap(({ data }: any) => {
         const phunk = data[0];
         if (!phunk) return this.fetchUnsupportedItem(hashId);
@@ -703,6 +704,7 @@ export class DataService {
         from(this.getListingFromHashId(phunk.hashId)).pipe(catchError(() => of(null))),
         this.checkConsensus([phunk]),
       ])),
+      tap(() => console.log('fetchSinglePhunk: forkJoin completed')),
       map(([[phunk], listing, [consensus]]) => ({
         ...consensus,
         ...phunk,
@@ -814,24 +816,28 @@ export class DataService {
     if (!hashId) return null;
 
     try {
-      const [ callL1, callL2 ] = await Promise.all([
-        this.web3Svc.readMarketContract('phunksOfferedForSale', [hashId]),
-        this.web3Svc.phunksOfferedForSaleL2(hashId),
-      ]);
+      const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000));
 
-      const offer = callL1[0] ? callL1 : callL2;
-      if (!offer?.[0]) return null;
+      const fetchListing = async () => {
+        const [ callL1, callL2 ] = await Promise.all([
+          this.web3Svc.readMarketContract('phunksOfferedForSale', [hashId]),
+          this.web3Svc.phunksOfferedForSaleL2(hashId),
+        ]);
 
-      const listing = {
-        createdAt: new Date(),
-        hashId: offer[1],
-        minValue: offer[3].toString(),
-        listedBy: offer[2],
-        toAddress: offer[4],
-        listed: offer[0],
+        const offer = callL1?.[0] ? callL1 : callL2;
+        if (!offer?.[0]) return null;
+
+        return {
+          createdAt: new Date(),
+          hashId: offer[1],
+          minValue: offer[3].toString(),
+          listedBy: offer[2],
+          toAddress: offer[4],
+          listed: offer[0],
+        } as Listing;
       };
 
-      return listing;
+      return await Promise.race([fetchListing(), timeout]);
     } catch (error) {
       return null;
     }
