@@ -16,7 +16,7 @@ if (!process.env.CHAIN_ID) process.env.CHAIN_ID = '1';
 if (!process.env.PORT) process.env.PORT = '3069';
 
 if (!process.env.ALLOWED_ORIGINS) {
-  process.env.ALLOWED_ORIGINS = 'http://localhost:9000,http://localhost:4200,https://ethereumphunks-git-market-vvverttts-projects.vercel.app,https://etherphunks.eth.limo';
+  process.env.ALLOWED_ORIGINS = 'http://localhost:9000,http://localhost:4200,https://ethereumphunks-git-market-vvverttts-projects.vercel.app,https://etherphunks.eth.limo,https://quantumphunks.com,https://www.quantumphunks.com';
 }
 
 if (!process.env.BRIDGE_L1_BLOCK_DELAY) process.env.BRIDGE_L1_BLOCK_DELAY = '10';
