@@ -8437,16 +8437,17 @@ ngx-pagination@^6.0.3:
   dependencies:
     tslib "^2.3.0"
 
-ngx-socket-io@^4.8.5:
-  version "4.10.0"
-  resolved "https://registry.yarnpkg.com/ngx-socket-io/-/ngx-socket-io-4.10.0.tgz#7d3a846c974e977d1a9664d8eb58e126c0366ed8"
-  integrity sha512-FuOF/IX4mYyRHjfFi5osBgo8uN+/+zyRhYnAtuOBLOLpRo/uNS/6kggwLGKainOdieJs3vmreSP6lQEWRS4otw==
+ngx-socket-io@4.8.5:
+  version "4.8.5"
+  resolved "https://registry.yarnpkg.com/ngx-socket-io/-/ngx-socket-io-4.8.5.tgz#dffc271b0dfd6a117a4d38acaf843fff824b156e"
+  integrity sha512-E/HCB5vYGPhiXcd+9bDYathCgQ7aocgZISeqKoQeqOHfPxtYDiyGHWqAZSdlmjfuPLURvtULsOW1OcDnQVaTnQ==
   dependencies:
     core-js "^3.39.0"
     reflect-metadata "^0.2.2"
     socket.io "^4.8.1"
     socket.io-client "^4.8.1"
     tslib "^2.3.0"
+    zone.js "~0.15.0"
 
 ngx-timeago@^3.0.0:
   version "3.0.0"
