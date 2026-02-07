@@ -72,7 +72,9 @@ export class StatusBarComponent {
   }
 
   expandCollapse() {
+    console.log('[StatusBar] expandCollapse called, current:', this.expanded());
     this.expanded.update(expanded => !expanded);
+    console.log('[StatusBar] expanded updated to:', this.expanded());
   }
 
   openChat() {
