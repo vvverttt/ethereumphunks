@@ -1,5 +1,5 @@
 export const appConfig = {
-  version: '1.5.4',
+  version: '1.5.5',
   standalone: false,
   defaultCollection: 'dysto-phunks',
 };

@@ -40,22 +40,18 @@
   font-weight: 600 !important;
 }
 
-// Web3Modal v5 (web components) - Fix opacity issue
-// Only target the modal when it has the 'open' attribute, not the backdrop
+// Web3Modal v5 (web components) - Override ad blocker cosmetic filtering
+// uBOL and similar ad blockers apply display:none to w3m-modal
 w3m-modal[open],
 wcm-modal[open] {
+  display: block !important;
   opacity: 1 !important;
   pointer-events: auto !important;
   visibility: visible !important;
+  position: fixed !important;
+  z-index: 99999 !important;
 }
 
-w3m-modal[open]::part(modal),
-wcm-modal[open]::part(modal) {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-// Hide the modal when not open
 w3m-modal:not([open]),
 wcm-modal:not([open]) {
   display: none !important;

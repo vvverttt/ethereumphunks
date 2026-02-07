@@ -198,34 +198,18 @@ export class Web3Service {
    * @throws Error if connection fails
    */
   async connect(): Promise<void> {
-    console.log('[Web3Service] connect() called');
-    console.log('[Web3Service] modal instance:', this.modal);
-
-    // Check if modal elements exist in DOM
-    const existingModal = document.querySelector('w3m-modal') || document.querySelector('wcm-modal');
-    console.log('[Web3Service] Existing modal element in DOM:', existingModal);
-
     try {
-      console.log('[Web3Service] Opening Web3Modal...');
       await this.modal.open();
-      console.log('[Web3Service] Web3Modal.open() completed');
 
-      // Check again after opening
+      // Force modal visible in case ad blockers (uBOL) hide it with display:none
       setTimeout(() => {
-        const modalAfter = document.querySelector('w3m-modal') || document.querySelector('wcm-modal');
-        console.log('[Web3Service] Modal element after open():', modalAfter);
-        if (modalAfter) {
-          console.log('[Web3Service] Modal computed style:', window.getComputedStyle(modalAfter));
-        } else {
-          console.warn('[Web3Service] ⚠️  Modal element NOT found in DOM after open()!');
+        const modal = document.querySelector('w3m-modal') || document.querySelector('wcm-modal');
+        if (modal instanceof HTMLElement) {
+          modal.style.setProperty('display', 'block', 'important');
         }
-      }, 100);
+      }, 50);
     } catch (error) {
-      console.error('[Web3Service] Error opening Web3Modal:', error);
-      if (error instanceof Error) {
-        console.error('[Web3Service] Error message:', error.message);
-        console.error('[Web3Service] Error stack:', error.stack);
-      }
+      console.error('[Web3Service] Error opening modal:', error);
       this.disconnectWeb3();
     }
   }
