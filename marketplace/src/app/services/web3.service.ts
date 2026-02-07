@@ -40,9 +40,9 @@ const projectId = 'fb5073eb31498f38d17c73bcabc03255';
 
 const metadata = {
   name: 'DystoLabz Market',
-  description: '',
+  description: 'QuantumPhunks Marketplace',
   url: typeof window !== 'undefined' ? window.location.origin : 'https://etherphunks.eth.limo',
-  icons: []
+  icons: ['https://etherphunks.eth.limo/favicon.ico']
 };
 
 const themeVariables = {
@@ -200,10 +200,26 @@ export class Web3Service {
   async connect(): Promise<void> {
     console.log('[Web3Service] connect() called');
     console.log('[Web3Service] modal instance:', this.modal);
+
+    // Check if modal elements exist in DOM
+    const existingModal = document.querySelector('w3m-modal') || document.querySelector('wcm-modal');
+    console.log('[Web3Service] Existing modal element in DOM:', existingModal);
+
     try {
       console.log('[Web3Service] Opening Web3Modal...');
       await this.modal.open();
-      console.log('[Web3Service] Web3Modal opened successfully');
+      console.log('[Web3Service] Web3Modal.open() completed');
+
+      // Check again after opening
+      setTimeout(() => {
+        const modalAfter = document.querySelector('w3m-modal') || document.querySelector('wcm-modal');
+        console.log('[Web3Service] Modal element after open():', modalAfter);
+        if (modalAfter) {
+          console.log('[Web3Service] Modal computed style:', window.getComputedStyle(modalAfter));
+        } else {
+          console.warn('[Web3Service] ⚠️  Modal element NOT found in DOM after open()!');
+        }
+      }, 100);
     } catch (error) {
       console.error('[Web3Service] Error opening Web3Modal:', error);
       if (error instanceof Error) {
