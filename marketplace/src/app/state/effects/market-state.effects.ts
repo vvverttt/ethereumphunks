@@ -222,12 +222,10 @@ export class MarketStateEffects {
     ),
     filter(([action, marketType]) => marketType === 'all'),
     switchMap(([action, marketType, slug, traitFilters]) => {
-      // Fetch all items without trait filters — the Supabase RPC doesn't handle
-      // attribute-based filtering (attributes live in static JSON, not in DB).
-      // Client-side attributeFilter pipe handles trait filtering in the template.
+      // RPC filters via attributes_new table; no client-side re-filtering needed
       const fetchLength = 10000;
 
-      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength).pipe(
+      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength, traitFilters).pipe(
         mergeMap((data: MarketState['activeMarketRouteData']) => [
           marketStateActions.setActiveMarketRouteData({ activeMarketRouteData: data })
         ]),

@@ -115,8 +115,9 @@ export class PhunkGridComponent implements OnChanges {
       this.limit = 250;
     }
 
-    if (changes.total && this.childrenLength() === this.total) {
-      this.showLoadMore = false;
+    // Hide Load More when all server data has been fetched
+    if (changes.phunkData || changes.total) {
+      this.showLoadMore = this.phunkData && this.phunkData.length < this.total;
     }
   }
 
@@ -169,7 +170,8 @@ export class PhunkGridComponent implements OnChanges {
           this.limit = this.limit >= this.total ? this.total : this.childrenLength() + 250;
         }
 
-        this.showLoadMore = this.childrenLength() < this.limit || this.childrenLength() !== this.total;
+        // Only show Load More if there's more data to fetch from the server
+        this.showLoadMore = this.phunkData && this.phunkData.length < this.total;
       }
     });
   }
