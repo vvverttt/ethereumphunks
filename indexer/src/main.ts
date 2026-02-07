@@ -22,7 +22,7 @@ if (!process.env.ALLOWED_ORIGINS) {
 if (!process.env.BRIDGE_L1_BLOCK_DELAY) process.env.BRIDGE_L1_BLOCK_DELAY = '10';
 
 if (!process.env.REDIS_URL) {
-  process.env.REDIS_URL = 'redis://redis-13048.c17.us-east-1-4.ec2.cloud.redislabs.com:13048';
+  process.env.REDIS_URL = 'redis://:5VuaxZYlQ6IyRN9VQEnpHpObEhAtobql@redis-13048.c17.us-east-1-4.ec2.cloud.redislabs.com:13048';
 }
 
 if (!process.env.ETHSCRIPTIONS_API_URL) {
