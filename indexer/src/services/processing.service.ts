@@ -89,16 +89,25 @@ export class ProcessingService {
    * @param hash - The hash of the transaction to process.
    */
   async processSingleTransaction(hash: `0x${string}`) {
-    const txn = await this.web3SvcL1.getTransaction(hash);
-    const receipt = await this.web3SvcL1.getTransactionReceipt(hash);
+    try {
+      const txn = await this.web3SvcL1.getTransaction(hash);
+      const receipt = await this.web3SvcL1.getTransactionReceipt(hash);
 
-    const block = await this.web3SvcL1.getBlock({ blockNumber: Number(txn.blockNumber) });
-    const createdAt = new Date(Number(block.timestamp) * 1000);
+      const block = await this.web3SvcL1.getBlock({ blockNumber: Number(txn.blockNumber) });
+      const createdAt = new Date(Number(block.timestamp) * 1000);
 
-    // Process the transactions & get the events
-    const events = await this.processTransactions([{ transaction: txn, receipt }], createdAt);
-    // Add the events to the database
-    if (events.length) await this.storageSvc.addEvents(events);
+      // Process the transactions & get the events
+      const events = await this.processTransactions([{ transaction: txn, receipt }], createdAt);
+      // Add the events to the database
+      if (events.length) await this.storageSvc.addEvents(events);
+    } catch (error) {
+      // Log consensus issue for invalid/corrupted transaction hashes
+      Logger.warn(`⚠️  Consensus issue - skipping invalid transaction hash: ${hash}`);
+      if (error instanceof Error) {
+        Logger.debug(`Error details: ${error.message}`);
+      }
+      // Don't throw - just skip this transaction
+    }
   }
 
   /**
