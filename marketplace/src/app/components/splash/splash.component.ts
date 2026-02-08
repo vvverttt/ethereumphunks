@@ -11,10 +11,12 @@ import { Collection } from '@/models/data.state';
 import { PixelArtService } from '@/services/pixel-art.service';
 import { ImageService } from '@/services/image.service';
 
+import { environment } from 'src/environments/environment';
+
 import { gsap } from 'gsap';
 interface Image {
   src: string;
-  type: 'loading' | 'mint' | 'gray';
+  type: 'loading' | 'mint' | 'gray' | 'photo';
 }
 
 @Component({
@@ -127,7 +129,13 @@ export class SplashComponent {
       const batchPromises = shas.slice(currentIndex, currentIndex + batchSize).map(async (sha) => {
         try {
           const image = await this.imageSvc.fetchSupportedImageBySha(sha);
-          if (image.byteLength > this.MAX_IMAGE_SIZE) return null;
+          if (image.byteLength > this.MAX_IMAGE_SIZE) {
+            // Non-pixel-art image (e.g. photos/rocks) — use direct URL
+            return {
+              src: `${environment.staticUrl}/static/images/${sha}`,
+              type: 'photo' as const
+            };
+          }
 
           const pixels = await this.pixelArtSvc.processPixelArtImage(image);
           const svg = this.pixelArtSvc.convertToSvg(pixels);

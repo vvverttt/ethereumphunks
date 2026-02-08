@@ -34,6 +34,11 @@
       height: var(--inscription-size);
       image-rendering: pixelated;
     }
+
+    &.photo img {
+      image-rendering: auto;
+      object-fit: contain;
+    }
   }
 
   &.mint-mode {
