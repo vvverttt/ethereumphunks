@@ -254,7 +254,7 @@ export class ChatService {
    */
   private loadKeys = (walletAddress: string): Uint8Array | null => {
     walletAddress = walletAddress.toLowerCase();
-    const val = sessionStorage.getItem(this.buildLocalStorageKey(walletAddress));
+    const val = localStorage.getItem(this.buildLocalStorageKey(walletAddress));
     return val ? Buffer.from(val, this.ENCODING) : null;
   };
 
@@ -265,7 +265,7 @@ export class ChatService {
    */
   private storeKeys = (walletAddress: string, keys: Uint8Array) => {
     walletAddress = walletAddress.toLowerCase();
-    sessionStorage.setItem(
+    localStorage.setItem(
       this.buildLocalStorageKey(walletAddress),
       Buffer.from(keys).toString(this.ENCODING),
     );
@@ -278,6 +278,6 @@ export class ChatService {
   private wipeKeys = (walletAddress: string) => {
     walletAddress = walletAddress.toLowerCase();
     // This will clear the conversation cache + the private keys
-    sessionStorage.removeItem(this.buildLocalStorageKey(walletAddress));
+    localStorage.removeItem(this.buildLocalStorageKey(walletAddress));
   };
 }

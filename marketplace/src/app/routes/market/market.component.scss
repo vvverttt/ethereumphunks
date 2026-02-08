@@ -78,6 +78,8 @@
 }
 
 .toolbar-wrapper {
+  margin-bottom: 2rem;
+
   button {
     height: 3.6rem;
     margin-left: 1rem;
@@ -307,9 +309,32 @@
   width: 100%;
 }
 
-.grid-area-wrapper {
-  padding-top: 1rem;
+.content-layout {
+  &.with-comments {
+    display: flex;
+    gap: 2rem;
+
+    .grid-area-wrapper {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .comments-sidebar {
+      width: 28rem;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: $mobile) {
+      flex-direction: column;
+
+      .comments-sidebar {
+        width: 100%;
+      }
+    }
+  }
 }
+
+.grid-area-wrapper {}
 
 form {
   display: grid;

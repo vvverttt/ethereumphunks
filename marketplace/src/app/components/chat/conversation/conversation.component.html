@@ -10,6 +10,10 @@
       <div class="with">
         Chatting with <app-address [address]="toUser" />
       </div>
+
+      <button class="close-button" (click)="closeChat()">
+        <ng-template [ngTemplateOutlet]="closeIcon" />
+      </button>
     </div>
 
     <div #messages class="messages-wrapper">
@@ -53,4 +57,8 @@
 
 <ng-template #backIcon>
   <svg height="15" viewBox="0 0 9 15" width="9" xmlns="http://www.w3.org/2000/svg"><path d="m6 6h3v3h-3zm-3-3h3v3h-3zm0 6h3v3h-3zm-3-9h3v3h-3zm0 12h3v3h-3z" fill-rule="evenodd"/></svg>
+</ng-template>
+
+<ng-template #closeIcon>
+  <svg height="15" viewBox="0 0 15 15" width="15" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="m6 6h3v3h-3z"/><path d="m3 3h3v3h-3z"/><path d="m3 9h3v3h-3z"/><path d="m0 0h3v3h-3z"/><path d="m0 12h3v3h-3z"/><path d="m12 3h-3v3h3z"/><path d="m12 9h-3v3h3z"/><path d="m15 0h-3v3h3z"/><path d="m15 12h-3v3h3z"/></g></svg>
 </ng-template>

@@ -39,133 +39,148 @@
         </div>
       }
 
-      <div class="toolbar-wrapper">
-        <div class="toolbar">
-          <div class="left">
-            @if (marketType !== 'all') {
-              <div class="sort-wrapper">
-                <div class="label">Sort:</div>
-                <ng-select
-                  class="sort"
-                  [(ngModel)]="activeSortModel"
-                  [items]="sorts"
-                  (change)="setSort($event)"
-                  [searchable]="false"
-                  [clearable]="false"
-                />
-              </div>
-            }
-          </div>
-
-          <div class="right">
-            <button
-              class="filters-button"
-              [class.active]="filtersVisible"
-              (click)="toggleFilters()">
-
-              @if ((activeTraitFilters$ | async); as filters) {
-                @if (objectKeys(filters).length) {
-                  <div class="count">{{ objectKeys(filters).length }}</div>
+      <div class="content-layout" [class.with-comments]="marketType === 'owned'">
+        <div class="grid-area-wrapper">
+          <div class="toolbar-wrapper">
+            <div class="toolbar">
+              <div class="left">
+                @if (marketType !== 'all') {
+                  <div class="sort-wrapper">
+                    <div class="label">Sort:</div>
+                    <ng-select
+                      class="sort"
+                      [(ngModel)]="activeSortModel"
+                      [items]="sorts"
+                      (change)="setSort($event)"
+                      [searchable]="false"
+                      [clearable]="false"
+                    />
+                  </div>
                 }
-              }
-              Filter by Attribute
-            </button>
+              </div>
+
+              <div class="right">
+                <button
+                  class="filters-button"
+                  [class.active]="filtersVisible"
+                  (click)="toggleFilters()">
+
+                  @if ((activeTraitFilters$ | async); as filters) {
+                    @if (objectKeys(filters).length) {
+                      <div class="count">{{ objectKeys(filters).length }}</div>
+                    }
+                  }
+                  Filter by Attribute
+                </button>
+
+                @if ((walletAddress$ | async); as walletAddress) {
+                  @if (
+                    (
+                      (marketType === 'owned' && (route.snapshot.queryParams.address | lowercase) === walletAddress)
+                    )
+                  ) {
+                    <!-- || marketType === 'listings' -->
+                    <div class="select-buttons">
+                      @if (selectMultipleActive) {
+                        <!--  && marketType !== 'listings' -->
+                        <button
+                          class="all-none"
+                          [class.all]="selectAll"
+                          (click)="selectAll = !selectAll">
+
+                          all
+                        </button>
+                      }
+                      <button
+                        class="select"
+                        (click)="setSelectActive()"
+                        [class.active]="selectMultipleActive">
+
+                        Select
+                      </button>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
 
             @if ((walletAddress$ | async); as walletAddress) {
               @if (
-                (
-                  (marketType === 'owned' && (route.snapshot.queryParams.address | lowercase) === walletAddress)
-                )
+                selectMultipleActive
+                && (((marketType === 'owned')
+                && (route.snapshot.queryParams.address | lowercase) === walletAddress) || marketType === 'listings')
               ) {
-                <!-- || marketType === 'listings' -->
-                <div class="select-buttons">
-                  @if (selectMultipleActive) {
-                    <!--  && marketType !== 'listings' -->
-                    <button
-                      class="all-none"
-                      [class.all]="selectAll"
-                      (click)="selectAll = !selectAll">
+                <div class="selection-toolbar">
+                  <div class="selected-label">
+                    <span>{{ objectKeys(selected).length }}</span> selected
+                  </div>
 
-                      all
-                    </button>
-                  }
-                  <button
-                    class="select"
-                    (click)="setSelectActive()"
-                    [class.active]="selectMultipleActive">
-
-                    Select
-                  </button>
+                  <div class="actions" [class.disabled]="!objectKeys(selected).length">
+                    @if (marketType === 'owned') {
+                      <div class="actions-group">
+                        <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">List</button>
+                        <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">Transfer</button>
+                        <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">Escrow</button>
+                        <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">Withdraw</button>
+                      </div>
+                    } @else if (marketType === 'listings') {
+                      <div class="actions-group buy-side">
+                        <div class="total-value">
+                          <span class="label">Total cost: </span>
+                          <span class="value">
+                            {{ (objectValues(selected) | calc : 'totalListingsValue') | number : '1.0-5' }}Ξ
+                          </span>
+                          <!-- {{ (selectedValue | weiToEth) | number }}Ξ</span> -->
+                        </div>
+                        <button (click)="batchAction('sweep')">
+                          Buy Selected
+                        </button>
+                      </div>
+                    }
+                  </div>
                 </div>
               }
             }
           </div>
-        </div>
 
-        @if ((walletAddress$ | async); as walletAddress) {
-          @if (
-            selectMultipleActive
-            && (((marketType === 'owned')
-            && (route.snapshot.queryParams.address | lowercase) === walletAddress) || marketType === 'listings')
-          ) {
-            <div class="selection-toolbar">
-              <div class="selected-label">
-                <span>{{ objectKeys(selected).length }}</span> selected
-              </div>
-
-              <div class="actions" [class.disabled]="!objectKeys(selected).length">
-                @if (marketType === 'owned') {
-                  <div class="actions-group">
-                    <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">List</button>
-                    <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">Transfer</button>
-                    <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">Escrow</button>
-                    <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">Withdraw</button>
-                  </div>
-                } @else if (marketType === 'listings') {
-                  <div class="actions-group buy-side">
-                    <div class="total-value">
-                      <span class="label">Total cost: </span>
-                      <span class="value">
-                        {{ (objectValues(selected) | calc : 'totalListingsValue') | number : '1.0-5' }}Ξ
-                      </span>
-                      <!-- {{ (selectedValue | weiToEth) | number }}Ξ</span> -->
-                    </div>
-                    <button (click)="batchAction('sweep')">
-                      Buy Selected
-                    </button>
-                  </div>
-                }
-              </div>
+          @if (filtersVisible) {
+            <div class="filter-wrapper">
+              <app-market-filters [slug]="(activeCollection$ | async)?.slug" />
             </div>
           }
-        }
-      </div>
 
-      @if (filtersVisible) {
-        <div class="filter-wrapper">
-          <app-market-filters [slug]="(activeCollection$ | async)?.slug" />
+          <app-phunk-grid
+            [observe]="true"
+            [marketType]="marketType"
+            [viewType]="marketType === 'owned' ? 'owned' : 'market'"
+            [activeSort]="(activeSort$ | async).value"
+            [limit]="marketType === 'all' ? 10000 : 250"
+            [traitFilters]="marketType === 'all' ? null : (activeTraitFilters$ | async)"
+            [phunkData]="phunkData.data"
+            [total]="phunkData.total"
+            [selectAll]="selectAll"
+            [walletAddress]="(walletAddress$ | async)"
+            [selectable]="
+              selectMultipleActive
+              && (((marketType === 'owned')
+              && (route.snapshot.queryParams.address | lowercase) === (walletAddress$ | async)) || marketType === 'listings')
+            "
+            [(selected)]="selected"
+            (selectedChange)="selectedChange($event)"
+          />
         </div>
-      }
 
-      <div class="grid-area-wrapper">
-        <app-phunk-grid
-          [observe]="true"
-          [marketType]="marketType"
-          [activeSort]="(activeSort$ | async).value"
-          [limit]="marketType === 'all' ? 10000 : 250"
-          [traitFilters]="marketType === 'all' ? null : (activeTraitFilters$ | async)"
-          [phunkData]="phunkData.data"
-          [total]="phunkData.total"
-          [selectAll]="selectAll"
-          [walletAddress]="(walletAddress$ | async)"
-          [selectable]="
-            selectMultipleActive
-            && (((marketType === 'owned')
-            && (route.snapshot.queryParams.address | lowercase) === (walletAddress$ | async)) || marketType === 'listings')
-          "
-          [(selected)]="selected"
-          (selectedChange)="selectedChange($event)"
-        />
+        @if (marketType === 'owned') {
+          <div class="comments-sidebar">
+            @if ((route.queryParams | async)?.address; as address) {
+              @if ((globalConfig$ | async)?.comments) {
+                @defer {
+                  <app-comments [hashId]="address" />
+                }
+              }
+            }
+          </div>
+        }
       </div>
     }
   </div>

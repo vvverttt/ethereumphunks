@@ -6,6 +6,7 @@ import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { GasService } from '@/services/gas.service';
+import { setChat } from '@/state/actions/chat.actions';
 import { LogItem, SocketService } from '@/services/socket.service';
 
 import { LoggerComponent } from '@/components/status-bar/logger/logger.component';
@@ -66,11 +67,7 @@ export class StatusBarComponent {
   }
 
   getIndexerClass(diff: number, indexerBlock: number): string {
-    if (!indexerBlock) return '';
-    if (diff < 2) return 'sync';
-    if (diff < 10) return 'behind1';
-    if (diff < 20) return 'behind2';
-    return 'bad';
+    return '';
   }
 
   expandCollapse() {
@@ -78,6 +75,6 @@ export class StatusBarComponent {
   }
 
   openChat() {
-    console.log('openChat');
+    this.store.dispatch(setChat({ active: true }));
   }
 }

@@ -9,21 +9,61 @@
 .conversations-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
 
   height: 4rem;
   padding: 0 1rem;
 
+  border-bottom: .1rem solid rgba(var(--highlight), .1);
+
   h2 {
     font-size: 1.4rem;
     font-weight: 400;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .new-convo-button {
+    background: none;
+    color: rgba(var(--highlight), 1);
+    font-family: var(--secondary-font-stack);
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1;
+    padding: 0 .5rem;
+    cursor: pointer;
+
+    &.active {
+      color: rgba(var(--background), 1);
+      background-color: rgba(var(--highlight), 1);
+    }
+  }
+
+  .close-button {
+    background: none;
+    padding: .5rem;
+    cursor: pointer;
+
+    svg {
+      width: 1.2rem;
+      height: 1.2rem;
+
+      path {
+        fill: rgba(var(--highlight), 1);
+      }
+    }
   }
 }
 
 .conversations-wrapper {
   overflow: auto;
   overflow-x: hidden;
-
-  height: calc(100% - 4rem);
+  flex: 1;
+  min-height: 0;
 
   .conversation {
     display: flex;
@@ -67,7 +107,83 @@
     }
   }
 
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 100%;
+    padding: 3rem;
+    text-align: center;
+
+    p {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.2rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: rgba(var(--text-color), .75);
+      margin: 0 0 2rem;
+    }
+
+    .start-convo {
+      background-color: rgba(var(--highlight), 1);
+      color: rgba(var(--background), 1);
+
+      font-family: var(--secondary-font-stack);
+      font-weight: 400;
+      font-size: 1.2rem;
+      padding: .8rem 2rem;
+      cursor: pointer;
+    }
+  }
+
   @media (max-width: $mobile) {
     padding: 0 1rem;
+  }
+}
+
+.new-convo-input {
+  display: flex;
+  padding: .5rem 1rem;
+  gap: .5rem;
+
+  border-top: .1rem solid rgba(var(--highlight), .1);
+
+  input {
+    flex: 1;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.1rem;
+    padding: .5rem .6rem;
+    border: .2rem solid rgba(var(--highlight), .3);
+    background: rgba(var(--background), 1);
+    color: rgba(var(--highlight), 1);
+
+    &::placeholder {
+      color: rgba(var(--text-color), .4);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: rgba(var(--highlight), .6);
+    }
+  }
+
+  button {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.2rem;
+    padding: .4rem .6rem;
+    cursor: pointer;
+
+    &.confirm {
+      background-color: rgba(var(--highlight), 1);
+      color: rgba(var(--background), 1);
+    }
+
+    &.cancel {
+      background: none;
+      color: rgba(var(--highlight), 1);
+      border: .2rem solid rgba(var(--highlight), .3);
+    }
   }
 }

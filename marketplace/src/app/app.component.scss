@@ -40,6 +40,32 @@ main {
   }
 }
 
+.chat-panel {
+  position: fixed;
+  z-index: 994;
+  bottom: 4.5rem;
+  right: 0;
+
+  width: 35rem;
+  height: 45rem;
+  max-height: calc(100vh - 10rem);
+
+  background-color: rgba(var(--background), 1);
+  box-shadow: 0 0 2rem rgba(0, 0, 0, 0.3);
+  border: .2rem solid rgba(var(--highlight), .2);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  @media (max-width: $mobile) {
+    width: 100%;
+    height: calc(100vh - 4.5rem);
+    max-height: none;
+    border: none;
+  }
+}
+
 app-ordex-withdrawal {
   position: fixed;
   z-index: 99300;

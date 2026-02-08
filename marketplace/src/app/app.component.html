@@ -32,11 +32,9 @@
   <app-status-bar [visible]="statusBarVisible()" />
 </div>
 
-@if ((chatActive$ | async); as active) {
-  <app-modal
-    [width]="500"
-    [height]="600">
-
+<!-- Chat disabled for now -->
+<!-- @if ((chatActive$ | async)) {
+  <div class="chat-panel">
     <app-chat />
-  </app-modal>
-}
+  </div>
+} -->

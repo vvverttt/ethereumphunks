@@ -4,7 +4,8 @@ const axios = require('axios');
 // Configuration
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
 const SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDMxNDA0MywiZXhwIjoyMDg1ODkwMDQzfQ.n4_1A7B6MRHTaeXX7CZkzEsveAJ1KzHziHhxH5qsYAs';
-const INDEXER_URL = 'http://localhost:3069/admin';
+const INDEXER_URL = 'https://ethereumphunks.onrender.com/admin'; // Production indexer
+const API_KEY = '75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE);
 
@@ -36,7 +37,10 @@ async function fetchTransactionHashes() {
  */
 async function reindexTransaction(hash) {
   try {
-    await axios.post(`${INDEXER_URL}/reindex-transaction`, { hash });
+    await axios.post(`${INDEXER_URL}/reindex-transaction`,
+      { hash },
+      { headers: { 'x-api-key': API_KEY } }
+    );
     return true;
   } catch (error) {
     console.error(`❌ Failed to reindex ${hash}:`, error.message);

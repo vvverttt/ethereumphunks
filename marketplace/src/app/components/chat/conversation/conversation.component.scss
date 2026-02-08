@@ -12,6 +12,7 @@
 
   height: 4rem;
   padding: 0 1rem 0 0;
+  border-bottom: .1rem solid rgba(var(--highlight), .1);
 
   button {
     &.back {
@@ -34,6 +35,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    flex: 1;
 
     margin-left: 1rem;
 
@@ -45,9 +47,27 @@
       color: rgba(var(--base-color), 1);
     }
   }
+
+  .close-button {
+    background: none;
+    padding: .5rem;
+    margin-left: auto;
+    cursor: pointer;
+
+    svg {
+      width: 1.2rem;
+      height: 1.2rem;
+
+      path {
+        fill: rgba(var(--highlight), 1);
+      }
+    }
+  }
 }
 
 .chat-wrapper {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
 
@@ -57,7 +77,8 @@
     overflow: auto;
     overflow-x: hidden;
 
-    height: calc(100% - 8rem);
+    flex: 1;
+    min-height: 0;
 
     .chat-message {
       display: flex;

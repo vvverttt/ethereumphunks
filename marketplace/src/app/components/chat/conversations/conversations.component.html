@@ -1,13 +1,13 @@
 <div class="conversations-header">
-  <h2>Conversations ({{ convosLength }})</h2>
-  <!-- <div class="search">
-    <input
-      type="text"
-      placeholder="Search"
-      [(ngModel)]="search"
-      (ngModelChange)="searchConversations()"
-    />
-  </div> -->
+  <h2>CONVERSATIONS ({{ convosLength }})</h2>
+  <div class="header-actions">
+    <button class="new-convo-button" (click)="toggleNewConvo()" [class.active]="newConvoActive()">
+      +
+    </button>
+    <button class="close-button" (click)="closeChat()">
+      <ng-template [ngTemplateOutlet]="closeIcon" />
+    </button>
+  </div>
 </div>
 
 <div #conversations class="conversations-wrapper">
@@ -35,24 +35,26 @@
       </div>
     </div>
   } @empty {
-    <div class="conversation">
-
-      <div class="profile-item">
-        <div class="image-wrapper">
-          <img
-            [src]="'assets/loadingphunk.png'"
-            width="50"
-            height="50"
-          />
-        </div>
-      </div>
-
-      <div class="message-inner">
-        <div class="timestamp">&nbsp;</div>
-        <div class="content">
-          Loading...
-        </div>
-      </div>
+    <div class="empty-state">
+      <p>YOU DON'T HAVE ANY CONVERSATIONS YET.</p>
+      <button class="start-convo" (click)="toggleNewConvo()">START A NEW CONVERSATION</button>
     </div>
   }
 </div>
+
+@if (newConvoActive()) {
+  <div class="new-convo-input">
+    <input
+      type="text"
+      placeholder="0x or ENS name"
+      [(ngModel)]="newConvoAddress"
+      (keydown.enter)="startNewConversation()"
+    />
+    <button class="confirm" (click)="startNewConversation()">&#10003;</button>
+    <button class="cancel" (click)="toggleNewConvo()">&#10005;</button>
+  </div>
+}
+
+<ng-template #closeIcon>
+  <svg height="15" viewBox="0 0 15 15" width="15" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="m6 6h3v3h-3z"/><path d="m3 3h3v3h-3z"/><path d="m3 9h3v3h-3z"/><path d="m0 0h3v3h-3z"/><path d="m0 12h3v3h-3z"/><path d="m12 3h-3v3h3z"/><path d="m12 9h-3v3h3z"/><path d="m15 0h-3v3h3z"/><path d="m15 12h-3v3h3z"/></g></svg>
+</ng-template>

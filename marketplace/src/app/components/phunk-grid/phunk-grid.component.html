@@ -19,7 +19,7 @@
             <img [src]="'assets/loadingphunk.png'" width="50" height="50" />
           </div>
 
-          @if (viewType === 'market') {
+          @if ((viewType === 'market' || viewType === 'owned')) {
             <div class="labels-wrapper">
               <div class="label">#0000</div>
               <div class="label">Loading...<br />&nbsp;</div>
@@ -46,23 +46,23 @@
       [class.selected]="selected[phunk.hashId]"
       [attr.data-index]="i"
       [class.bridged]="
-        (marketType === 'owned' && viewType === 'market') &&
+        (marketType === 'owned' && (viewType === 'market' || viewType === 'owned')) &&
         phunk.isBridged
       "
       [class.in-escrow]="
-        (marketType === 'owned' && viewType === 'market') &&
+        (marketType === 'owned' && (viewType === 'market' || viewType === 'owned')) &&
         phunk.owner === escrowAddress && !phunk.listing
       "
       [class.listing]="
         (
           marketType === 'listings' ||
-          ((marketType === 'owned' || marketType === 'all') && viewType === 'market')
+          ((marketType === 'owned' || marketType === 'all') && (viewType === 'market' || viewType === 'owned'))
         ) && phunk.listing
       "
       [class.bid]="
         (
           marketType === 'bids' ||
-          ((marketType === 'owned' || marketType === 'all') && viewType === 'market')
+          ((marketType === 'owned' || marketType === 'all') && (viewType === 'market' || viewType === 'owned'))
         ) && phunk.bid
       ">
 
@@ -96,7 +96,7 @@
           />
         </div>
 
-        @if (showLabels && viewType === 'market') {
+        @if (showLabels && (viewType === 'market' || viewType === 'owned')) {
           <div class="labels-wrapper">
             <div class="label">#{{ phunk.tokenId }}</div>
 

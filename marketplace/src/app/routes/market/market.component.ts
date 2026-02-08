@@ -11,6 +11,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 import { MarketFiltersComponent } from '@/components/market-filters/market-filters.component';
 import { SlideoutComponent } from '@/components/slideout/slideout.component';
+import { CommentsComponent } from '@/components/comments/comments.component';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -60,6 +61,7 @@ const defaultActionState = {
     PhunkGridComponent,
     MarketFiltersComponent,
     SlideoutComponent,
+    CommentsComponent,
 
     WalletAddressDirective,
     WeiToEthPipe,
@@ -164,6 +166,7 @@ export class MarketComponent {
   objectValues = Object.values;
 
   usd$ = this.store.select(dataStateSelectors.selectUsd);
+  globalConfig$ = this.store.select(appStateSelectors.selectConfig);
 
   chatActive = false;
 

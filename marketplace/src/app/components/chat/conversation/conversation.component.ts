@@ -104,4 +104,8 @@ export class ConversationComponent {
   goBack() {
     this.store.dispatch(setChat({ active: true, toAddress: null }));
   }
+
+  closeChat(): void {
+    this.store.dispatch(setChat({ active: false }));
+  }
 }

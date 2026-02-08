@@ -1,10 +1,11 @@
-import { AsyncPipe, JsonPipe } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { AsyncPipe, JsonPipe, NgTemplateOutlet } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { TimeagoModule } from 'ngx-timeago';
 
 import { ChatService } from '@/services/chat.service';
 import { DataService } from '@/services/data.service';
 
+import { FormsModule } from '@angular/forms';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { from, map, switchMap, tap } from 'rxjs';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
@@ -16,7 +17,9 @@ import { setChat } from '@/state/actions/chat.actions';
 @Component({
   imports: [
     AsyncPipe,
+    NgTemplateOutlet,
     ImageUrlPipe,
+    FormsModule,
 
     TimeagoModule,
     LazyLoadImageModule,
@@ -34,6 +37,8 @@ export class ConversationsComponent implements OnInit {
   @Output() setConversation: EventEmitter<string> = new EventEmitter();
 
   convosLength = 0;
+  newConvoActive = signal(false);
+  newConvoAddress = '';
 
   conversations$ = from(this.chatSvc.getConversations()).pipe(
     switchMap((convos: any[]) => {
@@ -66,5 +71,22 @@ export class ConversationsComponent implements OnInit {
 
   selectConversation(convo: any) {
     this.store.dispatch(setChat({ active: true, toAddress: convo.peerAddress }));
+  }
+
+  toggleNewConvo() {
+    this.newConvoActive.update(v => !v);
+    this.newConvoAddress = '';
+  }
+
+  startNewConversation() {
+    const address = this.newConvoAddress.trim();
+    if (!address) return;
+    this.store.dispatch(setChat({ active: true, toAddress: address }));
+    this.newConvoActive.set(false);
+    this.newConvoAddress = '';
+  }
+
+  closeChat(): void {
+    this.store.dispatch(setChat({ active: false }));
   }
 }
