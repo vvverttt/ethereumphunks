@@ -14,8 +14,10 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
 import * as marketStateSelectors from '@/state/selectors/market-state.selectors';
 
-import { filter, map, switchMap, take, tap } from 'rxjs';
+import { filter, map, switchMap, take, withLatestFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+
+import * as marketStateActions from '@/state/actions/market-state.actions';
 
 @Injectable()
 export class DataStateEffects {
@@ -56,39 +58,21 @@ export class DataStateEffects {
   ));
 
   setActiveCollection$ = createEffect(() => this.actions$.pipe(
-    ofType(dataStateActions.setCollections),
-    switchMap((action) => {
-      return this.store.select(marketStateSelectors.selectMarketSlug).pipe(
-        filter(() => !!action.collections),
-        tap((slug) => console.log('setActiveCollection$', { slug, collections: action.collections })),
-        map((slug) => {
-          // If no slug from route, use default collection
-          const targetSlug = slug || environment.defaultCollection;
-          return action.collections.find((c) => c.slug === targetSlug);
-        }),
-        filter((activeCollection) => !!activeCollection),
-        tap((activeCollection) => console.log('Setting active collection:', activeCollection)),
-        map((activeCollection) => dataStateActions.setActiveCollection({ activeCollection: { ...activeCollection! } }))
-      );
+    ofType(dataStateActions.setCollections, marketStateActions.setMarketSlug),
+    withLatestFrom(
+      this.store.select(dataStateSelectors.selectCollections),
+      this.store.select(marketStateSelectors.selectMarketSlug),
+    ),
+    map(([action, collections, slug]) => {
+      if (!collections || collections.length === 0) return null;
+      const targetSlug = slug || environment.defaultCollection;
+      return collections.find((c) => c.slug === targetSlug)
+        || collections.find((c) => c.slug === environment.defaultCollection)
+        || collections[0]
+        || null;
     }),
-  ));
-
-  setDefaultCollectionFallback$ = createEffect(() => this.actions$.pipe(
-    ofType(dataStateActions.setCollections),
-    filter((action) => !!action.collections && action.collections.length > 0),
-    switchMap((action) => {
-      // Check if we have an active collection already
-      return this.store.select(dataStateSelectors.selectActiveCollection).pipe(
-        take(1),
-        filter((activeCollection) => !activeCollection), // Only proceed if no active collection
-        map(() => {
-          // Find the default collection or fallback to first available
-          const defaultCollection = action.collections.find(c => c.slug === environment.defaultCollection) || action.collections[0];
-          console.log('Setting fallback default collection:', defaultCollection);
-          return dataStateActions.setActiveCollection({ activeCollection: defaultCollection });
-        })
-      );
-    }),
+    filter((activeCollection) => !!activeCollection),
+    map((activeCollection) => dataStateActions.setActiveCollection({ activeCollection: { ...activeCollection! } }))
   ));
 
   fetchLeaderboard$ = createEffect(() => this.actions$.pipe(

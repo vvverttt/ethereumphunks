@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
-import { distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap } from 'rxjs';
+import { distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, tap } from 'rxjs';
 
 import { PhunkBillboardComponent } from '@/components/phunk-billboard/phunk-billboard.component';
 import { TxHistoryComponent } from '@/components/tx-history/tx-history.component';
@@ -35,6 +35,8 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
+
+import * as marketStateActions from '@/state/actions/market-state.actions';
 
 import { selectNotifications } from '@/state/selectors/notification.selectors';
 import { upsertNotification } from '@/state/actions/notification.actions';
@@ -111,7 +113,11 @@ export class ItemViewComponent {
     filter((params: any) => !!params.hashId),
     distinctUntilChanged((prev, curr) => prev.hashId === curr.hashId),
     switchMap((params: any) => this.dataSvc.fetchSinglePhunk(params.hashId)),
-    // tap((phunk: any) => console.log('singlePhunk$', phunk)),
+    tap((phunk: any) => {
+      if (phunk?.slug) {
+        this.store.dispatch(marketStateActions.setMarketSlug({ marketSlug: phunk.slug }));
+      }
+    }),
     shareReplay(1),
   );
 
