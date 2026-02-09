@@ -330,9 +330,11 @@
 
       .logo {
         width: auto;
+        max-width: 14rem;
+        overflow: hidden;
 
         img {
-          height: 3.8rem;
+          height: 2.8rem;
           width: auto;
         }
       }
