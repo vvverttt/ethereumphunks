@@ -1,6 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { LotteryService } from '@/services/lottery.service';
@@ -13,17 +14,25 @@ import { LotteryWin } from '@/models/lottery';
   templateUrl: './lottery-wins.component.html',
   styleUrls: ['./lottery-wins.component.scss']
 })
-export class LotteryWinsComponent implements OnInit {
+export class LotteryWinsComponent implements OnInit, OnDestroy {
 
   wins = signal<LotteryWin[]>([]);
+  loaded = signal(false);
   staticUrl = environment.staticUrl;
+
+  private sub!: Subscription;
 
   constructor(private lotterySvc: LotteryService) {}
 
-  async ngOnInit() {
-    this.lotterySvc.fetchRecentWins().subscribe(wins => {
+  ngOnInit() {
+    this.sub = this.lotterySvc.fetchAllWins().subscribe(wins => {
       this.wins.set(wins);
+      this.loaded.set(true);
     });
+  }
+
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
   }
 
   getWinImageUrl(win: LotteryWin): string {

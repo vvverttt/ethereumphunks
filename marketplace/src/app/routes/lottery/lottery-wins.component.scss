@@ -3,7 +3,7 @@
 
 :host {
   display: block;
-  padding-top: calc(var(--header-height) + 4rem);
+  padding: calc(var(--header-height) + 4rem) 2rem 4rem;
 }
 
 .header-wrapper {
@@ -107,4 +107,9 @@
   @media (max-width: $mobile) {
     grid-template-columns: repeat(4, calc(100% / 4));
   }
+}
+
+.empty-message {
+  font-size: 1.6rem;
+  color: rgba(var(--text-color), 0.6);
 }

@@ -57,7 +57,8 @@
               event.to && (
                 event.type === 'transfer' ||
                 event.type === 'created' ||
-                event.type === 'bridgeIn'
+                event.type === 'bridgeIn' ||
+                event.type === 'PrizeAwarded'
               )
             ) {
               <app-address [address]="event.to" />
@@ -70,7 +71,8 @@
               event.type !== 'transfer' &&
               event.type !== 'created' &&
               event.type !== 'bridgeIn' &&
-              event.type !== 'bridgeOut'
+              event.type !== 'bridgeOut' &&
+              event.type !== 'PrizeAwarded'
             ) {
               <span class="value">
                 Ξ{{ event.value | weiToEth }}<br />

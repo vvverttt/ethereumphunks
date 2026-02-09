@@ -154,6 +154,36 @@ export class LotteryService {
   // Supabase Queries
   // =========================================================
 
+  fetchAllWins(): Observable<LotteryWin[]> {
+    const query$ = from(
+      supabase
+        .from('lottery_wins' + suffix)
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1000)
+    ).pipe(map(r => (r.data || []) as LotteryWin[]));
+
+    const changes$ = new Observable<void>(subscriber => {
+      const channel = supabase
+        .channel('lottery_all_wins_changes')
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'lottery_wins' + suffix
+        }, () => subscriber.next())
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    });
+
+    return merge(
+      query$,
+      changes$.pipe(switchMap(() => query$))
+    );
+  }
+
   fetchRecentWins(): Observable<LotteryWin[]> {
     const query$ = from(
       supabase

@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { StorageService } from '@/modules/storage/storage.service';
 import { lotteryAbi, lotteryAddressL1 } from '@/constants/ethereum';
 
-import { Log, TransactionReceipt, decodeEventLog } from 'viem';
+import { TransactionReceipt, decodeEventLog, zeroAddress } from 'viem';
 
 @Injectable()
 export class LotteryService {
@@ -25,13 +25,14 @@ export class LotteryService {
 
     // Filter logs from the lottery contract
     const lotteryLogs = receipt.logs.filter(
-      (log: Log) => log.address?.toLowerCase() === lotteryAddressL1
+      (log: any) => log.address?.toLowerCase() === lotteryAddressL1
     );
 
     if (!lotteryLogs.length) return;
 
-    for (const log of lotteryLogs) {
+    for (const rawLog of lotteryLogs) {
       try {
+        const log = rawLog as any;
         const decoded = decodeEventLog({
           abi: lotteryAbi,
           data: log.data,
@@ -39,7 +40,7 @@ export class LotteryService {
         });
 
         if (decoded.eventName === 'PrizeAwarded') {
-          const { playId, winner, hashId } = decoded.args as {
+          const { playId, winner, hashId } = decoded.args as unknown as {
             playId: bigint;
             winner: string;
             hashId: string;
@@ -50,7 +51,9 @@ export class LotteryService {
             winner.toLowerCase(),
             hashId.toLowerCase(),
             txHash,
-            createdAt
+            createdAt,
+            receipt,
+            log.logIndex ?? 0
           );
         }
       } catch (err) {
@@ -67,7 +70,9 @@ export class LotteryService {
     winner: string,
     hashId: string,
     txHash: string,
-    createdAt: Date
+    createdAt: Date,
+    receipt: TransactionReceipt,
+    logIndex: number
   ): Promise<void> {
     const suffix = this.storageSvc.suffix;
 
@@ -99,6 +104,27 @@ export class LotteryService {
         `Lottery win recorded: play #${playId} -> ${winner} won ${hashId}`,
         'LotteryService'
       );
+
+      // Award 670 points to the lottery winner
+      this.storageSvc.incrementUserPoints(winner, 670);
+
+      // Also insert into events table so it shows in Recent Activity
+      const txId = `${txHash.toLowerCase()}-${logIndex}`;
+      await this.storageSvc.supabase
+        .from('events' + suffix)
+        .upsert({
+          txId,
+          blockTimestamp: createdAt,
+          type: 'PrizeAwarded',
+          value: '0',
+          hashId,
+          from: lotteryAddressL1,
+          to: winner,
+          blockNumber: Number(receipt.blockNumber),
+          blockHash: receipt.blockHash?.toLowerCase() || '',
+          txIndex: Number(receipt.transactionIndex),
+          txHash: txHash.toLowerCase(),
+        }, { ignoreDuplicates: true });
     }
   }
 }
