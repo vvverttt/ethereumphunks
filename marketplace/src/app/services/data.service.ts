@@ -1199,6 +1199,21 @@ export class DataService {
     );
   }
 
+  /**
+   * Fetches a user's points from Supabase
+   */
+  fetchUserPoints(address: string): Observable<number> {
+    return from(
+      supabase
+        .from('users' + this.suffix)
+        .select('points')
+        .eq('address', address.toLowerCase())
+        .single()
+    ).pipe(
+      map((res: any) => res.data?.points || 0),
+    );
+  }
+
   ////////////////////////////////////////////////////////
   // COMMENTS ////////////////////////////////////////////
   ////////////////////////////////////////////////////////

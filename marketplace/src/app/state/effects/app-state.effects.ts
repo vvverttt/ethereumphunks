@@ -92,7 +92,7 @@ export class AppStateEffects {
     ofType(appStateActions.fetchUserPoints),
     withLatestFrom(this.store.select(appStateSelectors.selectWalletAddress)),
     filter(([action, address]) => !!action.address && action.address === address),
-    switchMap(([action, address]) => from(this.web3Svc.getUserPoints(address!))),
+    switchMap(([action, address]) => this.dataSvc.fetchUserPoints(address!)),
     map((userPoints) => appStateActions.setUserPoints({ userPoints }))
   ));
 
