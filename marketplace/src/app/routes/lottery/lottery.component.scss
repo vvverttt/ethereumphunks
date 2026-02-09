@@ -136,8 +136,8 @@ $lottery-muted: #c3ff00;
   width: 150px;
   height: 150px;
   image-rendering: pixelated;
+  -webkit-perspective: 800px;
   perspective: 800px;
-  overflow: hidden;
 
   // 3D card flip container – inset so images are smaller than the frame
   .card-inner {
@@ -146,6 +146,7 @@ $lottery-muted: #c3ff00;
     position: absolute;
     bottom: 14px;
     left: 10%;
+    -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
     transition: transform 0.22s ease;
     z-index: 2;
@@ -157,6 +158,7 @@ $lottery-muted: #c3ff00;
     left: 0;
     width: 100%;
     height: 100%;
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     object-fit: contain;
     image-rendering: pixelated;
