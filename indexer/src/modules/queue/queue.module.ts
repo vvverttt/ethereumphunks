@@ -14,6 +14,7 @@ import { BridgeQueueService } from '@/modules/queue/services/bridge-queue.servic
 import { BlockProcessingQueue } from '@/modules/queue/queues/block-processing.queue';
 import { BridgeProcessingQueue } from '@/modules/queue/queues/bridge-processing.queue';
 import { NotifsModule } from '@/modules/notifs/notifs.module';
+import { LotteryModule } from '@/modules/lottery/lottery.module';
 
 import { ProcessingService } from '@/services/processing.service';
 
@@ -41,6 +42,7 @@ import { chain } from '@/constants/ethereum';
     NftModule,
     StorageModule,
     NotifsModule,
+    LotteryModule,
 
     forwardRef(() => EthscriptionsModule),
     forwardRef(() => CommentsModule),
