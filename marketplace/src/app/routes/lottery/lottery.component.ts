@@ -108,6 +108,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   private targetWinIndex = -1;
   private fireworks: any = null;
   private playInProgress = false;
+  private pendingWinRecord: LotteryWin | null = null;
   private beforeUnloadHandler = (e: BeforeUnloadEvent) => {
     if (this.playInProgress) {
       e.preventDefault();
@@ -373,9 +374,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
             };
 
             this.wonPrize.set(winRecord);
-
-            // Add to recent wins immediately (indexer persists to Supabase)
-            this.recentWins.update(wins => [winRecord, ...wins]);
+            this.pendingWinRecord = winRecord;
           }
         } catch (err) {
           console.error('Failed to look up won ethscription:', err);
@@ -592,6 +591,12 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
     this.spinPhase.set('won');
     this.startFireworks();
+
+    // Add to recent wins now that the reveal is visible
+    if (this.pendingWinRecord) {
+      this.recentWins.update(wins => [this.pendingWinRecord!, ...wins]);
+      this.pendingWinRecord = null;
+    }
   }
 
   private stopSpin() {
