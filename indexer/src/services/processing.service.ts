@@ -17,6 +17,7 @@ import { FormattedTransaction, GetBlockReturnType, Transaction, TransactionRecei
 
 const CONFIRMATIONS = 6;
 const BLOCK_HISTORY = 30;
+const MAX_BLOCK_RETRIES = 5;
 
 interface ProcessedBlock {
   number: number,
@@ -29,6 +30,7 @@ interface ProcessedBlock {
 export class ProcessingService {
 
   processedBlocks: Array<ProcessedBlock> = [];
+  private retryingBlocks = new Set<number>();
 
   constructor(
     @Inject('WEB3_SERVICE_L1') private readonly web3SvcL1: Web3Service,
@@ -115,25 +117,34 @@ export class ProcessingService {
    * @param blockNumber - The block number to retry.
    * @returns A Promise that resolves when the block processing is complete.
    */
-  async retryBlock(blockNumber: number): Promise<void> {
+  async retryBlock(blockNumber: number, attempt = 1): Promise<void> {
+    // Prevent concurrent retries of the same block
+    if (this.retryingBlocks.has(blockNumber)) return;
+    this.retryingBlocks.add(blockNumber);
+
     try {
-      Logger.debug(`Retrying block ${blockNumber} (${chain})`);
+      if (attempt > MAX_BLOCK_RETRIES) {
+        Logger.error('❌', `Skipping block ${blockNumber} after ${MAX_BLOCK_RETRIES} failed retries (${chain})`);
+        this.retryingBlocks.delete(blockNumber);
+        return;
+      }
 
-      // Pause for 5 seconds
-      await this.utilSvc.delay(5000);
+      const delay = Math.min(5000 * attempt, 30000);
+      Logger.debug(`Retrying block ${blockNumber} (${chain}) - attempt ${attempt}/${MAX_BLOCK_RETRIES}`);
 
-      // Get the transactions from the block
+      await this.utilSvc.delay(delay);
+
       const { timestamp, transactions } = await this.web3SvcL1.getBlock({ blockNumber, includeTransactions: true });
       const createdAt = new Date(Number(timestamp) * 1000);
 
       const events = await this.processTransactions(transactions, createdAt);
       if (events.length) await this.storageSvc.addEvents(events);
+
+      this.retryingBlocks.delete(blockNumber);
     } catch (error) {
       console.log(error);
-      // Pause for 5 seconds
-      await this.utilSvc.delay(5000);
-      // Retry the block
-      return this.retryBlock(blockNumber);
+      this.retryingBlocks.delete(blockNumber);
+      return this.retryBlock(blockNumber, attempt + 1);
     }
   }
 
@@ -165,8 +176,7 @@ export class ProcessingService {
         );
         return transactionEvents || [];
       } catch (error) {
-        console.log(error);
-        await this.retryBlock(Number((transaction as Transaction).blockNumber));
+        Logger.error('❌', `Failed to process tx ${(transaction as Transaction).hash}: ${error instanceof Error ? error.message : String(error)}`);
         return [];
       }
     });
