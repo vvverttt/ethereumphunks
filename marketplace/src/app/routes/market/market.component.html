@@ -154,7 +154,7 @@
             [marketType]="marketType"
             [viewType]="marketType === 'owned' ? 'owned' : 'market'"
             [activeSort]="(activeSort$ | async).value"
-            [limit]="marketType === 'all' ? 10000 : 250"
+            [limit]="250"
             [traitFilters]="marketType === 'all' ? null : (activeTraitFilters$ | async)"
             [phunkData]="phunkData.data"
             [total]="phunkData.total"

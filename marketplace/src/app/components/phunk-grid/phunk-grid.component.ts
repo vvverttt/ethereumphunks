@@ -115,9 +115,9 @@ export class PhunkGridComponent implements OnChanges {
       this.limit = 250;
     }
 
-    // Hide Load More when all server data has been fetched
-    if (changes.phunkData || changes.total) {
-      this.showLoadMore = this.phunkData && this.phunkData.length < this.total;
+    // Show Load More when there are more items to render or fetch
+    if (changes.phunkData || changes.total || changes.limit) {
+      this.showLoadMore = this.phunkData && (this.limit < this.phunkData.length || this.phunkData.length < this.total);
     }
   }
 
@@ -151,42 +151,24 @@ export class PhunkGridComponent implements OnChanges {
 
   onIntersection($event: IntersectionObserverEntry[]): void {
     if (!this.observe || !this.phunkData) return;
-
-    $event.forEach((entry) => {
-      if (entry.isIntersecting) {
-
-        const target = entry.target as HTMLElement;
-        const index = Number(target.dataset.index) + 1;
-        const limit = this.limit;
-
-        // console.log({
-        //   children: this.childrenLength(),
-        //   index,
-        //   limit,
-        //   total: this.total,
-        // });
-
-        if (index >= (this.childrenLength() - 50)) {
-          this.limit = this.limit >= this.total ? this.total : this.childrenLength() + 250;
-        }
-
-        // Only show Load More if there's more data to fetch from the server
-        this.showLoadMore = this.phunkData && this.phunkData.length < this.total;
-      }
-    });
   }
 
   loadMore() {
-    if (this.marketType === 'all') {
+    this.limit += 250;
+
+    // Fetch more from server if we've rendered all fetched data
+    if (this.marketType === 'all' && this.phunkData && this.limit >= this.phunkData.length && this.phunkData.length < this.total) {
       this.store.dispatch(
         marketStateActions.setPagination({
           pagination: {
-            fromIndex: this.childrenLength() || 0,
-            toIndex: this.limit >= this.total ? this.total : this.limit,
+            fromIndex: this.phunkData.length,
+            toIndex: this.phunkData.length + 250,
           }
         })
       );
     }
+
+    this.showLoadMore = this.phunkData && (this.limit < this.phunkData.length || this.phunkData.length < this.total);
   }
 
   childrenLength() {

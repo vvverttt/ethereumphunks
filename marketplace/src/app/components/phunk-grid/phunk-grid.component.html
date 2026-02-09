@@ -3,14 +3,12 @@
   @for (
     phunk of phunkData |
     attributeFilter : traitFilters |
-    sort: activeSort : marketType;
+    sort: activeSort : marketType |
+    slice: 0 : limit;
     track phunk.sha;
     let i = $index;
   ) {
-    @if (i < limit) {
-      <!-- {{ phunk.listing | json }} -->
-      <ng-container *ngTemplateOutlet="phunkItem; context:{ $implicit: phunk, index: i }" />
-    }
+    <ng-container *ngTemplateOutlet="phunkItem; context:{ $implicit: phunk, index: i }" />
   } @empty {
     @for (i of limitArr; track i) {
       <div class="item">
@@ -30,7 +28,7 @@
     }
   }
 
-  @if (phunkData && phunkData.length && observe && showLoadMore && marketType === 'all') {
+  @if (phunkData && phunkData.length && observe && showLoadMore) {
     <div class="item more">
       <!-- <button>Load More</button> -->
       <div class="image-wrapper">
