@@ -18,8 +18,7 @@
 /* ========================================
    ∬      Points are worth nothing        ∬
    ========================================
-   ∬   SALES           |   100 Poins      ∬
-   ∬   AUCTION BIDS    |   42 Points      ∬
+   ∬   BUYS            |   67 Points      ∬
    ====================================== */
 
 pragma solidity 0.8.20;

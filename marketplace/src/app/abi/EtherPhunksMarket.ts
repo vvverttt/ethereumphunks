@@ -405,6 +405,125 @@ export const EtherPhunksMarketABI = [
   {
     inputs: [
       {
+        internalType: 'uint256',
+        name: '_newVersion',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address payable',
+        name: '_revShareAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_revSharePercentage',
+        type: 'uint256',
+      },
+    ],
+    name: 'initializeV2_1',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: '_withdrawsPatched',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address[]',
+        name: 'addresses',
+        type: 'address[]',
+      },
+      {
+        internalType: 'uint256[]',
+        name: 'amounts',
+        type: 'uint256[]',
+      },
+    ],
+    name: 'patchWithdrawals',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'revShareAddress',
+    outputs: [
+      {
+        internalType: 'address payable',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'revSharePercentage',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address payable',
+        name: '_newRevShare',
+        type: 'address',
+      },
+    ],
+    name: 'setRevShareAddress',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_percentage',
+        type: 'uint256',
+      },
+    ],
+    name: 'setRevSharePercentage',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'count',
+        type: 'uint256',
+      },
+    ],
+    name: 'WithdrawalsPatched',
+    type: 'event',
+  },
+  {
+    inputs: [
+      {
         internalType: 'bytes32',
         name: 'phunkId',
         type: 'bytes32',

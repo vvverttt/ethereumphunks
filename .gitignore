@@ -1,6 +1,7 @@
 # Editor directories
 .vscode
 .cursor
+.claude
 
 # Project-specific directories
 playground

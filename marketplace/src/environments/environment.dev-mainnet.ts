@@ -16,10 +16,10 @@ export const environment = {
 
   magmaRpcHttpProvider: 'https://turbo.magma-rpc.com',
 
-  marketAddress: '0xD3418772623Be1a3cc6B6D45CB46420CEdD9154a'.toLowerCase(),
+  marketAddress: '0x10e137E267dCB5774e42251c32305F457a6aE5Ec'.toLowerCase(),
   marketAddressL2: '0x3Dfbc8C62d3cE0059BDaf21787EC24d5d116fe1e'.toLowerCase(),
   donationsAddress: '0x8191f333Da8fEB4De8Ec0d929b136297FDAA34de'.toLowerCase(),
-  pointsAddress: '0x2E34F9FB6DCC20962106807f9b48d14B9A7E7e85'.toLowerCase(),
+  pointsAddress: '0x28AbBC0A90d10870bcbf2d14256c6cC791090E86'.toLowerCase(),
   bridgeAddress: ''.toLowerCase(),
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
 

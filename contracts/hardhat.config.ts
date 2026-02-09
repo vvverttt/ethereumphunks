@@ -12,6 +12,7 @@ const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.20',
     settings: {
+      evmVersion: 'paris',
       optimizer: {
         enabled: true,
         runs: 200,
@@ -34,7 +35,7 @@ const config: HardhatUserConfig = {
     //   },
     // },
     mainnet: {
-      url: 'http://nethermind.public.dappnode:8545',
+      url: 'https://ethereum-rpc.publicnode.com',
       chainId: 1,
       from: process.env.MAINNET_ADDRESS as string,
       accounts: [`0x${process.env.MAINNET_PK}`],
