@@ -674,6 +674,24 @@ export class StorageService implements OnModuleInit {
     if (error) throw error;
   }
 
+  /**
+   * Increments a user's points by the given amount
+   * @param address - The user's address
+   * @param amount - The amount to add
+   */
+  async incrementUserPoints(address: string, amount: number): Promise<void> {
+    const { data, error: fetchError } = await this.supabase
+      .from('users' + this.suffix)
+      .select('points')
+      .eq('address', address.toLowerCase())
+      .single();
+
+    if (fetchError || !data) return;
+
+    const newPoints = (data.points || 0) + amount;
+    await this.updateUserPoints(address, newPoints);
+  }
+
   ////////////////////////////////////////////////////////////////////////////////
   // Auction House ///////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////

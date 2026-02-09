@@ -629,6 +629,9 @@ export class EthscriptionsService {
       const removedListing = await this.storageSvc.removeListing(hashId);
       if (!removedListing) return;
 
+      // Award 67 points to the buyer in Supabase
+      this.storageSvc.incrementUserPoints(toAddress.toLowerCase(), 67);
+
       return {
         txId: txn.hash + log.logIndex,
         type: eventName,
