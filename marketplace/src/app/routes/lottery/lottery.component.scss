@@ -133,21 +133,28 @@ $lottery-muted: #c3ff00;
 
 .grid-item {
   position: relative;
-  width: 150px;
-  height: 150px;
   image-rendering: pixelated;
   -webkit-perspective: 800px;
   perspective: 800px;
 
+  // Padding hack for reliable 1:1 aspect ratio on all iOS Safari versions
+  // (aspect-ratio property fails on iOS when children are absolutely positioned)
+  &::before {
+    content: '';
+    display: block;
+    padding-bottom: 100%;
+  }
+
   // 3D card flip container – inset so images are smaller than the frame
   .card-inner {
-    width: 80%;
-    height: 80%;
     position: absolute;
-    bottom: 14px;
+    top: 10%;
     left: 10%;
+    right: 10%;
+    bottom: 10%;
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
+    -webkit-transition: -webkit-transform 0.22s ease;
     transition: transform 0.22s ease;
     z-index: 2;
   }
@@ -165,25 +172,32 @@ $lottery-muted: #c3ff00;
   }
 
   .card-back {
+    -webkit-transform: rotateY(180deg);
     transform: rotateY(180deg);
+    -webkit-transition: -webkit-transform 0.15s ease;
     transition: transform 0.15s ease;
   }
 
   // Right-facing phase: mirror the back image so it shows as a "punk" (right-facing)
   &.right-facing .card-back {
+    -webkit-transform: rotateY(180deg) scaleX(-1);
     transform: rotateY(180deg) scaleX(-1);
   }
 
   // Staggered flip on initial load (mirrors philip left→right)
   .card-front {
     .loaded & {
+      -webkit-animation: flipToRight 0.3s ease forwards;
       animation: flipToRight 0.3s ease forwards;
+      -webkit-animation-delay: calc(1s + var(--flip-delay, 0ms));
       animation-delay: calc(1s + var(--flip-delay, 0ms));
     }
 
     // During spin, clear the load animation but keep right-facing
     .spinning & {
+      -webkit-animation: none;
       animation: none;
+      -webkit-transform: scaleX(-1);
       transform: scaleX(-1);
     }
   }
@@ -191,6 +205,7 @@ $lottery-muted: #c3ff00;
   // Spin flip: rotate card to reveal back (real image)
   &.flipping .card-inner,
   &.revealed .card-inner {
+    -webkit-transform: rotateY(180deg);
     transform: rotateY(180deg);
   }
 
@@ -199,13 +214,13 @@ $lottery-muted: #c3ff00;
   }
 
   // Frame layers - visible only on active cell
-  // Inset so green stays inside frame.gif border
+  // Use percentage insets so frame scales on all screen sizes
   .frame-background {
     position: absolute;
-    top: 14px;
-    left: 14px;
-    width: calc(100% - 28px);
-    height: calc(100% - 28px);
+    top: 8%;
+    left: 8%;
+    right: 8%;
+    bottom: 8%;
     background-color: #c3ff00;
     z-index: 1;
   }
@@ -225,6 +240,17 @@ $lottery-muted: #c3ff00;
 
   &.active-frame {
     z-index: 10;
+  }
+}
+
+@-webkit-keyframes flipToRight {
+  from {
+    -webkit-transform: scaleX(1);
+    transform: scaleX(1);
+  }
+  to {
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
   }
 }
 
@@ -554,12 +580,6 @@ $lottery-muted: #c3ff00;
   .images-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 5px;
-  }
-
-  .grid-item {
-    width: auto;
-    height: auto;
-    aspect-ratio: 1 / 1;
   }
 
   .lottery-header h1 {
