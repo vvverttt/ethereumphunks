@@ -15,6 +15,8 @@ import bridgeL2 from '@/abi/EtherPhunksBridgeL2.json';
 import marketL1 from '@/abi/EtherPhunksMarketL1.json';
 import marketL2 from '@/abi/EtherPhunksNftMarket.json';
 
+import lottery from '@/abi/PhilipLotteryV67.json';
+
 export const pointsAbiL1 = pointsL1;
 
 export const bridgeAbiL1 = bridgeL1;
@@ -22,6 +24,8 @@ export const bridgeAbiL2 = bridgeL2;
 
 export const marketAbiL1 = marketL1;
 export const marketAbiL2 = marketL2;
+
+export const lotteryAbi = lottery;
 
 export const chain: 'mainnet' | 'sepolia' =
   process.env.CHAIN_ID === '1' ? 'mainnet' : 'sepolia';
@@ -62,6 +66,11 @@ export const bridgeAddressL2: string =
   (chain === 'mainnet'
     ? process.env.BRIDGE_ADDRESS_MAINNET_L2
     : process.env.BRIDGE_ADDRESS_SEPOLIA_L2)?.toLowerCase();
+
+export const lotteryAddressL1: string =
+  (chain === 'mainnet'
+    ? process.env.LOTTERY_ADDRESS_MAINNET
+    : process.env.LOTTERY_ADDRESS_SEPOLIA)?.toLowerCase();
 
 export const l1Client = createPublicClient({
   chain: chain === 'mainnet' ? mainnet : sepolia,

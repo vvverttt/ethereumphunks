@@ -43,6 +43,18 @@
       }
     }
 
+    <a
+      class="lottery-button"
+      routerLink="/lottery"
+      (click)="goToLottery()">
+
+      <span>Philip Lottery V67</span>
+
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </a>
+
     @if (!isStandaloneMarket) {
       <div
         class="curated-button"

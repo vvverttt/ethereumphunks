@@ -7,6 +7,7 @@ import { TelegramService } from '@/modules/notifs/services/telegram.service';
 import { UtilityService } from '@/modules/shared/services/utility.service';
 import { TimeService } from '@/modules/shared/services/time.service';
 import { EthscriptionsService } from '@/modules/ethscriptions/ethscriptions.service';
+import { LotteryService } from '@/modules/lottery/lottery.service';
 import { CommentsService } from '@/modules/comments/comments.service';
 
 import { chain } from '@/constants/ethereum';
@@ -38,6 +39,7 @@ export class ProcessingService {
     private readonly utilSvc: UtilityService,
     private readonly timeSvc: TimeService,
     private readonly ethsSvc: EthscriptionsService,
+    private readonly lotterySvc: LotteryService,
     private readonly commentsSvc: CommentsService,
     private readonly telegramSvc: TelegramService
   ) {}
@@ -219,6 +221,13 @@ export class ProcessingService {
       createdAt
     );
     if (ethscriptionsEvents?.length) events.push(...ethscriptionsEvents);
+
+    // Process lottery events
+    await this.lotterySvc.processLotteryEvents(
+      receipt,
+      transaction.hash,
+      createdAt
+    );
 
     // Process comments
     await this.commentsSvc.processComments(

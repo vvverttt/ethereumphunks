@@ -19,6 +19,7 @@ export const environment = {
   pointsAddress: '0x28AbBC0A90d10870bcbf2d14256c6cC791090E86'.toLowerCase(),
   bridgeAddress: ''.toLowerCase(),
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
+  lotteryAddress: '0x4C0b9B7b3e290B793474c533C7AC90262bb69971'.toLowerCase(),
 
   relayUrl: 'https://ethereumphunks.onrender.com',
   staticUrl: 'https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/v1/object/public',

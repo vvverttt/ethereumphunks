@@ -24,6 +24,14 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'lottery',
+    loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent)
+  },
+  {
+    path: 'lottery/wins',
+    loadComponent: () => import('@/routes/lottery/lottery-wins.component').then(mod => mod.LotteryWinsComponent)
+  },
+  {
     path: 'details/:hashId',
     loadComponent: () => import('@/routes/item-view/item-view.component').then(mod => mod.ItemViewComponent)
   },

@@ -207,4 +207,8 @@ export class MenuComponent {
   navigateMenu(activeMenuNav: GlobalState['appState']['activeMenuNav']): void {
     this.store.dispatch(appStateActions.setActiveMenuNav({ activeMenuNav }));
   }
+
+  goToLottery(): void {
+    this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
+  }
 }

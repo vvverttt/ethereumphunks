@@ -1,0 +1,167 @@
+<!-- Fireworks overlay -->
+<div #fireworksCanvas class="fireworks-overlay"></div>
+
+<!-- Collection-style tinted images header -->
+<div class="images-header">
+  <div class="images-wrapper">
+    @for (img of headerImages(); track $index) {
+      <div class="header-image">
+        <img [src]="img.src" width="300" height="300" />
+      </div>
+    }
+  </div>
+</div>
+
+<div class="lottery-page" [class.loaded]="loadedIn()">
+
+  <!-- Header -->
+  <div class="lottery-header">
+    <h1>Philip Lottery<br /><span>V67</span></h1>
+  </div>
+
+  <!-- Grid Container -->
+  <div class="grid-container" [class.shown]="loadedIn()" [class.spinning]="spinPhase() !== 'idle'">
+    <div class="images-grid">
+      @for (item of gridItems(); track item.index; let i = $index) {
+        <div
+          class="grid-item"
+          [class.active-frame]="activeFrameIndex() === i"
+          [class.flipping]="item.flipping"
+          [class.revealed]="item.revealed"
+          [class.right-facing]="item.rightFacing"
+          [style.animation-delay]="i * 150 + 'ms'"
+          [style.--flip-delay]="i * 150 + 'ms'">
+
+          <!-- Frame layers (only visible when active) -->
+          @if (activeFrameIndex() === i) {
+            <div class="frame-background"></div>
+            <div class="frame-border"></div>
+          }
+
+          <div class="card-inner">
+            <img class="card-front" [src]="philipFallback" alt="Prize" />
+            <img class="card-back" [src]="item.imageUrl" alt="Prize" />
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Play Button -->
+  <div class="action-area">
+    <button
+      class="play-button"
+      [class.shown]="buttonShown()"
+      [class.spinning]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading'"
+      [disabled]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading' || (poolSize() === 0 && spinPhase() !== 'won') || !isActive()"
+      (click)="spinPhase() === 'won' ? onSpinAgain() : onPlay()">
+      @if (spinPhase() === 'loading') {
+        Confirm in wallet...
+      } @else if (spinPhase() === 'spinning') {
+        Spinning...
+      } @else if (spinPhase() === 'decelerating') {
+        Slowing down...
+      } @else if (spinPhase() === 'won') {
+        Spin Again
+      } @else if (spinPhase() === 'idle' && !(connected$ | async)) {
+        Connect Wallet
+      } @else {
+        Start
+      }
+    </button>
+    @if ((spinPhase() === 'idle' || spinPhase() === 'won') && poolSize() === 0) {
+      <button
+        class="play-button demo-button"
+        [class.shown]="buttonShown()"
+        (click)="onDemoPlay()">
+        Demo
+      </button>
+    }
+    <div class="price-info">
+      Play: {{ playPrice() }} ETH
+      <span class="pool-info">&middot; {{ poolSize() }} artifacts left</span>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="error-text">{{ errorMessage() }}</p>
+    }
+  </div>
+
+  <!-- Win Result -->
+  @if (spinPhase() === 'won' && wonPrize()) {
+    <div class="win-result">
+      <h2>You Won!</h2>
+      <div class="won-item">
+        <img [src]="staticUrl + '/static/images/' + wonPrize()!.sha" width="80" height="80" />
+        <div class="won-info">
+          <span class="won-collection">{{ wonPrize()!.collection_slug }}</span>
+          <span class="won-id">#{{ wonPrize()!.token_id }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Owner Panel -->
+  @if (isOwner() && (connected$ | async)) {
+    <div class="owner-panel">
+      <h3>Owner Panel</h3>
+      <div class="owner-balance">
+        <span>Contract Balance:</span>
+        <span class="balance-value">{{ contractBalance() }} ETH</span>
+      </div>
+      <button class="withdraw-button" (click)="onWithdrawETH()">
+        Withdraw Funds
+      </button>
+
+      <div class="deposit-section">
+        <h4>Your Items</h4>
+        @if (ownedLoading()) {
+          <p class="deposit-status">Loading...</p>
+        } @else if (ownedItems().length === 0) {
+          <p class="deposit-status">No items in wallet</p>
+        } @else {
+          <div class="owned-grid">
+            @for (item of ownedItems(); track item.hashId) {
+              <div
+                class="owned-item"
+                [class.selected]="item.selected"
+                (click)="toggleItem(item.hashId)">
+                <img [src]="staticUrl + '/static/images/' + item.sha" width="50" height="50" />
+                <span class="owned-label">#{{ item.tokenId }}</span>
+              </div>
+            }
+          </div>
+          <button
+            class="deposit-button"
+            [disabled]="selectedCount() === 0"
+            (click)="onDeposit()">
+            Transfer {{ selectedCount() }} to Contract
+          </button>
+        }
+        @if (depositStatus()) {
+          <p class="deposit-status">{{ depositStatus() }}</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Recent Wins -->
+  <section class="recent-wins">
+    <div class="inner">
+      <h3>Recent Wins</h3>
+      <div class="section-stats-wrapper">
+        <p>
+          <a class="highlight" routerLink="/lottery/wins">View all {{ recentWins().length }} won artifacts.</a>
+        </p>
+      </div>
+      <div class="wins-grid">
+        @for (win of recentWins(); track win.play_id) {
+          <a class="win-item" [routerLink]="['/details', win.hash_id]">
+            <img [src]="getWinImageUrl(win)" width="50" height="50" />
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+
+</div>

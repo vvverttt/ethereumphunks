@@ -11,6 +11,7 @@ import { BridgeL1Module } from '@/modules/bridge-l1/bridge-l1.module';
 import { NftModule } from '@/modules/nft/nft.module';
 import { BridgeL2Module } from '@/modules/bridge-l2/bridge-l2.module';
 import { EthscriptionsModule } from '@/modules/ethscriptions/ethscriptions.module';
+import { LotteryModule } from '@/modules/lottery/lottery.module';
 import { TxPoolModule } from '@/modules/tx-pool/tx-pool.module';
 import { MintModule } from '@/modules/mint/mint.module';
 
@@ -32,6 +33,7 @@ import { ApiKeyMiddleware } from '@/middleware/api-key.middleware';
     BridgeL2Module,
 
     EthscriptionsModule,
+    LotteryModule,
     QueueModule,
     BridgeL1Module,
 

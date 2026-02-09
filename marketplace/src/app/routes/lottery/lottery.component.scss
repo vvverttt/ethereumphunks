@@ -1,0 +1,570 @@
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
+
+// Pixel font
+@font-face {
+  font-family: '04B_30';
+  src: url('/assets/fonts/04B_30__.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+// Lottery palette
+$lottery-bg: #000000;
+$lottery-accent: #c3ff00;
+$lottery-text: #fff;
+$lottery-muted: #c3ff00;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background-color: $lottery-bg;
+  color: $lottery-text;
+}
+
+.lottery-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 726px;
+  padding: 0 2rem;
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+}
+
+// =========================================================
+// Tinted Images Header (collection-style billboard)
+// =========================================================
+
+.images-header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+
+  background-color: $lottery-accent;
+
+  .images-wrapper {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    .header-image {
+      width: 80px;
+      min-width: 80px;
+      height: 80px;
+
+      img {
+        display: block;
+        width: 80px;
+        height: 80px;
+        image-rendering: pixelated;
+      }
+    }
+  }
+}
+
+// =========================================================
+// Fireworks Overlay
+// =========================================================
+
+.fireworks-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+// =========================================================
+// Header
+// =========================================================
+
+.lottery-header {
+  text-align: center;
+  margin-top: 4rem;
+  margin-bottom: 3rem;
+
+  h1 {
+    font-family: '04B_30', monospace;
+    font-size: 5rem;
+    font-weight: normal;
+    color: $lottery-text;
+    line-height: 1.3;
+
+    span {
+      font-size: 4rem;
+      color: $lottery-text;
+    }
+  }
+}
+
+// =========================================================
+// Grid
+// =========================================================
+
+.grid-container {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+
+  &.shown {
+    opacity: 1;
+  }
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 726px;
+}
+
+.grid-item {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  image-rendering: pixelated;
+  perspective: 800px;
+  overflow: hidden;
+
+  // 3D card flip container – inset so images are smaller than the frame
+  .card-inner {
+    width: 80%;
+    height: 80%;
+    position: absolute;
+    bottom: 14px;
+    left: 10%;
+    transform-style: preserve-3d;
+    transition: transform 0.22s ease;
+    z-index: 2;
+  }
+
+  .card-front, .card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+    transition: transform 0.15s ease;
+  }
+
+  // Right-facing phase: mirror the back image so it shows as a "punk" (right-facing)
+  &.right-facing .card-back {
+    transform: rotateY(180deg) scaleX(-1);
+  }
+
+  // Staggered flip on initial load (mirrors philip left→right)
+  .card-front {
+    .loaded & {
+      animation: flipToRight 0.3s ease forwards;
+      animation-delay: calc(1s + var(--flip-delay, 0ms));
+    }
+
+    // During spin, clear the load animation but keep right-facing
+    .spinning & {
+      animation: none;
+      transform: scaleX(-1);
+    }
+  }
+
+  // Spin flip: rotate card to reveal back (real image)
+  &.flipping .card-inner,
+  &.revealed .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  &.revealed .card-inner {
+    z-index: 5;
+  }
+
+  // Frame layers - visible only on active cell
+  // Inset so green stays inside frame.gif border
+  .frame-background {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: calc(100% - 28px);
+    height: calc(100% - 28px);
+    background-color: #c3ff00;
+    z-index: 1;
+  }
+
+  .frame-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/assets/images/lottery/frame.gif');
+    background-size: 100% 100%;
+    image-rendering: pixelated;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  &.active-frame {
+    z-index: 10;
+  }
+}
+
+@keyframes flipToRight {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(-1);
+  }
+}
+
+// =========================================================
+// Action Area
+// =========================================================
+
+.action-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4rem;
+  gap: 1rem;
+}
+
+.play-button {
+  font-family: '04B_30', monospace;
+  background-color: $lottery-accent;
+  color: $lottery-bg;
+  border: none;
+  padding: 1.5rem 2.5rem;
+  font-size: 2.4rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease, transform 0.2s ease;
+  opacity: 0;
+
+  &.shown {
+    opacity: 1;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: lighten($lottery-accent, 10%);
+    transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &.demo-button {
+    background-color: transparent;
+    border: 2px solid $lottery-accent;
+    color: $lottery-accent;
+    font-size: 1.8rem;
+    padding: 1rem 2rem;
+  }
+}
+
+.price-info {
+  font-family: '04B_30', monospace;
+  font-size: 1.4rem;
+  color: $lottery-muted;
+  text-align: center;
+
+  .pool-info {
+    opacity: 0.6;
+  }
+}
+
+.status-text {
+  font-family: '04B_30', monospace;
+  font-size: 1.8rem;
+  color: $lottery-muted;
+  margin: 0;
+}
+
+.error-text {
+  font-family: '04B_30', monospace;
+  font-size: 0.9rem;
+  color: rgba(var(--pink), 1);
+  margin: 0;
+  text-align: center;
+  max-width: 400px;
+}
+
+// =========================================================
+// Win Result
+// =========================================================
+
+.win-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.05);
+
+  h2 {
+    font-family: '04B_30', monospace;
+    font-size: 2rem;
+    color: $lottery-text;
+    margin: 0 0 1rem;
+  }
+
+  .won-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    img {
+      image-rendering: pixelated;
+    }
+
+    .won-info {
+      display: flex;
+      flex-direction: column;
+      font-family: '04B_30', monospace;
+
+      .won-collection {
+        font-size: 0.9rem;
+        color: $lottery-muted;
+      }
+
+      .won-id {
+        font-size: 1.4rem;
+        color: $lottery-text;
+      }
+    }
+  }
+}
+
+// =========================================================
+// Owner Panel
+// =========================================================
+
+.owner-panel {
+  margin-top: 3rem;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 726px;
+
+  h3 {
+    font-family: '04B_30', monospace;
+    font-size: 1.4rem;
+    margin: 0 0 1rem;
+    color: $lottery-muted;
+  }
+
+  .owner-balance {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: '04B_30', monospace;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+
+    .balance-value {
+      color: $lottery-accent;
+      font-size: 1.2rem;
+    }
+  }
+
+  .withdraw-button {
+    font-family: '04B_30', monospace;
+    background-color: rgba(var(--pink), 1);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  .deposit-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    h4 {
+      font-family: '04B_30', monospace;
+      font-size: 1.2rem;
+      color: $lottery-text;
+      margin: 0 0 1rem;
+    }
+
+    .owned-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+      max-height: 30rem;
+      overflow-y: auto;
+    }
+
+    .owned-item {
+      cursor: pointer;
+      position: relative;
+      border: 2px solid transparent;
+      transition: border-color 0.15s;
+
+      &:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      &.selected {
+        border-color: $lottery-accent;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+        background-color: rgba(var(--base-color), 1);
+      }
+
+      .owned-label {
+        display: block;
+        font-size: 1rem;
+        text-align: center;
+        color: $lottery-muted;
+        padding: 0.3rem 0;
+      }
+    }
+
+    .deposit-button {
+      font-family: '04B_30', monospace;
+      background-color: $lottery-accent;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1rem;
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      &:hover:not(:disabled) {
+        opacity: 0.8;
+      }
+    }
+
+    .deposit-status {
+      font-size: 1.2rem;
+      color: $lottery-muted;
+      margin-top: 1rem;
+    }
+  }
+}
+
+// =========================================================
+// Recent Wins
+// =========================================================
+
+.recent-wins {
+  width: 100%;
+  max-width: 726px;
+  margin-top: 4rem;
+  padding: 0 0 5rem;
+
+  .inner {
+    width: 100%;
+  }
+
+  h3 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: $lottery-text;
+    margin: 0;
+    padding-bottom: 2rem;
+  }
+
+  .section-stats-wrapper {
+    p {
+      padding: 0;
+      margin: 0;
+      padding-bottom: .75rem;
+      font-size: 1.5rem;
+
+      &:last-child {
+        margin-bottom: 1rem;
+      }
+    }
+  }
+
+  .highlight {
+    font-weight: 700;
+    color: $lottery-accent;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .wins-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    width: 100%;
+  }
+
+  .win-item {
+    display: block;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      image-rendering: pixelated;
+      background-color: rgba(var(--base-color), 1);
+    }
+  }
+}
+
+// =========================================================
+// Mobile
+// =========================================================
+
+@media (max-width: $mobile) {
+  .images-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+
+  .grid-item {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .lottery-header h1 {
+    font-size: 3.2rem;
+
+    span {
+      font-size: 2.8rem;
+    }
+  }
+}
