@@ -233,17 +233,25 @@ export class StorageService implements OnModuleInit {
    * @param hash - The hash ID to check
    * @returns The ethscription if found, null otherwise
    */
-  async checkEthscriptionExistsByHashId(hash: string): Promise<db.Ethscription> {
-    const response: db.EthscriptionResponse = await this.supabase
-      .from('ethscriptions' + this.suffix)
-      .select('*')
-      .eq('hashId', hash?.toLowerCase());
+  async checkEthscriptionExistsByHashId(hash: string, retries = 2): Promise<db.Ethscription> {
+    try {
+      const response: db.EthscriptionResponse = await this.supabase
+        .from('ethscriptions' + this.suffix)
+        .select('*')
+        .eq('hashId', hash?.toLowerCase());
 
-    const { data, error } = response;
+      const { data, error } = response;
 
-    if (error) throw error;
-    if (data?.length) return data[0];
-    return null;
+      if (error) throw error;
+      if (data?.length) return data[0];
+      return null;
+    } catch (err) {
+      if (retries > 0) {
+        await new Promise(r => setTimeout(r, 500));
+        return this.checkEthscriptionExistsByHashId(hash, retries - 1);
+      }
+      throw err;
+    }
   }
 
   /**

@@ -166,24 +166,29 @@ export class ProcessingService {
     // Sort by transaction index
     txns = txns.sort((a, b) => a.receipt.transactionIndex - b.receipt.transactionIndex);
 
-    // Process all transactions in parallel for better performance
-    const eventPromises = txns.map(async ({ transaction, receipt }) => {
-      try {
-        const transactionEvents = await this.processTransaction(
-          transaction as Transaction,
-          receipt as TransactionReceipt,
-          createdAt
-        );
-        return transactionEvents || [];
-      } catch (error) {
-        Logger.error('❌', `Failed to process tx ${(transaction as Transaction).hash}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
-        return [];
-      }
-    });
+    // Process transactions in batches to avoid overwhelming Supabase
+    const batchSize = 50;
+    const events: Event[] = [];
 
-    // Wait for all transactions to complete
-    const eventsArrays = await Promise.all(eventPromises);
-    const events = eventsArrays.flat();
+    for (let i = 0; i < txns.length; i += batchSize) {
+      const batch = txns.slice(i, i + batchSize);
+      const eventPromises = batch.map(async ({ transaction, receipt }) => {
+        try {
+          const transactionEvents = await this.processTransaction(
+            transaction as Transaction,
+            receipt as TransactionReceipt,
+            createdAt
+          );
+          return transactionEvents || [];
+        } catch (error) {
+          Logger.error('❌', `Failed to process tx ${(transaction as Transaction).hash}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+          return [];
+        }
+      });
+
+      const batchResults = await Promise.all(eventPromises);
+      events.push(...batchResults.flat());
+    }
 
     return events;
   }
