@@ -176,7 +176,7 @@ export class ProcessingService {
         );
         return transactionEvents || [];
       } catch (error) {
-        Logger.error('❌', `Failed to process tx ${(transaction as Transaction).hash}: ${error instanceof Error ? error.message : String(error)}`);
+        Logger.error('❌', `Failed to process tx ${(transaction as Transaction).hash}: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         return [];
       }
     });
