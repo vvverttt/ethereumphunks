@@ -1,7 +1,7 @@
 {
   "buildCommand": "npx ng build --configuration production",
   "outputDirectory": "dist/etherphunks-market/browser",
-  "installCommand": "yarn install",
+  "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     {
       "source": "/(.*)",
