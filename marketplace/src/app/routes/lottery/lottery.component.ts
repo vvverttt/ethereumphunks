@@ -37,10 +37,10 @@ function getSpinPath(count: number): number[] {
   return path;
 }
 
-const INITIAL_STEP_DELAY = 600;
-const DECAY_FACTOR = 1.1;
+const INITIAL_STEP_DELAY = 80;
+const DECAY_FACTOR = 1.08;
 const MIN_ROTATIONS = 3;
-const MAX_STEP_DELAY = 700;
+const MAX_STEP_DELAY = 600;
 
 @Component({
   selector: 'app-lottery',
