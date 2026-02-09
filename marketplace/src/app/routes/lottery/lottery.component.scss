@@ -115,6 +115,7 @@ $lottery-muted: #c3ff00;
 // =========================================================
 
 .grid-container {
+  width: 100%;
   opacity: 0;
   transition: opacity 0.4s ease;
 
@@ -184,24 +185,6 @@ $lottery-muted: #c3ff00;
     transform: rotateY(180deg) scaleX(-1);
   }
 
-  // Staggered flip on initial load (mirrors philip left→right)
-  .card-front {
-    .loaded & {
-      -webkit-animation: flipToRight 0.3s ease forwards;
-      animation: flipToRight 0.3s ease forwards;
-      -webkit-animation-delay: calc(1s + var(--flip-delay, 0ms));
-      animation-delay: calc(1s + var(--flip-delay, 0ms));
-    }
-
-    // During spin, clear the load animation but keep right-facing
-    .spinning & {
-      -webkit-animation: none;
-      animation: none;
-      -webkit-transform: scaleX(-1);
-      transform: scaleX(-1);
-    }
-  }
-
   // Spin flip: rotate card to reveal back (real image)
   &.flipping .card-inner,
   &.revealed .card-inner {
@@ -241,6 +224,23 @@ $lottery-muted: #c3ff00;
   &.active-frame {
     z-index: 10;
   }
+}
+
+// Staggered flip on initial load (outside .grid-item to avoid Angular
+// view encapsulation stripping the parent class from Sass '&' references)
+.loaded .grid-item .card-front {
+  -webkit-animation: flipToRight 0.3s ease forwards;
+  animation: flipToRight 0.3s ease forwards;
+  -webkit-animation-delay: calc(1s + var(--flip-delay, 0ms));
+  animation-delay: calc(1s + var(--flip-delay, 0ms));
+}
+
+// During spin, clear the load animation but keep right-facing
+.spinning .grid-item .card-front {
+  -webkit-animation: none;
+  animation: none;
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
 }
 
 @-webkit-keyframes flipToRight {
