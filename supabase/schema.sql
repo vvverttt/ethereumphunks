@@ -666,16 +666,19 @@ BEGIN
     SELECT
         u.address,
         u.points,
-        -- other columns from users
-        COUNT(e.from) as sales
-    FROM
-        users u
-    LEFT JOIN
-        events e ON u.address = e.from AND e.type = 'PhunkBought'
-    GROUP BY
-        u.address
-    ORDER BY
-        u.points DESC
+        COALESCE(b.cnt, 0) + COALESCE(w.cnt, 0) as sales
+    FROM users u
+    LEFT JOIN (
+        SELECT e."from" as addr, COUNT(*) as cnt
+        FROM events e WHERE e.type = 'PhunkBought'
+        GROUP BY e."from"
+    ) b ON u.address = b.addr
+    LEFT JOIN (
+        SELECT e."to" as addr, COUNT(*) as cnt
+        FROM events e WHERE e.type = 'PrizeAwarded'
+        GROUP BY e."to"
+    ) w ON u.address = w.addr
+    ORDER BY u.points DESC
     LIMIT 20;
 END;
 $$;

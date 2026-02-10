@@ -9,20 +9,6 @@
   </div>
 
   @if (!loaded()) {
-    <div class="wins-grid">
-      @for (i of [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]; track idx; let idx = $index) {
-        <div class="item">
-          <div class="item-link">
-            <div class="image-wrapper">
-              <img src="assets/loadingphunk.png" width="50" height="50" />
-            </div>
-            <div class="labels-wrapper">
-              <div class="label">#0000</div>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
   } @else if (wins().length === 0) {
     <p class="empty-message">No wins yet.</p>
   } @else {
@@ -31,7 +17,7 @@
         <div class="item">
           <a class="item-link" [routerLink]="['/details', win.hash_id]">
             <div class="image-wrapper">
-              <img [src]="getWinImageUrl(win)" width="50" height="50" />
+              <img [lazyLoad]="getWinImageUrl(win)" [defaultImage]="'assets/loadingphunk.png'" width="50" height="50" />
             </div>
             <div class="labels-wrapper">
               <div class="label">#{{ win.token_id }}</div>

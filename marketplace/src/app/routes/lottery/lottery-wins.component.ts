@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 
+import { LazyLoadImageModule } from 'ng-lazyload-image';
+
 import { environment } from 'src/environments/environment';
 import { LotteryService } from '@/services/lottery.service';
 import { LotteryWin } from '@/models/lottery';
@@ -10,7 +12,7 @@ import { LotteryWin } from '@/models/lottery';
 @Component({
   selector: 'app-lottery-wins',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LazyLoadImageModule],
   templateUrl: './lottery-wins.component.html',
   styleUrls: ['./lottery-wins.component.scss']
 })

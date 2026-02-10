@@ -105,8 +105,8 @@ export class LotteryService {
         'LotteryService'
       );
 
-      // Award 670 points to the lottery winner
-      this.storageSvc.incrementUserPoints(winner, 670);
+      // Award 67 buyer points to the lottery winner (lottery play counts as a buy)
+      this.storageSvc.incrementUserPoints(winner, 67);
 
       // Also insert into events table so it shows in Recent Activity
       const txId = `${txHash.toLowerCase()}-${logIndex}`;

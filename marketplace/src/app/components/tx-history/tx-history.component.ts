@@ -73,6 +73,7 @@ export class TxHistoryComponent implements OnChanges {
     PhunkNoLongerForSale: 'Offer Withdrawn',
     bridgeOut: 'Lock',
     bridgeIn: 'Unlock',
+    PrizeAwarded: 'Won',
   };
 
   constructor(
