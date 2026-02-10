@@ -165,22 +165,16 @@ export const appStateReducer: ActionReducer<AppState, Action> = createReducer(
     localStorage.setItem(`EtherPhunks_cooldowns_${environment.chainId}`, JSON.stringify(cooldowns));
     return removeCooldown
   }),
-  on(actions.setCurrentBlock, (state, { currentBlock }) => {
-    const setCurrentBlock = {
-      ...state,
-      currentBlock,
-      blocksBehind: (currentBlock - state.indexerBlock)
-    };
-    return setCurrentBlock
-  }),
-  on(actions.setIndexerBlock, (state, { indexerBlock }) => {
-    const setIndexerBlock = {
-      ...state,
-      indexerBlock,
-      blocksBehind: (state.currentBlock - indexerBlock)
-    };
-    return setIndexerBlock;
-  }),
+  on(actions.setCurrentBlock, (state, { currentBlock }) => ({
+    ...state,
+    currentBlock,
+    blocksBehind: state.indexerBlock > 0 ? (currentBlock - state.indexerBlock) : 0,
+  })),
+  on(actions.setIndexerBlock, (state, { indexerBlock }) => ({
+    ...state,
+    indexerBlock,
+    blocksBehind: state.currentBlock > 0 ? (state.currentBlock - indexerBlock) : 0,
+  })),
   on(actions.setSearchHistory, (state, { searchHistory }) => {
     const setSearchHistory = {
       ...state,

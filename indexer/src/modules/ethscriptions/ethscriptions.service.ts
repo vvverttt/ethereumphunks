@@ -9,7 +9,7 @@ import { BridgeProcessingQueue } from '@/modules/queue/queues/bridge-processing.
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { bridgeAbiL1, chain, marketAbiL1, marketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { bridgeAbiL1, chain, lotteryAddressL1, marketAbiL1, marketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -112,8 +112,10 @@ export class EthscriptionsService {
     }
 
     // Filter logs for ethscription transfers (esip2)
+    // Skip lottery contract — ownership is handled by LotteryService on PrizeAwarded
     const esip2Transfers = receipt.logs.filter(
       (log: any) => log.topics[0] === esips.TransferEthscriptionForPreviousOwnerSignature
+        && log.address?.toLowerCase() !== lotteryAddressL1
     );
     if (esip2Transfers.length) {
       Logger.debug(

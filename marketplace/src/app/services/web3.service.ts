@@ -17,7 +17,7 @@ import { PointsABI } from '@/abi/Points';
 import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
 import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
 
-import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType, connect as wagmiConnect } from '@wagmi/core';
+import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType, connect as wagmiConnect, reconnect } from '@wagmi/core';
 import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -125,6 +125,14 @@ export class Web3Service {
     const savedWallet = localStorage.getItem('ep_wallet');
     const savedType = localStorage.getItem('ep_wallet_type');
 
+    // If no wallet is saved, clear stale WalletConnect sessions
+    // to prevent the WC SDK from auto-popping the QR modal
+    if (!savedWallet) {
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('wc@2:')) localStorage.removeItem(key);
+      }
+    }
+
     this.connectedState = new Observable((observer) => watchAccount(this.config, {
       onChange: (account) => this.ngZone.run(() => observer.next(account))
     }));
@@ -158,6 +166,21 @@ export class Web3Service {
     await new Promise(r => setTimeout(r, 300));
 
     try {
+      if (savedType === 'walletConnect') {
+        // WalletConnect: use reconnect() which silently restores sessions
+        // without popping up the QR modal (unlike wagmiConnect)
+        await reconnect(this.config);
+        const account = getAccount(this.config);
+        if (!account.address || account.address.toLowerCase() !== saved) {
+          localStorage.removeItem('ep_wallet');
+          localStorage.removeItem('ep_wallet_type');
+          try { await disconnect(this.config); } catch {}
+        } else {
+          console.log('[Web3Service] Restored WalletConnect session');
+        }
+        return;
+      }
+
       const phantom = (window as any).phantom?.ethereum;
       const connector = this.getConnectorForType(savedType, !!phantom);
       await wagmiConnect(this.config, { connector });
@@ -178,6 +201,12 @@ export class Web3Service {
    * Returns the correct wagmi connector for a saved wallet type
    */
   private getConnectorForType(type: string | null, phantomHasAccount = false): any {
+    if (type === 'walletConnect') {
+      return this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
+    }
+    if (type === 'coinbaseWallet') {
+      return this.config.connectors.find(c => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
+    }
     if (type === 'injected-phantom' || (!type && phantomHasAccount)) {
       const phantom = (window as any).phantom?.ethereum;
       if (phantom) {

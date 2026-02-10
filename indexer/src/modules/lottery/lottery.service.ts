@@ -105,6 +105,9 @@ export class LotteryService {
         'LotteryService'
       );
 
+      // Update ethscription ownership: lottery contract → winner
+      await this.storageSvc.updateEthscriptionOwner(hashId, lotteryAddressL1, winner);
+
       // Award 67 buyer points to the lottery winner (lottery play counts as a buy)
       this.storageSvc.incrementUserPoints(winner, 67);
 

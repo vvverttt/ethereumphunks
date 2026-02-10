@@ -410,40 +410,42 @@ END;$$;
 ALTER FUNCTION "public"."fetch_collections_with_previews_sepolia"("preview_limit" integer, "show_inactive" boolean) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."fetch_ethscriptions_owned_with_listings_and_bids"("address" "text", "collection_slug" "text" DEFAULT 'ethereum-phunks'::"text", "max_results" integer DEFAULT 10000) RETURNS TABLE("ethscription" "json")
+CREATE OR REPLACE FUNCTION "public"."fetch_ethscriptions_owned_with_listings_and_bids"("address" "text", "collection_slug" "text" DEFAULT 'ethereum-phunks'::"text", "max_results" integer DEFAULT 10000) RETURNS "jsonb"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-    "marketAddress" CONSTANT TEXT := '0x10e137e267dcb5774e42251c32305f457a6ae5ec';  -- market address
-    "auctionAddress" CONSTANT TEXT := ''; -- auction address
+    "marketAddress" CONSTANT TEXT := '0x10e137e267dcb5774e42251c32305f457a6ae5ec';
+    result_json JSONB;
 BEGIN
-    RETURN QUERY
-    SELECT json_build_object(
-        'phunk', json_strip_nulls(json_build_object(
-            'hashId', p."hashId",
-            'tokenId', p."tokenId",
-            'owner', p.owner,
-            'prevOwner', p."prevOwner",
-            'slug', p.slug,
-            'sha', p.sha
-        )),
-        'listing', json_agg(json_strip_nulls(json_build_object(
-            'createdAt', l."createdAt",
-            'minValue', l."minValue"
-        ))) FILTER (WHERE l."hashId" IS NOT NULL)
-        -- ,
-        -- 'bid', json_agg(json_strip_nulls(json_build_object(
-        --     'createdAt', b."createdAt",
-        --     'value', b.value
-        -- ))) FILTER (WHERE b."hashId" IS NOT NULL)
-    )
-    FROM public.ethscriptions p
-    LEFT JOIN public.listings l ON p."hashId" = l."hashId" AND l."toAddress" = '0x0000000000000000000000000000000000000000'
-    LEFT JOIN public.bids b ON p."hashId" = b."hashId"
-    WHERE (p.owner = address OR (p.owner = "marketAddress" AND p."prevOwner" = address))
-          AND p."slug" = collection_slug
-    GROUP BY p."hashId", p."tokenId", p.owner, p."prevOwner", p.slug, p.sha
-    LIMIT max_results;
+    SELECT COALESCE(jsonb_agg(row_data), '[]'::jsonb)
+    INTO result_json
+    FROM (
+        SELECT jsonb_build_object(
+            'phunk', jsonb_strip_nulls(jsonb_build_object(
+                'hashId', p."hashId",
+                'tokenId', p."tokenId",
+                'owner', p.owner,
+                'prevOwner', p."prevOwner",
+                'slug', p.slug,
+                'sha', p.sha
+            )),
+            'listing', (
+                SELECT jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
+                    'createdAt', l."createdAt",
+                    'minValue', l."minValue"
+                )))
+                FROM public.listings l
+                WHERE l."hashId" = p."hashId"
+                AND l."toAddress" = '0x0000000000000000000000000000000000000000'
+            )
+        ) as row_data
+        FROM public.ethscriptions p
+        WHERE (p.owner = address OR (p.owner = "marketAddress" AND p."prevOwner" = address))
+              AND p."slug" = collection_slug
+        LIMIT max_results
+    ) sub;
+
+    RETURN result_json;
 END;
 $$;
 

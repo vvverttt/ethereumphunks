@@ -138,7 +138,6 @@ export class ItemViewComponent {
   );
 
   blocksBehind$ = this.store.select(appStateSelectors.selectBlocksBehind).pipe(
-    filter((blocksBehind) => !!blocksBehind),
     map((blocksBehind) => blocksBehind > 6),
   );
 

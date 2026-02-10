@@ -149,25 +149,27 @@
             </div>
           }
 
-          <app-phunk-grid
-            [observe]="true"
-            [marketType]="marketType"
-            [viewType]="marketType === 'owned' ? 'owned' : 'market'"
-            [activeSort]="(activeSort$ | async).value"
-            [limit]="250"
-            [traitFilters]="marketType === 'all' ? null : (activeTraitFilters$ | async)"
-            [phunkData]="phunkData.data"
-            [total]="phunkData.total"
-            [selectAll]="selectAll"
-            [walletAddress]="(walletAddress$ | async)"
-            [selectable]="
-              selectMultipleActive
-              && (((marketType === 'owned')
-              && (route.snapshot.queryParams.address | lowercase) === (walletAddress$ | async)) || marketType === 'listings')
-            "
-            [(selected)]="selected"
-            (selectedChange)="selectedChange($event)"
-          />
+          @if (phunkData.data.length) {
+            <app-phunk-grid
+              [observe]="true"
+              [marketType]="marketType"
+              [viewType]="marketType === 'owned' ? 'owned' : 'market'"
+              [activeSort]="(activeSort$ | async).value"
+              [limit]="250"
+              [traitFilters]="marketType === 'all' ? null : (activeTraitFilters$ | async)"
+              [phunkData]="phunkData.data"
+              [total]="phunkData.total"
+              [selectAll]="selectAll"
+              [walletAddress]="(walletAddress$ | async)"
+              [selectable]="
+                selectMultipleActive
+                && (((marketType === 'owned')
+                && (route.snapshot.queryParams.address | lowercase) === (walletAddress$ | async)) || marketType === 'listings')
+              "
+              [(selected)]="selected"
+              (selectedChange)="selectedChange($event)"
+            />
+          }
         </div>
 
         @if (marketType === 'owned') {
