@@ -26,7 +26,7 @@ CREATE OR REPLACE FUNCTION "public"."addresses_are_holders"("addresses" "text"[]
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-  market_address text := '0xd3418772623be1a3cc6b6d45cb46420cedd9154a';
+  market_address text := '0x10e137e267dcb5774e42251c32305f457a6ae5ec';
 BEGIN
   RETURN (
     WITH filtered AS (
@@ -414,7 +414,7 @@ CREATE OR REPLACE FUNCTION "public"."fetch_ethscriptions_owned_with_listings_and
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-    "marketAddress" CONSTANT TEXT := '0xd3418772623be1a3cc6b6d45cb46420cedd9154a';  -- market address
+    "marketAddress" CONSTANT TEXT := '0x10e137e267dcb5774e42251c32305f457a6ae5ec';  -- market address
     "auctionAddress" CONSTANT TEXT := ''; -- auction address
 BEGIN
     RETURN QUERY
@@ -582,7 +582,7 @@ CREATE OR REPLACE FUNCTION "public"."fetch_events"("p_limit" integer, "p_type" "
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-    "marketAddress" CONSTANT TEXT := '0xd3418772623be1a3cc6b6d45cb46420cedd9154a';  -- market address
+    "marketAddress" CONSTANT TEXT := '0x10e137e267dcb5774e42251c32305f457a6ae5ec';  -- market address
     "auctionAddress" CONSTANT TEXT := ''; -- auction address
 BEGIN
     RETURN QUERY EXECUTE

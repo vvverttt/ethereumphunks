@@ -134,7 +134,8 @@ section {
       (transfer): var(--transferred-color),
       (offered phunkoffered phunkofferwithdrawn phunknolongerforsale): var(--listed-color),
       (phunkbidentered phunkbidwithdrawn): var(--bid-color),
-      (bridgein bridgeout): var(--magma)
+      (bridgein bridgeout): var(--magma),
+      (prizeawarded): var(--won-color)
     );
 
     @each $events, $color in $event-color-groups {
