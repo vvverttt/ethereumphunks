@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { StorageService } from '@/modules/storage/storage.service';
 import { lotteryAbi, lotteryAddressL1 } from '@/constants/ethereum';
+import { TransferEthscriptionForPreviousOwnerSignature } from '@/constants/esips';
 
 import { TransactionReceipt, decodeEventLog, zeroAddress } from 'viem';
 
@@ -111,21 +112,43 @@ export class LotteryService {
       // Award 67 buyer points to the lottery winner (lottery play counts as a buy)
       this.storageSvc.incrementUserPoints(winner, 67);
 
-      // Remove any stale "transfer" event from this same tx (happens when
-      // re-indexing a block that was first processed before the ESIP-2 filter)
+      // Remove any stale events for this hashId in this tx (re-indexing cleanup)
       await this.storageSvc.supabase
         .from('events' + suffix)
         .delete()
         .eq('hashId', hashId)
         .eq('txHash', txHash.toLowerCase())
-        .eq('type', 'transfer');
+        .in('type', ['transfer', 'PrizeAwarded']);
 
-      // Insert PrizeAwarded event so it shows in Recent Activity
-      const txId = `${txHash.toLowerCase()}-${logIndex}`;
+      // Find the ESIP-2 transfer log to get its logIndex
+      const esip2Log = receipt.logs.find(
+        (log: any) => log.address?.toLowerCase() === lotteryAddressL1
+          && log.topics?.[0] === TransferEthscriptionForPreviousOwnerSignature
+      );
+      const transferLogIndex = (esip2Log as any)?.logIndex ?? 0;
+
+      // Insert transfer event (ethscription moved from lottery → winner)
       await this.storageSvc.supabase
         .from('events' + suffix)
         .upsert({
-          txId,
+          txId: `${txHash.toLowerCase()}-${transferLogIndex}`,
+          blockTimestamp: createdAt,
+          type: 'transfer',
+          value: '0',
+          hashId,
+          from: lotteryAddressL1,
+          to: winner,
+          blockNumber: Number(receipt.blockNumber),
+          blockHash: receipt.blockHash?.toLowerCase() || '',
+          txIndex: Number(receipt.transactionIndex),
+          txHash: txHash.toLowerCase(),
+        });
+
+      // Insert PrizeAwarded event (shows as "Won" in activity)
+      await this.storageSvc.supabase
+        .from('events' + suffix)
+        .upsert({
+          txId: `${txHash.toLowerCase()}-${logIndex}`,
           blockTimestamp: createdAt,
           type: 'PrizeAwarded',
           value: '0',
@@ -136,7 +159,7 @@ export class LotteryService {
           blockHash: receipt.blockHash?.toLowerCase() || '',
           txIndex: Number(receipt.transactionIndex),
           txHash: txHash.toLowerCase(),
-        }, { ignoreDuplicates: true });
+        });
     }
   }
 }
