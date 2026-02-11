@@ -11,7 +11,7 @@
 }
 
 // Lottery palette
-$lottery-bg: #000000;
+$lottery-bg: #111a00;
 $lottery-accent: #c3ff00;
 $lottery-text: #fff;
 $lottery-muted: #c3ff00;
@@ -20,7 +20,7 @@ $lottery-muted: #c3ff00;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
+  min-height: auto;
   background-color: $lottery-bg;
   color: $lottery-text;
 }
@@ -32,8 +32,8 @@ $lottery-muted: #c3ff00;
   width: 100%;
   max-width: 726px;
   padding: 0 2rem;
-  padding-top: 6rem;
-  padding-bottom: 4rem;
+  padding-top: 4.5rem;
+  padding-bottom: 0;
 }
 
 // =========================================================
@@ -93,8 +93,8 @@ $lottery-muted: #c3ff00;
 
 .lottery-header {
   text-align: center;
-  margin-top: 4rem;
-  margin-bottom: 3rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 
   h1 {
     font-family: '04B_30', monospace;
@@ -271,16 +271,16 @@ $lottery-muted: #c3ff00;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 4rem;
+  margin-top: 2rem;
   gap: 1rem;
 }
 
 .play-button {
   font-family: '04B_30', monospace;
   background-color: $lottery-accent;
-  color: $lottery-bg;
+  color: #fff;
   border: none;
-  padding: 1.5rem 2.5rem;
+  padding: 2rem 3.5rem;
   font-size: 2.4rem;
   border-radius: 10px;
   cursor: pointer;
@@ -317,7 +317,7 @@ $lottery-muted: #c3ff00;
   text-align: center;
 
   .pool-info {
-    opacity: 0.6;
+    opacity: 1;
   }
 }
 
@@ -518,8 +518,8 @@ $lottery-muted: #c3ff00;
 .recent-wins {
   width: 100%;
   max-width: 726px;
-  margin-top: 4rem;
-  padding: 0 0 5rem;
+  margin-top: 2rem;
+  padding: 0 0 8rem;
 
   .inner {
     width: 100%;
