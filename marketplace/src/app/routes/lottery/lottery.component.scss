@@ -577,6 +577,10 @@ $lottery-muted: #c3ff00;
 // =========================================================
 
 @media (max-width: $mobile) {
+  .images-header {
+    display: none;
+  }
+
   .images-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 5px;
