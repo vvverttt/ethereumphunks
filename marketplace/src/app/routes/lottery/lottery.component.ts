@@ -613,7 +613,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const record = this.pendingWinRecord;
       this.pendingWinRecord = null;
       setTimeout(() => {
-        this.recentWins.update(wins => [record, ...wins]);
+        // Skip if Supabase realtime already delivered this win
+        this.recentWins.update(wins =>
+          wins.some(w => w.hash_id === record.hash_id) ? wins : [record, ...wins]
+        );
       }, 4000);
     }
   }
