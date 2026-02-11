@@ -608,10 +608,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.spinPhase.set('won');
     this.startFireworks();
 
-    // Add to recent wins now that the reveal is visible
+    // Delay adding to recent wins so fireworks have time to play
     if (this.pendingWinRecord) {
-      this.recentWins.update(wins => [this.pendingWinRecord!, ...wins]);
+      const record = this.pendingWinRecord;
       this.pendingWinRecord = null;
+      setTimeout(() => {
+        this.recentWins.update(wins => [record, ...wins]);
+      }, 4000);
     }
   }
 
@@ -660,7 +663,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
   private subscribeRecentWins() {
     this.recentWinsSub = this.lotterySvc.fetchRecentWins().subscribe(wins => {
-      this.recentWins.set(wins);
+      // Don't update during play — would spoil the reveal before fireworks
+      if (!this.playInProgress) {
+        this.recentWins.set(wins);
+      }
     });
   }
 
