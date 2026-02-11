@@ -5,8 +5,8 @@
   "scripts": {
     "prebuild": "node prebuild.js",
     "ng": "ng",
-    "start:sepolia": "ng serve --configuration dev-sepolia --host 0.0.0.0 --port 4200",
-    "start:mainnet": "ng serve --configuration dev-mainnet --host 0.0.0.0 --port 4200",
+    "start:sepolia": "ng serve --configuration dev-sepolia --host 0.0.0.0 --port 9000",
+    "start:mainnet": "ng serve --configuration dev-mainnet --host 0.0.0.0 --port 9000",
     "start:sepolia:9000": "ng serve --configuration dev-sepolia --host 0.0.0.0 --port 9000",
     "start:mainnet:9000": "ng serve --configuration dev-mainnet --host 0.0.0.0 --port 9000",
     "build": "yarn build:sepolia && yarn build:mainnet",

@@ -2,7 +2,6 @@
 @use 'abstracts/mixins' as *;
 
 :host {
-  width: 100%;
   display: grid;
   align-content: start;
   grid-template-columns: repeat(16, calc(100% / 16));

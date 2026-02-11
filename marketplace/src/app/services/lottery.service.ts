@@ -90,7 +90,8 @@ export class LotteryService {
   async play(): Promise<string | undefined> {
     await this.web3Svc.switchNetwork();
 
-    const chainId = getChainId(this.web3Svc.config);
+    // After switchNetwork('l1') we're guaranteed on the target chain
+    const chainId = environment.chainId;
     const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
     const publicClient = getPublicClient(this.web3Svc.config, { chainId });
 

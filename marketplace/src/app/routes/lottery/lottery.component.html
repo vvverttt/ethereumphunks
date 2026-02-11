@@ -58,11 +58,7 @@
       @if (spinPhase() === 'loading') {
         Confirm in wallet...
       } @else if (spinPhase() === 'confirming') {
-        @if (confirmElapsed() >= 15) {
-          Confirming... {{ confirmElapsed() }}s — speed up in wallet
-        } @else {
-          Confirming... {{ confirmElapsed() }}s
-        }
+        Confirming... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'spinning') {
         Spinning...
       } @else if (spinPhase() === 'decelerating') {

@@ -1,4 +1,4 @@
-import { Injectable, NgZone, signal } from '@angular/core';
+import { inject, Injectable, NgZone, signal } from '@angular/core';
 
 import { Store } from '@ngrx/store';
 
@@ -25,10 +25,10 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
 
-import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
+import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, formatEther, isAddress, keccak256, parseEther, parseGwei, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
-
+import { GasService } from './gas.service';
 const marketAddress = environment.marketAddress;
 const marketAddressL2 = environment.marketAddressL2;
 const pointsAddress = environment.pointsAddress;
@@ -48,6 +48,8 @@ const metadata = {
 })
 
 export class Web3Service {
+
+  private gasSvc = inject(GasService);
 
   maxCooldown = 4;
   web3Connecting: boolean = false;
@@ -373,8 +375,18 @@ export class Web3Service {
         new Promise(resolve => setTimeout(resolve, 3000)),
       ]);
     }
-    const chainId = getChainId(this.config);
-    const walletClient = await getWalletClient(this.config, { chainId });
+
+    let chainId: number;
+    let walletClient: GetWalletClientReturnType;
+    try {
+      chainId = getChainId(this.config);
+      walletClient = await getWalletClient(this.config, { chainId });
+    } catch {
+      // Connector not fully hydrated — force reconnect and retry
+      await reconnect(this.config);
+      chainId = getChainId(this.config);
+      walletClient = await getWalletClient(this.config, { chainId });
+    }
 
     if (l === 'l1') {
       console.log('switching chain', chainId, environment.chainId);
@@ -516,6 +528,15 @@ export class Web3Service {
     if (value) tx.value = value;
 
     const { request, result } = await publicClient.simulateContract(tx);
+
+    // Minimal gas: base fee only, no tip
+    const gas = await firstValueFrom(this.gasSvc.gas$);
+    if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
+      const base = parseGwei(gas.ProposeGasPrice);
+      request.maxFeePerGas = base;
+      request.maxPriorityFeePerGas = 0n;
+    }
+
     return await walletClient.writeContract(request);
   }
 
@@ -698,6 +719,14 @@ export class Web3Service {
       value: BigInt(0),
       data: hashId as `0x${string}`,
     });
+
+    // Minimal gas: base fee only, no tip
+    const gas = await firstValueFrom(this.gasSvc.gas$);
+    if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
+      const base = parseGwei(gas.ProposeGasPrice);
+      req.maxFeePerGas = base;
+      req.maxPriorityFeePerGas = 0n;
+    }
 
     return wallet?.sendTransaction(req);
   }
@@ -1077,20 +1106,25 @@ export class Web3Service {
    * @returns Promise resolving to the transaction receipt once found
    */
   pollReceipt(hash: string): Promise<TransactionReceipt> {
-    let resolved = false;
-    return new Promise(async (resolve, reject) => {
-      while (!resolved) {
-        // console.log('polling');
+    return new Promise((resolve) => {
+      let busy = false;
+      const interval = setInterval(async () => {
+        if (busy) return;
+        busy = true;
         try {
-          const receipt = await this.waitForTransaction(hash);
+          const receipt = await this.l1Client.getTransactionReceipt({
+            hash: hash as `0x${string}`,
+          });
           if (receipt) {
-            resolved = true;
+            clearInterval(interval);
             resolve(receipt);
+            return;
           }
-        } catch (err) {
-          console.log(err);
+        } catch {
+          // Not mined yet — keep polling
         }
-      }
+        busy = false;
+      }, 1000);
     });
   }
 

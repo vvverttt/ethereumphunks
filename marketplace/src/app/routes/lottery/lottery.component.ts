@@ -37,10 +37,10 @@ function getSpinPath(count: number): number[] {
   return path;
 }
 
-const INITIAL_STEP_DELAY = 600;
-const DECAY_FACTOR = 1.1;
-const MIN_ROTATIONS = 3;
-const MAX_STEP_DELAY = 700;
+const INITIAL_STEP_DELAY = 400;
+const DECAY_FACTOR = 1.12;
+const MIN_ROTATIONS = 1;
+const MAX_STEP_DELAY = 600;
 
 @Component({
   selector: 'app-lottery',
@@ -204,27 +204,27 @@ export class LotteryComponent implements OnInit, OnDestroy {
         const randomOffset = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
         const hashIds = await this.lotterySvc.getPoolItems(randomOffset, fetchCount);
 
-        // Shuffle hashIds first so we pick random ones
-        for (let i = hashIds.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [hashIds[i], hashIds[j]] = [hashIds[j], hashIds[i]];
-        }
-
-        const cellCount = Math.min(hashIds.length, 8);
-        const selectedIds = hashIds.slice(0, cellCount);
-
+        // Look up all fetched items, dedup by sha, then pick 8 unique
         const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds(
-          selectedIds.map(h => h.toLowerCase())
+          hashIds.map(h => h.toLowerCase())
         );
 
-        // Shuffle results so display order varies each load
-        for (let i = ethscriptions.length - 1; i > 0; i--) {
+        const seen = new Set<string>();
+        const unique = ethscriptions.filter(e => {
+          if (!e?.sha || seen.has(e.sha)) return false;
+          seen.add(e.sha);
+          return true;
+        });
+
+        // Shuffle so display order varies each load
+        for (let i = unique.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          [ethscriptions[i], ethscriptions[j]] = [ethscriptions[j], ethscriptions[i]];
+          [unique[i], unique[j]] = [unique[j], unique[i]];
         }
 
-        for (let i = 0; i < cellCount; i++) {
-          const eth = ethscriptions[i];
+        const displayCount = Math.min(unique.length, 8);
+        for (let i = 0; i < displayCount; i++) {
+          const eth = unique[i];
           items.push({
             index: i,
             hashId: eth?.hashId || '',
@@ -306,11 +306,14 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const hash = await this.lotterySvc.play();
       if (!hash) throw new Error('Transaction failed');
 
+      // Show confirming phase with timer while tx is mined
       this.spinPhase.set('confirming');
       this.confirmElapsed.set(0);
-      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
+      this.confirmTimer = setInterval(() => {
+        this.confirmElapsed.update(v => v + 1);
+      }, 1000);
 
-      // Wait for receipt — no timeout, pollReceipt retries until mined
+      // Wait for on-chain confirmation
       const receipt = await this.web3Svc.pollReceipt(hash);
       clearInterval(this.confirmTimer);
 
@@ -332,31 +335,34 @@ export class LotteryComponent implements OnInit, OnDestroy {
         } catch {}
       }
 
-      // Pick a cell for the winner to land on
-      const winCellIndex = this.spinPath[
+      // Start spinning immediately — look up winner details in parallel
+      this.startSpin();
+
+      // Resolve winner details while spin is running
+      let winCellIndex = this.spinPath[
         (wonHashId ? playId : Math.floor(Math.random() * this.spinPath.length)) % this.spinPath.length
       ];
 
       if (wonHashId) {
-        // Look up the won ethscription's image
         try {
           const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds([wonHashId.toLowerCase()]);
           const won = ethscriptions[0];
 
           if (won) {
-            // Update the winning grid cell with the actual prize image
-            this.gridItems.update(items =>
-              items.map((item, i) =>
-                i === winCellIndex
-                  ? {
-                      ...item,
-                      hashId: won.hashId,
-                      sha: won.sha,
-                      imageUrl: `${this.staticUrl}/static/images/${won.sha}`,
-                    }
-                  : item
-              )
-            );
+            // If the won image already exists in the grid, use that cell
+            const existingIdx = this.gridItems().findIndex(item => item.sha === won.sha);
+            if (existingIdx !== -1) {
+              winCellIndex = existingIdx;
+            } else {
+              // Place won image in target cell
+              this.gridItems.update(items =>
+                items.map((item, i) =>
+                  i === winCellIndex
+                    ? { ...item, hashId: won.hashId, sha: won.sha, imageUrl: `${this.staticUrl}/static/images/${won.sha}` }
+                    : item
+                )
+              );
+            }
 
             const address = await firstValueFrom(this.address$);
             const winRecord: LotteryWin = {
@@ -380,20 +386,18 @@ export class LotteryComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Now start spin and immediately schedule deceleration
-      // startSpin() resets targetWinIndex and shouldDecelerate, so set them AFTER
-      this.startSpin();
+      // Signal deceleration — spin will slow and land on winner
       this.targetWinIndex = winCellIndex;
       this.shouldDecelerate = true;
 
-      // Refresh pool size
-      const newSize = await this.lotterySvc.getPoolSize();
-      this.poolSize.set(Number(newSize));
+      // Refresh pool size in background
+      this.lotterySvc.getPoolSize().then(newSize => this.poolSize.set(Number(newSize)));
 
       // Refresh owner balance if applicable
       if (this.isOwner()) {
-        const balance = await this.lotterySvc.getContractBalance();
-        this.contractBalance.set(formatEther(balance));
+        this.lotterySvc.getContractBalance().then(balance =>
+          this.contractBalance.set(formatEther(balance))
+        );
       }
 
     } catch (err: any) {
@@ -493,8 +497,8 @@ export class LotteryComponent implements OnInit, OnDestroy {
   // Spin Animation
   // =========================================================
 
-  private startSpin() {
-    this.spinPhase.set('spinning');
+  private startSpin(initialPhase: SpinPhase = 'spinning') {
+    this.spinPhase.set(initialPhase);
     this.currentStepIndex = 0;
     this.stepDelay = INITIAL_STEP_DELAY;
     this.shouldDecelerate = false;
