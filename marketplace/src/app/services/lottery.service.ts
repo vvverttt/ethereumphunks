@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
-import { Observable, from, merge, map, switchMap } from 'rxjs';
-import { formatEther } from 'viem';
+import { Observable, from, merge, map, switchMap, firstValueFrom } from 'rxjs';
+import { formatEther, parseGwei } from 'viem';
 import { getPublicClient, getWalletClient, getChainId } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
 import { Web3Service } from './web3.service';
+import { GasService } from './gas.service';
 import { PhilipLotteryV67ABI } from '@/abi/PhilipLotteryV67';
 import { LotteryWin } from '@/models/lottery';
 
@@ -19,6 +20,8 @@ const lotteryAddress = (environment as any).lotteryAddress as `0x${string}`;
   providedIn: 'root'
 })
 export class LotteryService {
+
+  private gasSvc = inject(GasService);
 
   constructor(
     private web3Svc: Web3Service,
@@ -107,6 +110,14 @@ export class LotteryService {
       account: walletClient.account.address,
       value: playPrice,
     });
+
+    // Cheap gas: base fee + 0 tip (same pattern as writeMarketContract)
+    const gas = await firstValueFrom(this.gasSvc.gas$);
+    if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
+      const base = parseGwei(gas.ProposeGasPrice);
+      request.maxFeePerGas = base;
+      request.maxPriorityFeePerGas = 0n;
+    }
 
     return await walletClient.writeContract(request);
   }

@@ -39,7 +39,7 @@ function getSpinPath(count: number): number[] {
 
 const INITIAL_STEP_DELAY = 400;
 const DECAY_FACTOR = 1.12;
-const MIN_ROTATIONS = 1;
+const MIN_ROTATIONS = 3;
 const MAX_STEP_DELAY = 600;
 
 @Component({
@@ -338,6 +338,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
       // Start spinning immediately — look up winner details in parallel
       this.startSpin();
 
+      // Guarantee minimum spin time before deceleration can start
+      const minSpinTime = MIN_ROTATIONS * this.spinPath.length * INITIAL_STEP_DELAY;
+      const spinStarted = Date.now();
+
       // Resolve winner details while spin is running
       let winCellIndex = this.spinPath[
         (wonHashId ? playId : Math.floor(Math.random() * this.spinPath.length)) % this.spinPath.length
@@ -384,6 +388,12 @@ export class LotteryComponent implements OnInit, OnDestroy {
         } catch (err) {
           console.error('Failed to look up won ethscription:', err);
         }
+      }
+
+      // Wait for minimum spin time before allowing deceleration
+      const elapsed = Date.now() - spinStarted;
+      if (elapsed < minSpinTime) {
+        await new Promise(r => setTimeout(r, minSpinTime - elapsed));
       }
 
       // Signal deceleration — spin will slow and land on winner
