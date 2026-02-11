@@ -581,6 +581,10 @@ $lottery-muted: #c3ff00;
     display: none;
   }
 
+  .lottery-page {
+    padding-top: calc(var(--header-height) + 2rem);
+  }
+
   .images-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 5px;
