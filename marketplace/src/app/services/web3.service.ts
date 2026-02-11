@@ -57,6 +57,7 @@ export class Web3Service {
   l2Client!: PublicClient;
 
   config!: Config;
+  connectionReady!: Promise<any>;
   connectDialogOpen = signal(false);
 
   globalConfig$ = this.store.select(state => state.appState.config).pipe(
@@ -144,10 +145,10 @@ export class Web3Service {
 
         if (account.isConnected && account.address) {
           localStorage.setItem('ep_wallet', account.address.toLowerCase());
-        } else if (account.isDisconnected) {
-          localStorage.removeItem('ep_wallet');
-          localStorage.removeItem('ep_wallet_type');
         }
+        // ep_wallet is only cleared by disconnectWeb3() — NOT here.
+        // Clearing here causes a race: reconnect() can temporarily set
+        // status to 'disconnected' which wipes the saved wallet.
       }),
       catchError((err) => {
         console.error('[Web3Service] watchAccount error:', err);
@@ -155,8 +156,8 @@ export class Web3Service {
       }),
     ).subscribe();
 
-    // Restore wallet from our saved snapshot (immune to watchAccount clearing)
-    this.restoreConnection(savedWallet, savedType);
+    // Restore wallet from our saved snapshot
+    this.connectionReady = this.restoreConnection(savedWallet, savedType);
   }
 
   private async restoreConnection(saved: string | null, savedType: string | null): Promise<void> {
@@ -166,29 +167,36 @@ export class Web3Service {
     await new Promise(r => setTimeout(r, 300));
 
     try {
-      if (savedType === 'walletConnect') {
-        // WalletConnect: use reconnect() which silently restores sessions
-        // without popping up the QR modal (unlike wagmiConnect)
-        await reconnect(this.config);
-        const account = getAccount(this.config);
-        if (!account.address || account.address.toLowerCase() !== saved) {
-          localStorage.removeItem('ep_wallet');
-          localStorage.removeItem('ep_wallet_type');
-          try { await disconnect(this.config); } catch {}
-        } else {
-          console.log('[Web3Service] Restored WalletConnect session');
-        }
+      // reconnect() resolves serialized connectors from storage rehydration.
+      // Without this, getWalletClient() fails with "getChainId is not a function".
+      // Only reconnect the relevant connector to avoid WC SDK init delay (~5-10s).
+      const targetConnectors = this.getReconnectConnectors(savedType);
+      await reconnect(this.config, { connectors: targetConnectors });
+      const account = getAccount(this.config);
+
+      if (account.address && account.address.toLowerCase() === saved) {
+        console.log('[Web3Service] Restored connection via reconnect');
         return;
       }
 
+      // reconnect didn't restore the expected address — try manual connect
+      if (savedType === 'walletConnect') {
+        // WC session expired — clean up
+        localStorage.removeItem('ep_wallet');
+        localStorage.removeItem('ep_wallet_type');
+        return;
+      }
+
+      // For injected wallets (Phantom, Rainbow, etc.), try targeted connect
       const phantom = (window as any).phantom?.ethereum;
       const connector = this.getConnectorForType(savedType, !!phantom);
       await wagmiConnect(this.config, { connector });
 
-      // Verify the restored address matches what we saved
-      const account = getAccount(this.config);
-      if (account.address?.toLowerCase() !== saved) {
-        await disconnect(this.config);
+      const newAccount = getAccount(this.config);
+      if (newAccount.address?.toLowerCase() !== saved) {
+        try { await disconnect(this.config); } catch {}
+        localStorage.removeItem('ep_wallet');
+        localStorage.removeItem('ep_wallet_type');
       } else {
         console.log('[Web3Service] Restored connection with', savedType || 'injected');
       }
@@ -224,6 +232,20 @@ export class Web3Service {
   }
 
   /**
+   * Returns only the relevant connectors for reconnect() to avoid
+   * slow WC SDK initialization when the user uses an injected wallet.
+   */
+  private getReconnectConnectors(savedType: string | null): any[] {
+    if (savedType === 'walletConnect') {
+      return this.config.connectors.filter(c => c.type === 'walletConnect');
+    }
+    if (savedType === 'coinbaseWallet') {
+      return this.config.connectors.filter(c => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
+    }
+    return this.config.connectors.filter(c => c.type === 'injected');
+  }
+
+  /**
    * Finds the Rainbow provider from window.ethereum or its providers array
    */
   private findRainbowProvider(): any {
@@ -248,9 +270,15 @@ export class Web3Service {
     if (this.blockWatcher) return;
     this.blockWatcher = this.l1Client.watchBlockNumber({
       emitOnBegin: true,
+      pollingInterval: 12_000,
       onBlockNumber: (blockNumber) => {
         const currentBlock = Number(blockNumber);
         this.store.dispatch(appStateActions.setCurrentBlock({ currentBlock }));
+      },
+      onError: (error) => {
+        console.error('[Web3Service] Block watcher error, restarting:', error);
+        this.blockWatcher = undefined;
+        setTimeout(() => this.startBlockWatcher(), 5_000);
       }
     });
   }
@@ -326,11 +354,11 @@ export class Web3Service {
    * Clears wallet address and connection state from store
    */
   async disconnectWeb3(): Promise<void> {
-    if (getAccount(this.config).isConnected) {
-      await disconnect(this.config);
-      this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: undefined }));
-      this.store.dispatch(appStateActions.setConnected({ connected: false }));
-    }
+    try { await disconnect(this.config); } catch {}
+    localStorage.removeItem('ep_wallet');
+    localStorage.removeItem('ep_wallet_type');
+    this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: undefined }));
+    this.store.dispatch(appStateActions.setConnected({ connected: false }));
   }
 
   /**
@@ -338,8 +366,15 @@ export class Web3Service {
    * @param l Network to switch to - 'l1' for mainnet/testnet or 'l2' for Magma
    */
   async switchNetwork(l: 'l1' | 'l2' = 'l1'): Promise<void> {
-    const walletClient = await getWalletClient(this.config);
+    // Wait for connection restoration, but don't hang forever
+    if (this.connectionReady) {
+      await Promise.race([
+        this.connectionReady,
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ]);
+    }
     const chainId = getChainId(this.config);
+    const walletClient = await getWalletClient(this.config, { chainId });
 
     if (l === 'l1') {
       console.log('switching chain', chainId, environment.chainId);
@@ -654,7 +689,8 @@ export class Web3Service {
 
     await this.switchNetwork();
 
-    const wallet = await getWalletClient(this.config);
+    const chainId = getChainId(this.config);
+    const wallet = await getWalletClient(this.config, { chainId });
     const req = await wallet.prepareTransactionRequest({
       chain: wallet.chain,
       account: getAccount(this.config).address as `0x${string}`,
@@ -692,7 +728,8 @@ export class Web3Service {
 
     const data = hexArr.map((res) => res.replace('0x', '')).join('');
 
-    const wallet = await getWalletClient(this.config);
+    const chainId = getChainId(this.config);
+    const wallet = await getWalletClient(this.config, { chainId });
 
     const req = await wallet.prepareTransactionRequest({
       chain: wallet.chain,

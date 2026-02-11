@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
-import { distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, tap } from 'rxjs';
 
 import { PhunkBillboardComponent } from '@/components/phunk-billboard/phunk-billboard.component';
 import { TxHistoryComponent } from '@/components/tx-history/tx-history.component';
@@ -129,11 +129,18 @@ export class ItemViewComponent {
     )),
   );
 
-  isCooling$ = this.store.select(appStateSelectors.selectCooldowns).pipe(
-    filter((cooldowns) => !!cooldowns),
-    switchMap((cooldowns) => this.singlePhunk$.pipe(
+  isCooling$ = combineLatest([
+    this.store.select(appStateSelectors.selectCooldowns),
+    this.store.select(appStateSelectors.selectCurrentBlock),
+  ]).pipe(
+    switchMap(([cooldowns, currentBlock]) => this.singlePhunk$.pipe(
       filter((phunk) => !!phunk),
-      map((phunk) => cooldowns[phunk?.hashId || ''] > 0),
+      map((phunk) => {
+        const cooldownBlock = cooldowns?.[phunk?.hashId || ''];
+        if (!cooldownBlock || cooldownBlock <= 0) return false;
+        if (currentBlock > 0 && currentBlock >= cooldownBlock + this.web3Svc.maxCooldown) return false;
+        return true;
+      }),
     )),
   );
 

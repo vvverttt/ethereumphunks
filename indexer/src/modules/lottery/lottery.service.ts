@@ -111,7 +111,16 @@ export class LotteryService {
       // Award 67 buyer points to the lottery winner (lottery play counts as a buy)
       this.storageSvc.incrementUserPoints(winner, 67);
 
-      // Also insert into events table so it shows in Recent Activity
+      // Remove any stale "transfer" event from this same tx (happens when
+      // re-indexing a block that was first processed before the ESIP-2 filter)
+      await this.storageSvc.supabase
+        .from('events' + suffix)
+        .delete()
+        .eq('hashId', hashId)
+        .eq('txHash', txHash.toLowerCase())
+        .eq('type', 'transfer');
+
+      // Insert PrizeAwarded event so it shows in Recent Activity
       const txId = `${txHash.toLowerCase()}-${logIndex}`;
       await this.storageSvc.supabase
         .from('events' + suffix)

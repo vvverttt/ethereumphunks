@@ -52,11 +52,17 @@
     <button
       class="play-button"
       [class.shown]="buttonShown()"
-      [class.spinning]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading'"
-      [disabled]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading' || (poolSize() === 0 && spinPhase() !== 'won') || !isActive()"
+      [class.spinning]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading' || spinPhase() === 'confirming'"
+      [disabled]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading' || spinPhase() === 'confirming' || (poolSize() === 0 && spinPhase() !== 'won') || !isActive()"
       (click)="spinPhase() === 'won' ? onSpinAgain() : onPlay()">
       @if (spinPhase() === 'loading') {
         Confirm in wallet...
+      } @else if (spinPhase() === 'confirming') {
+        @if (confirmElapsed() >= 15) {
+          Confirming... {{ confirmElapsed() }}s — speed up in wallet
+        } @else {
+          Confirming... {{ confirmElapsed() }}s
+        }
       } @else if (spinPhase() === 'spinning') {
         Spinning...
       } @else if (spinPhase() === 'decelerating') {

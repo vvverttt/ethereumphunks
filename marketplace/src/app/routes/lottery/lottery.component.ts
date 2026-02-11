@@ -79,6 +79,8 @@ export class LotteryComponent implements OnInit, OnDestroy {
   loadedIn = signal(false);
   buttonShown = signal(false);
   errorMessage = signal('');
+  confirmElapsed = signal(0);
+  private confirmTimer: any;
   depositStatus = signal('');
   ownedItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean }[]>([]);
   ownedLoading = signal(false);
@@ -304,16 +306,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const hash = await this.lotterySvc.play();
       if (!hash) throw new Error('Transaction failed');
 
-      // Start spin animation immediately
-      this.startSpin();
+      this.spinPhase.set('confirming');
+      this.confirmElapsed.set(0);
+      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
 
-      // Wait for receipt with timeout (60s)
-      const receipt = await Promise.race([
-        this.web3Svc.pollReceipt(hash),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Transaction is taking longer than expected. Your prize is safe — check back shortly.')), 60000)
-        ),
-      ]);
+      // Wait for receipt — no timeout, pollReceipt retries until mined
+      const receipt = await this.web3Svc.pollReceipt(hash);
+      clearInterval(this.confirmTimer);
 
       // Parse PrizeAwarded event from receipt
       let wonHashId = '';
@@ -381,7 +380,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Always trigger deceleration (even if prize lookup failed)
+      // Now start spin and immediately schedule deceleration
+      // startSpin() resets targetWinIndex and shouldDecelerate, so set them AFTER
+      this.startSpin();
       this.targetWinIndex = winCellIndex;
       this.shouldDecelerate = true;
 
@@ -396,6 +397,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       }
 
     } catch (err: any) {
+      clearInterval(this.confirmTimer);
       this.stopSpin();
       this.spinPhase.set('idle');
       const msg = err?.shortMessage || err?.message || 'Transaction failed';
