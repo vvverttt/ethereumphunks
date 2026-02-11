@@ -1107,24 +1107,27 @@ export class Web3Service {
    */
   pollReceipt(hash: string): Promise<TransactionReceipt> {
     return new Promise((resolve) => {
-      let busy = false;
-      const interval = setInterval(async () => {
-        if (busy) return;
-        busy = true;
-        try {
-          const receipt = await this.l1Client.getTransactionReceipt({
-            hash: hash as `0x${string}`,
-          });
-          if (receipt) {
-            clearInterval(interval);
-            resolve(receipt);
-            return;
+      const poll = async () => {
+        while (true) {
+          try {
+            // Race against timeout so a hung RPC call can't block forever
+            const receipt = await Promise.race([
+              this.l1Client.getTransactionReceipt({
+                hash: hash as `0x${string}`,
+              }),
+              new Promise<null>(r => setTimeout(() => r(null), 8000)),
+            ]);
+            if (receipt) {
+              resolve(receipt);
+              return;
+            }
+          } catch {
+            // Not mined yet or RPC error — keep polling
           }
-        } catch {
-          // Not mined yet — keep polling
+          await new Promise(r => setTimeout(r, 1500));
         }
-        busy = false;
-      }, 1000);
+      };
+      poll();
     });
   }
 
