@@ -233,7 +233,7 @@
                   <h2 i18n>Attributes</h2>
                   <div class="accessories">
                     @for (item of phunk.attributes; track item; let i = $index) {
-                      @if (i > 0) {
+                      @if (i > 0 || phunk.attributes!.length === 1) {
                         <!-- {{ item | json }} -->
                         <div class="accessory">
                           @if (item.v | isNumber) {

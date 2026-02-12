@@ -30,6 +30,28 @@
   ],
   "dataGroups": [
     {
+      "name": "supabase-storage",
+      "urls": [
+        "https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 50,
+        "maxAge": "30d"
+      }
+    },
+    {
+      "name": "supabase-api",
+      "urls": [
+        "https://hzpwkpjxhtpcygrwtwku.supabase.co/rest/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 200,
+        "maxAge": "5m"
+      }
+    },
+    {
       "name": "api-freshness",
       "urls": [
         "/**"
