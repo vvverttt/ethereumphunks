@@ -13,7 +13,7 @@ import { TxPoolGateway } from './tx-pool.gateway';
     TxPoolGateway,
     {
       provide: 'WEB3_SERVICE_L1',
-      useFactory: () => new Web3Service('l1'),
+      useFactory: () => new Web3Service(),
     },
   ],
   exports: [

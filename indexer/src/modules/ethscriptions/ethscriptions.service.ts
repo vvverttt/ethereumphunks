@@ -1,15 +1,13 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { UtilityService } from '@/modules/shared/services/utility.service';
 import { Web3Service } from '@/modules/shared/services/web3.service';
 import { StorageService } from '@/modules/storage/storage.service';
 
-import { BridgeProcessingQueue } from '@/modules/queue/queues/bridge-processing.queue';
-
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { bridgeAbiL1, chain, lotteryAddressL1, marketAbiL1, marketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { chain, lotteryAddressL1, marketAbiL1, marketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -22,9 +20,7 @@ import { createHash } from 'crypto';
 export class EthscriptionsService {
 
   constructor(
-    @Optional() private readonly bridgeQueue: BridgeProcessingQueue,
     @Inject('WEB3_SERVICE_L1') private readonly web3SvcL1: Web3Service,
-    @Inject('WEB3_SERVICE_L2') private readonly web3SvcL2: Web3Service,
     private readonly storageSvc: StorageService,
     private readonly utilitySvc: UtilityService
   ) {}
@@ -151,18 +147,6 @@ export class EthscriptionsService {
       events.push(...eventArr);
     }
 
-    // const bridgeMainnetLogs = receipt.logs.filter(
-    //   (log: any) => log.address.toLowerCase() === bridgeAddressL1.toLowerCase()
-    // );
-    // if (bridgeMainnetLogs.length) {
-    //   Logger.debug(
-    //     `Processing Points event (${chain})`,
-    //     transaction.hash
-    //   );
-    //   await this.processBridgeMainnetEvents(bridgeMainnetLogs);
-    //   return events;
-    // }
-
     const pointsLogs = receipt.logs.filter(
       (log: any) => log.address.toLowerCase() === pointsAddressL1.toLowerCase()
     );
@@ -212,53 +196,6 @@ export class EthscriptionsService {
   }
 
   /**
-   * Processes the bridge mainnet (L1) events.
-   *
-   * @param bridgeMainnetLogs - An array of bridge mainnet logs.
-   * @returns A promise that resolves to void.
-   */
-  async processBridgeMainnetEvents(bridgeMainnetLogs: any[]): Promise<void> {
-    for (const log of bridgeMainnetLogs) {
-      const decoded = decodeEventLog({
-        abi: bridgeAbiL1,
-        data: log.data,
-        topics: log.topics,
-      });
-
-      const { eventName } = decoded;
-      const { args } = decoded as any;
-
-      if (!eventName || !args) return;
-
-      if (eventName === 'HashLocked') {
-        const { hashId, prevOwner } = args;
-
-        const locked = await this.storageSvc.lockEthscription(hashId);
-        if (!locked) throw new Error('Failed to lock ethscription');
-
-        // Bridge the ethscription
-        this.bridgeQueue.addHashLockedToQueue(hashId, prevOwner);
-
-        // args
-        // address prevOwner,
-        // bytes32 hashId,
-        // uint256 nonce,
-        // uint256 value
-      }
-
-      if (eventName === 'HashUnlocked') {
-        const { hashId, prevOwner } = args;
-        // const locked = await this.sbSvc.unlockEthscription(hashId);
-        // if (locked) throw new Error('Failed to unlock ethscription');
-
-        // args
-        // address prevOwner,
-        // bytes32 hashId
-      }
-    }
-  }
-
-  /**
    * Processes the points event logs and updates the users' points.
    * @param pointsLogs - An array of points event logs.
    * @returns A Promise that resolves when the processing is complete.
@@ -296,12 +233,9 @@ export class EthscriptionsService {
    */
   async distributePoints(
     fromAddress: `0x${string}`,
-    layer: 'l1' | 'l2' = 'l1'
   ): Promise<void> {
     try {
-      const points = layer === 'l1' ?
-        await this.web3SvcL1.getPoints(fromAddress) :
-        await this.web3SvcL2.getPoints(fromAddress);
+      const points = await this.web3SvcL1.getPoints(fromAddress);
 
       await this.storageSvc.updateUserPoints(fromAddress, Number(points));
       Logger.log(

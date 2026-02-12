@@ -19,8 +19,6 @@ if (!process.env.ALLOWED_ORIGINS) {
   process.env.ALLOWED_ORIGINS = 'http://localhost:9000,http://localhost:4200,https://ethereumphunks-git-market-vvverttts-projects.vercel.app,https://etherphunks.eth.limo,https://quantumphunks.com,https://www.quantumphunks.com';
 }
 
-if (!process.env.BRIDGE_L1_BLOCK_DELAY) process.env.BRIDGE_L1_BLOCK_DELAY = '10';
-
 if (!process.env.REDIS_URL) {
   process.env.REDIS_URL = 'redis://:5VuaxZYlQ6IyRN9VQEnpHpObEhAtobql@redis-13048.c17.us-east-1-4.ec2.cloud.redislabs.com:13048';
 }
@@ -44,24 +42,15 @@ if (!process.env.SUPABASE_SERVICE_ROLE) {
 }
 
 if (!process.env.MARKET_ADDRESS_MAINNET_L1) {
-  process.env.MARKET_ADDRESS_MAINNET_L1 = '0x10e137E267dCB5774e42251c32305F457a6aE5Ec';
-}
-if (!process.env.MARKET_ADDRESS_MAINNET_L2) {
-  process.env.MARKET_ADDRESS_MAINNET_L2 = '0x3Dfbc8C62d3cE0059BDaf21787EC24d5d116fe1e';
+  process.env.MARKET_ADDRESS_MAINNET_L1 = '0x7DDe39623aF1D78651b0EEc754622b95bbD56896';
 }
 
 if (!process.env.POINTS_ADDRESS_MAINNET) {
-  process.env.POINTS_ADDRESS_MAINNET = '0x28AbBC0A90d10870bcbf2d14256c6cC791090E86';
-}
-if (!process.env.DONATIONS_ADDRESS_MAINNET) {
-  process.env.DONATIONS_ADDRESS_MAINNET = '0x8191f333Da8fEB4De8Ec0d929b136297FDAA34de';
+  process.env.POINTS_ADDRESS_MAINNET = '0x0493bdBC99d17fe5fD8BD21Fd03792BE66eA3E14';
 }
 
-if (!process.env.BRIDGE_ADDRESS_MAINNET_L1) {
-  process.env.BRIDGE_ADDRESS_MAINNET_L1 = '';
-}
-if (!process.env.BRIDGE_ADDRESS_MAINNET_L2) {
-  process.env.BRIDGE_ADDRESS_MAINNET_L2 = '0x26e8fD77346b4B006C5Df61f9706581933560F12';
+if (!process.env.LOTTERY_ADDRESS_MAINNET) {
+  process.env.LOTTERY_ADDRESS_MAINNET = '0x4c6569909028F11873Ba5548900d4609a436bB98';
 }
 
 if (!process.env.API_PRIVATE_KEY) {

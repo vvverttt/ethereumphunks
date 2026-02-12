@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { Transaction, TransactionReceipt, WriteContractParameters, getAddress, toHex } from 'viem';
-import { bridgeAbiL1, bridgeAddressL1, l1Client, l2Client, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { Transaction, TransactionReceipt, getAddress, toHex } from 'viem';
+import { l1Client, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 interface GetBlockOptions {
   blockNumber?: number;
@@ -16,13 +16,7 @@ type GetBlockReturnType<T> = T & {
 @Injectable()
 export class Web3Service {
 
-  client: typeof l1Client | typeof l2Client = l1Client;
-
-  constructor(
-    private readonly layer: 'l1' | 'l2',
-  ) {
-    if (layer === 'l2') this.client = l2Client;
-  }
+  client = l1Client;
 
   async getBlock({
     blockNumber,
@@ -100,28 +94,6 @@ export class Web3Service {
     return receipt;
   }
 
-  /**
-   * Waits for a specified number of blocks to be mined.
-   * @param blocks - The number of blocks to wait for.
-   * @returns A promise that resolves when the specified number of blocks have been mined.
-   */
-  waitNBlocks(blocks: number): Promise<void> {
-    return new Promise(async (resolve) => {
-      const currentBlock = await this.client.getBlockNumber();
-      const targetBlock = currentBlock + BigInt(blocks);
-
-      const unwatch = this.client.watchBlocks({
-        onBlock: (block) => {
-          Logger.debug(`${Number(targetBlock) - Number(block.number)} blocks remaining`, 'Bridge confirmations');
-          if (Number(block.number) >= Number(targetBlock)) {
-            unwatch();
-            resolve();
-          }
-        },
-      });
-    });
-  }
-
   ///////////////////////////////////////////////////////////////////////////////
   // EtherPhunks smart contract interactions ////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////
@@ -134,17 +106,6 @@ export class Web3Service {
       args: [`${address}`],
     });
     return points as number;
-  }
-
-  async fetchNonce(address: string): Promise<bigint> {
-    // return BigInt(0);
-    const nonce = await l1Client.readContract({
-      address: bridgeAddressL1 as `0x${string}`,
-      abi: bridgeAbiL1,
-      functionName: 'expectedNonce',
-      args: [`${address}`],
-    });
-    return nonce as bigint;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -207,18 +168,5 @@ export class Web3Service {
       console.log(error);
       return null;
     }
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Estimates the gas required to execute a write contract operation.
-   *
-   * @param request - The parameters for the write contract operation.
-   * @returns A promise that resolves to the estimated gas value as a number.
-   */
-  async estimateContractGasL2(request: WriteContractParameters): Promise<number> {
-    const gas = await l2Client.estimateContractGas(request);
-    return Number(gas);
   }
 }

@@ -91,7 +91,6 @@ export interface Event {
   blockNumber: number | null;
   blockTimestamp: Date | null;
   value: string | null;
-  l2?: boolean;
 }
 
 export interface DBComment {

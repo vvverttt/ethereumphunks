@@ -1,7 +1,6 @@
 import { Inject, Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 
 import { BlockProcessingQueue } from '@/modules/queue/queues/block-processing.queue';
-import { BridgeProcessingQueue } from '@/modules/queue/queues/bridge-processing.queue';
 
 import { StorageService } from '@/modules/storage/storage.service';
 
@@ -18,7 +17,6 @@ export class AppService implements OnModuleInit {
   constructor(
     @Inject('WEB3_SERVICE_L1') private readonly web3SvcL1: Web3Service,
     @Optional() private readonly blockQueue: BlockProcessingQueue,
-    @Optional() private readonly bridgeQueue: BridgeProcessingQueue,
     private readonly storageSvc: StorageService,
     private readonly utilSvc: UtilityService
   ) {}
@@ -27,7 +25,6 @@ export class AppService implements OnModuleInit {
     if (Number(process.env.INDEXER)) {
       const clearPromises = [];
       if (this.blockQueue) clearPromises.push(this.blockQueue.clearQueue());
-      if (this.bridgeQueue) clearPromises.push(this.bridgeQueue.clearQueue());
 
       Promise.all(clearPromises).then(() => {
         Logger.debug('Queue Cleared', chain.toUpperCase());

@@ -127,7 +127,6 @@ export class StorageService implements OnModuleInit {
    * @param hashId - Hash ID of the listing
    * @param toAddress - Address that can purchase the listing
    * @param minValue - Minimum price in wei
-   * @param l2 - Whether this is an L2 listing
    */
   async createListing(
     txn: Transaction,
@@ -135,7 +134,6 @@ export class StorageService implements OnModuleInit {
     hashId: string,
     toAddress: string,
     minValue: bigint,
-    l2: boolean = false
   ): Promise<void> {
     const response: db.ListingResponse = await this.supabase
       .from('listings' + this.suffix)
@@ -147,7 +145,6 @@ export class StorageService implements OnModuleInit {
         minValue: minValue.toString(),
         listedBy: txn.from.toLowerCase(),
         toAddress: toAddress.toLowerCase(),
-        l2,
       });
 
     const { error } = response;
@@ -1010,118 +1007,6 @@ export class StorageService implements OnModuleInit {
     if (error) throw error;
   }
 
-
-  // Bridge //////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Locks an ethscription
-   * @param hashId - The hash ID of the ethscription to lock
-   * @returns True if the ethscription was locked, false otherwise
-   */
-  async lockEthscription(hashId: string): Promise<boolean> {
-    const response: db.EthscriptionResponse = await this.supabase
-      .from('ethscriptions' + this.suffix)
-      .update({
-        locked: true,
-      })
-      .eq('hashId', hashId.toLowerCase())
-      .select();
-
-    const { data, error } = response;
-    if (error) throw error;
-    return data[0].locked;
-  }
-
-  /**
-   * Unlocks an ethscription
-   * @param hashId - The hash ID of the ethscription to unlock
-   * @returns True if the ethscription was unlocked, false otherwise
-   */
-  async unlockEthscription(hashId: string): Promise<boolean> {
-    const response: db.EthscriptionResponse = await this.supabase
-      .from('ethscriptions' + this.suffix)
-      .update({
-        locked: false,
-      })
-      .eq('hashId', hashId.toLowerCase())
-      .select();
-
-    const { data, error } = response;
-    if (error) throw error;
-    return data[0].locked;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-  // L2 //////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Adds an NFT to the L2 database
-   * @param tokenId - The token ID of the NFT
-   * @param owner - The owner of the NFT
-   * @param hashId - The hash ID of the NFT
-   */
-  async addNftL2(
-    tokenId: number,
-    owner: string,
-    hashId: string,
-  ): Promise<void> {
-    const response: db.EventResponse = await this.supabase
-      .from('nfts' + this.suffix)
-      .upsert({
-        tokenId,
-        owner: owner.toLowerCase(),
-        hashId: hashId.toLowerCase(),
-      });
-
-    const { error } = response;
-    if (error) throw error;
-  }
-
-  /**
-   * Updates the owner of an NFT in the L2 database
-   * @param tokenId - The token ID of the NFT
-   * @param owner - The new owner of the NFT
-   */
-  async updateNftL2(tokenId: number, owner: string): Promise<void> {
-    const response: db.EventResponse = await this.supabase
-      .from('nfts' + this.suffix)
-      .update({ owner: owner.toLowerCase() })
-      .eq('tokenId', tokenId);
-
-    const { error } = response;
-    if (error) throw error;
-  }
-
-  /**
-   * Removes an NFT from the L2 database
-   * @param tokenId - The token ID of the NFT
-   * @param hashId - The hash ID of the NFT
-   */
-  async removeNftL2(tokenId: number, hashId: string): Promise<void> {
-    const response: db.EventResponse = await this.supabase
-      .from('nfts' + this.suffix)
-      .delete()
-      .eq('hashId', hashId)
-      .eq('tokenId', tokenId);
-
-    const { error } = response;
-    if (error) throw error;
-  }
-
-  /**
-   * Adds an event to the L2 database
-   * @param event - The event to add
-   */
-  async addEventL2(event: any): Promise<void> {
-    const response: db.EventResponse = await this.supabase
-      .from('l2_events' + this.suffix)
-      .upsert(event);
-
-    const { error } = response;
-    if (error) throw error;
-  }
 
   ///////////////////////////////////////////////////////////////
   // NOTIFICATIONS //////////////////////////////////////////////
