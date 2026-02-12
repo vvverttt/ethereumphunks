@@ -30,7 +30,7 @@ if (!process.env.ETHSCRIPTIONS_API_URL) {
 }
 
 if (!process.env.RPC_URL_MAINNET) {
-  process.env.RPC_URL_MAINNET = 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO';
+  process.env.RPC_URL_MAINNET = 'https://ethereum-rpc.publicnode.com';
 }
 if (!process.env.RPC_URL_MAINNET_BACKUP) {
   process.env.RPC_URL_MAINNET_BACKUP = 'https://eth.llamarpc.com,https://rpc.ankr.com/eth,https://eth.drpc.org';

@@ -7,8 +7,7 @@ export const environment = {
   production: false,
   chainId: 1,
 
-  rpcHttpProvider: 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO',
-  // rpcHttpProvider: 'https://ethereum-rpc.publicnode.com',
+  rpcHttpProvider: 'https://ethereum-rpc.publicnode.com',
   // rpcHttpProvider: 'https://cloudflare-eth.com',
   // rpcHttpProvider: 'http://reth.dappnode:8545',
   explorerUrl: 'https://etherscan.io',
