@@ -7,7 +7,7 @@ import { getPublicClient, getWalletClient, getChainId } from '@wagmi/core';
 import { environment } from 'src/environments/environment';
 import { Web3Service } from './web3.service';
 import { GasService } from './gas.service';
-import { PhilipLotteryV67ABI } from '@/abi/PhilipLotteryV67';
+import { PhilipLotteryV68ABI } from '@/abi/PhilipLotteryV68';
 import { LotteryWin } from '@/models/lottery';
 
 const supabaseUrl = environment.supabaseUrl;
@@ -34,7 +34,7 @@ export class LotteryService {
   async getPlayPrice(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'playPrice',
     });
   }
@@ -47,7 +47,7 @@ export class LotteryService {
   async isActive(): Promise<boolean> {
     return await this.web3Svc.l1Client.readContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'active',
     });
   }
@@ -55,7 +55,7 @@ export class LotteryService {
   async getPoolSize(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'poolSize',
     });
   }
@@ -63,7 +63,7 @@ export class LotteryService {
   async getPoolItems(offset: number, limit: number): Promise<string[]> {
     const result = await this.web3Svc.l1Client.readContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'getPoolItems',
       args: [BigInt(offset), BigInt(limit)],
     });
@@ -73,7 +73,7 @@ export class LotteryService {
   async getContractBalance(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'getBalance',
     });
   }
@@ -81,7 +81,7 @@ export class LotteryService {
   async getOwner(): Promise<string> {
     return await this.web3Svc.l1Client.readContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'owner',
     });
   }
@@ -105,7 +105,7 @@ export class LotteryService {
 
     const { request } = await publicClient.simulateContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'play',
       account: walletClient.account.address,
       value: playPrice,
@@ -122,7 +122,7 @@ export class LotteryService {
     // Estimate gas and add 20% buffer for accurate wallet display
     const estimatedGas = await publicClient.estimateContractGas({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'play',
       account: walletClient.account.address,
       value: playPrice,
@@ -144,7 +144,7 @@ export class LotteryService {
 
     const { request } = await publicClient.simulateContract({
       address: lotteryAddress,
-      abi: PhilipLotteryV67ABI,
+      abi: PhilipLotteryV68ABI,
       functionName: 'withdrawETH',
       args: [amount, to as `0x${string}`],
       account: walletClient.account.address,

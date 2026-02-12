@@ -15,7 +15,7 @@ import bridgeL2 from '@/abi/EtherPhunksBridgeL2.json';
 import marketL1 from '@/abi/EtherPhunksMarketL1.json';
 import marketL2 from '@/abi/EtherPhunksNftMarket.json';
 
-import lottery from '@/abi/PhilipLotteryV67.json';
+import lottery from '@/abi/PhilipLotteryV68.json';
 
 export const pointsAbiL1 = pointsL1;
 

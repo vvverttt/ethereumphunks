@@ -10,7 +10,7 @@ import { decodeEventLog } from 'viem';
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { LotteryGridItem, LotteryWin, SpinPhase } from '@/models/lottery';
-import { PhilipLotteryV67ABI } from '@/abi/PhilipLotteryV67';
+import { PhilipLotteryV68ABI } from '@/abi/PhilipLotteryV68';
 
 import { Web3Service } from '@/services/web3.service';
 import { LotteryService } from '@/services/lottery.service';
@@ -323,7 +323,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       for (const log of receipt.logs) {
         try {
           const decoded = decodeEventLog({
-            abi: PhilipLotteryV67ABI,
+            abi: PhilipLotteryV68ABI,
             data: log.data,
             topics: log.topics,
           });

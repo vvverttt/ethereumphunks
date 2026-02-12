@@ -10,7 +10,7 @@ import { Phunk } from '@/models/db';
 import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 
 // L1
-import { EtherPhunksMarketABI } from '@/abi/EtherPhunksMarket';
+import { EtherPhunksMarketV3ABI as EtherPhunksMarketABI } from '@/abi/EtherPhunksMarketV3';
 import { PointsABI } from '@/abi/Points';
 
 // L2

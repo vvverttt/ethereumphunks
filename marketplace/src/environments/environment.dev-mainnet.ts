@@ -15,13 +15,13 @@ export const environment = {
 
   magmaRpcHttpProvider: 'https://turbo.magma-rpc.com',
 
-  marketAddress: '0x10e137E267dCB5774e42251c32305F457a6aE5Ec'.toLowerCase(),
+  marketAddress: '0x7DDe39623aF1D78651b0EEc754622b95bbD56896'.toLowerCase(),
   marketAddressL2: '0x3Dfbc8C62d3cE0059BDaf21787EC24d5d116fe1e'.toLowerCase(),
   donationsAddress: '0x8191f333Da8fEB4De8Ec0d929b136297FDAA34de'.toLowerCase(),
-  pointsAddress: '0x28AbBC0A90d10870bcbf2d14256c6cC791090E86'.toLowerCase(),
+  pointsAddress: '0x0493bdBC99d17fe5fD8BD21Fd03792BE66eA3E14'.toLowerCase(),
   bridgeAddress: ''.toLowerCase(),
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
-  lotteryAddress: '0x4C0b9B7b3e290B793474c533C7AC90262bb69971'.toLowerCase(),
+  lotteryAddress: '0x4c6569909028F11873Ba5548900d4609a436bB98'.toLowerCase(),
 
   relayUrl: 'https://ethereumphunks.onrender.com',
   staticUrl: 'https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/v1/object/public',
