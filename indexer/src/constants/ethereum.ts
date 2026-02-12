@@ -44,11 +44,13 @@ export const lotteryAddressL1: string =
     ? process.env.LOTTERY_ADDRESS_MAINNET
     : process.env.LOTTERY_ADDRESS_SEPOLIA)?.toLowerCase();
 
+const backupUrls = (l1RpcURL_BACKUP || '').split(',').filter(Boolean);
+
 export const l1Client = createPublicClient({
   chain: chain === 'mainnet' ? mainnet : sepolia,
   transport: fallback([
     http(l1RpcURL),
-    // http(l1RpcURL_BACKUP),
+    ...backupUrls.map(url => http(url.trim())),
   ], {
     rank: false,
   }),

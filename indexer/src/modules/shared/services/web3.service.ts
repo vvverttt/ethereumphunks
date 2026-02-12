@@ -61,6 +61,10 @@ export class Web3Service {
       jsonrpc: '2.0',
     });
 
+    if (!receipts) {
+      throw new Error(`eth_getBlockReceipts returned null for ${params[0]}`);
+    }
+
     return receipts.map((rec) => {
       return {
         blockHash: rec.blockHash,
