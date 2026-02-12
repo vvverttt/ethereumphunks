@@ -300,4 +300,12 @@ export class LotteryService {
       .limit(1);
     return data?.[0] || null;
   }
+
+  fetchTotalWinsCount(): Observable<number> {
+    return from(
+      supabase
+        .from('lottery_wins' + suffix)
+        .select('*', { count: 'exact', head: true })
+    ).pipe(map(r => r.count ?? 0));
+  }
 }

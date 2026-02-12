@@ -71,6 +71,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   activeFrameIndex = signal(-1);
   wonPrize = signal<LotteryWin | null>(null);
   recentWins = signal<LotteryWin[]>([]);
+  totalWinsCount = signal(0);
   playPrice = signal('0');
   poolSize = signal(0);
   isActive = signal(true);
@@ -101,6 +102,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   private philipImageUrl = '';
 
   private recentWinsSub!: Subscription;
+  private totalWinsCountSub!: Subscription;
   private winWatchSub!: Subscription;
   private spinTimeout: any;
   private spinPath: number[] = getSpinPath(8);
@@ -162,6 +164,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.recentWinsSub?.unsubscribe();
+    this.totalWinsCountSub?.unsubscribe();
     this.winWatchSub?.unsubscribe();
     clearTimeout(this.spinTimeout);
     this.stopFireworks();
@@ -670,6 +673,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
       if (!this.playInProgress) {
         this.recentWins.set(wins);
       }
+    });
+    this.totalWinsCountSub = this.lotterySvc.fetchTotalWinsCount().subscribe(count => {
+      this.totalWinsCount.set(count);
     });
   }
 
