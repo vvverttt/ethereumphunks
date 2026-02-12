@@ -119,6 +119,16 @@ export class LotteryService {
       request.maxPriorityFeePerGas = 0n;
     }
 
+    // Estimate gas and add 20% buffer for accurate wallet display
+    const estimatedGas = await publicClient.estimateContractGas({
+      address: lotteryAddress,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'play',
+      account: walletClient.account.address,
+      value: playPrice,
+    });
+    request.gas = estimatedGas * 120n / 100n;
+
     return await walletClient.writeContract(request);
   }
 

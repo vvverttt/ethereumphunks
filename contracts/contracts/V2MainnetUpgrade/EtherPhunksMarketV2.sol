@@ -407,8 +407,7 @@ contract EtherPhunksMarketV2 is
         address owner,
         uint256 amount
     ) internal {
-        IPoints pointsContract = IPoints(pointsAddress);
-        pointsContract.addPoints(owner, amount);
+        try IPoints(pointsAddress).addPoints(owner, amount) {} catch {}
     }
 
     /**

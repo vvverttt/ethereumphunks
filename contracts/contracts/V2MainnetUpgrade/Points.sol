@@ -18,7 +18,8 @@
 /* ========================================
    ∬      Points are worth nothing        ∬
    ========================================
-   ∬   BUYS            |   67 Points      ∬
+   ∬   MARKET BUYS     |   67 Points      ∬
+   ∬   LOTTERY BUYS    |   67 Points      ∬
    ====================================== */
 
 pragma solidity 0.8.20;
