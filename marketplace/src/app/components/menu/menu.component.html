@@ -14,18 +14,18 @@
   }
 
   <div class="menu-items">
-    @if (leaderboard$ | async; as leaderboard) {
-      @if (leaderboard.length) {
-        <div
-          (click)="navigateMenu('leaderboard')"
-          class="leaderboard-button">
+    <div
+      (click)="navigateMenu('leaderboard')"
+      class="leaderboard-button">
 
-          <div class="logo-wrapper">
-            <ng-template [ngTemplateOutlet]="pointsIcon"></ng-template>
-          </div>
+      <div class="logo-wrapper">
+        <ng-template [ngTemplateOutlet]="pointsIcon"></ng-template>
+      </div>
 
-          <div class="button-content">
-            <h4>Points Leaderboard</h4>
+      <div class="button-content">
+        <h4>Points Leaderboard</h4>
+        @if ((leaderboard$ | async); as leaderboard) {
+          @if (leaderboard.length) {
             <span class="top-points">
               <div class="value">{{ leaderboard[0]?.points | formatCash }}</div>
               <div class="label">Points</div>
@@ -34,14 +34,14 @@
               <app-address [address]="leaderboard[0]?.address" />
               <div class="label">#1 Points holder</div>
             </div>
-          </div>
+          }
+        }
+      </div>
 
-          <div class="arrow">
-            <ng-template [ngTemplateOutlet]="arrowIcon" />
-          </div>
-        </div>
-      }
-    }
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </div>
 
     <a
       class="lottery-button"

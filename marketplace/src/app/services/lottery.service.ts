@@ -111,12 +111,13 @@ export class LotteryService {
       value: playPrice,
     });
 
-    // Cheap gas: base fee + 0 tip (same pattern as writeMarketContract)
+    // Gas: base fee + small tip for faster confirmation
     const gas = await firstValueFrom(this.gasSvc.gas$);
     if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
       const base = parseGwei(gas.ProposeGasPrice);
-      request.maxFeePerGas = base;
-      request.maxPriorityFeePerGas = 0n;
+      const tip = parseGwei('0.1');
+      request.maxFeePerGas = base + tip;
+      request.maxPriorityFeePerGas = tip;
     }
 
     // Estimate gas and add 20% buffer for accurate wallet display
