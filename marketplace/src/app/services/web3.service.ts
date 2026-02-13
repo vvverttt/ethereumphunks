@@ -1114,31 +1114,10 @@ export class Web3Service {
    * @returns Promise resolving to the transaction receipt once found
    */
   pollReceipt(hash: string, maxWaitMs = 120_000): Promise<TransactionReceipt> {
-    return new Promise((resolve, reject) => {
-      const startTime = Date.now();
-      const h = hash as `0x${string}`;
-      const poll = async () => {
-        while (true) {
-          if (Date.now() - startTime > maxWaitMs) {
-            reject(new Error(`Receipt polling timed out after ${maxWaitMs / 1000}s for tx ${hash}`));
-            return;
-          }
-          try {
-            const receipt = await Promise.race([
-              this.l1Client.getTransactionReceipt({ hash: h }).catch(() => null),
-              new Promise<null>(r => setTimeout(() => r(null), 5000)),
-            ]);
-            if (receipt) {
-              resolve(receipt);
-              return;
-            }
-          } catch (err) {
-            console.warn('[pollReceipt] RPC error, retrying...', err);
-          }
-          await new Promise(r => setTimeout(r, 1000));
-        }
-      };
-      poll();
+    return this.l1Client.waitForTransactionReceipt({
+      hash: hash as `0x${string}`,
+      timeout: maxWaitMs,
+      pollingInterval: 1_000,
     });
   }
 

@@ -149,10 +149,10 @@ $lottery-muted: #c3ff00;
   // 3D card flip container – inset so images are smaller than the frame
   .card-inner {
     position: absolute;
-    top: 10%;
+    top: 8%;
     left: 10%;
-    right: 10%;
-    bottom: 10%;
+    right: 8%;
+    bottom: 8%;
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
     -webkit-transition: -webkit-transform 0.22s ease;
@@ -169,6 +169,7 @@ $lottery-muted: #c3ff00;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     object-fit: contain;
+    object-position: right bottom;
     image-rendering: pixelated;
   }
 
@@ -217,7 +218,7 @@ $lottery-muted: #c3ff00;
     background-image: url('/assets/images/lottery/frame.gif');
     background-size: 100% 100%;
     image-rendering: pixelated;
-    z-index: 4;
+    z-index: 6;
     pointer-events: none;
   }
 
