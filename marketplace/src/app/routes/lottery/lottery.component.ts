@@ -39,7 +39,7 @@ function getSpinPath(count: number): number[] {
 
 const INITIAL_STEP_DELAY = 200;
 const DECAY_FACTOR = 1.12;
-const MIN_ROTATIONS = 2;
+const MIN_ROTATIONS = 3;
 const MAX_STEP_DELAY = 400;
 
 @Component({
