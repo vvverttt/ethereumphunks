@@ -1105,9 +1105,16 @@ export class Web3Service {
    * @param hash The transaction hash to poll for
    * @returns Promise resolving to the transaction receipt once found
    */
+  // Extra CORS-friendly RPCs for faster receipt polling
+  private receiptClients = [
+    createPublicClient({ chain: mainnet, transport: http('https://rpc.ankr.com/eth') }),
+    createPublicClient({ chain: mainnet, transport: http('https://cloudflare-eth.com') }),
+  ];
+
   pollReceipt(hash: string, maxWaitMs = 120_000): Promise<TransactionReceipt> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
+      const h = hash as `0x${string}`;
       const poll = async () => {
         while (true) {
           if (Date.now() - startTime > maxWaitMs) {
@@ -1115,11 +1122,10 @@ export class Web3Service {
             return;
           }
           try {
-            // Race against timeout so a hung RPC call can't block forever
+            // Race all RPCs — whichever returns the receipt first wins
             const receipt = await Promise.race([
-              this.l1Client.getTransactionReceipt({
-                hash: hash as `0x${string}`,
-              }),
+              this.l1Client.getTransactionReceipt({ hash: h }).catch(() => null),
+              ...this.receiptClients.map(c => c.getTransactionReceipt({ hash: h }).catch(() => null)),
               new Promise<null>(r => setTimeout(() => r(null), 8000)),
             ]);
             if (receipt) {
