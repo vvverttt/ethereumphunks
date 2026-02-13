@@ -362,7 +362,8 @@ export class DataService {
           listing: listing ? (Array.isArray(listing) ? listing[0] : listing) : null,
           bid: bid ? (Array.isArray(bid) ? bid[0] : bid) : null,
           isEscrowed:
-            phunk.owner === environment.marketAddress
+            (phunk.owner === environment.marketAddress
+              || (environment as any).oldMarketAddresses?.includes(phunk.owner))
             && phunk.prevOwner === address,
           isBridged:
             phunk.owner === environment.bridgeAddress
@@ -558,7 +559,8 @@ export class DataService {
           let type: EventType = tx.type;
 
           if (tx.type === 'transfer') {
-            if (tx.to.toLowerCase() === environment.marketAddress) type = 'escrow';
+            if (tx.to.toLowerCase() === environment.marketAddress
+              || (environment as any).oldMarketAddresses?.includes(tx.to.toLowerCase())) type = 'escrow';
             if (tx.to.toLowerCase() === environment.bridgeAddress) type = 'bridgeOut';
             if (tx.from.toLowerCase() === environment.bridgeAddress) type = 'bridgeIn';
           }
@@ -697,7 +699,8 @@ export class DataService {
       delete data[`collections${prefix}`];
 
       const newPhunk = { ...data, collection, collectionName, nft } as Phunk;
-      newPhunk.isEscrowed = data?.owner === environment.marketAddress;
+      newPhunk.isEscrowed = data?.owner === environment.marketAddress
+        || (environment as any).oldMarketAddresses?.includes(data?.owner);
       newPhunk.isBridged = data?.owner === environment.bridgeAddress;
       newPhunk.isSupported = !!collection;
       newPhunk.attributes = [];

@@ -13,7 +13,10 @@ export const environment = {
 
   magmaRpcHttpProvider: 'https://turbo.magma-rpc.com',
 
-  marketAddress: '0x7DDe39623aF1D78651b0EEc754622b95bbD56896'.toLowerCase(),
+  marketAddress: '0xa48a43186612B179C0bc68Ea34B4932549a70BfA'.toLowerCase(),
+  oldMarketAddresses: [
+    '0xd3418772623be1a3cc6b6d45cb46420cedd9154a', // OG EtherPhunksMarket
+  ],
   marketAddressL2: '0x3Dfbc8C62d3cE0059BDaf21787EC24d5d116fe1e'.toLowerCase(),
   donationsAddress: '0x8191f333Da8fEB4De8Ec0d929b136297FDAA34de'.toLowerCase(),
   pointsAddress: '0x0493bdBC99d17fe5fD8BD21Fd03792BE66eA3E14'.toLowerCase(),

@@ -659,12 +659,16 @@ export class MarketComponent {
     const consensusInvalid = selected.filter((phunk: Phunk) => phunk.consensus === false);
     invalid = [...invalid, ...consensusInvalid];
 
+    const isMarketAddr = (addr: string) =>
+      addr === environment.marketAddress.toLowerCase()
+      || (environment as any).oldMarketAddresses?.includes(addr);
+
     const inEscrow = selected.filter(
-      (phunk: Phunk) => phunk.owner.toLowerCase() === environment.marketAddress.toLowerCase()
+      (phunk: Phunk) => isMarketAddr(phunk.owner.toLowerCase())
     );
 
     const notInEscrow = selected.filter(
-      (phunk: Phunk) => phunk.owner.toLowerCase() !== environment.marketAddress.toLowerCase()
+      (phunk: Phunk) => !isMarketAddr(phunk.owner.toLowerCase())
     );
 
     // console.log({ notInEscrow, inEscrow, invalid });
@@ -683,13 +687,15 @@ export class MarketComponent {
   async filterOwnedItems(phunks: Phunk[]): Promise<[Phunk[], Phunk[]]> {
     const walletAddress = (await this.web3Svc.getCurrentAddress())?.toLowerCase();
     const marketAddress = environment.marketAddress.toLowerCase();
+    const isMarket = (addr: string) =>
+      addr === marketAddress || (environment as any).oldMarketAddresses?.includes(addr);
     let validItems: Phunk[] = [];
     let invalidItems: Phunk[] = [];
 
     phunks.forEach(phunk => {
       const owner = phunk.owner.toLowerCase();
       if (
-        (owner === marketAddress && phunk.prevOwner === walletAddress) ||
+        (isMarket(owner) && phunk.prevOwner === walletAddress) ||
         owner === walletAddress
       ) {
         invalidItems.push(phunk);

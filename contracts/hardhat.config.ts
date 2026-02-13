@@ -57,6 +57,14 @@ const config: HardhatUserConfig = {
     apiKey: process.env.ETHERSCAN_API_KEY,
     customChains: [
       {
+        network: 'mainnet',
+        chainId: 1,
+        urls: {
+          apiURL: 'https://api.etherscan.io/v2/api?chainid=1',
+          browserURL: 'https://etherscan.io',
+        }
+      },
+      {
         network: 'magma',
         chainId: 6969696969,
         urls: {

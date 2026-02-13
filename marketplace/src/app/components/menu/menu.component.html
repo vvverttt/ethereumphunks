@@ -44,6 +44,19 @@
     </div>
 
     <a
+      class="dystolabz-button"
+      href="https://dystolabz.com"
+      target="_blank"
+      rel="noopener noreferrer">
+
+      <span>DystoLabz</span>
+
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </a>
+
+    <a
       class="lottery-button"
       routerLink="/lottery"
       (click)="goToLottery()">
