@@ -293,6 +293,24 @@ export class LotteryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Check if user has enough ETH for play price + gas
+    try {
+      const address = await firstValueFrom(this.address$);
+      if (address) {
+        const [balance, playPrice, block] = await Promise.all([
+          this.web3Svc.l1Client.getBalance({ address: address as `0x${string}` }),
+          this.lotterySvc.getPlayPrice(),
+          this.web3Svc.l1Client.getBlock(),
+        ]);
+        const baseFee = block.baseFeePerGas ?? 1000000000n;
+        const gasBuffer = 150000n * baseFee * 3n; // 150k gas * 3x baseFee
+        if (balance < playPrice + gasBuffer) {
+          this.errorMessage.set('Insufficient ETH for play + gas');
+          return;
+        }
+      }
+    } catch {}
+
     this.errorMessage.set('');
     this.wonPrize.set(null);
     this.stopFireworks();
@@ -316,26 +334,49 @@ export class LotteryComponent implements OnInit, OnDestroy {
         this.confirmElapsed.update(v => v + 1);
       }, 1000);
 
-      // Wait for on-chain confirmation
-      const receipt = await this.web3Svc.pollReceipt(hash);
+      // Race: RPC receipt poll vs Supabase realtime (indexer inserts win faster)
+      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin };
+      const raceStart = Date.now();
+      const confirmation = await Promise.race([
+        this.web3Svc.pollReceipt(hash).then(receipt => {
+          console.log(`[Lottery] RPC receipt arrived in ${((Date.now() - raceStart) / 1000).toFixed(1)}s`);
+          return { source: 'receipt' as const, receipt };
+        }),
+        this.lotterySvc.watchForWinByTxHash(hash).then(win => {
+          console.log(`[Lottery] Supabase win arrived in ${((Date.now() - raceStart) / 1000).toFixed(1)}s`);
+          return { source: 'supabase' as const, win };
+        }),
+      ]) as ConfirmResult;
       clearInterval(this.confirmTimer);
+      console.log(`[Lottery] Winner: ${confirmation.source} after ${((Date.now() - raceStart) / 1000).toFixed(1)}s`);
 
-      // Parse PrizeAwarded event from receipt
+      // Extract win data from whichever source responded first
       let wonHashId = '';
       let playId = 0;
-      for (const log of receipt.logs) {
-        try {
-          const decoded = decodeEventLog({
-            abi: PhilipLotteryV68ABI,
-            data: log.data,
-            topics: log.topics,
-          });
-          if (decoded.eventName === 'PrizeAwarded') {
-            const args = decoded.args as any;
-            wonHashId = args.hashId;
-            playId = Number(args.playId);
-          }
-        } catch {}
+      let winRecord: LotteryWin | null = null;
+
+      if (confirmation.source === 'supabase') {
+        // Supabase returned the win directly — already has all fields
+        const win = confirmation.win;
+        wonHashId = win.hash_id;
+        playId = win.play_id;
+        winRecord = win;
+      } else {
+        // Parse PrizeAwarded event from receipt
+        for (const log of confirmation.receipt.logs) {
+          try {
+            const decoded = decodeEventLog({
+              abi: PhilipLotteryV68ABI,
+              data: log.data,
+              topics: log.topics,
+            });
+            if (decoded.eventName === 'PrizeAwarded') {
+              const args = decoded.args as any;
+              wonHashId = args.hashId;
+              playId = Number(args.playId);
+            }
+          } catch {}
+        }
       }
 
       // Start spinning immediately — look up winner details in parallel
@@ -352,12 +393,18 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
       if (wonHashId) {
         try {
-          const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds([wonHashId.toLowerCase()]);
-          const won = ethscriptions[0];
+          // If we got win from Supabase, we already have sha/tokenId
+          let won: { hashId: string; sha: string; tokenId: number; slug: string } | null = null;
+          if (winRecord?.sha) {
+            won = { hashId: winRecord.hash_id, sha: winRecord.sha, tokenId: winRecord.token_id, slug: winRecord.collection_slug };
+          } else {
+            const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds([wonHashId.toLowerCase()]);
+            won = ethscriptions[0] || null;
+          }
 
           if (won) {
             // If the won image already exists in the grid, use that cell
-            const existingIdx = this.gridItems().findIndex(item => item.sha === won.sha);
+            const existingIdx = this.gridItems().findIndex(item => item.sha === won!.sha);
             if (existingIdx !== -1) {
               winCellIndex = existingIdx;
             } else {
@@ -365,25 +412,27 @@ export class LotteryComponent implements OnInit, OnDestroy {
               this.gridItems.update(items =>
                 items.map((item, i) =>
                   i === winCellIndex
-                    ? { ...item, hashId: won.hashId, sha: won.sha, imageUrl: `${this.staticUrl}/static/images/${won.sha}` }
+                    ? { ...item, hashId: won!.hashId, sha: won!.sha, imageUrl: `${this.staticUrl}/static/images/${won!.sha}` }
                     : item
                 )
               );
             }
 
             const address = await firstValueFrom(this.address$);
-            const winRecord: LotteryWin = {
-              id: 0,
-              play_id: playId,
-              winner: (address || '').toLowerCase(),
-              hash_id: won.hashId,
-              sha: won.sha,
-              token_id: won.tokenId,
-              collection_slug: won.slug,
-              transfer_status: 'transferred',
-              tx_hash: hash,
-              created_at: new Date().toISOString(),
-            };
+            if (!winRecord) {
+              winRecord = {
+                id: 0,
+                play_id: playId,
+                winner: (address || '').toLowerCase(),
+                hash_id: won.hashId,
+                sha: won.sha,
+                token_id: won.tokenId,
+                collection_slug: won.slug,
+                transfer_status: 'transferred',
+                tx_hash: hash,
+                created_at: new Date().toISOString(),
+              };
+            }
 
             this.wonPrize.set(winRecord);
             this.pendingWinRecord = winRecord;

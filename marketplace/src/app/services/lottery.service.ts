@@ -102,7 +102,7 @@ export class LotteryService {
     if (!publicClient) throw new Error('No public client');
 
     const playPrice = await this.getPlayPrice();
-
+    console.time('[Lottery] simulateContract');
     const { request } = await publicClient.simulateContract({
       address: lotteryAddress,
       abi: PhilipLotteryV68ABI,
@@ -110,27 +110,31 @@ export class LotteryService {
       account: walletClient.account.address,
       value: playPrice,
     });
+    console.timeEnd('[Lottery] simulateContract');
 
-    // Gas: base fee + small tip for faster confirmation
-    const gas = await firstValueFrom(this.gasSvc.gas$);
-    if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
-      const base = parseGwei(gas.ProposeGasPrice);
-      const tip = parseGwei('0.1');
-      request.maxFeePerGas = base + tip;
-      request.maxPriorityFeePerGas = tip;
-    }
-
-    // Estimate gas and add 20% buffer for accurate wallet display
-    const estimatedGas = await publicClient.estimateContractGas({
-      address: lotteryAddress,
-      abi: PhilipLotteryV68ABI,
-      functionName: 'play',
-      account: walletClient.account.address,
-      value: playPrice,
-    });
+    // Set accurate gas from actual block baseFee so wallet shows real cost
+    const [estimatedGas, block] = await Promise.all([
+      publicClient.estimateContractGas({
+        address: lotteryAddress,
+        abi: PhilipLotteryV68ABI,
+        functionName: 'play',
+        account: walletClient.account.address,
+        value: playPrice,
+      }),
+      publicClient.getBlock(),
+    ]);
+    const baseFee = block.baseFeePerGas ?? parseGwei('1');
+    const tip = parseGwei('0.1');
     request.gas = estimatedGas * 120n / 100n;
+    request.maxFeePerGas = baseFee * 2n + tip;
+    request.maxPriorityFeePerGas = tip;
+    console.log(`[Lottery] gas: ${estimatedGas}, baseFee: ${baseFee}, maxFee: ${request.maxFeePerGas}`);
 
-    return await walletClient.writeContract(request);
+    console.time('[Lottery] writeContract');
+    const hash = await walletClient.writeContract(request);
+    console.timeEnd('[Lottery] writeContract');
+    console.log('[Lottery] tx hash:', hash);
+    return hash;
   }
 
   async withdrawETH(amount: bigint, to: string): Promise<string | undefined> {
@@ -255,6 +259,49 @@ export class LotteryService {
       return () => {
         supabase.removeChannel(channel);
       };
+    });
+  }
+
+  /**
+   * Watch for a win by tx hash — races Supabase realtime + polling
+   */
+  watchForWinByTxHash(txHash: string): Promise<LotteryWin> {
+    return new Promise((resolve) => {
+      let resolved = false;
+      const done = (win: LotteryWin) => {
+        if (resolved) return;
+        resolved = true;
+        supabase.removeChannel(channel);
+        clearInterval(pollTimer);
+        resolve(win);
+      };
+
+      // Realtime: listen for any INSERT on lottery_wins
+      const channel = supabase
+        .channel(`lottery_win_tx_${txHash.slice(0, 10)}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'lottery_wins' + suffix,
+        }, (payload: any) => {
+          const row = payload.new as LotteryWin;
+          if (row.tx_hash?.toLowerCase() === txHash.toLowerCase()) {
+            done(row);
+          }
+        })
+        .subscribe();
+
+      // Polling fallback: query every 3s in case realtime misses it
+      const pollTimer = setInterval(async () => {
+        const { data } = await supabase
+          .from('lottery_wins' + suffix)
+          .select('*')
+          .eq('tx_hash', txHash.toLowerCase())
+          .limit(1);
+        if (data && data.length > 0) {
+          done(data[0] as LotteryWin);
+        }
+      }, 3000);
     });
   }
 

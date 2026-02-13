@@ -25,7 +25,7 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
 
-import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, formatEther, isAddress, keccak256, parseEther, parseGwei, stringToBytes, toHex, zeroAddress } from 'viem';
+import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, parseGwei, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 import { GasService } from './gas.service';
@@ -77,7 +77,11 @@ export class Web3Service {
   ) {
     this.l1Client = createPublicClient({
       chain: this.chains[0],
-      transport: http(environment.rpcHttpProvider)
+      transport: fallback([
+        http(environment.rpcHttpProvider),
+        http('https://rpc.ankr.com/eth'),
+        http('https://cloudflare-eth.com'),
+      ], { rank: false }),
     });
 
     this.l2Client = createPublicClient({
@@ -88,7 +92,11 @@ export class Web3Service {
     this.config = createConfig({
       chains: this.chains,
       transports: {
-        [environment.chainId]: http(environment.rpcHttpProvider),
+        [environment.chainId]: fallback([
+          http(environment.rpcHttpProvider),
+          http('https://rpc.ankr.com/eth'),
+          http('https://cloudflare-eth.com'),
+        ]),
         6969696969: http(environment.magmaRpcHttpProvider)
       },
       connectors: [
@@ -1105,12 +1113,6 @@ export class Web3Service {
    * @param hash The transaction hash to poll for
    * @returns Promise resolving to the transaction receipt once found
    */
-  // Extra CORS-friendly RPCs for faster receipt polling
-  private receiptClients = [
-    createPublicClient({ chain: mainnet, transport: http('https://rpc.ankr.com/eth') }),
-    createPublicClient({ chain: mainnet, transport: http('https://cloudflare-eth.com') }),
-  ];
-
   pollReceipt(hash: string, maxWaitMs = 120_000): Promise<TransactionReceipt> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
@@ -1122,10 +1124,8 @@ export class Web3Service {
             return;
           }
           try {
-            // Race all RPCs — whichever returns the receipt first wins
             const receipt = await Promise.race([
               this.l1Client.getTransactionReceipt({ hash: h }).catch(() => null),
-              ...this.receiptClients.map(c => c.getTransactionReceipt({ hash: h }).catch(() => null)),
               new Promise<null>(r => setTimeout(() => r(null), 8000)),
             ]);
             if (receipt) {
