@@ -500,20 +500,43 @@ export class EthscriptionsService {
     createdAt: Date
   ): Promise<Event[]> {
 
-    const events = [];
-    for (const log of marketplaceLogs) {
-      if (!marketAddressL1.includes(log.address?.toLowerCase())) continue;
+    // Decode all logs and identify PhunkBought hashIds
+    // DystoLabzMarket emits PhunkNoLongerForSale before PhunkBought in buys;
+    // skip the redundant delist when a buy follows for the same item
+    const decodedLogs: Array<{ decoded: DecodeEventLogReturnType; log: any } | null> = [];
+    const boughtHashIds = new Set<string>();
 
-      let decoded: DecodeEventLogReturnType;
+    for (const log of marketplaceLogs) {
+      if (!marketAddressL1.includes(log.address?.toLowerCase())) {
+        decodedLogs.push(null);
+        continue;
+      }
       try {
-        decoded = decodeEventLog({
+        const decoded = decodeEventLog({
           abi: marketAbiL1,
           data: log.data,
           topics: log.topics,
         });
+        decodedLogs.push({ decoded, log });
+        if (decoded.eventName === 'PhunkBought') {
+          const hashId = (decoded.args as any).phunkId;
+          if (hashId) boughtHashIds.add(hashId.toLowerCase());
+        }
       } catch (error) {
         console.log(error);
-        continue;
+        decodedLogs.push(null);
+      }
+    }
+
+    const events = [];
+    for (const entry of decodedLogs) {
+      if (!entry) continue;
+      const { decoded, log } = entry;
+
+      // Skip PhunkNoLongerForSale when PhunkBought follows for the same item
+      if (decoded.eventName === 'PhunkNoLongerForSale') {
+        const hashId = (decoded.args as any).phunkId;
+        if (hashId && boughtHashIds.has(hashId.toLowerCase())) continue;
       }
 
       const event = await this.processEtherPhunkMarketplaceEvent(
@@ -562,8 +585,8 @@ export class EthscriptionsService {
     if (eventName === 'PhunkBought') {
       const { phunkId: hashId, fromAddress, toAddress, value } = args;
 
-      const removedListing = await this.storageSvc.removeListing(hashId);
-      if (!removedListing) return;
+      // Remove listing (may already be removed by PhunkNoLongerForSale in the same tx)
+      await this.storageSvc.removeListing(hashId);
 
       // Award 67 points to the buyer in Supabase
       this.storageSvc.incrementUserPoints(toAddress.toLowerCase(), 67);

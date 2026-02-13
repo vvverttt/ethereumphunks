@@ -75,7 +75,7 @@
                 }
 
                 <!-- Value (Listing) -->
-                @if (phunk.listing?.minValue; as value) {
+                @if (phunk.listing?.listed && phunk.listing?.minValue; as value) {
                   <p i18n>This {{ phunk.collection?.singleName }} is for sale for <span class="highlight">{{ (value | weiToEth) }} ETH</span><span class="bold"> (${{ ((value | weiToEth) * ((usd$ | async) || 0)) | formatCash }})</span>.</p>
                 } @else if (!phunk.isSupported) {
                   <p i18n>This {{ phunk.collection?.singleName }} is not supported by the marketplace.</p>
