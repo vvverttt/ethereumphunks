@@ -526,7 +526,8 @@ export class StorageService implements OnModuleInit {
   async addEvents(events: db.Event[]): Promise<void> {
 
     events = events.map((event, i) => {
-      event.txId = `${event.txHash.toLowerCase()}-${event.txIndex}-${i}`;
+      event.txId = event.txId || `${event.txHash.toLowerCase()}-${event.txIndex}-${i}`;
+      event.txId = event.txId.toLowerCase();
       event.from = event.from.toLowerCase();
       event.to = event.to.toLowerCase();
       event.txHash = event.txHash.toLowerCase();
