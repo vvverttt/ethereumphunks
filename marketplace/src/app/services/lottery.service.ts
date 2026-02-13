@@ -272,7 +272,7 @@ export class LotteryService {
         })
         .subscribe();
 
-      // Polling fallback: query every 3s in case realtime misses it
+      // Polling fallback: query every 1.5s in case realtime misses it
       const pollTimer = setInterval(async () => {
         const { data } = await supabase
           .from('lottery_wins' + suffix)
@@ -282,7 +282,7 @@ export class LotteryService {
         if (data && data.length > 0) {
           done(data[0] as LotteryWin);
         }
-      }, 3000);
+      }, 1500);
     });
   }
 

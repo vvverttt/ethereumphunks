@@ -37,10 +37,10 @@ function getSpinPath(count: number): number[] {
   return path;
 }
 
-const INITIAL_STEP_DELAY = 400;
+const INITIAL_STEP_DELAY = 200;
 const DECAY_FACTOR = 1.12;
-const MIN_ROTATIONS = 3;
-const MAX_STEP_DELAY = 600;
+const MIN_ROTATIONS = 2;
+const MAX_STEP_DELAY = 400;
 
 @Component({
   selector: 'app-lottery',
@@ -334,21 +334,16 @@ export class LotteryComponent implements OnInit, OnDestroy {
         this.confirmElapsed.update(v => v + 1);
       }, 1000);
 
-      // Race: RPC receipt poll vs Supabase realtime (indexer inserts win faster)
+      // Race: RPC receipt poll vs Supabase realtime
       type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin };
-      const raceStart = Date.now();
       const confirmation = await Promise.race([
-        this.web3Svc.pollReceipt(hash).then(receipt => {
-          console.log(`[Lottery] RPC receipt arrived in ${((Date.now() - raceStart) / 1000).toFixed(1)}s`);
-          return { source: 'receipt' as const, receipt };
-        }),
-        this.lotterySvc.watchForWinByTxHash(hash).then(win => {
-          console.log(`[Lottery] Supabase win arrived in ${((Date.now() - raceStart) / 1000).toFixed(1)}s`);
-          return { source: 'supabase' as const, win };
-        }),
+        this.web3Svc.pollReceipt(hash).then(receipt => ({ source: 'receipt' as const, receipt })),
+        this.lotterySvc.watchForWinByTxHash(hash).then(win => ({ source: 'supabase' as const, win })),
       ]) as ConfirmResult;
       clearInterval(this.confirmTimer);
-      console.log(`[Lottery] Winner: ${confirmation.source} after ${((Date.now() - raceStart) / 1000).toFixed(1)}s`);
+
+      // Start spinning after confirmation
+      this.startSpin();
 
       // Extract win data from whichever source responded first
       let wonHashId = '';
@@ -356,7 +351,6 @@ export class LotteryComponent implements OnInit, OnDestroy {
       let winRecord: LotteryWin | null = null;
 
       if (confirmation.source === 'supabase') {
-        // Supabase returned the win directly — already has all fields
         const win = confirmation.win;
         wonHashId = win.hash_id;
         playId = win.play_id;
@@ -379,13 +373,6 @@ export class LotteryComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Start spinning immediately — look up winner details in parallel
-      this.startSpin();
-
-      // Guarantee minimum spin time before deceleration can start
-      const minSpinTime = MIN_ROTATIONS * this.spinPath.length * INITIAL_STEP_DELAY;
-      const spinStarted = Date.now();
-
       // Resolve winner details while spin is running
       let winCellIndex = this.spinPath[
         (wonHashId ? playId : Math.floor(Math.random() * this.spinPath.length)) % this.spinPath.length
@@ -393,7 +380,6 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
       if (wonHashId) {
         try {
-          // If we got win from Supabase, we already have sha/tokenId
           let won: { hashId: string; sha: string; tokenId: number; slug: string } | null = null;
           if (winRecord?.sha) {
             won = { hashId: winRecord.hash_id, sha: winRecord.sha, tokenId: winRecord.token_id, slug: winRecord.collection_slug };
@@ -403,12 +389,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
           }
 
           if (won) {
-            // If the won image already exists in the grid, use that cell
             const existingIdx = this.gridItems().findIndex(item => item.sha === won!.sha);
             if (existingIdx !== -1) {
               winCellIndex = existingIdx;
             } else {
-              // Place won image in target cell
               this.gridItems.update(items =>
                 items.map((item, i) =>
                   i === winCellIndex
@@ -442,20 +426,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Wait for minimum spin time before allowing deceleration
-      const elapsed = Date.now() - spinStarted;
-      if (elapsed < minSpinTime) {
-        await new Promise(r => setTimeout(r, minSpinTime - elapsed));
-      }
-
-      // Signal deceleration — spin will slow and land on winner
+      // Signal deceleration — advanceFrame enforces MIN_ROTATIONS before slowing
       this.targetWinIndex = winCellIndex;
       this.shouldDecelerate = true;
 
       // Refresh pool size in background
       this.lotterySvc.getPoolSize().then(newSize => this.poolSize.set(Number(newSize)));
 
-      // Refresh owner balance if applicable
       if (this.isOwner()) {
         this.lotterySvc.getContractBalance().then(balance =>
           this.contractBalance.set(formatEther(balance))

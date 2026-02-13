@@ -1126,7 +1126,7 @@ export class Web3Service {
           try {
             const receipt = await Promise.race([
               this.l1Client.getTransactionReceipt({ hash: h }).catch(() => null),
-              new Promise<null>(r => setTimeout(() => r(null), 8000)),
+              new Promise<null>(r => setTimeout(() => r(null), 5000)),
             ]);
             if (receipt) {
               resolve(receipt);
@@ -1135,7 +1135,7 @@ export class Web3Service {
           } catch (err) {
             console.warn('[pollReceipt] RPC error, retrying...', err);
           }
-          await new Promise(r => setTimeout(r, 1500));
+          await new Promise(r => setTimeout(r, 1000));
         }
       };
       poll();
