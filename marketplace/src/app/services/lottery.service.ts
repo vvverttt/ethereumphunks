@@ -102,36 +102,17 @@ export class LotteryService {
     if (!publicClient) throw new Error('No public client');
 
     const playPrice = await this.getPlayPrice();
-    console.time('[Lottery] simulateContract');
-    const { request } = await publicClient.simulateContract({
+
+    // Let the wallet handle everything — no gas overrides
+    console.time('[Lottery] writeContract');
+    const hash = await walletClient.writeContract({
       address: lotteryAddress,
       abi: PhilipLotteryV68ABI,
       functionName: 'play',
-      account: walletClient.account.address,
       value: playPrice,
+      chain: walletClient.chain,
+      account: walletClient.account,
     });
-    console.timeEnd('[Lottery] simulateContract');
-
-    // Set accurate gas from actual block baseFee so wallet shows real cost
-    const [estimatedGas, block] = await Promise.all([
-      publicClient.estimateContractGas({
-        address: lotteryAddress,
-        abi: PhilipLotteryV68ABI,
-        functionName: 'play',
-        account: walletClient.account.address,
-        value: playPrice,
-      }),
-      publicClient.getBlock(),
-    ]);
-    const baseFee = block.baseFeePerGas ?? parseGwei('1');
-    const tip = parseGwei('0.1');
-    request.gas = estimatedGas * 120n / 100n;
-    request.maxFeePerGas = baseFee * 2n + tip;
-    request.maxPriorityFeePerGas = tip;
-    console.log(`[Lottery] gas: ${estimatedGas}, baseFee: ${baseFee}, maxFee: ${request.maxFeePerGas}`);
-
-    console.time('[Lottery] writeContract');
-    const hash = await walletClient.writeContract(request);
     console.timeEnd('[Lottery] writeContract');
     console.log('[Lottery] tx hash:', hash);
     return hash;
