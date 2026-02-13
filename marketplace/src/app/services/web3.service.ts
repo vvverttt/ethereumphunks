@@ -627,7 +627,7 @@ export class Web3Service {
   ): Promise<string | undefined> {
     const weiValue = this.ethToWei(value);
 
-    const sig = keccak256(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE'));
+    const sig = toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE'), { size: 32 });
     const bytes32Value = weiValue.toString(16).padStart(64, '0');
     toAddress = toAddress.toLowerCase().replace('0x', '').padStart(64, '0');
     // const revShareHex = numberToHex(revShare).replace('0x', '').padStart(64, '0');
