@@ -601,7 +601,7 @@ export class EthscriptionsService {
         txIndex: txn.transactionIndex,
         txHash: txn.hash,
         blockNumber: Number(txn.blockNumber),
-        blockTimestamp: createdAt,
+        blockTimestamp: new Date(createdAt.getTime() - 1000),
         value: value.toString(),
       };
     }
