@@ -156,7 +156,7 @@ export class MarketComponent {
   );
 
   blocksBehind$ = this.store.select(appStateSelectors.selectBlocksBehind).pipe(
-    map((blocksBehind) => blocksBehind > 6),
+    map((blocksBehind) => blocksBehind > 50),
   );
 
   ceil = Math.ceil;

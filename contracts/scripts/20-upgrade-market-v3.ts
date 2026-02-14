@@ -1,6 +1,6 @@
 import hre from 'hardhat';
 
-const proxyAddress = '0x7DDe39623aF1D78651b0EEc754622b95bbD56896';
+const proxyAddress = '0xE14f7585F50b80E39FceF13cB26a54F01BB4bC4C';
 
 async function main() {
   const [signer] = await hre.ethers.getSigners();
@@ -12,6 +12,8 @@ async function main() {
   console.log('=====================================================================');
 
   const EtherPhunksMarketV3 = await hre.ethers.getContractFactory('EtherPhunksMarketV3');
+
+  console.log('Upgrading implementation...');
   const upgraded = await hre.upgrades.upgradeProxy(proxyAddress, EtherPhunksMarketV3);
   await upgraded.waitForDeployment();
 
@@ -21,7 +23,7 @@ async function main() {
   console.log(`SUMMARY:`);
   console.log(`  Proxy (unchanged):     ${proxyAddress}`);
   console.log(`  New Implementation:    ${implAddress}`);
-  console.log(`  Change: _addPoints now awards buyer (msg.sender) instead of seller`);
+  console.log(`  Change: Royalties sent directly to receiver instead of pendingWithdrawals`);
   console.log(`=====================================================================\n`);
 }
 

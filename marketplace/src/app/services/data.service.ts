@@ -110,17 +110,26 @@ export class DataService {
   }
 
   /**
-   * Sets up real-time listener for new blocks
+   * Sets up real-time listener for new blocks with polling fallback
    */
   listenForBlocks(): Observable<number> {
-    const blockQuery = supabase
-      .from('blocks')
-      .select('blockNumber')
-      .eq('network', environment.chainId);
+    const fetchBlock = () => from(
+      supabase
+        .from('blocks')
+        .select('blockNumber')
+        .eq('network', environment.chainId)
+    ).pipe(
+      map((res: any) => res.data?.[0]?.blockNumber || 0),
+      catchError(() => of(0)),
+    );
 
     // Initial fetch
-    const initial$ = from(blockQuery).pipe(
-      map((res: any) => res.data[0]?.blockNumber || 0)
+    const initial$ = fetchBlock();
+
+    // Polling fallback every 15s (covers dropped WebSocket)
+    const polling$ = timer(15_000, 15_000).pipe(
+      switchMap(() => fetchBlock()),
+      filter((block) => block > 0),
     );
 
     // Realtime changes
@@ -144,7 +153,7 @@ export class DataService {
       return () => channel.unsubscribe();
     });
 
-    return merge(initial$, changes$).pipe(
+    return merge(initial$, changes$, polling$).pipe(
       share()
     );
   }

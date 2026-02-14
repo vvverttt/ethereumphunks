@@ -203,7 +203,8 @@ contract EtherPhunksMarketV3 is
 
         pendingWithdrawals[seller] += sellerAmount;
         if (royalty > 0 && royaltyReceiver != address(0)) {
-            pendingWithdrawals[royaltyReceiver] += royalty;
+            (bool sent, ) = royaltyReceiver.call{value: royalty}("");
+            require(sent, "Royalty transfer failed");
         }
 
         _addPoints(msg.sender, 100);

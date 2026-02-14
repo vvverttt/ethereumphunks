@@ -145,7 +145,7 @@ export class ItemViewComponent {
   );
 
   blocksBehind$ = this.store.select(appStateSelectors.selectBlocksBehind).pipe(
-    map((blocksBehind) => blocksBehind > 6),
+    map((blocksBehind) => blocksBehind > 50),
   );
 
   globalConfig$ = this.store.select(appStateSelectors.selectConfig);
