@@ -82,10 +82,10 @@ export class MarketComponent {
   escrowAddress = environment.marketAddress;
 
   marketTitles: any = {
-    all: 'All %collectionName%s',
-    listings: ' %collectionName%s for Sale',
+    all: 'All %collectionName%',
+    listings: '%collectionName% for Sale',
     bids: 'Current Bids',
-    owned: ' %collectionName%s Owned',
+    owned: '%collectionName% Owned',
     user: 'Owned Inscriptions',
     activity: 'Activity',
   };

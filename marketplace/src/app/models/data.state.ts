@@ -5,6 +5,7 @@ export interface Collection {
   slug: string;
   name: string;
   singleName: string;
+  shortName?: string;
   description: string;
   supply: number;
   isMinting: boolean;
