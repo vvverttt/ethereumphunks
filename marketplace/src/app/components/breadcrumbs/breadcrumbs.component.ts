@@ -80,7 +80,8 @@ export class BreadcrumbsComponent {
 
     // If not transparent, fill with background color first
     if (!transparent && phunk.isSupported) {
-      this.ctx.fillStyle = '#C3FF00';
+      const theme = localStorage.getItem('EtherPhunks_theme');
+      this.ctx.fillStyle = theme === 'light' ? '#FFDF00' : '#C3FF00';
       this.ctx.fillRect(0, 0, this.width / this.scale, this.height / this.scale);
     }
 

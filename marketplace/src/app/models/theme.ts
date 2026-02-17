@@ -3,6 +3,8 @@ export interface ThemeProperties {
   '--background': string;
   '--text-color': string;
   '--dark-text': string;
+  '--pink': string;
+  '--base-color': string;
   '--highlight': string;
   '--button-color': string;
   '--header-text': string;

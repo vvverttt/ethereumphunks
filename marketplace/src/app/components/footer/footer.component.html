@@ -8,6 +8,14 @@
     </a>
   </div>
 
+  <div class="phupreme-logo">
+    @if ((theme$ | async) === 'dark') {
+      <img src="assets/images/phupreme-dark.png" alt="Phupreme" />
+    } @else {
+      <img src="assets/images/phupreme.png" alt="Phupreme" />
+    }
+  </div>
+
   <p class="links">
     Version: {{ version }}<br />
     Marketplace: <a [href]="explorerUrl + '/address/' + marketAddress" target="_blank"><app-address [address]="marketAddress" /></a><br />

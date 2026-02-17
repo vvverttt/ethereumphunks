@@ -18,9 +18,11 @@ export class ThemeService {
   themeStyles: ThemeStyles = {
     dark: {
       label: 'Dark',
-      '--background': '0, 0, 0',
+      '--background': '17, 26, 0',
       '--text-color': '255, 255, 255',
       '--dark-text': '255, 255, 255',
+      '--pink': '255, 4, 180',
+      '--base-color': '195, 255, 0',
       '--highlight': '195, 255, 0',
       '--button-color': '255, 4, 180',
 
@@ -35,6 +37,8 @@ export class ThemeService {
       '--background': '255, 4, 180',
       '--text-color': '0, 0, 0',
       '--dark-text': '0, 0, 0',
+      '--pink': '255, 4, 180',
+      '--base-color': '255, 223, 0',
       '--highlight': '195, 255, 0',
       '--button-color': '0, 0, 0',
 
