@@ -46,6 +46,7 @@ export class RecentActivityComponent {
   @ViewChild('scroller') scroller!: ElementRef<HTMLDivElement>;
 
   collection = input.required<Collection | null>();
+  ogCollection = input<Collection | null>(null);
 
   txFilters: TxFilterItem[] = [
     { label: 'All', value: 'All' },
@@ -75,7 +76,7 @@ export class RecentActivityComponent {
     bridgeOut: 'Bridged (Locked) by',
     bridgeIn: 'Bridged (Unlocked) by',
     PrizeAwarded: 'Won in lottery by',
-    // escrow: 'Escrowed by',
+    escrow: 'Escrowed by',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };
 

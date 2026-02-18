@@ -24,6 +24,7 @@
       <section class="overview">
         <app-recent-activity
           [collection]="activeCollection"
+          [ogCollection]="ogCollection$ | async"
         />
       </section>
 

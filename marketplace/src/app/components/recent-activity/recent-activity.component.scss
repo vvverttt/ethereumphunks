@@ -23,8 +23,7 @@ section {
     }
 
     ng-select {
-      width: 100%;
-      max-width: 20rem;
+      width: 20rem;
     }
 
     .events-header-title {
@@ -36,6 +35,38 @@ section {
         color: rgba(var(--highlight), 1);
         font-size: 1.4rem;
         font-weight: 700;
+      }
+    }
+
+    .events-header-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+
+      .og-collection-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 3.2rem;
+        height: 3.2rem;
+        border-radius: .6rem;
+        overflow: hidden;
+        flex-shrink: 0;
+
+        opacity: .85;
+        transition: opacity .2s;
+
+        &:hover {
+          opacity: 1;
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          image-rendering: pixelated;
+        }
       }
     }
   }
@@ -135,6 +166,7 @@ section {
       (offered phunkoffered phunkofferwithdrawn phunknolongerforsale): var(--listed-color),
       (phunkbidentered phunkbidwithdrawn): var(--bid-color),
       (bridgein bridgeout): var(--magma),
+      (escrow): var(--escrow-color),
       (prizeawarded): var(--won-color)
     );
 

@@ -10,7 +10,9 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
 
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
+
+const HIDDEN_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
 
 @Component({
   standalone: true,
@@ -25,7 +27,9 @@ import { firstValueFrom } from 'rxjs';
 })
 export class CollectionsDropdownComponent {
 
-  collections$ = this.store.select(dataStateSelectors.selectCollections);
+  collections$ = this.store.select(dataStateSelectors.selectCollections).pipe(
+    map(collections => collections?.filter(c => !HIDDEN_SLUGS.has(c.slug)) ?? [])
+  );
   activeCollection$ = this.store.select(dataStateSelectors.selectActiveCollection);
   dropdownActive$ = this.store.select(appStateSelectors.selectCollectionsMenuActive);
 

@@ -22,7 +22,14 @@ import { GlobalState } from '@/models/global-state';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as marketStateSelectors from '@/state/selectors/market-state.selectors';
-import { tap } from 'rxjs';
+import { combineLatest, map, tap } from 'rxjs';
+
+const LINKED_SLUG_MAP: Record<string, string> = {
+  'quantummissingphunksv67': 'og-missing-phunks',
+  'quantumdystophunkzv67': 'og-dysto-phunks',
+  'og-missing-phunks': 'quantummissingphunksv67',
+  'og-dysto-phunks': 'quantumdystophunkzv67',
+};
 
 @Component({
   standalone: true,
@@ -60,6 +67,18 @@ export class IndexComponent {
   usd$ = this.store.select(dataStateSelectors.selectUsd);
 
   config$ = this.store.select(appStateSelectors.selectConfig);
+
+  ogCollection$ = combineLatest([
+    this.activeCollection$,
+    this.store.select(dataStateSelectors.selectCollections),
+  ]).pipe(
+    map(([active, collections]) => {
+      if (!active || !collections) return null;
+      const linkedSlug = LINKED_SLUG_MAP[active.slug];
+      if (!linkedSlug) return null;
+      return collections.find(c => c.slug === linkedSlug) || null;
+    })
+  );
 
   mintImage = signal<string | null>(null);
 

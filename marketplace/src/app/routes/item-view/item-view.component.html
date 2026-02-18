@@ -55,7 +55,7 @@
                 @if (phunk.isEscrowed) {
                   <!-- Owner -->
                   @if (phunk.prevOwner; as owner) {
-                    <p i18n>This {{ phunk.collection?.singleName }} is held in <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: escrowAddress }">escrow</a> for <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: owner }"><app-address [address]="owner" /></a>.</p>
+                    <p i18n>This {{ phunk.collection?.singleName }} is held in <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: phunk.owner }">escrow</a> for <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: owner }"><app-address [address]="owner" /></a>.</p>
                   }
                 } @else if (phunk.isBridged) {
                   <!-- Owner -->

@@ -16,7 +16,7 @@ import { environment } from 'src/environments/environment';
 import { gsap } from 'gsap';
 interface Image {
   src: string;
-  type: 'loading' | 'mint' | 'gray' | 'photo';
+  type: 'loading' | 'mint' | 'gray' | 'photo' | 'gif';
 }
 
 @Component({
@@ -129,6 +129,19 @@ export class SplashComponent {
       const batchPromises = shas.slice(currentIndex, currentIndex + batchSize).map(async (sha) => {
         try {
           const image = await this.imageSvc.fetchSupportedImageBySha(sha);
+
+          // Detect GIF by magic bytes (GIF87a / GIF89a)
+          const header = new Uint8Array(image.slice(0, 6));
+          const isGif = header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46; // "GIF"
+
+          if (isGif) {
+            // Animated GIF — use direct URL, keep pixelated rendering
+            return {
+              src: `${environment.staticUrl}/static/images/${sha}`,
+              type: 'gif' as const
+            };
+          }
+
           if (image.byteLength > this.MAX_IMAGE_SIZE) {
             // Non-pixel-art image (e.g. photos/rocks) — use direct URL
             return {

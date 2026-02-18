@@ -1098,9 +1098,9 @@ export class DataService {
     ).pipe(
       switchMap((res: any) => {
         if (res.error) throw res.error;
+        const data = res.data;
         return this.getAttributes(slug).pipe(
           map((attributes) => {
-            const data = res.data;
             const mappedData = data.data.map((item: Phunk) => ({
               ...item,
               attributes: attributes?.[item.sha] || [],
@@ -1109,21 +1109,22 @@ export class DataService {
             // Workaround: If total_count is 0 but we have data, use data length
             const total = data.total_count || mappedData.length;
 
-            console.log('fetchAllWithPagination:', {
-              dataLength: data.data?.length,
-              totalCount: data.total_count,
-              calculatedTotal: total,
-              filters
-            });
-
             return {
               data: mappedData,
               total
             }
           }),
+          catchError(() => {
+            const mappedData = data.data.map((item: Phunk) => ({
+              ...item,
+              attributes: [],
+            } as Phunk));
+            const total = data.total_count || mappedData.length;
+            return of({ data: mappedData, total });
+          }),
         )
       }),
-      catchError((err) => {
+      catchError(() => {
         return of({ data: [], total: 0 });
       })
     );
