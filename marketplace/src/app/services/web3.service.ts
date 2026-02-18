@@ -527,7 +527,8 @@ export class Web3Service {
     contractAddress: string,
     functionName: string,
     args: any[],
-    value?: string
+    value?: string,
+    abi?: readonly any[]
   ): Promise<string | undefined> {
     if (!functionName) return;
     await this.switchNetwork();
@@ -544,7 +545,7 @@ export class Web3Service {
 
     const tx: any = {
       address: contractAddress as `0x${string}`,
-      abi: EtherPhunksMarketABI,
+      abi: abi || EtherPhunksMarketABI,
       functionName,
       args,
       account: walletClient.account.address as `0x${string}`,
@@ -647,6 +648,16 @@ export class Web3Service {
       );
     }
 
+    // Old market's offerPhunkForSale has a different signature (extra revSharePercentage param).
+    // Use offerPhunkForSaleToAddress with zeroAddress which works on both contracts.
+    if (oldMarketAddresses.includes(contractAddress.toLowerCase())) {
+      return this._writeMarketContractAt(
+        contractAddress,
+        'offerPhunkForSaleToAddress',
+        [hashId, weiValue, zeroAddress]
+      );
+    }
+
     return this._writeMarketContractAt(
       contractAddress,
       'offerPhunkForSale',
@@ -669,7 +680,11 @@ export class Web3Service {
   ): Promise<string | undefined> {
     const weiValue = this.ethToWei(value);
 
-    const sig = toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE'), { size: 32 });
+    // Old market (V2_1) uses keccak256 hash; new market uses raw ASCII bytes
+    const rawSig = toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE'), { size: 32 });
+    const sig = oldMarketAddresses.includes(contractAddress.toLowerCase())
+      ? keccak256(rawSig)
+      : rawSig;
     const bytes32Value = weiValue.toString(16).padStart(64, '0');
     toAddress = toAddress.toLowerCase().replace('0x', '').padStart(64, '0');
 
@@ -684,6 +699,23 @@ export class Web3Service {
    */
   async batchOfferPhunkForSale(hashIds: string[], listPrices: number[], contractAddress: string = marketAddress): Promise<string | undefined> {
     const weiValues = listPrices.map((price) => this.ethToWei(price));
+
+    // Old market's batchOfferPhunkForSale has extra revSharePercentage param
+    if (oldMarketAddresses.includes(contractAddress.toLowerCase())) {
+      const oldBatchAbi = [{
+        inputs: [
+          { name: 'phunkIds', type: 'bytes32[]' },
+          { name: 'minSalePricesInWei', type: 'uint256[]' },
+          { name: 'revSharePercentage', type: 'uint256' },
+        ],
+        name: 'batchOfferPhunkForSale',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+      }] as const;
+      return this._writeMarketContractAt(contractAddress, 'batchOfferPhunkForSale', [hashIds, weiValues, 0], undefined, oldBatchAbi);
+    }
+
     return this._writeMarketContractAt(contractAddress, 'batchOfferPhunkForSale', [hashIds, weiValues]);
   }
 
@@ -698,6 +730,7 @@ export class Web3Service {
     contractAddress: string = marketAddress
   ): Promise<string | undefined> {
     const address = getAccount(this.config).address;
+
     const escrowAndListing = await this.fetchMultipleEscrowAndListing(phunks, contractAddress);
 
     const hashIds = [];
@@ -712,9 +745,13 @@ export class Web3Service {
 
     for (const [i, phunk] of phunks.entries()) {
       const hashId = phunk.hashId;
-      const stored = escrowAndListing[hashId].stored;
-      const listed = escrowAndListing[hashId][0];
-      const listedBy = escrowAndListing[hashId][2];
+      const entry = escrowAndListing[hashId];
+
+      if (!entry) continue;
+
+      const stored = entry.stored;
+      const listed = entry[0];
+      const listedBy = entry[2];
 
       if (
         !phunk.listing ||
