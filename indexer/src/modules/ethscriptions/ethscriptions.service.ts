@@ -7,7 +7,7 @@ import { StorageService } from '@/modules/storage/storage.service';
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { chain, lotteryAddressL1, marketAbiL1, marketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { chain, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -126,7 +126,7 @@ export class EthscriptionsService {
 
     // Filter logs for EtherPhunk Marketplace events
     const marketplaceLogs = receipt.logs.filter(
-      (log: any) => log.address.toLowerCase() === marketAddressL1.toLowerCase()
+      (log: any) => marketAddressesL1.has(log.address.toLowerCase())
     );
     if (marketplaceLogs.length) {
       Logger.debug(
@@ -507,7 +507,7 @@ export class EthscriptionsService {
     const boughtHashIds = new Set<string>();
 
     for (const log of marketplaceLogs) {
-      if (!marketAddressL1.includes(log.address?.toLowerCase())) {
+      if (!marketAddressesL1.has(log.address?.toLowerCase())) {
         decodedLogs.push(null);
         continue;
       }

@@ -34,6 +34,15 @@ export const marketAddressL1: string =
     ? process.env.MARKET_ADDRESS_MAINNET_L1
     : process.env.MARKET_ADDRESS_SEPOLIA_L1)?.toLowerCase();
 
+export const oldMarketAddressL1: string =
+  (chain === 'mainnet'
+    ? process.env.OLD_MARKET_ADDRESS_MAINNET_L1
+    : '')?.toLowerCase();
+
+export const marketAddressesL1 = new Set(
+  [marketAddressL1, oldMarketAddressL1].filter(Boolean)
+);
+
 export const pointsAddressL1: string =
   (chain === 'mainnet'
     ? process.env.POINTS_ADDRESS_MAINNET

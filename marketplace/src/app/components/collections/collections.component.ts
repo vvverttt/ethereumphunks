@@ -11,6 +11,8 @@ import { PhunkGridComponent } from '../phunk-grid/phunk-grid.component';
 import { selectCollections } from '@/state/selectors/data-state.selectors';
 import { filter, map } from 'rxjs';
 
+const HIDDEN_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
+
 @Component({
   selector: 'app-collections',
   standalone: true,
@@ -29,8 +31,7 @@ export class CollectionsComponent {
   collections$ = this.store.select(selectCollections).pipe(
     filter(collections => !!collections),
     map(collections => {
-      // remove first item in array
-      return collections.slice(1);
+      return collections.slice(1).filter(c => !HIDDEN_SLUGS.has(c.slug));
     })
   )
 

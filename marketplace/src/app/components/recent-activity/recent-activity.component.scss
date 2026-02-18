@@ -54,11 +54,8 @@ section {
         overflow: hidden;
         flex-shrink: 0;
 
-        opacity: .85;
-        transition: opacity .2s;
-
         &:hover {
-          opacity: 1;
+          opacity: .85;
         }
 
         img {
