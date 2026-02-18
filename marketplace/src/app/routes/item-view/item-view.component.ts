@@ -274,13 +274,15 @@ export class ItemViewComponent {
         if (!validAddress) throw new Error('Invalid address');
       }
 
+      const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner, slug: phunk.slug });
+
       let hash;
       if (phunk.isEscrowed) {
-        hash = await this.web3Svc.offerPhunkForSale(hashId, value, address);
+        hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
       } else if (phunk.nft) {
         hash = await this.web3Svc.offerPhunkForSaleL2(hashId, value, address);
       } else {
-        hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address);
+        hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
       }
 
       // this.initNotificationMessage();
@@ -336,8 +338,9 @@ export class ItemViewComponent {
     try {
       await this.checkConsenus(phunk);
 
+      const targetMarket = this.web3Svc.resolveMarketAddress({ slug: phunk.slug });
       const tokenId = phunk.hashId;
-      const hash = await this.web3Svc.sendEthscriptionToContract(tokenId);
+      const hash = await this.web3Svc.sendEthscriptionToContract(tokenId, targetMarket);
 
       notification = {
         ...notification,
@@ -385,12 +388,13 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
+      const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
 
       let hash;
       if (phunk.nft) {
         hash = await this.web3Svc.phunkNoLongerForSaleL2(hashId);
       } else {
-        hash = await this.web3Svc.phunkNoLongerForSale(hashId);
+        hash = await this.web3Svc.phunkNoLongerForSale(hashId, targetMarket);
       }
       if (!hash) throw new Error('Could not process transaction');
 
@@ -446,11 +450,13 @@ export class ItemViewComponent {
       await this.checkConsenus(phunk);
       if (!phunk.prevOwner) throw new Error('Invalid prevOwner');
 
+      const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
+
       let hash: string | undefined = undefined;
       if (phunk.nft) {
         hash = await this.web3Svc.buyPhunkL2(hashId);
       } else {
-        hash = await this.web3Svc.batchBuyPhunks([phunk]);
+        hash = await this.web3Svc.batchBuyPhunks([phunk], targetMarket);
       }
 
       if (!hash) throw new Error('Could not process transaction');
@@ -553,7 +559,8 @@ export class ItemViewComponent {
     try {
       this.store.dispatch(upsertNotification({ notification }));
 
-      const hash = await this.web3Svc.withdrawPhunk(hashId);
+      const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
+      const hash = await this.web3Svc.withdrawPhunk(hashId, targetMarket);
       if (!hash) throw new Error('Could not process transaction');
       notification = {
         ...notification,

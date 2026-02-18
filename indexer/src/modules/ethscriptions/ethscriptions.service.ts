@@ -7,7 +7,12 @@ import { StorageService } from '@/modules/storage/storage.service';
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { chain, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { chain, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+
+// OG collections use the live etherphunks.eth.limo DB as source of truth.
+// Only allow ownership transfers that go through a known market contract;
+// skip direct p2p transfers which the live indexer doesn't recognise.
+const OG_COLLECTION_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -274,6 +279,17 @@ export class EthscriptionsService {
 
     if (!isMatchedHashId || !transferrerIsOwner) return null;
 
+    // Guard: skip direct transfers for OG collections unless through a known market
+    if (OG_COLLECTION_SLUGS.has(ethscript.slug)) {
+      const isMarketTransfer =
+        marketAddressesL1.has(txn.from.toLowerCase()) ||
+        marketAddressesL1.has(txn.to?.toLowerCase());
+      if (!isMarketTransfer) {
+        Logger.debug(`Skipping direct transfer for OG item (${ethscript.slug})`, ethscript.hashId);
+        return null;
+      }
+    }
+
     Logger.debug(
       `Processing transfer (L1)`,
       txn.hash
@@ -337,6 +353,17 @@ export class EthscriptionsService {
       : true;
 
     if (!isMatchedHashId || !transferrerIsOwner || !samePrevOwner) return null;
+
+    // Guard: skip contract transfers for OG collections unless through a known market
+    if (OG_COLLECTION_SLUGS.has(ethscript.slug)) {
+      const isMarketTransfer =
+        marketAddressesL1.has(from.toLowerCase()) ||
+        marketAddressesL1.has(to.toLowerCase());
+      if (!isMarketTransfer) {
+        Logger.debug(`Skipping contract transfer for OG item (${ethscript.slug})`, ethscript.hashId);
+        return null;
+      }
+    }
 
     // Update the eth phunk owner
     await this.storageSvc.updateEthscriptionOwner(ethscript.hashId, ethscript.owner, to);

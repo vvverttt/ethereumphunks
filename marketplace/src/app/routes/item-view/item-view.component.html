@@ -125,7 +125,7 @@
 
                           <!-- Sell (Ownership actions) -->
                           @if (
-                            ((owner | lowercase) === (escrowAddress | lowercase) &&
+                            (phunk.isEscrowed &&
                             (phunk.prevOwner | lowercase) === (address | lowercase)) ||
                             (owner | lowercase) === (address | lowercase) ||
                             (phunk.nft && phunk.nft.owner === address)
@@ -165,7 +165,7 @@
                           @if (
                             phunk.listing &&
                             ((
-                              ((owner | lowercase) === (escrowAddress | lowercase) &&
+                              (phunk.isEscrowed &&
                               (phunk.prevOwner | lowercase) === (address | lowercase)) ||
                               (phunk.nft?.owner === address)
                             ) || (

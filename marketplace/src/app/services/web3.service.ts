@@ -30,6 +30,8 @@ import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchCont
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 import { GasService } from './gas.service';
 const marketAddress = environment.marketAddress;
+const oldMarketAddresses: string[] = (environment as any).oldMarketAddresses || [];
+const ogSlugs: string[] = (environment as any).ogSlugs || [];
 const marketAddressL2 = environment.marketAddressL2;
 const pointsAddress = environment.pointsAddress;
 const bridgeAddressL2 = environment.bridgeAddressL2;
@@ -415,15 +417,33 @@ export class Web3Service {
   }
 
   /**
+   * Returns the correct market contract address for a given item.
+   * If the owner is an old market address, returns that address.
+   * If the slug is an OG collection slug, returns the first old market address.
+   * Otherwise returns the new market address.
+   */
+  resolveMarketAddress(opts?: { owner?: string; slug?: string }): string {
+    if (opts?.owner && oldMarketAddresses.includes(opts.owner.toLowerCase())) {
+      return opts.owner.toLowerCase();
+    }
+    if (opts?.slug && ogSlugs.includes(opts.slug) && oldMarketAddresses.length > 0) {
+      return oldMarketAddresses[0];
+    }
+    return marketAddress;
+  }
+
+  /**
    * Checks if an address has any pending withdrawals
    * @param address The address to check for withdrawals
    * @returns Promise resolving to the total pending withdrawal amount as a bigint
    */
   async checkHasWithdrawal(address: string): Promise<bigint> {
-    const pendingWithdrawals = await this.readMarketContract('pendingWithdrawals', [address]);
-    // const pendingWithdrawalsV2 = await this.readMarketContract('pendingWithdrawalsV2', [address]);
-    // console.log(pendingWithdrawals || BigInt(0)) + (pendingWithdrawalsV2 || BigInt(0));
-    return pendingWithdrawals || BigInt(0);
+    let total = (await this._readMarketContractAt(marketAddress, 'pendingWithdrawals', [address])) || BigInt(0);
+    for (const oldAddr of oldMarketAddresses) {
+      const pending = (await this._readMarketContractAt(oldAddr, 'pendingWithdrawals', [address])) || BigInt(0);
+      total += pending;
+    }
+    return total;
   }
 
   /**
@@ -444,11 +464,11 @@ export class Web3Service {
    * @param tokenId The token ID to check
    * @returns Promise resolving to true if token is in escrow, false otherwise
    */
-  async isInEscrow(tokenId: string): Promise<boolean> {
+  async isInEscrow(tokenId: string, contractAddress: string = marketAddress): Promise<boolean> {
     const address = getAccount(this.config).address;
     if (!address) return false;
 
-    const isInEscrow = await this.readMarketContract('userEthscriptionPossiblyStored', [address, tokenId]);
+    const isInEscrow = await this._readMarketContractAt(contractAddress, 'userEthscriptionPossiblyStored', [address, tokenId]);
     return !!isInEscrow;
   }
 
@@ -458,10 +478,10 @@ export class Web3Service {
    * @returns Promise resolving to the transaction hash if successful
    * @throws Error if token is already in escrow
    */
-  async sendEthscriptionToContract(tokenId: string): Promise<string | undefined> {
-    const escrowed = await this.isInEscrow(tokenId);
+  async sendEthscriptionToContract(tokenId: string, contractAddress: string = marketAddress): Promise<string | undefined> {
+    const escrowed = await this.isInEscrow(tokenId, contractAddress);
     if (escrowed) throw new Error('Phunk already in escrow');
-    return await this.transferPhunk(tokenId, marketAddress as `0x${string}`);
+    return await this.transferPhunk(tokenId, contractAddress as `0x${string}`);
   }
 
   /**
@@ -470,10 +490,10 @@ export class Web3Service {
    * @returns Promise resolving to the transaction hash if successful
    * @throws Error if phunk is not in escrow
    */
-  async withdrawPhunk(hashId: string): Promise<string | undefined> {
-    const escrowed = await this.isInEscrow(hashId);
+  async withdrawPhunk(hashId: string, contractAddress: string = marketAddress): Promise<string | undefined> {
+    const escrowed = await this.isInEscrow(hashId, contractAddress);
     if (!escrowed) throw new Error('Phunk not in escrow');
-    return await this.writeMarketContract('withdrawPhunk', [hashId]);
+    return await this._writeMarketContractAt(contractAddress, 'withdrawPhunk', [hashId]);
   }
 
   /**
@@ -482,9 +502,9 @@ export class Web3Service {
    * @returns Promise resolving to the transaction hash if successful
    * @throws Error if no phunks are selected
    */
-  async withdrawBatch(hashIds: string[]): Promise<string | undefined> {
+  async withdrawBatch(hashIds: string[], contractAddress: string = marketAddress): Promise<string | undefined> {
     if (!hashIds.length) throw new Error('No phunks selected');
-    return await this.writeMarketContract('withdrawBatchPhunks', [hashIds]);
+    return await this._writeMarketContractAt(contractAddress, 'withdrawBatchPhunks', [hashIds]);
   }
 
   /**
@@ -501,14 +521,10 @@ export class Web3Service {
   }
 
   /**
-   * Executes a write operation on the marketplace contract
-   * @param functionName The name of the function to call
-   * @param args The arguments to pass to the function
-   * @param value Optional value in wei to send with the transaction
-   * @returns Promise resolving to the transaction hash if successful
-   * @throws Error if no public client or in maintenance mode
+   * Internal helper: executes a write operation on any marketplace contract
    */
-  async writeMarketContract(
+  private async _writeMarketContractAt(
+    contractAddress: string,
     functionName: string,
     args: any[],
     value?: string
@@ -527,7 +543,7 @@ export class Web3Service {
     if (maintenance && environment.production) throw new Error('In maintenance mode');
 
     const tx: any = {
-      address: marketAddress as `0x${string}`,
+      address: contractAddress as `0x${string}`,
       abi: EtherPhunksMarketABI,
       functionName,
       args,
@@ -549,15 +565,28 @@ export class Web3Service {
   }
 
   /**
-   * Reads data from the marketplace contract
-   * @param functionName The name of the function to call
-   * @param args The arguments to pass to the function
-   * @returns Promise resolving to the function result or null if error
+   * Executes a write operation on the marketplace contract
    */
-  async readMarketContract(functionName: any, args: (string | undefined)[]): Promise<any | null> {
+  async writeMarketContract(
+    functionName: string,
+    args: any[],
+    value?: string,
+    contractAddress: string = marketAddress
+  ): Promise<string | undefined> {
+    return this._writeMarketContractAt(contractAddress, functionName, args, value);
+  }
+
+  /**
+   * Internal helper: reads data from any marketplace contract
+   */
+  private async _readMarketContractAt(
+    contractAddress: string,
+    functionName: any,
+    args: (string | undefined)[]
+  ): Promise<any | null> {
     try {
       const call: any = await this.l1Client.readContract({
-        address: marketAddress as `0x${string}`,
+        address: contractAddress as `0x${string}`,
         abi: EtherPhunksMarketABI,
         functionName,
         args: args as any,
@@ -567,6 +596,17 @@ export class Web3Service {
       console.log({functionName, args, error});
       return null;
     }
+  }
+
+  /**
+   * Reads data from the marketplace contract
+   */
+  async readMarketContract(
+    functionName: any,
+    args: (string | undefined)[],
+    contractAddress: string = marketAddress
+  ): Promise<any | null> {
+    return this._readMarketContractAt(contractAddress, functionName, args);
   }
 
   /**
@@ -595,18 +635,20 @@ export class Web3Service {
     hashId: string,
     value: number,
     toAddress?: string | null,
-    // revShare = 0
+    contractAddress: string = marketAddress
   ): Promise<string | undefined> {
     const weiValue = value * 1e18;
     if (toAddress) {
       if (!isAddress(toAddress)) throw new Error('Invalid address');
-      return this.writeMarketContract(
+      return this._writeMarketContractAt(
+        contractAddress,
         'offerPhunkForSaleToAddress',
         [hashId, weiValue, toAddress]
       );
     }
 
-    return this.writeMarketContract(
+    return this._writeMarketContractAt(
+      contractAddress,
       'offerPhunkForSale',
       [hashId, weiValue]
     );
@@ -623,16 +665,15 @@ export class Web3Service {
     hashId: string,
     value: number,
     toAddress: string = zeroAddress,
-    // revShare = 0
+    contractAddress: string = marketAddress
   ): Promise<string | undefined> {
     const weiValue = this.ethToWei(value);
 
     const sig = toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE'), { size: 32 });
     const bytes32Value = weiValue.toString(16).padStart(64, '0');
     toAddress = toAddress.toLowerCase().replace('0x', '').padStart(64, '0');
-    // const revShareHex = numberToHex(revShare).replace('0x', '').padStart(64, '0');
 
-    return await this.batchTransferPhunks([hashId, sig, bytes32Value, toAddress], marketAddress);
+    return await this.batchTransferPhunks([hashId, sig, bytes32Value, toAddress], contractAddress);
   }
 
   /**
@@ -641,9 +682,9 @@ export class Web3Service {
    * @param listPrices Array of prices in ETH corresponding to each hash ID
    * @returns Promise resolving to the transaction hash if successful
    */
-  async batchOfferPhunkForSale(hashIds: string[], listPrices: number[]): Promise<string | undefined> {
+  async batchOfferPhunkForSale(hashIds: string[], listPrices: number[], contractAddress: string = marketAddress): Promise<string | undefined> {
     const weiValues = listPrices.map((price) => this.ethToWei(price));
-    return this.writeMarketContract('batchOfferPhunkForSale', [hashIds, weiValues]);
+    return this._writeMarketContractAt(contractAddress, 'batchOfferPhunkForSale', [hashIds, weiValues]);
   }
 
   /**
@@ -653,10 +694,11 @@ export class Web3Service {
    * @throws Error if user is banned or no phunks are selected
    */
   async batchBuyPhunks(
-    phunks: Phunk[]
+    phunks: Phunk[],
+    contractAddress: string = marketAddress
   ): Promise<string | undefined> {
     const address = getAccount(this.config).address;
-    const escrowAndListing = await this.fetchMultipleEscrowAndListing(phunks);
+    const escrowAndListing = await this.fetchMultipleEscrowAndListing(phunks, contractAddress);
 
     const hashIds = [];
     const minSalePricesInWei = [];
@@ -689,7 +731,8 @@ export class Web3Service {
 
     if (!hashIds.length || !minSalePricesInWei.length) throw new Error('No phunks selected');
 
-    return this.writeMarketContract(
+    return this._writeMarketContractAt(
+      contractAddress,
       'batchBuyPhunk',
       [hashIds, minSalePricesInWei],
       total as any
@@ -701,8 +744,8 @@ export class Web3Service {
    * @param hashId The hash ID of the phunk to delist
    * @returns Promise resolving to the transaction hash if successful
    */
-  async phunkNoLongerForSale(hashId: string): Promise<string | undefined> {
-    return this.writeMarketContract('phunkNoLongerForSale', [hashId]);
+  async phunkNoLongerForSale(hashId: string, contractAddress: string = marketAddress): Promise<string | undefined> {
+    return this._writeMarketContractAt(contractAddress, 'phunkNoLongerForSale', [hashId]);
   }
 
   /**
@@ -786,9 +829,26 @@ export class Web3Service {
    * @returns Promise resolving to the remaining withdrawal balance
    */
   async withdraw(): Promise<any> {
-    const hash = await this.writeMarketContract('withdraw', []);
-    const receipt = await this.waitForTransaction(hash!);
-    return await this.checkHasWithdrawal(receipt.from);
+    const address = this.getCurrentAddress();
+    if (!address) throw new Error('No wallet connected');
+
+    // Withdraw from new market
+    const newPending = (await this._readMarketContractAt(marketAddress, 'pendingWithdrawals', [address])) || BigInt(0);
+    if (newPending > BigInt(0)) {
+      const hash = await this._writeMarketContractAt(marketAddress, 'withdraw', []);
+      await this.waitForTransaction(hash!);
+    }
+
+    // Withdraw from old market(s)
+    for (const oldAddr of oldMarketAddresses) {
+      const pending = (await this._readMarketContractAt(oldAddr, 'pendingWithdrawals', [address])) || BigInt(0);
+      if (pending > BigInt(0)) {
+        const hash = await this._writeMarketContractAt(oldAddr, 'withdraw', []);
+        await this.waitForTransaction(hash!);
+      }
+    }
+
+    return await this.checkHasWithdrawal(address);
   }
 
   /**
@@ -826,9 +886,9 @@ export class Web3Service {
    * @param hashId The hash ID of the item.
    * @returns Promise resolving to the escrow and listing information.
    */
-  async fetchEscrowAndListing(prevOwner: string, hashId: string): Promise<any> {
+  async fetchEscrowAndListing(prevOwner: string, hashId: string, contractAddress: string = marketAddress): Promise<any> {
     const contract = {
-      address: marketAddress as `0x${string}`,
+      address: contractAddress as `0x${string}`,
       abi: EtherPhunksMarketABI as any
     };
 
@@ -852,9 +912,9 @@ export class Web3Service {
    * @param phunks - An array of Phunks for which to fetch the information.
    * @returns Promise resolving to an object containing the combined escrow and listing information.
    */
-  async fetchMultipleEscrowAndListing(phunks: Phunk[]): Promise<any> {
+  async fetchMultipleEscrowAndListing(phunks: Phunk[], contractAddress: string = marketAddress): Promise<any> {
     const contract = {
-      address: marketAddress as `0x${string}`,
+      address: contractAddress as `0x${string}`,
       abi: EtherPhunksMarketABI
     };
 

@@ -21,6 +21,8 @@ export const environment = {
   bridgeAddress: '0x1565f60D2469F18bBCc96B2C29220412F2Fe98Bd'.toLowerCase(),
   bridgeAddressL2: '0x2A953aA14e986b0595A0c5201dD267391BF7d39d'.toLowerCase(),
   lotteryAddress: '0x4C0b9B7b3e290B793474c533C7AC90262bb69971'.toLowerCase(),
+  oldMarketAddresses: [] as string[],
+  ogSlugs: [] as string[],
 
   // relayUrl: 'https://relay-sepolia.ethereumphunks.com',
   relayUrl: 'http://10.0.0.127:3069',
