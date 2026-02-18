@@ -67,6 +67,7 @@ export class ThemeService {
    * @param theme Theme to apply ('dark' or 'light')
    */
   setThemeStyles(theme: Theme) {
+    const previousTheme = localStorage.getItem('EtherPhunks_theme');
     const themeStyles = this.themeStyles[theme as keyof ThemeStyles];
     Object.keys(themeStyles).map((property: string) => {
       this.document.documentElement.style.setProperty(
@@ -84,8 +85,8 @@ export class ThemeService {
       this.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex);
     }
 
-    // On mobile, reload to ensure iOS Safari fully repaints
-    if (window.innerWidth <= 800) {
+    // On mobile, reload only when user actually switches theme (not on initial load)
+    if (previousTheme && previousTheme !== theme && window.innerWidth <= 800) {
       window.location.reload();
     }
   }
