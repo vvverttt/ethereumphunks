@@ -77,6 +77,13 @@ export class ThemeService {
     this.document.body.dataset['theme'] = theme;
     localStorage.setItem('EtherPhunks_theme', theme);
 
+    // Update iOS Safari status bar color to match --base-color
+    const baseColor = themeStyles['--base-color' as keyof ThemeProperties];
+    if (baseColor) {
+      const hex = '#' + baseColor.split(',').map(c => (+c.trim()).toString(16).padStart(2, '0')).join('');
+      this.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex);
+    }
+
     // Force repaint on iOS Safari — fixed-position elements don't
     // repaint when CSS custom properties change on :root
     requestAnimationFrame(() => {
