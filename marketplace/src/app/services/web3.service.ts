@@ -680,10 +680,10 @@ export class Web3Service {
   ): Promise<string | undefined> {
     const weiValue = this.ethToWei(value);
 
-    // Old market (V2_1) uses keccak256 hash; new market uses raw ASCII bytes
+    // Old market (V2_1) uses keccak256 of the unpadded string; new market uses raw ASCII bytes
     const rawSig = toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE'), { size: 32 });
     const sig = oldMarketAddresses.includes(contractAddress.toLowerCase())
-      ? keccak256(rawSig)
+      ? keccak256(toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE')))
       : rawSig;
     const bytes32Value = weiValue.toString(16).padStart(64, '0');
     toAddress = toAddress.toLowerCase().replace('0x', '').padStart(64, '0');
