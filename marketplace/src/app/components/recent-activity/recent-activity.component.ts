@@ -21,7 +21,7 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { Collection } from '@/models/data.state';
-import { firstValueFrom, tap } from 'rxjs';
+import { firstValueFrom, map, tap } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -82,6 +82,7 @@ export class RecentActivityComponent {
 
   usd$ = this.store.select(dataStateSelectors.selectUsd);
   events$ = this.store.select(dataStateSelectors.selectEvents);
+  hasMore$ = this.events$.pipe(map(events => !!events && events.length > 0 && events.length % 48 === 0));
 
   constructor(
     private store: Store<GlobalState>,

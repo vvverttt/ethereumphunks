@@ -127,7 +127,7 @@ export class MarketStateEffects {
       ]).pipe(
         // tap(([eventTypeFilter, page]) => console.log('fetchEvents$', {eventTypeFilter, page})),
         switchMap(([eventTypeFilter, page]) =>
-          this.dataSvc.fetchEvents(page * 24, 24, eventTypeFilter, marketSlug).pipe(
+          this.dataSvc.fetchEvents(page * 48, 48, eventTypeFilter, marketSlug).pipe(
             map(events => ({ events, page }))
           )
         ),

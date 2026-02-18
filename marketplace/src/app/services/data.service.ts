@@ -531,6 +531,14 @@ export class DataService {
             if (tx.from?.toLowerCase() === environment.bridgeAddress) type = 'bridgeIn';
           }
           return { ...tx, type, } as Event;
+        }).filter((event: any) => {
+          // Hide deposits to escrow — the PhunkOffered event is sufficient
+          if (event.type === 'transfer') {
+            const to = event.to?.toLowerCase();
+            const marketAddrs = [environment.marketAddress, ...((environment as any).oldMarketAddresses || [])];
+            if (marketAddrs.includes(to)) return false;
+          }
+          return true;
         });
         return result;
       }),
