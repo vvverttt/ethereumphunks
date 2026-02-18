@@ -76,6 +76,15 @@ export class ThemeService {
     });
     this.document.body.dataset['theme'] = theme;
     localStorage.setItem('EtherPhunks_theme', theme);
+
+    // Force repaint on iOS Safari — fixed-position elements don't
+    // repaint when CSS custom properties change on :root
+    requestAnimationFrame(() => {
+      this.document.body.style.transform = 'translateZ(0)';
+      requestAnimationFrame(() => {
+        this.document.body.style.transform = '';
+      });
+    });
   }
 
   /**
