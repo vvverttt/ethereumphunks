@@ -84,14 +84,10 @@ export class ThemeService {
       this.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex);
     }
 
-    // Force repaint on iOS Safari — fixed-position elements don't
-    // repaint when CSS custom properties change on :root
-    requestAnimationFrame(() => {
-      this.document.body.style.transform = 'translateZ(0)';
-      requestAnimationFrame(() => {
-        this.document.body.style.transform = '';
-      });
-    });
+    // On mobile, reload to ensure iOS Safari fully repaints
+    if (window.innerWidth <= 800) {
+      window.location.reload();
+    }
   }
 
   /**
