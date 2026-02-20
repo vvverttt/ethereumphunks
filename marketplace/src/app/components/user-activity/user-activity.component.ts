@@ -50,6 +50,8 @@ export class UserActivityComponent {
     created: 'Created by',
     bridgeOut: 'Bridged by',
     bridgeIn: 'Bridged (Unlocked) by',
+    Evolved: 'Mutated by',
+    Devolved: 'Mutated by',
     // escrow: 'Escrowed by',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };

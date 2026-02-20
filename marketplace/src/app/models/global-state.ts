@@ -145,4 +145,6 @@ export type EventType =
   | 'PhunkNoLongerForSale'
   | 'bridgeOut'
   | 'bridgeIn'
-  | 'PrizeAwarded';
+  | 'PrizeAwarded'
+  | 'Evolved'
+  | 'Devolved';

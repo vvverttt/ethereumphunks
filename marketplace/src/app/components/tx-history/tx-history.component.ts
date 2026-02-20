@@ -74,6 +74,8 @@ export class TxHistoryComponent implements OnChanges {
     bridgeOut: 'Lock',
     bridgeIn: 'Unlock',
     PrizeAwarded: 'Won',
+    Evolved: 'Mutated',
+    Devolved: 'Mutated',
   };
 
   constructor(

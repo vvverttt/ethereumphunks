@@ -55,6 +55,7 @@ export class RecentActivityComponent {
     { label: 'Transferred', value: 'transfer' },
     { label: 'Created', value: 'created' },
     { label: 'Won', value: 'PrizeAwarded' },
+    { label: 'Mutated', value: 'Evolved' },
     // { label: 'Bid Entered', value: 'PhunkBidEntered' },
     // { label: 'Bid Withdrawn', value: 'PhunkBidWithdrawn' },
     // { label: 'Bridged', value: 'bridgeOut' },
@@ -77,6 +78,8 @@ export class RecentActivityComponent {
     bridgeIn: 'Bridged (Unlocked) by',
     PrizeAwarded: 'Won in lottery by',
     escrow: 'Escrowed by',
+    Evolved: 'Mutated by',
+    Devolved: 'Mutated by',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };
 

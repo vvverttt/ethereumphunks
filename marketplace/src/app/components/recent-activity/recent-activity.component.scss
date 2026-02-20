@@ -164,7 +164,8 @@ section {
       (phunkbidentered phunkbidwithdrawn): var(--bid-color),
       (bridgein bridgeout): var(--magma),
       (escrow): var(--escrow-color),
-      (prizeawarded): var(--won-color)
+      (prizeawarded): var(--won-color),
+      (evolved devolved): var(--mutated-color)
     );
 
     @each $events, $color in $event-color-groups {
