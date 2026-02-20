@@ -80,8 +80,8 @@ export class RecentActivityComponent {
     bridgeIn: 'Bridged (Unlocked) by',
     PrizeAwarded: 'Won in lottery by',
     escrow: 'Escrowed by',
-    Evolved: 'Mutated for',
-    Devolved: 'Mutated for',
+    Evolved: 'Mutated by',
+    Devolved: 'Mutated by',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };
 
