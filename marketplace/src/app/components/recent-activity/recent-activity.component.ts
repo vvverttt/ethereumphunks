@@ -1,4 +1,4 @@
-import { Component, ElementRef, input, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +21,10 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { Collection } from '@/models/data.state';
+import { environment } from 'src/environments/environment';
 import { firstValueFrom, map, tap } from 'rxjs';
+
+const EVOLVE_SLUGS = new Set(Object.keys((environment as any).evolvePairs || {}));
 
 @Component({
   standalone: true,
@@ -48,24 +51,23 @@ export class RecentActivityComponent {
   collection = input.required<Collection | null>();
   ogCollection = input<Collection | null>(null);
 
-  txFilters: TxFilterItem[] = [
-    { label: 'All', value: 'All' },
-    { label: 'Offered', value: 'PhunkOffered' },
-    { label: 'Sold', value: 'PhunkBought' },
-    { label: 'Transferred', value: 'transfer' },
-    { label: 'Created', value: 'created' },
-    { label: 'Won', value: 'PrizeAwarded' },
-    { label: 'Mutated', value: 'Evolved' },
-    // { label: 'Bid Entered', value: 'PhunkBidEntered' },
-    // { label: 'Bid Withdrawn', value: 'PhunkBidWithdrawn' },
-    // { label: 'Bridged', value: 'bridgeOut' },
-    // { label: 'Bridged', value: 'bridgeIn' },
+  txFilters = computed<TxFilterItem[]>(() => {
+    const base: TxFilterItem[] = [
+      { label: 'All', value: 'All' },
+      { label: 'Offered', value: 'PhunkOffered' },
+      { label: 'Sold', value: 'PhunkBought' },
+      { label: 'Transferred', value: 'transfer' },
+      { label: 'Created', value: 'created' },
+      { label: 'Won', value: 'PrizeAwarded' },
+    ];
+    const slug = this.collection()?.slug;
+    if (slug && EVOLVE_SLUGS.has(slug)) {
+      base.push({ label: 'Mutated', value: 'Evolved' });
+    }
+    return base;
+  });
 
-    // { label: 'Escrowed', value: 'escrow' },
-    // { label: 'Offer Withdrawn', value: 'PhunkOfferWithdrawn' },
-  ];
-
-  _activeTxFilter: EventType = this.txFilters[0].value;
+  _activeTxFilter: EventType = 'All';
 
   labels: any = {
     PhunkBidEntered: 'New bid of',
@@ -78,8 +80,8 @@ export class RecentActivityComponent {
     bridgeIn: 'Bridged (Unlocked) by',
     PrizeAwarded: 'Won in lottery by',
     escrow: 'Escrowed by',
-    Evolved: 'Mutated by',
-    Devolved: 'Mutated by',
+    Evolved: 'Mutated for',
+    Devolved: 'Mutated for',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };
 
