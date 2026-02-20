@@ -10,11 +10,15 @@ import marketL1 from '@/abi/EtherPhunksMarketL1.json';
 
 import lottery from '@/abi/PhilipLotteryV68.json';
 
+import mutation from '@/abi/Mutation.json';
+
 export const pointsAbiL1 = pointsL1;
 
 export const marketAbiL1 = marketL1;
 
 export const lotteryAbi = lottery;
+
+export const mutationAbi = mutation;
 
 export const chain: 'mainnet' | 'sepolia' =
   process.env.CHAIN_ID === '1' ? 'mainnet' : 'sepolia';
@@ -39,8 +43,13 @@ export const oldMarketAddressL1: string =
     ? process.env.OLD_MARKET_ADDRESS_MAINNET_L1
     : '')?.toLowerCase();
 
+export const evolveAddressL1: string =
+  (chain === 'mainnet'
+    ? process.env.EVOLVE_ADDRESS_MAINNET
+    : process.env.EVOLVE_ADDRESS_SEPOLIA)?.toLowerCase();
+
 export const marketAddressesL1 = new Set(
-  [marketAddressL1, oldMarketAddressL1].filter(Boolean)
+  [marketAddressL1, oldMarketAddressL1, evolveAddressL1].filter(Boolean)
 );
 
 export const pointsAddressL1: string =

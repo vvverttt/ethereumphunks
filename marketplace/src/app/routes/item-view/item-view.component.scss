@@ -306,6 +306,12 @@ app-phunk-billboard {
       pointer-events: none;
       user-select: none;
     }
+
+    .evolve,
+    .devolve {
+      background-color: rgba(var(--magma), 1);
+      color: rgba(var(--white), 1);
+    }
   }
 
   .cooldown-wrapper {

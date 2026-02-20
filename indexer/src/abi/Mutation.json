@@ -1,0 +1,24 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "user", "type": "address" },
+      { "indexed": true, "name": "pairId", "type": "uint256" },
+      { "indexed": false, "name": "ogHashId", "type": "bytes32" },
+      { "indexed": false, "name": "quantumHashId", "type": "bytes32" }
+    ],
+    "name": "Evolved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "user", "type": "address" },
+      { "indexed": true, "name": "pairId", "type": "uint256" },
+      { "indexed": false, "name": "quantumHashId", "type": "bytes32" },
+      { "indexed": false, "name": "ogHashId", "type": "bytes32" }
+    ],
+    "name": "Devolved",
+    "type": "event"
+  }
+]

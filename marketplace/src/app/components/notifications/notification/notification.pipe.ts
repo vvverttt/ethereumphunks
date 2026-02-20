@@ -45,6 +45,8 @@ export class NotificationPipe implements PipeTransform {
       mint: 'Inscribing %singleName%',
       tic: 'Inscribing Comment',
       ticDelete: 'Deleting Comment',
+      evolvePhunk: 'Evolve %singleName%',
+      devolvePhunk: 'Devolve %singleName%',
       batch: {
         sendToEscrow: 'Send <span class="highlight">%length%</span> items to Escrow',
         phunkNoLongerForSale: 'Delist <span class="highlight">%length%</span> items',
@@ -94,6 +96,8 @@ export class NotificationPipe implements PipeTransform {
       mint: 'mint',
       tic: 'tic',
       ticDelete: 'tic',
+      evolvePhunk: 'evolve',
+      devolvePhunk: 'devolve',
     },
   }
 

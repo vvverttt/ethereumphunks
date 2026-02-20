@@ -7,12 +7,7 @@ import { StorageService } from '@/modules/storage/storage.service';
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { chain, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
-
-// OG collections use the live etherphunks.eth.limo DB as source of truth.
-// Only allow ownership transfers that go through a known market contract;
-// skip direct p2p transfers which the live indexer doesn't recognise.
-const OG_COLLECTION_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
+import { chain, evolveAddressL1, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, mutationAbi, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -129,9 +124,22 @@ export class EthscriptionsService {
 
     // console.log(receipt);
 
-    // Filter logs for EtherPhunk Marketplace events
+    // Filter logs for Mutation (Evolve) contract events
+    if (evolveAddressL1) {
+      const evolveLogs = receipt.logs.filter(
+        (log: any) => log.address?.toLowerCase() === evolveAddressL1
+      );
+      if (evolveLogs.length) {
+        Logger.debug(`Processing Mutation event (L1)`, transaction.hash);
+        const eventArr = await this.processMutationEvents(evolveLogs, transaction, createdAt);
+        if (eventArr?.length) events.push(...eventArr);
+      }
+    }
+
+    // Filter logs for EtherPhunk Marketplace events (exclude evolve contract)
     const marketplaceLogs = receipt.logs.filter(
       (log: any) => marketAddressesL1.has(log.address.toLowerCase())
+        && log.address?.toLowerCase() !== evolveAddressL1
     );
     if (marketplaceLogs.length) {
       Logger.debug(
@@ -279,17 +287,6 @@ export class EthscriptionsService {
 
     if (!isMatchedHashId || !transferrerIsOwner) return null;
 
-    // Guard: skip direct transfers for OG collections unless through a known market
-    if (OG_COLLECTION_SLUGS.has(ethscript.slug)) {
-      const isMarketTransfer =
-        marketAddressesL1.has(txn.from.toLowerCase()) ||
-        marketAddressesL1.has(txn.to?.toLowerCase());
-      if (!isMarketTransfer) {
-        Logger.debug(`Skipping direct transfer for OG item (${ethscript.slug})`, ethscript.hashId);
-        return null;
-      }
-    }
-
     Logger.debug(
       `Processing transfer (L1)`,
       txn.hash
@@ -353,17 +350,6 @@ export class EthscriptionsService {
       : true;
 
     if (!isMatchedHashId || !transferrerIsOwner || !samePrevOwner) return null;
-
-    // Guard: skip contract transfers for OG collections unless through a known market
-    if (OG_COLLECTION_SLUGS.has(ethscript.slug)) {
-      const isMarketTransfer =
-        marketAddressesL1.has(from.toLowerCase()) ||
-        marketAddressesL1.has(to.toLowerCase());
-      if (!isMarketTransfer) {
-        Logger.debug(`Skipping contract transfer for OG item (${ethscript.slug})`, ethscript.hashId);
-        return null;
-      }
-    }
 
     // Update the eth phunk owner
     await this.storageSvc.updateEthscriptionOwner(ethscript.hashId, ethscript.owner, to);
@@ -746,4 +732,71 @@ export class EthscriptionsService {
   //   const event = await this.processEthscriptionCreationEvent(transaction, timestamp, attributes);
   //   if (event) await this.sbSvc.addEvents([event]);
   // }
+
+  /**
+   * Processes Mutation (Evolve/Devolve) contract events.
+   * Creates Evolved/Devolved activity events for the swapped ethscriptions.
+   */
+  async processMutationEvents(
+    evolveLogs: any[],
+    transaction: Transaction,
+    createdAt: Date
+  ): Promise<Event[]> {
+    const events: Event[] = [];
+
+    for (const log of evolveLogs) {
+      try {
+        const decoded = decodeEventLog({
+          abi: mutationAbi,
+          data: log.data,
+          topics: log.topics,
+        });
+
+        const { eventName } = decoded;
+        const { args } = decoded as any;
+        if (!eventName || !args) continue;
+
+        if (eventName === 'Evolved') {
+          const { user, ogHashId, quantumHashId } = args;
+
+          events.push({
+            txId: transaction.hash + '-evolve-' + log.logIndex,
+            type: 'Evolved',
+            hashId: ogHashId.toLowerCase(),
+            from: user.toLowerCase(),
+            to: evolveAddressL1,
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value: transaction.value.toString(),
+          });
+        }
+
+        if (eventName === 'Devolved') {
+          const { user, quantumHashId, ogHashId } = args;
+
+          events.push({
+            txId: transaction.hash + '-devolve-' + log.logIndex,
+            type: 'Devolved',
+            hashId: quantumHashId.toLowerCase(),
+            from: user.toLowerCase(),
+            to: evolveAddressL1,
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value: BigInt(0).toString(),
+          });
+        }
+      } catch (error) {
+        // Skip logs that don't match Mutation ABI (e.g. TransferEthscriptionForPreviousOwner)
+        continue;
+      }
+    }
+
+    return events;
+  }
 }

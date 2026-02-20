@@ -52,6 +52,8 @@ interface ActionsState {
   escrow: boolean;
   bridge: boolean;
   privateSale: boolean;
+  evolve: boolean;
+  devolve: boolean;
 };
 
 @Component({
@@ -102,6 +104,8 @@ export class ItemViewComponent {
     escrow: false,
     bridge: false,
     privateSale: false,
+    evolve: false,
+    devolve: false,
   });
 
   transferAddress = new FormControl<string | null>('');
@@ -704,6 +708,104 @@ export class ItemViewComponent {
       this.store.dispatch(upsertNotification({ notification }));
     } finally {
       this.closeBridge();
+    }
+  }
+
+  async submitEvolve(phunk: Phunk): Promise<void> {
+    const hashId = phunk.hashId;
+    if (!hashId) throw new Error('Invalid hashId');
+
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('evolvePhunk' + hashId),
+      timestamp: Date.now(),
+      slug: phunk.slug,
+      type: 'wallet',
+      function: 'evolvePhunk',
+      hashId,
+      tokenId: phunk.tokenId,
+    };
+
+    this.store.dispatch(upsertNotification({ notification }));
+
+    try {
+      await this.checkConsenus(phunk);
+
+      const hash = await this.web3Svc.evolvePhunk(hashId);
+      if (!hash) throw new Error('Could not process transaction');
+
+      notification = {
+        ...notification,
+        type: 'pending',
+        hash,
+      };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+      notification = {
+        ...notification,
+        type: 'complete',
+        hash: receipt.transactionHash,
+      };
+
+      this.store.dispatch(appStateActions.addCooldown({ cooldown: { [hashId]: Number(receipt.blockNumber) }}));
+    } catch (err) {
+      console.log(err);
+      notification = {
+        ...notification,
+        type: 'error',
+        detail: err,
+      };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
+    }
+  }
+
+  async submitDevolve(phunk: Phunk): Promise<void> {
+    const hashId = phunk.hashId;
+    if (!hashId) throw new Error('Invalid hashId');
+
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('devolvePhunk' + hashId),
+      timestamp: Date.now(),
+      slug: phunk.slug,
+      type: 'wallet',
+      function: 'devolvePhunk',
+      hashId,
+      tokenId: phunk.tokenId,
+    };
+
+    this.store.dispatch(upsertNotification({ notification }));
+
+    try {
+      await this.checkConsenus(phunk);
+
+      const hash = await this.web3Svc.devolvePhunk(hashId);
+      if (!hash) throw new Error('Could not process transaction');
+
+      notification = {
+        ...notification,
+        type: 'pending',
+        hash,
+      };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+      notification = {
+        ...notification,
+        type: 'complete',
+        hash: receipt.transactionHash,
+      };
+
+      this.store.dispatch(appStateActions.addCooldown({ cooldown: { [hashId]: Number(receipt.blockNumber) }}));
+    } catch (err) {
+      console.log(err);
+      notification = {
+        ...notification,
+        type: 'error',
+        detail: err,
+      };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
     }
   }
 

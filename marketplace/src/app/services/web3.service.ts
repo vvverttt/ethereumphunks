@@ -13,6 +13,9 @@ import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { DystoLabzMarketABI as EtherPhunksMarketABI } from '@/abi/DystoLabzMarket';
 import { PointsABI } from '@/abi/Points';
 
+// Evolve
+import { EtherPhunksEvolveABI } from '@/abi/EtherPhunksEvolve';
+
 // L2
 import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
 import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
@@ -32,6 +35,8 @@ import { GasService } from './gas.service';
 const marketAddress = environment.marketAddress;
 const oldMarketAddresses: string[] = (environment as any).oldMarketAddresses || [];
 const ogSlugs: string[] = (environment as any).ogSlugs || [];
+const evolveAddress: string = (environment as any).evolveAddress || '';
+const evolvePairs: Record<string, string> = (environment as any).evolvePairs || {};
 const marketAddressL2 = environment.marketAddressL2;
 const pointsAddress = environment.pointsAddress;
 const bridgeAddressL2 = environment.bridgeAddressL2;
@@ -792,7 +797,7 @@ export class Web3Service {
    * @returns Promise resolving to the transaction hash if successful
    * @throws Error if no phunk selected or no address provided
    */
-  async transferPhunk(hashId: string, toAddress: string): Promise<string | undefined> {
+  async transferPhunk(hashId: string, toAddress: string, value: bigint = 0n): Promise<string | undefined> {
     if (!hashId) throw new Error('No phunk selected');
     if (!toAddress) throw new Error('No address provided');
 
@@ -804,7 +809,7 @@ export class Web3Service {
       chain: wallet.chain,
       account: getAccount(this.config).address as `0x${string}`,
       to: toAddress as `0x${string}`,
-      value: BigInt(0),
+      value,
       data: hashId as `0x${string}`,
     });
 
@@ -1364,5 +1369,48 @@ export class Web3Service {
   async getEnsAvatar(name: string): Promise<string | null> {
     if (!name) return null;
     return await this.l1Client.getEnsAvatar({ name });
+  }
+
+  // ─── Evolve / Devolve ─────────────────────────────────
+
+  async readEvolveContract(functionName: string, args: any[] = []): Promise<any> {
+    return await this.l1Client.readContract({
+      address: evolveAddress as `0x${string}`,
+      abi: EtherPhunksEvolveABI as any,
+      functionName,
+      args,
+    } as any);
+  }
+
+  async evolvePhunk(hashId: string): Promise<string | undefined> {
+    if (!evolveAddress) throw new Error('Evolve contract not configured');
+
+    const pairId = await this.readEvolveContract('pairIdOf', [hashId]);
+    const paid = await this.readEvolveContract('feePaid', [pairId]);
+    let value = 0n;
+    if (!paid) {
+      value = await this.readEvolveContract('evolveFee') as bigint;
+    }
+
+    return await this.transferPhunk(hashId, evolveAddress, value);
+  }
+
+  async devolvePhunk(hashId: string): Promise<string | undefined> {
+    if (!evolveAddress) throw new Error('Evolve contract not configured');
+    return await this.transferPhunk(hashId, evolveAddress, 0n);
+  }
+
+  getEvolvePairedSlug(slug: string): string | null {
+    return evolvePairs[slug] || null;
+  }
+
+  isEvolveSlug(slug: string): boolean {
+    return slug in evolvePairs;
+  }
+
+  isOgEvolveSlug(slug: string): boolean {
+    const paired = evolvePairs[slug];
+    if (!paired) return false;
+    return ogSlugs.includes(slug);
   }
 }

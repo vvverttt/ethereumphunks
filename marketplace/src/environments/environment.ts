@@ -21,7 +21,14 @@ export const environment = {
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
   lotteryAddress: '0x4C0b9B7b3e290B793474c533C7AC90262bb69971'.toLowerCase(),
   oldMarketAddresses: [] as string[],
-  ogSlugs: [] as string[],
+  ogSlugs: ['og-missing-phunks', 'og-dysto-phunks'],
+  evolveAddress: '',
+  evolvePairs: {
+    'og-missing-phunks': 'quantummissingphunksv67',
+    'og-dysto-phunks': 'quantumdystophunkzv67',
+    'quantummissingphunksv67': 'og-missing-phunks',
+    'quantumdystophunkzv67': 'og-dysto-phunks',
+  } as Record<string, string>,
 
   relayUrl: 'https://relay-sepolia.ethereumphunks.com',
   staticUrl: 'https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/v1/object/public',

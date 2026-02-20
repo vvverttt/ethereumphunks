@@ -24,11 +24,12 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as marketStateSelectors from '@/state/selectors/market-state.selectors';
 import { combineLatest, map, tap } from 'rxjs';
 
+// Navigation links between OG and Quantum collections (independent of evolve contract)
 const LINKED_SLUG_MAP: Record<string, string> = {
-  'quantummissingphunksv67': 'og-missing-phunks',
-  'quantumdystophunkzv67': 'og-dysto-phunks',
   'og-missing-phunks': 'quantummissingphunksv67',
   'og-dysto-phunks': 'quantumdystophunkzv67',
+  'quantummissingphunksv67': 'og-missing-phunks',
+  'quantumdystophunkzv67': 'og-dysto-phunks',
 };
 
 @Component({

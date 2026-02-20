@@ -178,6 +178,7 @@
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'phunkNoLongerForSale' }" />
                             </button>
                           }
+
                         } @else {
                           @if (!phunk.loading && !(isCooling$ | async)) {
                             <div class="notice">
@@ -199,6 +200,31 @@
                         @if (actionsState().transfer) {
                           <ng-container *ngTemplateOutlet="transferForm; context:{ $implicit: phunk }" />
                         }
+                      }
+
+                      <!-- Evolve button (OG items) -->
+                      @if (
+                        web3Svc.isOgEvolveSlug(phunk.slug) &&
+                        !phunk.isEscrowed &&
+                        (owner | lowercase) === (address | lowercase)
+                      ) {
+                        <button class="evolve" (click)="submitEvolve(phunk)">
+                          <span>Evolve</span>
+                          <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'evolvePhunk' }" />
+                        </button>
+                      }
+
+                      <!-- Devolve button (Quantum items) -->
+                      @if (
+                        web3Svc.isEvolveSlug(phunk.slug) &&
+                        !web3Svc.isOgEvolveSlug(phunk.slug) &&
+                        !phunk.isEscrowed &&
+                        (owner | lowercase) === (address | lowercase)
+                      ) {
+                        <button class="devolve" (click)="submitDevolve(phunk)">
+                          <span>Devolve</span>
+                          <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'devolvePhunk' }" />
+                        </button>
                       }
                     }
                   } @else {

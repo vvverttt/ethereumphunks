@@ -124,4 +124,4 @@ export interface EthscriptionWithCollectionAndAttributes {
   attributes: AttributeItem;
 }
 
-export type EventType = 'transfer' | 'sale' | 'created' | 'burned' | 'PhunkOffered' | 'PhunkBidEntered' | 'PhunkBought' | 'PhunkBidWithdrawn' | 'PhunkDeposited' | 'PhunkWithdrawn' | 'PhunkNoLongerForSale' | 'PrizeAwarded';
+export type EventType = 'transfer' | 'sale' | 'created' | 'burned' | 'PhunkOffered' | 'PhunkBidEntered' | 'PhunkBought' | 'PhunkBidWithdrawn' | 'PhunkDeposited' | 'PhunkWithdrawn' | 'PhunkNoLongerForSale' | 'PrizeAwarded' | 'Evolved' | 'Devolved';

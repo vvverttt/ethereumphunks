@@ -26,6 +26,14 @@ export const environment = {
   bridgeAddress: ''.toLowerCase(),
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
   lotteryAddress: '0x4c6569909028F11873Ba5548900d4609a436bB98'.toLowerCase(),
+  evolveAddress: '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA'.toLowerCase(),
+
+  evolvePairs: {
+    'og-missing-phunks': 'quantummissingphunksv67',
+    'og-dysto-phunks': 'quantumdystophunkzv67',
+    'quantummissingphunksv67': 'og-missing-phunks',
+    'quantumdystophunkzv67': 'og-dysto-phunks',
+  } as Record<string, string>,
 
   relayUrl: 'https://ethereumphunks.onrender.com',
   staticUrl: 'https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/v1/object/public',

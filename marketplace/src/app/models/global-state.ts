@@ -120,7 +120,9 @@ export type TxFunction =
   | 'bridgeIn'
   | 'mint'
   | 'tic'
-  | 'ticDelete';
+  | 'ticDelete'
+  | 'evolvePhunk'
+  | 'devolvePhunk';
 
 export interface TraitFilter {
   [key: string]: string | null;
