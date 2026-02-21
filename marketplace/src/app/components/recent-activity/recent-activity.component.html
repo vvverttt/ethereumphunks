@@ -71,6 +71,8 @@
               <app-address [address]="event.to" />
             } @else if (event.type === 'bridgeOut' || event.type === 'escrow') {
               <app-address [address]="event.from" />
+            } @else if (event.type === 'Evolved' || event.type === 'Devolved') {
+              <app-address [address]="event.from" />
             }
 
             @if (
@@ -80,7 +82,9 @@
               event.type !== 'bridgeIn' &&
               event.type !== 'bridgeOut' &&
               event.type !== 'escrow' &&
-              event.type !== 'PrizeAwarded'
+              event.type !== 'PrizeAwarded' &&
+              event.type !== 'Evolved' &&
+              event.type !== 'Devolved'
             ) {
               <span class="value">
                 Ξ{{ event.value | weiToEth }}<br />

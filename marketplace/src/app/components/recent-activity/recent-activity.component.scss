@@ -165,7 +165,8 @@ section {
       (bridgein bridgeout): var(--magma),
       (escrow): var(--escrow-color),
       (prizeawarded): var(--won-color),
-      (evolved devolved): var(--mutated-color)
+      (evolved): var(--mutated-color),
+      (devolved): var(--devolved-color)
     );
 
     @each $events, $color in $event-color-groups {

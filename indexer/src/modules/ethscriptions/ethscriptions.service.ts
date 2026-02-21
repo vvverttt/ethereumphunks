@@ -758,30 +758,65 @@ export class EthscriptionsService {
 
         if (eventName === 'Evolved') {
           const { user, ogHashId, quantumHashId } = args;
+          const userAddr = user.toLowerCase();
+          const value = transaction.value.toString();
 
+          // Event for OG collection (OG was sent to contract)
           events.push({
-            txId: transaction.hash + '-evolve-' + log.logIndex,
+            txId: transaction.hash + '-evolve-og-' + log.logIndex,
             type: 'Evolved',
             hashId: ogHashId.toLowerCase(),
-            from: user.toLowerCase(),
+            from: userAddr,
             to: evolveAddressL1,
             blockHash: transaction.blockHash,
             txIndex: transaction.transactionIndex,
             txHash: transaction.hash,
             blockNumber: Number(transaction.blockNumber),
             blockTimestamp: createdAt,
-            value: transaction.value.toString(),
+            value,
+          });
+
+          // Event for Quantum collection (quantum was received by user)
+          events.push({
+            txId: transaction.hash + '-evolve-q-' + log.logIndex,
+            type: 'Evolved',
+            hashId: quantumHashId.toLowerCase(),
+            from: userAddr,
+            to: evolveAddressL1,
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value,
           });
         }
 
         if (eventName === 'Devolved') {
           const { user, quantumHashId, ogHashId } = args;
+          const userAddr = user.toLowerCase();
 
+          // Event for Quantum collection (quantum was sent to contract)
           events.push({
-            txId: transaction.hash + '-devolve-' + log.logIndex,
+            txId: transaction.hash + '-devolve-q-' + log.logIndex,
             type: 'Devolved',
             hashId: quantumHashId.toLowerCase(),
-            from: user.toLowerCase(),
+            from: userAddr,
+            to: evolveAddressL1,
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value: BigInt(0).toString(),
+          });
+
+          // Event for OG collection (OG was received by user)
+          events.push({
+            txId: transaction.hash + '-devolve-og-' + log.logIndex,
+            type: 'Devolved',
+            hashId: ogHashId.toLowerCase(),
+            from: userAddr,
             to: evolveAddressL1,
             blockHash: transaction.blockHash,
             txIndex: transaction.transactionIndex,

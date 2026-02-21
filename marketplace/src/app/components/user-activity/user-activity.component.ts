@@ -51,7 +51,7 @@ export class UserActivityComponent {
     bridgeOut: 'Bridged by',
     bridgeIn: 'Bridged (Unlocked) by',
     Evolved: 'Mutated by',
-    Devolved: 'Mutated by',
+    Devolved: 'Devolved by',
     // escrow: 'Escrowed by',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };

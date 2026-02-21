@@ -199,14 +199,25 @@
           }
         }
 
-        &.evolved,
-        &.devolved {
+        &.evolved {
           td {
             background-color: rgba(var(--mutated-color), .5);
 
             .cell-inner {
               &.type-label {
                 border-left: .3rem solid rgba(var(--mutated-color), 1);
+              }
+            }
+          }
+        }
+
+        &.devolved {
+          td {
+            background-color: rgba(var(--devolved-color), .5);
+
+            .cell-inner {
+              &.type-label {
+                border-left: .3rem solid rgba(var(--devolved-color), 1);
               }
             }
           }

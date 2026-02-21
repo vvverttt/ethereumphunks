@@ -75,7 +75,7 @@ export class TxHistoryComponent implements OnChanges {
     bridgeIn: 'Unlock',
     PrizeAwarded: 'Won',
     Evolved: 'Mutated',
-    Devolved: 'Mutated',
+    Devolved: 'Devolved',
   };
 
   constructor(

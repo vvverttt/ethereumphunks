@@ -81,7 +81,7 @@ export class RecentActivityComponent {
     PrizeAwarded: 'Won in lottery by',
     escrow: 'Escrowed by',
     Evolved: 'Mutated by',
-    Devolved: 'Mutated by',
+    Devolved: 'Devolved by',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };
 
