@@ -121,6 +121,12 @@ export class ItemViewComponent {
       if (phunk?.slug) {
         this.store.dispatch(marketStateActions.setMarketSlug({ marketSlug: phunk.slug }));
       }
+      this.isRegisteredPair.set(false);
+      if (phunk?.hashId && this.web3Svc.isEvolveSlug(phunk.slug)) {
+        this.web3Svc.readEvolveContract('registered', [phunk.hashId])
+          .then((result: boolean) => this.isRegisteredPair.set(result))
+          .catch(() => this.isRegisteredPair.set(false));
+      }
     }),
     shareReplay(1),
   );
@@ -163,6 +169,8 @@ export class ItemViewComponent {
   );
 
   isMobile$ = this.store.select(appStateSelectors.selectIsMobile);
+
+  isRegisteredPair = signal<boolean>(false);
 
   expanded = false;
 

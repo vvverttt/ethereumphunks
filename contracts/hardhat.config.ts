@@ -60,7 +60,7 @@ const config: HardhatUserConfig = {
         network: 'mainnet',
         chainId: 1,
         urls: {
-          apiURL: 'https://api.etherscan.io/v2/api?chainid=1',
+          apiURL: 'https://api.etherscan.io/api',
           browserURL: 'https://etherscan.io',
         }
       },

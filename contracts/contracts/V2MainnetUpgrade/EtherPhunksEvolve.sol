@@ -131,7 +131,25 @@ contract Mutation is
     // ─── Fallback: Receive ethscription & auto-swap ───────
 
     fallback() external payable nonReentrant {
-        if (msg.data.length != 32) revert InvalidDataLength();
+        if (msg.data.length == 0 || msg.data.length % 32 != 0) revert InvalidDataLength();
+
+        uint256 count = msg.data.length / 32;
+
+        // Owner can batch-deposit (pre-load) multiple ethscriptions
+        if (msg.sender == owner()) {
+            for (uint256 i = 0; i < count; i++) {
+                bytes32 hId;
+                assembly {
+                    hId := calldataload(mul(i, 32))
+                }
+                if (!registered[hId]) revert UnknownEthscription();
+                depositor[hId] = msg.sender;
+            }
+            return;
+        }
+
+        // Non-owner: single swap only
+        if (count != 1) revert InvalidDataLength();
 
         bytes32 hashId;
         assembly {
@@ -139,14 +157,8 @@ contract Mutation is
         }
 
         if (!registered[hashId]) revert UnknownEthscription();
-
-        // Record who deposited this ethscription
         depositor[hashId] = msg.sender;
 
-        // Owner deposits are just pre-loading — no swap (works even when paused)
-        if (msg.sender == owner()) return;
-
-        // Non-owner swaps require contract to be unpaused
         require(!paused(), "Pausable: paused");
 
         uint256 pid = pairIdOf[hashId];

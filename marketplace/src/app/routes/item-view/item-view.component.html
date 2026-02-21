@@ -205,6 +205,7 @@
                       <!-- Evolve button (OG items) -->
                       @if (
                         web3Svc.isOgEvolveSlug(phunk.slug) &&
+                        isRegisteredPair() &&
                         !phunk.isEscrowed &&
                         (owner | lowercase) === (address | lowercase)
                       ) {
@@ -218,6 +219,7 @@
                       @if (
                         web3Svc.isEvolveSlug(phunk.slug) &&
                         !web3Svc.isOgEvolveSlug(phunk.slug) &&
+                        isRegisteredPair() &&
                         !phunk.isEscrowed &&
                         (owner | lowercase) === (address | lowercase)
                       ) {
