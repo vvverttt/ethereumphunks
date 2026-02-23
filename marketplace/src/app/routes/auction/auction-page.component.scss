@@ -31,12 +31,14 @@
 // ─── Hero Section ─────────────────────────────────────────
 
 .auction {
+  --text-color: 255, 255, 255;
+  background-color: rgb(17, 26, 0);
+  color: rgb(255, 255, 255);
   padding-top: 16rem;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   touch-action: pan-y !important;
-  background-color: rgba(var(--mutated-color), .1);
   transition-property: all;
   transition-duration: .5s;
   transition-timing-function: cubic-bezier(.785, .135, .15, .86);
@@ -98,6 +100,13 @@
     }
   }
 
+  .phunk-fallback {
+    width: 42rem;
+    height: 42rem;
+    image-rendering: pixelated;
+    display: block;
+  }
+
   .placeholder {
     width: 42rem;
     height: 42rem;
@@ -112,6 +121,7 @@
     z-index: 2;
 
     canvas,
+    .phunk-fallback,
     .placeholder {
       width: 34rem;
       height: 34rem;
@@ -120,6 +130,7 @@
 
   @media (max-width: $mobile) {
     canvas,
+    .phunk-fallback,
     .placeholder {
       width: 28rem;
       height: 28rem;

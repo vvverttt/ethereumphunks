@@ -18,19 +18,18 @@
         @for (auction of settledAuctions; track auction.auctionId) {
           <div class="slide-item" (click)="selectAuction.emit(auction.auctionId)">
             @if (auction.imageUrl) {
-              <img [src]="auction.imageUrl" [alt]="'Phunk #' + auction.tokenId" />
+              <img
+                [src]="auction.imageUrl"
+                [alt]="'Phunk #' + auction.tokenId"
+                [style.background-color]="bgColors()[auction.auctionId]"
+                crossorigin="anonymous"
+                (load)="onImageLoad($event, auction.auctionId)" />
             } @else {
               <div class="img-placeholder"></div>
             }
             <div class="auction-details">
-              <div class="phunk-id">#{{ auction.tokenId }}</div>
+              <div class="phunk-id" [style.color]="accentColors()[auction.auctionId]">#{{ auction.tokenId }}</div>
               <div class="time-ago">{{ auction.settledTimestamp | timeAgo }}</div>
-              <div class="winning-bid">
-                <span>&Xi;{{ formatEth(auction.amount) }}</span>
-              </div>
-              <div class="winner">
-                <app-address [address]="auction.winner" [ens]="false" />
-              </div>
             </div>
           </div>
         }

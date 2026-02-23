@@ -51,6 +51,19 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
   maxAuctionId = signal<number>(0);
   isHistorical = signal(false);
 
+  /** Stores the live (current) auction entry for the slider */
+  liveAuctionEntry = signal<SettledAuction | null>(null);
+
+  /** Settled auctions (oldest→newest) + live auction at end (right) */
+  allAuctions = computed(() => {
+    const settled = [...this.settledAuctions()].reverse();
+    const live = this.liveAuctionEntry();
+
+    if (!live) return settled;
+
+    return [...settled.filter(s => s.auctionId !== live.auctionId), live];
+  });
+
   canGoPrev = computed(() => {
     const viewing = this.viewingAuctionId();
     if (viewing !== null) return viewing > 0;
@@ -68,6 +81,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
   bgColor = signal<string>('');
   accentColor = signal<string>('');
   imageReady = signal(false);
+  canvasActive = signal(false);
   private pendingImage: HTMLImageElement | null = null;
 
   staticUrl = environment.staticUrl;
@@ -86,10 +100,12 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
         this.bgColor.set('');
         this.accentColor.set('');
         this.imageReady.set(false);
+        this.canvasActive.set(false);
         this.pendingImage = null;
         return;
       }
       this.imageReady.set(false);
+      this.canvasActive.set(false);
       this.extractColors(src);
     });
   }
@@ -206,6 +222,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
       }
     };
 
+    this.canvasActive.set(true);
     requestAnimationFrame(drawStep);
   }
 
@@ -254,6 +271,18 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
           this.phunkTokenId.set(eth.tokenId);
           this.phunkSlug.set(eth.slug);
           this.phunkSha.set(eth.sha);
+
+          // Store live auction entry for the slider (persists when browsing history)
+          this.liveAuctionEntry.set({
+            auctionId: auctionData.auctionId,
+            hashId: auctionData.hashId,
+            winner: auctionData.bidder || '',
+            amount: auctionData.amount ?? 0n,
+            imageUrl: `${this.staticUrl}/static/images/${eth.sha}`,
+            tokenId: eth.tokenId,
+            slug: eth.slug,
+            settledTimestamp: auctionData.startTime,
+          });
 
           if (!this.collectionName()) {
             const name = await this.auctionSvc.getCollectionName(eth.slug);

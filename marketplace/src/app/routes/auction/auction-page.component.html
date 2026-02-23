@@ -4,12 +4,15 @@
   } @else {
 
     <!-- ========== HERO SECTION ========== -->
-    <section class="auction" [style.background-color]="bgColor() ? 'rgba(' + bgColor() + ', 0.2)' : null">
+    <section class="auction" [style.background-image]="accentColor() ? 'linear-gradient(rgba(' + accentColor() + ', 0.15), rgba(' + accentColor() + ', 0.15))' : null">
       <div class="inner">
 
         <!-- Phunk Image (left) -->
         <div class="phunk-image-wrapper">
-          <canvas #phunkCanvas [class.visible]="phunkImage()"></canvas>
+          <canvas #phunkCanvas [class.visible]="canvasActive()"></canvas>
+          @if (phunkImage() && !canvasActive()) {
+            <img [src]="phunkImage()" class="phunk-fallback" crossorigin="anonymous" />
+          }
           @if (!phunkImage()) {
             <div class="placeholder"></div>
           }
@@ -55,7 +58,7 @@
     <!-- ========== AUCTION HISTORY SLIDER ========== -->
     <section class="auction-history">
       <app-auction-slider
-        [settledAuctions]="settledAuctions()"
+        [settledAuctions]="allAuctions()"
         (selectAuction)="navigateToAuction($event)"
       />
     </section>

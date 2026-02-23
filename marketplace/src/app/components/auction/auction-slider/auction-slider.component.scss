@@ -116,14 +116,12 @@
     width: 12rem;
     height: 12rem;
     image-rendering: pixelated;
-    background-color: rgba(var(--text-color), .05);
     display: block;
   }
 
   .img-placeholder {
     width: 12rem;
     height: 12rem;
-    background-color: rgba(var(--text-color), .05);
   }
 }
 
@@ -137,23 +135,13 @@
   text-align: center;
 
   .phunk-id {
-    color: rgba(var(--text-color), 1);
-    padding-bottom: .5rem;
+    color: rgba(var(--auction-accent, var(--pink)), 1);
+    font-weight: 600;
+    padding-bottom: .25rem;
   }
 
   .time-ago {
     font-size: 1rem;
     opacity: .5;
-  }
-
-  .winning-bid {
-    font-size: 1.2rem;
-    padding-top: .25rem;
-  }
-
-  .winner {
-    font-size: 1.2rem;
-    opacity: .5;
-    padding-top: .25rem;
   }
 }

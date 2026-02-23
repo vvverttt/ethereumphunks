@@ -254,6 +254,13 @@ export class AuctionService {
       for (const log of logs) {
         const args = log.args as any;
         const eth = await this.getEthscriptionByHashId(args.hashId);
+        let timestamp = 0;
+        if (log.blockNumber) {
+          try {
+            const block = await this.web3Svc.l1Client.getBlock({ blockNumber: log.blockNumber });
+            timestamp = Number(block.timestamp);
+          } catch {}
+        }
         results.push({
           auctionId: Number(args.auctionId),
           hashId: args.hashId,
@@ -262,7 +269,7 @@ export class AuctionService {
           imageUrl: eth ? `${environment.staticUrl}/static/images/${eth.sha}` : '',
           tokenId: eth?.tokenId ?? 0,
           slug: eth?.slug ?? '',
-          settledTimestamp: 0,
+          settledTimestamp: timestamp,
         });
       }
 
