@@ -162,10 +162,14 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     return `${bestR}, ${bestG}, ${bestB}`;
   }
 
-  private animatePixels(img: HTMLImageElement) {
+  private animatePixels(img: HTMLImageElement, retried = false) {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) {
-      this.imageReady.set(true);
+      if (!retried) {
+        setTimeout(() => this.animatePixels(img, true), 50);
+      } else {
+        this.imageReady.set(true);
+      }
       return;
     }
 
