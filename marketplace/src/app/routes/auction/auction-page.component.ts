@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild, ElementRef, computed, signal, effect } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewChecked, ViewChild, ElementRef, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
@@ -26,7 +26,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
   templateUrl: './auction-page.component.html',
   styleUrls: ['./auction-page.component.scss'],
 })
-export class AuctionPageComponent implements OnInit, OnDestroy {
+export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   connected$ = this.store.select(appStateSelectors.selectConnected);
 
@@ -68,6 +68,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   bgColor = signal<string>('');
   accentColor = signal<string>('');
   imageReady = signal(false);
+  private pendingImage: HTMLImageElement | null = null;
 
   staticUrl = environment.staticUrl;
   explorerUrl = environment.explorerUrl;
@@ -85,6 +86,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         this.bgColor.set('');
         this.accentColor.set('');
         this.imageReady.set(false);
+        this.pendingImage = null;
         return;
       }
       this.imageReady.set(false);
@@ -113,7 +115,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         this.bgColor.set('');
         this.accentColor.set('');
       }
-      this.animatePixels(img);
+      this.pendingImage = img;
+      this.tryDrawCanvas();
     };
     img.onerror = () => {
       this.bgColor.set('');
@@ -162,16 +165,17 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     return `${bestR}, ${bestG}, ${bestB}`;
   }
 
-  private animatePixels(img: HTMLImageElement, retried = false) {
+  ngAfterViewChecked() {
+    this.tryDrawCanvas();
+  }
+
+  private tryDrawCanvas() {
+    if (!this.pendingImage) return;
     const canvas = this.canvasRef?.nativeElement;
-    if (!canvas) {
-      if (!retried) {
-        setTimeout(() => this.animatePixels(img, true), 50);
-      } else {
-        this.imageReady.set(true);
-      }
-      return;
-    }
+    if (!canvas) return;
+
+    const img = this.pendingImage;
+    this.pendingImage = null;
 
     const w = img.naturalWidth;
     const h = img.naturalHeight;
