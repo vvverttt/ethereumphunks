@@ -6,7 +6,7 @@
   </div>
   <div class="bid-info-item current-bid">
     <div class="label">
-      @if (noAuction) {
+      @if (noAuction || (!bids.length && !auctionEnded && !auction?.settled && !isHistorical)) {
         Reserve
       } @else if (auctionEnded || auction?.settled || isHistorical) {
         Winning
@@ -14,7 +14,7 @@
         Current
       }
     </div>
-    <div class="value"><span class="eth-symbol">&Xi;</span>{{ noAuction ? reservePrice : currentBidEth }}</div>
+    <div class="value"><span class="eth-symbol">&Xi;</span>{{ (noAuction || !bids.length) ? reservePrice : currentBidEth }}</div>
   </div>
   <div class="bid-info-item time-remaining">
     <div class="label">Time remaining</div>
@@ -55,7 +55,7 @@
           @if (txPending) {
             Settling...
           } @else {
-            Help out & start a new auction
+            Settle
           }
         </button>
       }

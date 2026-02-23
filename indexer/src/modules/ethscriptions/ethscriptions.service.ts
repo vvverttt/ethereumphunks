@@ -871,6 +871,32 @@ export class EthscriptionsService {
         const { args } = decoded as any;
         if (!eventName || !args) continue;
 
+        if (eventName === 'PoolDeposited') {
+          const { hashId } = args;
+
+          // Update ownership to auction contract
+          await this.storageSvc.updateEthscriptionOwner(
+            hashId.toLowerCase(),
+            transaction.from.toLowerCase(),
+            auctionAddressL1
+          );
+
+          // Transfer event so deposit shows in activity
+          events.push({
+            txId: transaction.hash + '-pool-deposit-' + log.logIndex,
+            type: 'transfer',
+            hashId: hashId.toLowerCase(),
+            from: transaction.from.toLowerCase(),
+            to: auctionAddressL1,
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value: BigInt(0).toString(),
+          });
+        }
+
         if (eventName === 'AuctionCreated') {
           const { hashId, auctionId, startTime, endTime } = args;
 
@@ -932,6 +958,28 @@ export class EthscriptionsService {
           await this.storageSvc.settleAuction(
             { hashId, auctionId, winner, amount }
           );
+
+          // Update ownership so the winner's wallet shows the phunk
+          await this.storageSvc.updateEthscriptionOwner(
+            hashId.toLowerCase(),
+            auctionAddressL1,
+            winner.toLowerCase()
+          );
+
+          // Transfer event so it shows in activity and details page
+          events.push({
+            txId: transaction.hash + '-auction-transfer-' + log.logIndex,
+            type: 'transfer',
+            hashId: hashId.toLowerCase(),
+            from: auctionAddressL1,
+            to: winner.toLowerCase(),
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: new Date(createdAt.getTime() - 1000),
+            value: BigInt(0).toString(),
+          });
 
           events.push({
             txId: transaction.hash + '-auction-settled-' + log.logIndex,

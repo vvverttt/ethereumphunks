@@ -59,6 +59,7 @@ export class RecentActivityComponent {
       { label: 'Transferred', value: 'transfer' },
       { label: 'Created', value: 'created' },
       { label: 'Won', value: 'PrizeAwarded' },
+      { label: 'Auction', value: 'AuctionCreated' },
     ];
     const slug = this.collection()?.slug;
     if (slug && EVOLVE_SLUGS.has(slug)) {
@@ -82,6 +83,9 @@ export class RecentActivityComponent {
     escrow: 'Escrowed by',
     Evolved: 'Mutated by',
     Devolved: 'Devolved by',
+    AuctionCreated: 'On Auction',
+    AuctionBid: 'Auction bid of',
+    AuctionSettled: 'Auction won by',
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };
 

@@ -10,7 +10,7 @@
   max-width: 48rem;
   background-color: rgba(var(--background), 1);
   padding: 3rem 3.5rem;
-  transform: translate(3.5rem, -20.4rem);
+  transform: translate(3.5rem, 2rem);
 
   @media (max-width: $mobile) {
     position: static;
@@ -112,6 +112,7 @@
     a {
       padding: 1rem;
       color: rgba(var(--pink), 1);
+      background: none;
       font-weight: 700;
       text-decoration: none;
     }

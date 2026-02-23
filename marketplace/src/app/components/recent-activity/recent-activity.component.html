@@ -65,7 +65,8 @@
                 event.type === 'transfer' ||
                 event.type === 'created' ||
                 event.type === 'bridgeIn' ||
-                event.type === 'PrizeAwarded'
+                event.type === 'PrizeAwarded' ||
+                event.type === 'AuctionSettled'
               )
             ) {
               <app-address [address]="event.to" />
@@ -84,7 +85,8 @@
               event.type !== 'escrow' &&
               event.type !== 'PrizeAwarded' &&
               event.type !== 'Evolved' &&
-              event.type !== 'Devolved'
+              event.type !== 'Devolved' &&
+              event.type !== 'AuctionCreated'
             ) {
               <span class="value">
                 Ξ{{ event.value | weiToEth }}<br />

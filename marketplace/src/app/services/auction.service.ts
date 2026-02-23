@@ -12,6 +12,7 @@ const supabaseKey = environment.supabaseKey;
 const supabase = createClient(supabaseUrl, supabaseKey);
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
+const auctionDeployBlock = ((environment as any).auctionDeployBlock as bigint) || 0n;
 
 export interface AuctionData {
   hashId: string;
@@ -133,7 +134,7 @@ export class AuctionService {
     const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
     if (!walletClient) throw new Error('No wallet connected');
 
-    const value = parseEther(valueEth);
+    const value = parseEther(String(valueEth));
 
     const hash = await walletClient.writeContract({
       address: auctionAddress,
@@ -207,7 +208,7 @@ export class AuctionService {
         address: auctionAddress,
         abi: EtherPhunksAuctionHouseV2ABI,
         eventName: 'AuctionBid',
-        fromBlock: 'earliest',
+        fromBlock: auctionDeployBlock,
       });
 
       return logs
@@ -246,7 +247,7 @@ export class AuctionService {
         address: auctionAddress,
         abi: EtherPhunksAuctionHouseV2ABI,
         eventName: 'AuctionSettled',
-        fromBlock: 'earliest',
+        fromBlock: auctionDeployBlock,
       });
 
       const results: SettledAuction[] = [];
@@ -277,7 +278,7 @@ export class AuctionService {
         address: auctionAddress,
         abi: EtherPhunksAuctionHouseV2ABI,
         eventName: 'AuctionCreated',
-        fromBlock: 'earliest',
+        fromBlock: auctionDeployBlock,
       });
       const match = logs.find((log: any) => Number(log.args.auctionId) === auctionId);
       if (!match) return null;
@@ -298,7 +299,7 @@ export class AuctionService {
         address: auctionAddress,
         abi: EtherPhunksAuctionHouseV2ABI,
         eventName: 'AuctionSettled',
-        fromBlock: 'earliest',
+        fromBlock: auctionDeployBlock,
       });
       const match = logs.find((log: any) => Number(log.args.auctionId) === auctionId);
       if (!match) return null;

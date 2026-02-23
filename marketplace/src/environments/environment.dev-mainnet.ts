@@ -27,6 +27,7 @@ export const environment = {
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
   lotteryAddress: '0x4c6569909028F11873Ba5548900d4609a436bB98'.toLowerCase(),
   auctionAddress: '0xc1fA86b53e8e101c93c570f276bC5177832bd031'.toLowerCase(),
+  auctionDeployBlock: 24518451n,
   evolveAddress: '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA'.toLowerCase(),
 
   evolvePairs: {

@@ -76,6 +76,9 @@ export class TxHistoryComponent implements OnChanges {
     PrizeAwarded: 'Won',
     Evolved: 'Mutated',
     Devolved: 'Devolved',
+    AuctionCreated: 'Auction Start',
+    AuctionBid: 'Auction Bid',
+    AuctionSettled: 'Auction Won',
   };
 
   constructor(

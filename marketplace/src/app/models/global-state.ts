@@ -147,4 +147,7 @@ export type EventType =
   | 'bridgeIn'
   | 'PrizeAwarded'
   | 'Evolved'
-  | 'Devolved';
+  | 'Devolved'
+  | 'AuctionCreated'
+  | 'AuctionBid'
+  | 'AuctionSettled';

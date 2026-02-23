@@ -222,6 +222,20 @@
             }
           }
         }
+
+        &.auctioncreated,
+        &.auctionbid,
+        &.auctionsettled {
+          td {
+            background-color: rgba(var(--auction-color), .5);
+
+            .cell-inner {
+              &.type-label {
+                border-left: .3rem solid rgba(var(--auction-color), 1);
+              }
+            }
+          }
+        }
       }
     }
 

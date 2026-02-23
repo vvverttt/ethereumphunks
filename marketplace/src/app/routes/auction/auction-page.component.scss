@@ -67,7 +67,8 @@
 
 .phunk-image-wrapper {
   flex-shrink: 0;
-  padding-bottom: 4rem;
+  align-self: flex-end;
+  margin-left: 16rem;
 
   img {
     display: block;

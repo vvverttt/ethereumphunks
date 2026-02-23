@@ -166,7 +166,8 @@ section {
       (escrow): var(--escrow-color),
       (prizeawarded): var(--won-color),
       (evolved): var(--mutated-color),
-      (devolved): var(--devolved-color)
+      (devolved): var(--devolved-color),
+      (auctioncreated auctionbid auctionsettled): var(--auction-color)
     );
 
     @each $events, $color in $event-color-groups {
