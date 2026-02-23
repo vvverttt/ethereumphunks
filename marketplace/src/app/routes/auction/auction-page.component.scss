@@ -52,7 +52,7 @@
     margin: 0 auto;
   }
 
-  @media (max-width: $mobile) {
+  @media (max-width: $tablet) {
     padding-top: calc(14rem + env(safe-area-inset-top));
 
     .inner {
@@ -73,6 +73,10 @@
     app-bid-panel {
       order: 3;
     }
+  }
+
+  @media (max-width: $mobile) {
+    padding-top: calc(18rem + env(safe-area-inset-top));
   }
 }
 
@@ -95,7 +99,7 @@
     height: 42rem;
   }
 
-  @media (max-width: $mobile) {
+  @media (max-width: $tablet) {
     margin-left: 0;
     align-self: center;
     padding: 2rem 0 0;
@@ -103,6 +107,14 @@
     position: relative;
     z-index: 2;
 
+    img,
+    .placeholder {
+      width: 34rem;
+      height: 34rem;
+    }
+  }
+
+  @media (max-width: $mobile) {
     img,
     .placeholder {
       width: 28rem;

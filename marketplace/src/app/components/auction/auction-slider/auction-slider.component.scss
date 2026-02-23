@@ -75,6 +75,14 @@
   transform: translate(100%);
 }
 
+@media (max-width: $mobile) {
+  .prev-slide,
+  .next-slide {
+    transform: translate(0);
+    width: 3rem;
+  }
+}
+
 // ─── Slider Track ───────────────────────────────
 
 .slider-track {
