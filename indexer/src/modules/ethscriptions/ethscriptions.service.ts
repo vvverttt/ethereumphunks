@@ -7,7 +7,7 @@ import { StorageService } from '@/modules/storage/storage.service';
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { chain, evolveAddressL1, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, mutationAbi, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { auctionAbiV2, auctionAddressL1, chain, evolveAddressL1, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, mutationAbi, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -108,10 +108,11 @@ export class EthscriptionsService {
     }
 
     // Filter logs for ethscription transfers (esip2)
-    // Skip lottery contract — ownership is handled by LotteryService on PrizeAwarded
+    // Skip lottery and auction contracts — ownership is handled by their own event processors
     const esip2Transfers = receipt.logs.filter(
       (log: any) => log.topics[0] === esips.TransferEthscriptionForPreviousOwnerSignature
         && log.address?.toLowerCase() !== lotteryAddressL1
+        && log.address?.toLowerCase() !== auctionAddressL1
     );
     if (esip2Transfers.length) {
       Logger.debug(
@@ -132,6 +133,18 @@ export class EthscriptionsService {
       if (evolveLogs.length) {
         Logger.debug(`Processing Mutation event (L1)`, transaction.hash);
         const eventArr = await this.processMutationEvents(evolveLogs, transaction, createdAt);
+        if (eventArr?.length) events.push(...eventArr);
+      }
+    }
+
+    // Filter logs for Auction House V2 events
+    if (auctionAddressL1) {
+      const auctionLogs = receipt.logs.filter(
+        (log: any) => log.address?.toLowerCase() === auctionAddressL1
+      );
+      if (auctionLogs.length) {
+        Logger.debug(`Processing Auction event (L1)`, transaction.hash);
+        const eventArr = await this.processAuctionEvents(auctionLogs, transaction, createdAt);
         if (eventArr?.length) events.push(...eventArr);
       }
     }
@@ -828,6 +841,114 @@ export class EthscriptionsService {
         }
       } catch (error) {
         // Skip logs that don't match Mutation ABI (e.g. TransferEthscriptionForPreviousOwner)
+        continue;
+      }
+    }
+
+    return events;
+  }
+
+  /**
+   * Processes Auction House V2 events.
+   * Updates auctions table and creates activity events for history.
+   */
+  async processAuctionEvents(
+    auctionLogs: any[],
+    transaction: Transaction,
+    createdAt: Date
+  ): Promise<Event[]> {
+    const events: Event[] = [];
+
+    for (const log of auctionLogs) {
+      try {
+        const decoded = decodeEventLog({
+          abi: auctionAbiV2,
+          data: log.data,
+          topics: log.topics,
+        });
+
+        const { eventName } = decoded;
+        const { args } = decoded as any;
+        if (!eventName || !args) continue;
+
+        if (eventName === 'AuctionCreated') {
+          const { hashId, auctionId, startTime, endTime } = args;
+
+          await this.storageSvc.createAuction(
+            { hashId, auctionId, startTime, endTime },
+            createdAt
+          );
+
+          events.push({
+            txId: transaction.hash + '-auction-created-' + log.logIndex,
+            type: 'AuctionCreated',
+            hashId: hashId.toLowerCase(),
+            from: auctionAddressL1,
+            to: zeroAddress,
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value: BigInt(0).toString(),
+          });
+        }
+
+        if (eventName === 'AuctionBid') {
+          const { hashId, auctionId, sender, value } = args;
+
+          await this.storageSvc.createAuctionBid(
+            { hashId, auctionId, sender, value },
+            transaction,
+            createdAt
+          );
+
+          events.push({
+            txId: transaction.hash + '-auction-bid-' + log.logIndex,
+            type: 'AuctionBid',
+            hashId: hashId.toLowerCase(),
+            from: sender.toLowerCase(),
+            to: auctionAddressL1,
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value: value.toString(),
+          });
+        }
+
+        if (eventName === 'AuctionExtended') {
+          const { hashId, auctionId, endTime } = args;
+
+          await this.storageSvc.extendAuction(
+            { hashId, auctionId, endTime }
+          );
+        }
+
+        if (eventName === 'AuctionSettled') {
+          const { hashId, auctionId, winner, amount } = args;
+
+          await this.storageSvc.settleAuction(
+            { hashId, auctionId, winner, amount }
+          );
+
+          events.push({
+            txId: transaction.hash + '-auction-settled-' + log.logIndex,
+            type: 'AuctionSettled',
+            hashId: hashId.toLowerCase(),
+            from: auctionAddressL1,
+            to: winner.toLowerCase(),
+            blockHash: transaction.blockHash,
+            txIndex: transaction.transactionIndex,
+            txHash: transaction.hash,
+            blockNumber: Number(transaction.blockNumber),
+            blockTimestamp: createdAt,
+            value: amount.toString(),
+          });
+        }
+      } catch (error) {
+        // Skip logs that don't match Auction ABI (e.g. TransferEthscriptionForPreviousOwner)
         continue;
       }
     }

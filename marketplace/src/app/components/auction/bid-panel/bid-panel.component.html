@@ -1,0 +1,127 @@
+<!-- Bid Info Row -->
+<div class="bid-info">
+  <div class="bid-info-item">
+    <div class="label">Bids</div>
+    <div class="value">{{ bids.length }}</div>
+  </div>
+  <div class="bid-info-item current-bid">
+    <div class="label">
+      @if (noAuction) {
+        Reserve
+      } @else if (auctionEnded || auction?.settled || isHistorical) {
+        Winning
+      } @else {
+        Current
+      }
+    </div>
+    <div class="value"><span class="eth-symbol">&Xi;</span>{{ noAuction ? reservePrice : currentBidEth }}</div>
+  </div>
+  <div class="bid-info-item time-remaining">
+    <div class="label">Time remaining</div>
+    <div class="value">
+      @if (noAuction) {
+        --:--:--
+      } @else if (auction?.settled || isHistorical) {
+        Settled
+      } @else {
+        <app-timer
+          [endTime]="(auction?.endTime || 0) * 1000"
+          (event)="timerEvent.emit($event)"
+        />
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Form Wrapper with Overlays -->
+<div
+  class="form-wrapper"
+  [class.connect-active]="!connected && !noAuction"
+  [class.complete-active]="noAuction || (auctionEnded && !auction?.settled) || isHistorical">
+
+  <!-- Connect overlay -->
+  <div class="connect">
+    <button (click)="connect.emit()">Connect your wallet to interact with this auction</button>
+  </div>
+
+  <!-- Auction closed / No auction overlay -->
+  <div class="auction-closed">
+    @if (noAuction) {
+      <p>Waiting for the first auction to start</p>
+    } @else {
+      <p>This auction is now closed</p>
+      @if (!isHistorical) {
+        <button (click)="settle.emit()" [disabled]="txPending">
+          @if (txPending) {
+            Settling...
+          } @else {
+            Help out & start a new auction
+          }
+        </button>
+      }
+    }
+  </div>
+
+  <!-- Bid form -->
+  <div class="form">
+    <div class="input-wrapper">
+      <input
+        type="number"
+        [formControl]="bidValue"
+        [placeholder]="'Ξ' + minNextBid + ' +'"
+        step="0.001"
+      />
+    </div>
+    <button type="submit" [disabled]="txPending" (click)="onSubmitBid()">
+      @if (txPending) {
+        Pending...
+      } @else {
+        Place Bid
+      }
+    </button>
+  </div>
+</div>
+
+<!-- Error -->
+@if (errorMessage) {
+  <div class="error active">
+    <button (click)="closeError.emit()">x</button>
+    {{ errorMessage }}
+  </div>
+}
+
+<!-- Tx Pending -->
+@if (txHash) {
+  <div class="transaction active">
+    <button (click)="closeTx.emit()">x</button>
+    Your transaction is pending.<br />
+    <a [href]="explorerUrl + '/tx/' + txHash" target="_blank">
+      View it on etherscan
+      <svg height="12" viewBox="0 0 12 12" width="12" xmlns="http://www.w3.org/2000/svg"><path d="m4 0v2h-2v8h8v-2h2v4h-12v-12zm2 6v2h-2v-2zm2 0h-2v-2h2v-2h-2v-2h6v6h-2v-2h-2z" fill-rule="evenodd" fill="rgba(var(--text-color), .5)" /></svg>
+    </a>
+  </div>
+}
+
+<!-- Bid History -->
+<div class="bid-history-wrapper">
+  @if (bids.length === 0) {
+    <p>This auction has no bids</p>
+  } @else {
+    <div class="bid-history-head">
+      <span>Bid history</span>
+    </div>
+    <div class="bid-history">
+      @for (bid of bids; track bid.txHash) {
+        <div class="bid-item">
+          <app-address [address]="bid.sender" />
+          <div class="bid-amount-wrapper">
+            <span>&Xi;{{ bid.value.toString() | weiToEth }}</span>
+            <a [href]="explorerUrl + '/tx/' + bid.txHash" target="_blank">
+              <svg height="12" viewBox="0 0 12 12" width="12" xmlns="http://www.w3.org/2000/svg"><path d="m4 0v2h-2v8h8v-2h2v4h-12v-12zm2 6v2h-2v-2zm2 0h-2v-2h2v-2h-2v-2h6v6h-2v-2h-2z" fill-rule="evenodd" fill="rgba(var(--text-color), .5)" /></svg>
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

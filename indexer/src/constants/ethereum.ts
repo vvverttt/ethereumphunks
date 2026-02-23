@@ -12,6 +12,8 @@ import lottery from '@/abi/PhilipLotteryV68.json';
 
 import mutation from '@/abi/Mutation.json';
 
+import auctionV2 from '@/abi/EtherPhunksAuctionHouseV2.json';
+
 export const pointsAbiL1 = pointsL1;
 
 export const marketAbiL1 = marketL1;
@@ -19,6 +21,8 @@ export const marketAbiL1 = marketL1;
 export const lotteryAbi = lottery;
 
 export const mutationAbi = mutation;
+
+export const auctionAbiV2 = auctionV2;
 
 export const chain: 'mainnet' | 'sepolia' =
   process.env.CHAIN_ID === '1' ? 'mainnet' : 'sepolia';
@@ -61,6 +65,11 @@ export const lotteryAddressL1: string =
   (chain === 'mainnet'
     ? process.env.LOTTERY_ADDRESS_MAINNET
     : process.env.LOTTERY_ADDRESS_SEPOLIA)?.toLowerCase();
+
+export const auctionAddressL1: string =
+  (chain === 'mainnet'
+    ? process.env.AUCTION_ADDRESS_MAINNET
+    : process.env.AUCTION_ADDRESS_SEPOLIA)?.toLowerCase();
 
 const backupUrls = (l1RpcURL_BACKUP || '').split(',').filter(Boolean);
 

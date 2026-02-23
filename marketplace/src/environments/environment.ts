@@ -20,6 +20,7 @@ export const environment = {
   bridgeAddress: '0x1565f60D2469F18bBCc96B2C29220412F2Fe98Bd'.toLowerCase(),
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
   lotteryAddress: '0x4C0b9B7b3e290B793474c533C7AC90262bb69971'.toLowerCase(),
+  auctionAddress: '',
   oldMarketAddresses: [] as string[],
   ogSlugs: ['og-missing-phunks', 'og-dysto-phunks'],
   evolveAddress: '',

@@ -24,6 +24,7 @@ export class FooterComponent {
   marketAddress = environment.marketAddress;
   points = environment.pointsAddress;
   lottery = (environment as any).lotteryAddress;
+  auction = (environment as any).auctionAddress;
   mutation = (environment as any).evolveAddress;
 
   constructor(private store: Store<GlobalState>) {}

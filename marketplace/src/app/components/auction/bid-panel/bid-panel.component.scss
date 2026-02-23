@@ -1,0 +1,299 @@
+@use 'abstracts/variables' as *;
+
+:host {
+  display: block;
+  position: absolute;
+  z-index: 99;
+  top: 100%;
+  right: 5rem;
+  width: 100%;
+  max-width: 48rem;
+  background-color: rgba(var(--background), 1);
+  padding: 3rem 3.5rem;
+  transform: translate(3.5rem, -20.4rem);
+
+  @media (max-width: $mobile) {
+    position: static;
+    transform: translate(0);
+    max-width: 100%;
+    padding: 2rem;
+  }
+}
+
+// ─── Bid Info Row ─────────────────────────────────────────
+
+.bid-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .bid-info-item {
+    padding-bottom: 2rem;
+
+    .label {
+      font-size: 1.4rem;
+      padding-bottom: .5rem;
+      color: rgba(var(--text-color), .5);
+      font-weight: 500;
+    }
+
+    .value {
+      font-family: var(--secondary-font-stack);
+      font-size: 2.6rem;
+
+      .eth-symbol {
+        font-weight: 900;
+        padding-right: .25rem;
+      }
+    }
+
+    &.time-remaining {
+      width: 100%;
+      max-width: 20rem;
+    }
+
+    &.current-bid {
+      width: 100%;
+      max-width: 11rem;
+    }
+  }
+
+  @media (max-width: $mobile) {
+    .bid-info-item {
+      .value {
+        font-size: 1.8rem;
+      }
+
+      &.time-remaining {
+        max-width: 13rem;
+      }
+
+      &.current-bid {
+        max-width: 9rem;
+      }
+    }
+  }
+}
+
+// ─── Form Wrapper (with overlays) ─────────────────────────
+
+.form-wrapper {
+  position: relative;
+  padding: 3rem 0;
+  overflow: hidden;
+
+  .auction-closed,
+  .connect {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    p {
+      padding: 0;
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: rgba(var(--text-color), .5);
+    }
+
+    button,
+    a {
+      padding: 1rem;
+      color: rgba(var(--pink), 1);
+      font-weight: 700;
+      text-decoration: none;
+    }
+  }
+
+  .connect {
+    z-index: 2;
+
+    button {
+      font-size: 1.4rem;
+    }
+  }
+
+  .form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .input-wrapper {
+      position: relative;
+      width: calc(100% - 14rem);
+
+      input {
+        width: 100%;
+        height: 4.6rem;
+        padding: 0 1.5rem;
+        font-size: 1.8rem;
+        text-align: left;
+        background-color: rgba(var(--pink), .15);
+        color: rgba(var(--text-color), 1);
+        border: none;
+        font-family: var(--primary-font-stack);
+
+        &::placeholder {
+          color: rgba(var(--text-color), .3);
+        }
+      }
+    }
+
+    button[type=submit] {
+      justify-content: center;
+      width: 12rem;
+      height: 4.6rem;
+      background-color: rgba(var(--text-color), 1);
+      color: rgba(var(--background), 1);
+      padding: 0;
+      font-weight: 700;
+      font-family: var(--primary-font-stack);
+      border: none;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(1px);
+      }
+    }
+  }
+
+  // Overlay states
+  &.connect-active {
+    .form {
+      filter: blur(2rem);
+    }
+
+    .connect {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: all;
+    }
+  }
+
+  &.complete-active:not(.connect-active) {
+    .form {
+      visibility: hidden;
+    }
+
+    .auction-closed {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: all;
+    }
+  }
+}
+
+// ─── Error / Transaction ──────────────────────────────────
+
+.error,
+.transaction {
+  position: relative;
+  z-index: 99;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  text-align: center;
+  font-size: 1.4rem;
+  color: rgba(var(--pink), 1);
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: break-all;
+  background-color: rgba(var(--background), .9);
+
+  button {
+    position: absolute;
+    top: -.5rem;
+    right: -1rem;
+    font-family: var(--secondary-font-stack);
+    font-weight: normal;
+    color: rgba(var(--text-color), 1);
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    padding: .5rem;
+    color: rgba(var(--pink), 1);
+
+    svg {
+      margin-left: .5rem;
+    }
+  }
+
+  &.active {
+    display: flex;
+  }
+}
+
+// ─── Bid History ──────────────────────────────────────────
+
+.bid-history-wrapper {
+  padding: 2.2rem 0 0;
+  border-top: .2rem solid rgba(var(--text-color), .05);
+
+  p {
+    font-size: 1.4rem;
+    text-align: center;
+    font-weight: 500;
+    color: rgba(var(--text-color), .5);
+  }
+
+  .bid-history-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    height: 3rem;
+
+    span {
+      font-size: 1.4rem;
+      color: rgba(var(--text-color), .5);
+    }
+  }
+
+  .bid-history {
+    .bid-item {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .5rem 0;
+
+      .bid-amount-wrapper {
+        display: flex;
+        align-items: center;
+
+        span {
+          padding-right: 1rem;
+        }
+
+        a {
+          padding: .5rem;
+
+          svg {
+            display: block;
+          }
+        }
+      }
+    }
+  }
+}

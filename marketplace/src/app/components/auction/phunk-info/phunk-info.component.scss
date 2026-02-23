@@ -1,0 +1,138 @@
+@use 'abstracts/variables' as *;
+
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 44rem;
+}
+
+// ─── Prev/Next Navigation ─────────────────────────────────
+
+.prev-auction,
+.next-auction {
+  position: absolute;
+  top: 6rem;
+  left: 0;
+  font-family: var(--secondary-font-stack);
+  font-size: 5rem;
+  color: rgba(var(--text-color), 1);
+  pointer-events: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity .2s;
+  opacity: .25;
+
+  &.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  @media (max-width: $mobile) {
+    top: 4rem;
+    font-size: 3rem;
+  }
+}
+
+.next-auction {
+  left: 5rem;
+}
+
+// ─── Headings ─────────────────────────────────────────────
+
+h1, h2 {
+  padding: 0;
+  margin: 0;
+  font-family: var(--secondary-font-stack);
+  font-weight: 400;
+  text-align: right;
+}
+
+h1 {
+  font-size: 3.6rem;
+  padding-bottom: 1rem;
+}
+
+h2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-size: 9.8rem;
+  color: rgba(var(--pink), 1);
+  line-height: 1;
+}
+
+// ─── Traits ───────────────────────────────────────────────
+
+.one-of-label,
+.trait-count-label,
+.trait-wrapper {
+  font-family: var(--secondary-font-stack);
+  font-size: 1.4rem;
+  padding-top: 2rem;
+  text-align: right;
+}
+
+.one-of-label {
+  .type-name {
+    color: rgba(var(--pink), 1);
+  }
+}
+
+.trait-count-label {
+  padding-top: 1rem;
+}
+
+.trait-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  .trait {
+    font-weight: 400;
+    text-align: right;
+    padding-bottom: .5rem;
+
+    .trait-name {
+      color: rgba(var(--pink), 1);
+    }
+  }
+}
+
+.pool-label {
+  font-family: var(--secondary-font-stack);
+  font-size: 1.4rem;
+  color: rgba(var(--text-color), .5);
+  padding-top: 1rem;
+}
+
+// ─── Mobile ───────────────────────────────────────────────
+
+@media (max-width: $mobile) {
+  :host {
+    align-items: center;
+    max-width: 100%;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 2.6rem;
+  }
+
+  h2 {
+    font-size: 5rem;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .one-of-label,
+  .trait-count-label,
+  .trait-wrapper {
+    text-align: center;
+    align-items: center;
+  }
+}

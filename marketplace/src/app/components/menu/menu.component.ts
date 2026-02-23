@@ -211,4 +211,8 @@ export class MenuComponent {
   goToLottery(): void {
     this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
   }
+
+  goToAuction(): void {
+    this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
+  }
 }

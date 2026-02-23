@@ -1,0 +1,51 @@
+<div class="auction-slider-wrapper">
+  <div class="inner">
+    <div class="slider-head">
+      <h3>Auction history</h3>
+    </div>
+
+    @if (settledAuctions.length > 0) {
+      <button
+        class="prev-slide"
+        [class.active]="canScrollLeft()"
+        (click)="scrollLeft()">
+        <svg width="16" height="24" viewBox="0 0 16 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2L4 12L14 22" stroke="currentColor" stroke-width="3" fill="none"/>
+        </svg>
+      </button>
+
+      <div class="slider-track" #sliderTrack (scroll)="onScroll()">
+        @for (auction of settledAuctions; track auction.auctionId) {
+          <div class="slide-item" (click)="selectAuction.emit(auction.auctionId)">
+            @if (auction.imageUrl) {
+              <img [src]="auction.imageUrl" [alt]="'Phunk #' + auction.tokenId" />
+            } @else {
+              <div class="img-placeholder"></div>
+            }
+            <div class="auction-details">
+              <div class="phunk-id">#{{ auction.tokenId }}</div>
+              <div class="time-ago">{{ auction.settledTimestamp | timeAgo }}</div>
+              <div class="winning-bid">
+                <span>&Xi;{{ formatEth(auction.amount) }}</span>
+              </div>
+              <div class="winner">
+                <app-address [address]="auction.winner" [ens]="false" />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <button
+        class="next-slide"
+        [class.active]="canScrollRight()"
+        (click)="scrollRight()">
+        <svg width="16" height="24" viewBox="0 0 16 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 2L12 12L2 22" stroke="currentColor" stroke-width="3" fill="none"/>
+        </svg>
+      </button>
+    } @else {
+      <p class="empty-state">No auctions have been settled yet</p>
+    }
+  </div>
+</div>

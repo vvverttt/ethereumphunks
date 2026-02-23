@@ -68,6 +68,18 @@
       </div>
     </a>
 
+    <a
+      class="auction-button"
+      routerLink="/auction"
+      (click)="goToAuction()">
+
+      <span>Phunks Auction</span>
+
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </a>
+
     @if (!isStandaloneMarket) {
       <div
         class="curated-button"

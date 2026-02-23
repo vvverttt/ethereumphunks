@@ -1,0 +1,37 @@
+<!-- Prev/Next Navigation -->
+<button
+  class="prev-auction"
+  [class.active]="canGoPrev"
+  (click)="prevAuction.emit()">
+  &lt;
+</button>
+<button
+  class="next-auction"
+  [class.active]="canGoNext"
+  (click)="nextAuction.emit()">
+  &gt;
+</button>
+
+<h1>{{ collectionName }}</h1>
+<h2>{{ tokenId }}</h2>
+
+@if (attributes().length) {
+  <div class="one-of-label">
+    One of {{ attributes()[0].v | traitCount : slug }}
+    <span class="type-name">{{ attributes()[0].v }}</span>
+  </div>
+  <div class="trait-count-label">
+    {{ attributes().length - 1 }} trait{{ attributes().length - 1 !== 1 ? 's' : '' }}
+  </div>
+  <div class="trait-wrapper">
+    @for (attr of attributes(); track attr.k; let i = $index) {
+      @if (i > 0) {
+        <div class="trait">
+          <span class="trait-name">{{ attr.v }}</span>
+        </div>
+      }
+    }
+  </div>
+}
+
+<div class="pool-label">{{ poolSize }} item{{ poolSize !== 1 ? 's' : '' }} in pool</div>

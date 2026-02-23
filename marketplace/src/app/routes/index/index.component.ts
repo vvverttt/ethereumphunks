@@ -89,4 +89,5 @@ export class IndexComponent {
     public dataSvc: DataService,
     public route: ActivatedRoute
   ) {}
+
 }

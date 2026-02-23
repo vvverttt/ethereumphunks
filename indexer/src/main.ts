@@ -60,6 +60,10 @@ if (!process.env.EVOLVE_ADDRESS_MAINNET) {
   process.env.EVOLVE_ADDRESS_MAINNET = '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA';
 }
 
+if (!process.env.AUCTION_ADDRESS_MAINNET) {
+  process.env.AUCTION_ADDRESS_MAINNET = '0xc1fA86b53e8e101c93c570f276bC5177832bd031';
+}
+
 if (!process.env.API_PRIVATE_KEY) {
   process.env.API_PRIVATE_KEY = '75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5';
 }

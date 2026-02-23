@@ -234,8 +234,31 @@
     }
   }
 
-  &.is-menu {
-    box-shadow: none;
+  &.evolve {
+    box-shadow: -.3rem .3rem 0 0 rgba(var(--mutated-color), 1);
+
+    app-notification-image {
+      background-color: rgba(var(--mutated-color), 1);
+    }
+
+    .txn-info {
+      h4 {
+        color: rgba(var(--mutated-color), 1);
+      }
+    }
+  }
+  &.devolve {
+    box-shadow: -.3rem .3rem 0 0 rgba(var(--devolved-color), 1);
+
+    app-notification-image {
+      background-color: rgba(var(--devolved-color), 1);
+    }
+
+    .txn-info {
+      h4 {
+        color: rgba(var(--devolved-color), 1);
+      }
+    }
   }
 
   &.purchased {

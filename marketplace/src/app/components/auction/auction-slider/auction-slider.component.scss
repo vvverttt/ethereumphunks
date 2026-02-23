@@ -1,0 +1,151 @@
+@use 'abstracts/variables' as *;
+
+:host {
+  display: block;
+  max-width: 100%;
+}
+
+.auction-slider-wrapper {
+  width: 100%;
+  max-width: var(--max-width);
+  padding: 3rem 53rem 0 4rem;
+  margin: 0 auto;
+
+  .inner {
+    position: relative;
+  }
+
+  .slider-head {
+    padding: 0 0 2rem 1.5rem;
+
+    h3 {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.6rem;
+      font-weight: 400;
+      margin: 0;
+    }
+  }
+
+  .empty-state {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.4rem;
+    color: rgba(var(--text-color), .5);
+    padding: 3rem 1.5rem;
+  }
+
+  @media (max-width: 1040px) {
+    padding-top: 12rem;
+    padding-right: 4rem;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 3rem 2rem 0;
+  }
+}
+
+// ─── Navigation Buttons ─────────────────────────
+
+.prev-slide,
+.next-slide {
+  position: absolute;
+  z-index: 10;
+  top: 7rem;
+  left: 0;
+  width: 4rem;
+  height: 6rem;
+  transform: translate(-100%);
+  opacity: .25;
+  background: none;
+  border: none;
+  cursor: default;
+  color: rgba(var(--text-color), 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.active {
+    opacity: 1;
+    cursor: pointer;
+  }
+}
+
+.next-slide {
+  left: auto;
+  right: 0;
+  transform: translate(100%);
+}
+
+// ─── Slider Track ───────────────────────────────
+
+.slider-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  gap: 2rem;
+  padding: 2rem 0;
+
+  // Hide scrollbar
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// ─── Slide Items ────────────────────────────────
+
+.slide-item {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 14rem;
+
+  img {
+    width: 12rem;
+    height: 12rem;
+    image-rendering: pixelated;
+    background-color: rgba(var(--text-color), .05);
+    display: block;
+  }
+
+  .img-placeholder {
+    width: 12rem;
+    height: 12rem;
+    background-color: rgba(var(--text-color), .05);
+  }
+}
+
+.auction-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+  font-family: var(--secondary-font-stack);
+  font-weight: 400;
+  text-align: center;
+
+  .phunk-id {
+    color: rgba(var(--text-color), 1);
+    padding-bottom: .5rem;
+  }
+
+  .time-ago {
+    font-size: 1rem;
+    opacity: .5;
+  }
+
+  .winning-bid {
+    font-size: 1.2rem;
+    padding-top: .25rem;
+  }
+
+  .winner {
+    font-size: 1.2rem;
+    opacity: .5;
+    padding-top: .25rem;
+  }
+}

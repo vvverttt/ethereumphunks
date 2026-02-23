@@ -135,7 +135,7 @@
                 <app-phunk-grid
                   [phunkData]="allPhunks"
                   [viewType]="'compact'"
-                  [limit]="(isMobile$ | async) ? 100 : 110"
+                  [limit]="activeCollection.slug === 'ethsrock' ? 66 : ((isMobile$ | async) ? 100 : 110)"
                   [marketType]="'all'"
                   [activeSort]="'id'"
                 />

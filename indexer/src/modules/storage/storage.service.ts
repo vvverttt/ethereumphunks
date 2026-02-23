@@ -710,7 +710,6 @@ export class StorageService implements OnModuleInit {
   async createAuction(
     args: {
       hashId: string,
-      owner: string,
       auctionId: bigint,
       startTime: bigint,
       endTime: bigint
@@ -723,7 +722,6 @@ export class StorageService implements OnModuleInit {
         auctionId: Number(args.auctionId),
         createdAt,
         hashId: args.hashId.toLowerCase(),
-        prevOwner: args.owner.toLowerCase(),
         amount: '0',
         startTime: new Date(Number(args.startTime) * 1000),
         endTime: new Date(Number(args.endTime) * 1000),
@@ -749,7 +747,6 @@ export class StorageService implements OnModuleInit {
       auctionId: bigint,
       sender: string,
       value: bigint,
-      extended: boolean
     },
     txn: Transaction,
     createdAt: Date
