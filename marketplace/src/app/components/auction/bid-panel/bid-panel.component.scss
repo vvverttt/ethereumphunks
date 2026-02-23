@@ -113,7 +113,7 @@
     button,
     a {
       padding: 1rem;
-      color: rgba(var(--pink), 1);
+      color: rgba(var(--auction-accent, var(--pink)), 1);
       background: none;
       font-weight: 700;
       text-decoration: none;
@@ -143,7 +143,7 @@
         padding: 0 1.5rem;
         font-size: 1.8rem;
         text-align: left;
-        background-color: rgba(var(--pink), .15);
+        background-color: rgba(var(--auction-accent, var(--pink)), .15);
         color: rgba(var(--text-color), 1);
         border: none;
         font-family: var(--primary-font-stack);
@@ -216,7 +216,7 @@
   padding: 2rem 0;
   text-align: center;
   font-size: 1.4rem;
-  color: rgba(var(--pink), 1);
+  color: rgba(var(--auction-accent, var(--pink)), 1);
   font-weight: 700;
   line-height: 1.5;
   word-break: break-all;
@@ -235,7 +235,7 @@
     display: flex;
     align-items: center;
     padding: .5rem;
-    color: rgba(var(--pink), 1);
+    color: rgba(var(--auction-accent, var(--pink)), 1);
 
     svg {
       margin-left: .5rem;

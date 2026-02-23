@@ -1,17 +1,16 @@
-<div class="auction-page">
+<div class="auction-page" [ngStyle]="{'--auction-accent': accentColor() || null}">
   @if (loading()) {
     <div class="loading-state">Loading auction...</div>
   } @else {
 
     <!-- ========== HERO SECTION ========== -->
-    <section class="auction">
+    <section class="auction" [style.background-color]="bgColor() ? 'rgba(' + bgColor() + ', 0.2)' : null">
       <div class="inner">
 
         <!-- Phunk Image (left) -->
         <div class="phunk-image-wrapper">
-          @if (phunkImage()) {
-            <img [src]="phunkImage()" alt="Auction Phunk" />
-          } @else {
+          <canvas #phunkCanvas [class.visible]="phunkImage()"></canvas>
+          @if (!phunkImage()) {
             <div class="placeholder"></div>
           }
         </div>

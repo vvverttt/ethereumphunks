@@ -62,7 +62,7 @@ h2 {
   display: flex;
   align-items: center;
   font-size: 9.8rem;
-  color: rgba(var(--pink), 1);
+  color: rgba(var(--auction-accent, var(--pink)), 1);
   line-height: 1;
 }
 
@@ -79,7 +79,7 @@ h2 {
 
 .one-of-label {
   .type-name {
-    color: rgba(var(--pink), 1);
+    color: rgba(var(--auction-accent, var(--pink)), 1);
   }
 }
 
@@ -98,7 +98,7 @@ h2 {
     padding-bottom: .5rem;
 
     .trait-name {
-      color: rgba(var(--pink), 1);
+      color: rgba(var(--auction-accent, var(--pink)), 1);
     }
   }
 }

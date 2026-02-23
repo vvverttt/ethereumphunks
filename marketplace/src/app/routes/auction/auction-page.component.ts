@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
@@ -63,6 +63,12 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     return viewing < this.maxAuctionId();
   });
 
+  @ViewChild('phunkCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+
+  bgColor = signal<string>('');
+  accentColor = signal<string>('');
+  imageReady = signal(false);
+
   staticUrl = environment.staticUrl;
   explorerUrl = environment.explorerUrl;
 
@@ -72,7 +78,128 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     private store: Store<GlobalState>,
     private auctionSvc: AuctionService,
     public web3Svc: Web3Service,
-  ) {}
+  ) {
+    effect(() => {
+      const src = this.phunkImage();
+      if (!src) {
+        this.bgColor.set('');
+        this.accentColor.set('');
+        this.imageReady.set(false);
+        return;
+      }
+      this.imageReady.set(false);
+      this.extractColors(src);
+    });
+  }
+
+  private extractColors(src: string) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const tmp = document.createElement('canvas');
+        tmp.width = img.naturalWidth;
+        tmp.height = img.naturalHeight;
+        const tmpCtx = tmp.getContext('2d')!;
+        tmpCtx.drawImage(img, 0, 0);
+
+        const bgPixel = tmpCtx.getImageData(0, 0, 1, 1).data;
+        this.bgColor.set(`${bgPixel[0]}, ${bgPixel[1]}, ${bgPixel[2]}`);
+
+        const imageData = tmpCtx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+        const accent = this.findAccentColor(imageData.data, bgPixel[0], bgPixel[1], bgPixel[2]);
+        this.accentColor.set(accent);
+      } catch {
+        this.bgColor.set('');
+        this.accentColor.set('');
+      }
+      this.animatePixels(img);
+    };
+    img.onerror = () => {
+      this.bgColor.set('');
+      this.accentColor.set('');
+      this.imageReady.set(true);
+    };
+    img.src = src;
+  }
+
+  private findAccentColor(pixels: Uint8ClampedArray, bgR: number, bgG: number, bgB: number): string {
+    const colorMap = new Map<string, { r: number; g: number; b: number; count: number; sat: number }>();
+
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2], a = pixels[i + 3];
+
+      if (a < 128) continue;
+      if (Math.abs(r - bgR) < 15 && Math.abs(g - bgG) < 15 && Math.abs(b - bgB) < 15) continue;
+      if (r < 30 && g < 30 && b < 30) continue;
+      if (r > 230 && g > 230 && b > 230) continue;
+
+      const key = `${r},${g},${b}`;
+      const existing = colorMap.get(key);
+      if (existing) {
+        existing.count++;
+      } else {
+        const max = Math.max(r, g, b) / 255;
+        const min = Math.min(r, g, b) / 255;
+        const l = (max + min) / 2;
+        const sat = max === min ? 0 : (l <= 0.5 ? (max - min) / (max + min) : (max - min) / (2 - max - min));
+        colorMap.set(key, { r, g, b, count: 1, sat });
+      }
+    }
+
+    let bestR = 0, bestG = 0, bestB = 0, bestScore = -1;
+
+    for (const [, c] of colorMap) {
+      if (c.count < 3) continue;
+      const score = c.sat * Math.log(c.count + 1);
+      if (score > bestScore) {
+        bestR = c.r; bestG = c.g; bestB = c.b;
+        bestScore = score;
+      }
+    }
+
+    if (bestScore < 0) return '';
+    return `${bestR}, ${bestG}, ${bestB}`;
+  }
+
+  private animatePixels(img: HTMLImageElement) {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) {
+      this.imageReady.set(true);
+      return;
+    }
+
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
+
+    const steps = [2, 4, 8, 12, 16, 24, w];
+    let step = 0;
+
+    const drawStep = () => {
+      const size = steps[step];
+      const tmp = document.createElement('canvas');
+      tmp.width = size;
+      tmp.height = size;
+      const tmpCtx = tmp.getContext('2d')!;
+      tmpCtx.drawImage(img, 0, 0, size, size);
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(tmp, 0, 0, size, size, 0, 0, w, h);
+
+      step++;
+      if (step < steps.length) {
+        setTimeout(() => requestAnimationFrame(drawStep), 60);
+      } else {
+        this.imageReady.set(true);
+      }
+    };
+
+    requestAnimationFrame(drawStep);
+  }
 
   async ngOnInit() {
     try {
