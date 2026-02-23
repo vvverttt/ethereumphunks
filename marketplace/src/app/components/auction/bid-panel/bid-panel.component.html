@@ -36,7 +36,7 @@
 <!-- Form Wrapper with Overlays -->
 <div
   class="form-wrapper"
-  [class.connect-active]="!connected && !noAuction"
+  [class.connect-active]="!connected && !noAuction && !auctionEnded && !isHistorical && !auction?.settled"
   [class.complete-active]="noAuction || (auctionEnded && !auction?.settled) || isHistorical">
 
   <!-- Connect overlay -->
