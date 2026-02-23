@@ -53,7 +53,7 @@
   }
 
   @media (max-width: $mobile) {
-    padding-top: calc(8rem + env(safe-area-inset-top));
+    padding-top: calc(14rem + env(safe-area-inset-top));
 
     .inner {
       flex-direction: column;
