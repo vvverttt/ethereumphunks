@@ -37,7 +37,7 @@
 <div
   class="form-wrapper"
   [class.connect-active]="!connected && !noAuction && !auctionEnded && !isHistorical && !auction?.settled"
-  [class.complete-active]="noAuction || (auctionEnded && !auction?.settled) || isHistorical">
+  [class.complete-active]="noAuction || auctionEnded || isHistorical || auction?.settled">
 
   <!-- Connect overlay -->
   <div class="connect">
@@ -50,7 +50,7 @@
       <p>Waiting for the first auction to start</p>
     } @else {
       <p>This auction is now closed</p>
-      @if (!isHistorical) {
+      @if (!isHistorical && !auction?.settled) {
         <button (click)="settle.emit()" [disabled]="txPending">
           @if (txPending) {
             Settling...
