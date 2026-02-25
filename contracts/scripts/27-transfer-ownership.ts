@@ -1,7 +1,7 @@
 import hre from 'hardhat';
 
 const PROXY_ADDRESS = '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA';
-const NEW_OWNER = '0xd6BEC62430B3CfDd7e14Af8D1D42e4e8bB771cBa'; // dystolabz.eth
+const NEW_OWNER = '0x19d57A31b982d3d75c16358795A4D19c803e4A72';
 
 async function transferOwnership() {
   const [signer] = await hre.ethers.getSigners();

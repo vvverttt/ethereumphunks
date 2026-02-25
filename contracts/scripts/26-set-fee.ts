@@ -1,7 +1,7 @@
 import hre from 'hardhat';
 
 const PROXY_ADDRESS = '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA';
-const NEW_FEE = hre.ethers.parseEther('0.067');
+const NEW_FEE = hre.ethers.parseEther('0.00001');
 
 async function setFee() {
   const [signer] = await hre.ethers.getSigners();
