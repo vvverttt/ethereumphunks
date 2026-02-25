@@ -64,6 +64,7 @@ export class RecentActivityComponent {
     const slug = this.collection()?.slug;
     if (slug && EVOLVE_SLUGS.has(slug)) {
       base.push({ label: 'Mutated', value: 'Evolved' });
+      base.push({ label: 'Devolved', value: 'Devolved' });
     }
     return base;
   });
