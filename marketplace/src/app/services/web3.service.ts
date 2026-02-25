@@ -21,7 +21,7 @@ import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
 import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
 
 import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType, connect as wagmiConnect, reconnect } from '@wagmi/core';
-import { coinbaseWallet, walletConnect, injected } from '@wagmi/connectors';
+import { walletConnect, injected } from '@wagmi/connectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 
@@ -107,10 +107,6 @@ export class Web3Service {
       connectors: [
         injected({ shimDisconnect: true }),
         walletConnect({ projectId, metadata, showQrModal: true }),
-        coinbaseWallet({
-          appName: metadata.name,
-          appLogoUrl: metadata.icons[0]
-        })
       ],
       storage: createStorage({
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
@@ -227,8 +223,11 @@ export class Web3Service {
     if (type === 'walletConnect') {
       return this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
     }
-    if (type === 'coinbaseWallet') {
-      return this.config.connectors.find(c => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
+    if (type === 'injected-metamask') {
+      const provider = this.findMetaMaskProvider();
+      if (provider) {
+        return injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
+      }
     }
     if (type === 'injected-phantom' || (!type && phantomHasAccount)) {
       const phantom = (window as any).phantom?.ethereum;
@@ -240,6 +239,12 @@ export class Web3Service {
       const provider = this.findRainbowProvider();
       if (provider) {
         return injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
+      }
+    }
+    if (type === 'injected-magiceden') {
+      const provider = this.findMagicEdenProvider();
+      if (provider) {
+        return injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
       }
     }
     // Default: generic injected (uses window.ethereum)
@@ -254,9 +259,6 @@ export class Web3Service {
     if (savedType === 'walletConnect') {
       return this.config.connectors.filter(c => c.type === 'walletConnect');
     }
-    if (savedType === 'coinbaseWallet') {
-      return this.config.connectors.filter(c => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
-    }
     return this.config.connectors.filter(c => c.type === 'injected');
   }
 
@@ -266,13 +268,35 @@ export class Web3Service {
   private findRainbowProvider(): any {
     const eth = (window as any).ethereum;
     if (!eth) return null;
-    // Multi-provider: EIP-5749 / EIP-6963 style
     if (eth.providers?.length) {
       const rainbow = eth.providers.find((p: any) => p.isRainbow);
       if (rainbow) return rainbow;
     }
-    // Single provider
     if (eth.isRainbow) return eth;
+    return null;
+  }
+
+  private findMetaMaskProvider(): any {
+    const eth = (window as any).ethereum;
+    if (!eth) return null;
+    if (eth.providers?.length) {
+      const mm = eth.providers.find((p: any) => p.isMetaMask && !p.isPhantom && !p.isRainbow);
+      if (mm) return mm;
+    }
+    if (eth.isMetaMask && !eth.isPhantom && !eth.isRainbow) return eth;
+    return null;
+  }
+
+  private findMagicEdenProvider(): any {
+    const me = (window as any).magicEden?.ethereum;
+    if (me) return me;
+    const eth = (window as any).ethereum;
+    if (!eth) return null;
+    if (eth.providers?.length) {
+      const provider = eth.providers.find((p: any) => p.isMagicEden);
+      if (provider) return provider;
+    }
+    if (eth.isMagicEden) return eth;
     return null;
   }
 
@@ -332,7 +356,14 @@ export class Web3Service {
     try {
       let connector;
 
-      if (connectorId === 'injected-phantom') {
+      if (connectorId === 'injected-metamask') {
+        const provider = this.findMetaMaskProvider();
+        if (provider) {
+          connector = injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
+        } else {
+          connector = injected();
+        }
+      } else if (connectorId === 'injected-phantom') {
         const phantom = (window as any).phantom?.ethereum;
         if (phantom) {
           connector = injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
@@ -342,13 +373,15 @@ export class Web3Service {
         if (provider) {
           connector = injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
         } else {
-          // Rainbow not found in providers — fallback to generic injected
           connector = injected();
+        }
+      } else if (connectorId === 'injected-magiceden') {
+        const provider = this.findMagicEdenProvider();
+        if (provider) {
+          connector = injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
         }
       } else if (connectorId === 'walletConnect') {
         connector = this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
-      } else if (connectorId === 'coinbaseWallet') {
-        connector = this.config.connectors.find(c => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
       }
 
       if (!connector) {

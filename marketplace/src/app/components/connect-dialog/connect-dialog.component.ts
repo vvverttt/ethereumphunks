@@ -24,21 +24,26 @@ export class ConnectDialogComponent {
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
     const phantom = typeof window !== 'undefined' ? (window as any).phantom?.ethereum : null;
 
-    // Check for Rainbow specifically — don't use isMetaMask (Phantom sets it too)
+    // MetaMask: isMetaMask but NOT Phantom/Rainbow (which also set isMetaMask)
+    const hasMetaMask = (eth?.isMetaMask && !eth?.isPhantom && !eth?.isRainbow)
+      || eth?.providers?.some((p: any) => p.isMetaMask && !p.isPhantom && !p.isRainbow);
+    opts.push({ id: 'injected-metamask', name: 'MetaMask', detected: !!hasMetaMask });
+
+    // Rainbow
     const hasRainbow = eth?.isRainbow || eth?.providers?.some((p: any) => p.isRainbow);
-    if (hasRainbow) {
-      opts.push({ id: 'injected-rainbow', name: 'Rainbow', detected: true });
-    } else {
-      opts.push({ id: 'injected-rainbow', name: 'Rainbow', detected: false });
-    }
+    opts.push({ id: 'injected-rainbow', name: 'Rainbow', detected: !!hasRainbow });
+
+    // Phantom
     if (phantom || eth?.isPhantom) {
       opts.push({ id: 'injected-phantom', name: 'Phantom', detected: true });
     }
-    if (eth?.isCoinbaseWallet) {
-      opts.push({ id: 'coinbaseWallet', name: 'Coinbase Wallet', detected: true });
-    } else {
-      opts.push({ id: 'coinbaseWallet', name: 'Coinbase Wallet', detected: false });
-    }
+
+    // Magic Eden
+    const magicEden = typeof window !== 'undefined' ? (window as any).magicEden?.ethereum : null;
+    const hasMagicEden = !!magicEden || eth?.isMagicEden
+      || eth?.providers?.some((p: any) => p.isMagicEden);
+    opts.push({ id: 'injected-magiceden', name: 'Magic Eden', detected: !!hasMagicEden });
+
     opts.push({ id: 'walletConnect', name: 'WalletConnect', detected: false });
 
     return opts;
