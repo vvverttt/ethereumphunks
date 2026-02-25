@@ -805,14 +805,23 @@ export class Web3Service {
 
     const chainId = getChainId(this.config);
     const wallet = await getWalletClient(this.config, { chainId });
-
-    return wallet.sendTransaction({
+    const req = await wallet.prepareTransactionRequest({
       chain: wallet.chain,
       account: getAccount(this.config).address as `0x${string}`,
       to: toAddress as `0x${string}`,
       value,
       data: hashId as `0x${string}`,
     });
+
+    // Minimal gas: base fee only, no tip
+    const gas = await firstValueFrom(this.gasSvc.gas$);
+    if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
+      const base = parseGwei(gas.ProposeGasPrice);
+      req.maxFeePerGas = base;
+      req.maxPriorityFeePerGas = 0n;
+    }
+
+    return wallet?.sendTransaction(req);
   }
 
   /**
