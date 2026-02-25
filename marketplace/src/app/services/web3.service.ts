@@ -28,10 +28,9 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
 
-import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, parseGwei, stringToBytes, toHex, zeroAddress } from 'viem';
+import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
-import { GasService } from './gas.service';
 const marketAddress = environment.marketAddress;
 const oldMarketAddresses: string[] = (environment as any).oldMarketAddresses || [];
 const ogSlugs: string[] = (environment as any).ogSlugs || [];
@@ -56,7 +55,6 @@ const metadata = {
 
 export class Web3Service {
 
-  private gasSvc = inject(GasService);
 
   maxCooldown = 4;
   web3Connecting: boolean = false;
@@ -559,14 +557,6 @@ export class Web3Service {
 
     const { request, result } = await publicClient.simulateContract(tx);
 
-    // Minimal gas: base fee only, no tip
-    const gas = await firstValueFrom(this.gasSvc.gas$);
-    if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
-      const base = parseGwei(gas.ProposeGasPrice);
-      request.maxFeePerGas = base;
-      request.maxPriorityFeePerGas = 0n;
-    }
-
     return await walletClient.writeContract(request);
   }
 
@@ -805,23 +795,14 @@ export class Web3Service {
 
     const chainId = getChainId(this.config);
     const wallet = await getWalletClient(this.config, { chainId });
-    const req = await wallet.prepareTransactionRequest({
+
+    return wallet.sendTransaction({
       chain: wallet.chain,
       account: getAccount(this.config).address as `0x${string}`,
       to: toAddress as `0x${string}`,
       value,
       data: hashId as `0x${string}`,
     });
-
-    // Minimal gas: base fee only, no tip
-    const gas = await firstValueFrom(this.gasSvc.gas$);
-    if (gas.ProposeGasPrice && gas.ProposeGasPrice !== '...' && gas.ProposeGasPrice !== 'err') {
-      const base = parseGwei(gas.ProposeGasPrice);
-      req.maxFeePerGas = base;
-      req.maxPriorityFeePerGas = 0n;
-    }
-
-    return wallet?.sendTransaction(req);
   }
 
   /**
