@@ -11,6 +11,7 @@ import { TimeagoModule } from 'ngx-timeago';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
 import { DataService } from '@/services/data.service';
+import { Web3Service } from '@/services/web3.service';
 
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 
@@ -50,7 +51,7 @@ export class RecentActivityComponent {
   ogCollection = input<Collection | null>(null);
 
   txFilters = computed<TxFilterItem[]>(() => {
-    return [
+    const filters: TxFilterItem[] = [
       { label: 'All', value: 'All' },
       { label: 'Offered', value: 'PhunkOffered' },
       { label: 'Sold', value: 'PhunkBought' },
@@ -58,9 +59,17 @@ export class RecentActivityComponent {
       { label: 'Created', value: 'created' },
       { label: 'Won', value: 'PrizeAwarded' },
       { label: 'Auction', value: 'AuctionCreated' },
-      { label: 'Mutated', value: 'Evolved' },
-      { label: 'Devolved', value: 'Devolved' },
     ];
+
+    const slug = this.collection()?.slug;
+    if (!slug || this.web3Svc.isEvolveSlug(slug)) {
+      filters.push(
+        { label: 'Mutated', value: 'Evolved' },
+        { label: 'Devolved', value: 'Devolved' },
+      );
+    }
+
+    return filters;
   });
 
   _activeTxFilter: EventType = 'All';
@@ -90,7 +99,8 @@ export class RecentActivityComponent {
 
   constructor(
     private store: Store<GlobalState>,
-    public dataSvc: DataService
+    public dataSvc: DataService,
+    private web3Svc: Web3Service,
   ) {
     this.store.dispatch(appStateActions.setEventTypeFilter({ eventTypeFilter: this._activeTxFilter }));
   }
