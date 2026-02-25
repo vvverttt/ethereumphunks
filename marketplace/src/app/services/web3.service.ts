@@ -258,11 +258,20 @@ export class Web3Service {
   private findProviderByFlag(flag: string, excludeFlags: string[] = []): any {
     const eth = (window as any).ethereum;
     if (!eth) return null;
+    const match = (p: any) => p?.[flag] && excludeFlags.every(f => !p[f]);
+    // EIP-5749 multi-provider array
     if (eth.providers?.length) {
-      const p = eth.providers.find((p: any) => p[flag] && excludeFlags.every(f => !p[f]));
+      const p = eth.providers.find((p: any) => match(p));
       if (p) return p;
     }
-    if (eth[flag] && excludeFlags.every(f => !eth[f])) return eth;
+    // providerMap (some wallets use Map instead of array)
+    if (eth.providerMap?.size) {
+      for (const p of eth.providerMap.values()) {
+        if (match(p)) return p;
+      }
+    }
+    // Single provider
+    if (match(eth)) return eth;
     return null;
   }
 
@@ -347,7 +356,8 @@ export class Web3Service {
       }
 
       if (!connector) {
-        connector = injected();
+        console.warn('[Web3Service] Wallet not found:', connectorId);
+        return;
       }
 
       await wagmiConnect(this.config, { connector });
