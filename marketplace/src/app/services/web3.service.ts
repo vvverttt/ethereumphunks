@@ -224,28 +224,20 @@ export class Web3Service {
       return this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
     }
     if (type === 'injected-metamask') {
-      const provider = this.findMetaMaskProvider();
-      if (provider) {
-        return injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
-      }
+      const provider = this.findProviderByFlag('isMetaMask', ['isPhantom', 'isRainbow']);
+      if (provider) return injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
     }
     if (type === 'injected-phantom' || (!type && phantomHasAccount)) {
       const phantom = (window as any).phantom?.ethereum;
-      if (phantom) {
-        return injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
-      }
+      if (phantom) return injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
     }
     if (type === 'injected-rainbow') {
-      const provider = this.findRainbowProvider();
-      if (provider) {
-        return injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
-      }
+      const provider = this.findProviderByFlag('isRainbow');
+      if (provider) return injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
     }
     if (type === 'injected-magiceden') {
-      const provider = this.findMagicEdenProvider();
-      if (provider) {
-        return injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
-      }
+      const provider = (window as any).magicEden?.ethereum || this.findProviderByFlag('isMagicEden');
+      if (provider) return injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
     }
     // Default: generic injected (uses window.ethereum)
     return injected();
@@ -262,41 +254,15 @@ export class Web3Service {
     return this.config.connectors.filter(c => c.type === 'injected');
   }
 
-  /**
-   * Finds the Rainbow provider from window.ethereum or its providers array
-   */
-  private findRainbowProvider(): any {
-    const eth = (window as any).ethereum;
-    if (!eth) return null;
-    if (eth.providers?.length) {
-      const rainbow = eth.providers.find((p: any) => p.isRainbow);
-      if (rainbow) return rainbow;
-    }
-    if (eth.isRainbow) return eth;
-    return null;
-  }
 
-  private findMetaMaskProvider(): any {
+  private findProviderByFlag(flag: string, excludeFlags: string[] = []): any {
     const eth = (window as any).ethereum;
     if (!eth) return null;
     if (eth.providers?.length) {
-      const mm = eth.providers.find((p: any) => p.isMetaMask && !p.isPhantom && !p.isRainbow);
-      if (mm) return mm;
+      const p = eth.providers.find((p: any) => p[flag] && excludeFlags.every(f => !p[f]));
+      if (p) return p;
     }
-    if (eth.isMetaMask && !eth.isPhantom && !eth.isRainbow) return eth;
-    return null;
-  }
-
-  private findMagicEdenProvider(): any {
-    const me = (window as any).magicEden?.ethereum;
-    if (me) return me;
-    const eth = (window as any).ethereum;
-    if (!eth) return null;
-    if (eth.providers?.length) {
-      const provider = eth.providers.find((p: any) => p.isMagicEden);
-      if (provider) return provider;
-    }
-    if (eth.isMagicEden) return eth;
+    if (eth[flag] && excludeFlags.every(f => !eth[f])) return eth;
     return null;
   }
 
@@ -357,11 +323,9 @@ export class Web3Service {
       let connector;
 
       if (connectorId === 'injected-metamask') {
-        const provider = this.findMetaMaskProvider();
+        const provider = this.findProviderByFlag('isMetaMask', ['isPhantom', 'isRainbow']);
         if (provider) {
           connector = injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
-        } else {
-          connector = injected();
         }
       } else if (connectorId === 'injected-phantom') {
         const phantom = (window as any).phantom?.ethereum;
@@ -369,14 +333,12 @@ export class Web3Service {
           connector = injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
         }
       } else if (connectorId === 'injected-rainbow') {
-        const provider = this.findRainbowProvider();
+        const provider = this.findProviderByFlag('isRainbow');
         if (provider) {
           connector = injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
-        } else {
-          connector = injected();
         }
       } else if (connectorId === 'injected-magiceden') {
-        const provider = this.findMagicEdenProvider();
+        const provider = (window as any).magicEden?.ethereum || this.findProviderByFlag('isMagicEden');
         if (provider) {
           connector = injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
         }
