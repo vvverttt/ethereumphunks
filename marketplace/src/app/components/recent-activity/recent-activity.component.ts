@@ -21,10 +21,8 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { Collection } from '@/models/data.state';
-import { environment } from 'src/environments/environment';
 import { firstValueFrom, map, tap } from 'rxjs';
 
-const EVOLVE_SLUGS = new Set(Object.keys((environment as any).evolvePairs || {}));
 
 @Component({
   standalone: true,
@@ -52,7 +50,7 @@ export class RecentActivityComponent {
   ogCollection = input<Collection | null>(null);
 
   txFilters = computed<TxFilterItem[]>(() => {
-    const base: TxFilterItem[] = [
+    return [
       { label: 'All', value: 'All' },
       { label: 'Offered', value: 'PhunkOffered' },
       { label: 'Sold', value: 'PhunkBought' },
@@ -60,13 +58,9 @@ export class RecentActivityComponent {
       { label: 'Created', value: 'created' },
       { label: 'Won', value: 'PrizeAwarded' },
       { label: 'Auction', value: 'AuctionCreated' },
+      { label: 'Mutated', value: 'Evolved' },
+      { label: 'Devolved', value: 'Devolved' },
     ];
-    const slug = this.collection()?.slug;
-    if (slug && EVOLVE_SLUGS.has(slug)) {
-      base.push({ label: 'Mutated', value: 'Evolved' });
-      base.push({ label: 'Devolved', value: 'Devolved' });
-    }
-    return base;
   });
 
   _activeTxFilter: EventType = 'All';
