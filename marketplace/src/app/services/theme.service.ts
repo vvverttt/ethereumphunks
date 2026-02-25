@@ -99,10 +99,6 @@ export class ThemeService {
     let mode = localStorage.getItem('EtherPhunks_theme') as Theme | undefined;
     if (mode) return mode;
 
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-
-    return 'light';
+    return 'dark';
   }
 }
