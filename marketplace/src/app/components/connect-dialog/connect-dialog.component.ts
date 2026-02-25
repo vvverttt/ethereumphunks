@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Web3Service } from '@/services/web3.service';
 
 interface WalletOption {
   id: string;
@@ -19,28 +20,35 @@ export class ConnectDialogComponent {
   @Output() selected = new EventEmitter<string>();
   @Output() closed = new EventEmitter<void>();
 
+  private web3 = inject(Web3Service);
+
   get wallets(): WalletOption[] {
     const opts: WalletOption[] = [];
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
     const phantom = typeof window !== 'undefined' ? (window as any).phantom?.ethereum : null;
 
-    // MetaMask: isMetaMask but NOT Phantom/Rainbow (which also set isMetaMask)
-    const hasMetaMask = (eth?.isMetaMask && !eth?.isPhantom && !eth?.isRainbow)
+    // MetaMask — EIP-6963 first, then legacy flag detection
+    const hasMetaMask = this.web3.hasEip6963Provider('io.metamask')
+      || (eth?.isMetaMask && !eth?.isPhantom && !eth?.isRainbow)
       || eth?.providers?.some((p: any) => p.isMetaMask && !p.isPhantom && !p.isRainbow);
     opts.push({ id: 'injected-metamask', name: 'MetaMask', detected: !!hasMetaMask });
 
     // Rainbow
-    const hasRainbow = eth?.isRainbow || eth?.providers?.some((p: any) => p.isRainbow);
+    const hasRainbow = this.web3.hasEip6963Provider('me.rainbow')
+      || eth?.isRainbow || eth?.providers?.some((p: any) => p.isRainbow);
     opts.push({ id: 'injected-rainbow', name: 'Rainbow', detected: !!hasRainbow });
 
     // Phantom
-    if (phantom || eth?.isPhantom) {
+    const hasPhantom = this.web3.hasEip6963Provider('app.phantom')
+      || !!phantom || eth?.isPhantom;
+    if (hasPhantom) {
       opts.push({ id: 'injected-phantom', name: 'Phantom', detected: true });
     }
 
     // Magic Eden
     const magicEden = typeof window !== 'undefined' ? (window as any).magicEden?.ethereum : null;
-    const hasMagicEden = !!magicEden || eth?.isMagicEden
+    const hasMagicEden = this.web3.hasEip6963Provider('io.magiceden')
+      || !!magicEden || eth?.isMagicEden
       || eth?.providers?.some((p: any) => p.isMagicEden);
     opts.push({ id: 'injected-magiceden', name: 'Magic Eden', detected: !!hasMagicEden });
 

@@ -67,6 +67,9 @@ export class Web3Service {
   connectionReady!: Promise<any>;
   connectDialogOpen = signal(false);
 
+  // EIP-6963 discovered wallets: rdns → { info, provider }
+  eip6963Providers = signal<Map<string, { info: any; provider: any }>>(new Map());
+
   globalConfig$ = this.store.select(state => state.appState.config).pipe(
     map((res) => ({
       ...res,
@@ -115,6 +118,7 @@ export class Web3Service {
       ssr: false,
     });
 
+    this.discoverEip6963Wallets();
     this.createListeners();
     this.startBlockWatcher();
     this.startPointsWatcher();
@@ -223,6 +227,19 @@ export class Web3Service {
     if (type === 'walletConnect') {
       return this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
     }
+    // EIP-6963 first
+    const rdnsMap: Record<string, string> = {
+      'injected-metamask': 'io.metamask',
+      'injected-phantom': 'app.phantom',
+      'injected-rainbow': 'me.rainbow',
+      'injected-magiceden': 'io.magiceden',
+    };
+    const rdns = type ? rdnsMap[type] : null;
+    const eip6963 = rdns ? this.getEip6963Provider(rdns) : null;
+    if (eip6963) {
+      return injected({ target: () => ({ id: rdns!, name: type!, provider: eip6963 }) });
+    }
+    // Legacy fallback
     if (type === 'injected-metamask') {
       const provider = this.findProviderByFlag('isMetaMask', ['isPhantom', 'isRainbow']);
       if (provider) return injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
@@ -239,7 +256,6 @@ export class Web3Service {
       const provider = (window as any).magicEden?.ethereum || this.findProviderByFlag('isMagicEden');
       if (provider) return injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
     }
-    // Default: generic injected (uses window.ethereum)
     return injected();
   }
 
@@ -254,6 +270,29 @@ export class Web3Service {
     return this.config.connectors.filter(c => c.type === 'injected');
   }
 
+
+  private discoverEip6963Wallets(): void {
+    if (typeof window === 'undefined') return;
+    const discovered = new Map<string, { info: any; provider: any }>();
+
+    window.addEventListener('eip6963:announceProvider', ((event: any) => {
+      const { info, provider } = event.detail || {};
+      if (info?.rdns && provider) {
+        discovered.set(info.rdns, { info, provider });
+        this.eip6963Providers.set(new Map(discovered));
+      }
+    }) as EventListener);
+
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
+  }
+
+  getEip6963Provider(rdns: string): any {
+    return this.eip6963Providers().get(rdns)?.provider || null;
+  }
+
+  hasEip6963Provider(rdns: string): boolean {
+    return this.eip6963Providers().has(rdns);
+  }
 
   private findProviderByFlag(flag: string, excludeFlags: string[] = []): any {
     const eth = (window as any).ethereum;
@@ -331,28 +370,37 @@ export class Web3Service {
     try {
       let connector;
 
-      if (connectorId === 'injected-metamask') {
-        const provider = this.findProviderByFlag('isMetaMask', ['isPhantom', 'isRainbow']);
-        if (provider) {
-          connector = injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
-        }
-      } else if (connectorId === 'injected-phantom') {
-        const phantom = (window as any).phantom?.ethereum;
-        if (phantom) {
-          connector = injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
-        }
-      } else if (connectorId === 'injected-rainbow') {
-        const provider = this.findProviderByFlag('isRainbow');
-        if (provider) {
-          connector = injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
-        }
-      } else if (connectorId === 'injected-magiceden') {
-        const provider = (window as any).magicEden?.ethereum || this.findProviderByFlag('isMagicEden');
-        if (provider) {
-          connector = injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
-        }
-      } else if (connectorId === 'walletConnect') {
+      const rdnsMap: Record<string, string> = {
+        'injected-metamask': 'io.metamask',
+        'injected-phantom': 'app.phantom',
+        'injected-rainbow': 'me.rainbow',
+        'injected-magiceden': 'io.magiceden',
+      };
+
+      if (connectorId === 'walletConnect') {
         connector = this.config.connectors.find(c => c.id === 'walletConnect' || c.type === 'walletConnect');
+      } else {
+        // Try EIP-6963 first (reliable, no window.ethereum hijacking)
+        const rdns = rdnsMap[connectorId];
+        const eip6963 = rdns ? this.getEip6963Provider(rdns) : null;
+        if (eip6963) {
+          connector = injected({ target: () => ({ id: rdns!, name: connectorId, provider: eip6963 }) });
+        } else {
+          // Fallback to legacy detection
+          if (connectorId === 'injected-metamask') {
+            const provider = this.findProviderByFlag('isMetaMask', ['isPhantom', 'isRainbow']);
+            if (provider) connector = injected({ target: () => ({ id: 'metamask', name: 'MetaMask', provider }) });
+          } else if (connectorId === 'injected-phantom') {
+            const phantom = (window as any).phantom?.ethereum;
+            if (phantom) connector = injected({ target: () => ({ id: 'phantom', name: 'Phantom', provider: phantom }) });
+          } else if (connectorId === 'injected-rainbow') {
+            const provider = this.findProviderByFlag('isRainbow');
+            if (provider) connector = injected({ target: () => ({ id: 'rainbow', name: 'Rainbow', provider }) });
+          } else if (connectorId === 'injected-magiceden') {
+            const provider = (window as any).magicEden?.ethereum || this.findProviderByFlag('isMagicEden');
+            if (provider) connector = injected({ target: () => ({ id: 'magiceden', name: 'Magic Eden', provider }) });
+          }
+        }
       }
 
       if (!connector) {
