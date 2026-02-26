@@ -9,6 +9,7 @@ import { Phunk } from '@/models/db';
 import { GlobalState, Notification } from '@/models/global-state';
 
 import { Web3Service } from '@/services/web3.service';
+import { AdminService } from '@/services/admin.service';
 
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 import { NotificationComponent } from '@/components/notifications/notification/notification.component';
@@ -99,14 +100,17 @@ export class MenuComponent {
   menuSeen = signal(false);
 
   isStandaloneMarket = environment.standalone;
+  isOwner = signal(false);
 
   constructor(
     private store: Store<GlobalState>,
     private web3Svc: Web3Service,
+    private adminSvc: AdminService,
     private el: ElementRef,
   ) {
     this.menuActive$.pipe(
       switchMap((active) => {
+        if (active) this.checkOwner();
         return this.activeMenuNav$.pipe(
           switchMap((menuNav) => {
             if (active) this.menuSeen.set(active);
@@ -136,6 +140,16 @@ export class MenuComponent {
         );
       }),
     ).subscribe();
+  }
+
+  private async checkOwner(): Promise<void> {
+    try {
+      const owner = await this.adminSvc.getMarketOwner();
+      const address = this.web3Svc.getCurrentAddress();
+      this.isOwner.set(!!address && owner.toLowerCase() === address.toLowerCase());
+    } catch {
+      this.isOwner.set(false);
+    }
   }
 
   async disconnect(): Promise<void> {

@@ -168,7 +168,7 @@ export class LotteryService {
         .from('lottery_wins' + suffix)
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(1000)
+        .limit(5000)
     ).pipe(map(r => (r.data || []) as LotteryWin[]));
 
     const changes$ = new Observable<void>(subscriber => {
