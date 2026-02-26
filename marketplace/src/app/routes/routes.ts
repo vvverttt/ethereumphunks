@@ -36,6 +36,10 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent)
   },
   {
+    path: 'admin',
+    loadComponent: () => import('@/routes/admin/admin.component').then(mod => mod.AdminComponent)
+  },
+  {
     path: 'details/:hashId',
     loadComponent: () => import('@/routes/item-view/item-view.component').then(mod => mod.ItemViewComponent)
   },

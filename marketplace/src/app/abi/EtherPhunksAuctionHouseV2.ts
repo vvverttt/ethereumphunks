@@ -161,6 +161,107 @@ export const EtherPhunksAuctionHouseV2ABI = [
     type: 'function',
   },
 
+  // ─── Owner Write functions ───────────────────────────────
+  {
+    inputs: [{ internalType: 'uint256', name: '_duration', type: 'uint256' }],
+    name: 'setDuration',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '_endTime', type: 'uint256' }],
+    name: 'setAuctionEndTime',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '_timeBuffer', type: 'uint256' }],
+    name: 'setTimeBuffer',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint8', name: '_minBidIncrementPercentage', type: 'uint8' }],
+    name: 'setMinBidIncrementPercentage',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '_reservePrice', type: 'uint256' }],
+    name: 'setReservePrice',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'bytes32[]', name: 'hashIds', type: 'bytes32[]' },
+      { internalType: 'uint256[]', name: 'prices', type: 'uint256[]' },
+    ],
+    name: 'setItemReservePrices',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '_pointsAddress', type: 'address' }],
+    name: 'setPointsAddress',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address payable', name: '_treasuryAddress', type: 'address' }],
+    name: 'setTreasuryAddress',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'amount', type: 'uint256' },
+      { internalType: 'address payable', name: 'to', type: 'address' },
+    ],
+    name: 'withdrawETH',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32', name: 'hashId', type: 'bytes32' }],
+    name: 'withdrawFromPool',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32[]', name: 'hashIds', type: 'bytes32[]' }],
+    name: 'withdrawFromPoolBatch',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32', name: 'hashId', type: 'bytes32' }],
+    name: 'emergencyWithdrawEthscription',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  { inputs: [], name: 'pause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
+  { inputs: [], name: 'unpause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
+  {
+    inputs: [{ internalType: 'address', name: 'newOwner', type: 'address' }],
+    name: 'transferOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+
   // ─── Events ───────────────────────────────────────────────
   {
     anonymous: false,

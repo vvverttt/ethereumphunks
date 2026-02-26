@@ -1,0 +1,376 @@
+<div class="admin-page">
+
+  @if (loading()) {
+    <p class="status">Loading...</p>
+  } @else if (!isOwner()) {
+    <p class="status">Not authorized.</p>
+  } @else {
+
+    <!-- TX Feedback -->
+    @if (txPending()) {
+      <div class="tx-feedback pending">Awaiting transaction...</div>
+    }
+    @if (txHash()) {
+      <div class="tx-feedback success">
+        TX: <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank" rel="noopener">{{ txHash().slice(0, 10) }}...{{ txHash().slice(-8) }}</a>
+      </div>
+    }
+    @if (txError()) {
+      <div class="tx-feedback error">{{ txError() }}</div>
+    }
+
+    <!-- Global Actions -->
+    <div class="global-actions">
+      <button class="global-btn pause" (click)="pauseAll()" [disabled]="batchRunning() || txPending()">
+        Pause All
+      </button>
+      <button class="global-btn unpause" (click)="unpauseAll()" [disabled]="batchRunning() || txPending()">
+        Unpause All
+      </button>
+    </div>
+
+    @if (batchSteps().length > 0) {
+      <div class="transfer-steps batch-steps">
+        @for (step of batchSteps(); track step.label) {
+          <div class="transfer-step" [class.running]="step.status === 'running'" [class.done]="step.status === 'done'" [class.error]="step.status === 'error'">
+            <span class="step-status">
+              @switch (step.status) {
+                @case ('pending') { &#9711; }
+                @case ('running') { &#9881; }
+                @case ('done') { &#10003; }
+                @case ('error') { &#10007; }
+              }
+            </span>
+            <span class="step-label">{{ step.label }}</span>
+            @if (step.txHash) {
+              <a class="step-tx" [href]="explorerUrl + '/tx/' + step.txHash" target="_blank" rel="noopener">
+                {{ step.txHash.slice(0, 10) }}...
+              </a>
+            }
+            @if (step.error) {
+              <span class="step-error">{{ step.error }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button [class.active]="activeTab() === 'market'" (click)="activeTab.set('market')">Market</button>
+      <button [class.active]="activeTab() === 'auction'" (click)="activeTab.set('auction')">Auction</button>
+      <button [class.active]="activeTab() === 'points'" (click)="activeTab.set('points')">Points</button>
+      <button [class.active]="activeTab() === 'lottery'" (click)="activeTab.set('lottery')">Lottery</button>
+      <button [class.active]="activeTab() === 'evolve'" (click)="activeTab.set('evolve')">Evolve</button>
+      <button [class.active]="activeTab() === 'transfer-all'" (click)="activeTab.set('transfer-all')">Transfer All</button>
+    </div>
+
+    <!-- ==================== MARKET ==================== -->
+    @if (activeTab() === 'market') {
+      <div class="tab-content">
+        <div class="status-bar">
+          <button class="pause-toggle" [class.paused]="marketPaused()" (click)="toggleMarketPause()" [disabled]="txPending()">
+            {{ marketPaused() ? 'PAUSED — Unpause' : 'ACTIVE — Pause' }}
+          </button>
+        </div>
+
+        <div class="state">
+          <div class="state-item"><span>Total Royalty BPS</span><span>{{ marketTotalBps() }}</span></div>
+          @for (share of marketRoyaltyShares(); track share.receiver) {
+            <div class="state-item"><span>Royalty Share</span><span class="mono">{{ share.receiver }} — {{ share.bps }} bps</span></div>
+          }
+          <div class="state-item"><span>Points Address</span><span class="mono">{{ marketPointsAddress() }}</span></div>
+        </div>
+
+        <div class="actions">
+          <div class="action">
+            <label>Set Royalty Shares</label>
+            <textarea [(ngModel)]="mSetRoyaltySharesReceivers" placeholder="Receivers (one per line or comma-separated)" rows="3"></textarea>
+            <textarea [(ngModel)]="mSetRoyaltySharesBps" placeholder="BPS values (one per line or comma-separated, e.g. 250)" rows="3"></textarea>
+            <button (click)="setMarketRoyaltyShares()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Points Address</label>
+            <input type="text" [(ngModel)]="mSetPointsAddress" placeholder="0x..." />
+            <button (click)="setMarketPointsAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action danger">
+            <label>Transfer Ownership</label>
+            <input type="text" [(ngModel)]="mTransferOwnership" placeholder="0x..." />
+            <button (click)="transferMarketOwnership()" [disabled]="txPending()">Transfer</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ==================== AUCTION ==================== -->
+    @if (activeTab() === 'auction') {
+      <div class="tab-content">
+        <div class="status-bar">
+          <button class="pause-toggle" [class.paused]="auctionPaused()" (click)="toggleAuctionPause()" [disabled]="txPending()">
+            {{ auctionPaused() ? 'PAUSED — Unpause' : 'ACTIVE — Pause' }}
+          </button>
+        </div>
+
+        <div class="state">
+          <div class="state-item"><span>Duration</span><span>{{ auctionDuration() }}s</span></div>
+          <div class="state-item"><span>Time Buffer</span><span>{{ auctionTimeBuffer() }}s</span></div>
+          <div class="state-item"><span>Min Bid Increment</span><span>{{ auctionMinBidPct() }}%</span></div>
+          <div class="state-item"><span>Reserve Price</span><span>{{ auctionReservePrice() }} ETH</span></div>
+          <div class="state-item"><span>Pool Size</span><span>{{ auctionPoolSize() }}</span></div>
+          <div class="state-item"><span>Balance</span><span>{{ auctionBalance() }} ETH</span></div>
+          <div class="state-item"><span>Points Address</span><span class="mono">{{ auctionPointsAddress() }}</span></div>
+          <div class="state-item"><span>Treasury Address</span><span class="mono">{{ auctionTreasuryAddress() }}</span></div>
+        </div>
+
+        <div class="actions">
+          <div class="action">
+            <label>Set Duration (seconds)</label>
+            <input type="number" [(ngModel)]="aSetDuration" placeholder="e.g. 86400" />
+            <button (click)="setAuctionDuration()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Time Buffer (seconds)</label>
+            <input type="number" [(ngModel)]="aSetTimeBuffer" placeholder="e.g. 600" />
+            <button (click)="setAuctionTimeBuffer()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Min Bid Increment %</label>
+            <input type="number" [(ngModel)]="aSetMinBidPct" placeholder="e.g. 10" />
+            <button (click)="setAuctionMinBidPct()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Reserve Price (ETH)</label>
+            <input type="text" [(ngModel)]="aSetReservePrice" placeholder="e.g. 0.001" />
+            <button (click)="setAuctionReservePrice()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Points Address</label>
+            <input type="text" [(ngModel)]="aSetPointsAddress" placeholder="0x..." />
+            <button (click)="setAuctionPointsAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Treasury Address</label>
+            <input type="text" [(ngModel)]="aSetTreasuryAddress" placeholder="0x..." />
+            <button (click)="setAuctionTreasuryAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Withdraw All ETH ({{ auctionBalance() }} ETH)</label>
+            <button (click)="auctionWithdrawAllETH()" [disabled]="txPending()">Withdraw All</button>
+          </div>
+          <div class="action">
+            <label>Withdraw ETH (custom)</label>
+            <input type="text" [(ngModel)]="aWithdrawAmount" placeholder="Amount (ETH)" />
+            <input type="text" [(ngModel)]="aWithdrawTo" placeholder="To address 0x..." />
+            <button (click)="auctionWithdrawETH()" [disabled]="txPending()">Withdraw</button>
+          </div>
+          <div class="action">
+            <label>Withdraw From Pool (hashId)</label>
+            <input type="text" [(ngModel)]="aWithdrawPoolHashId" placeholder="0x..." />
+            <button (click)="auctionWithdrawFromPool()" [disabled]="txPending()">Withdraw</button>
+          </div>
+          <div class="action">
+            <label>Deposit Ethscriptions to Pool</label>
+            <textarea [(ngModel)]="aDepositHashIds" placeholder="One hashId per line, or comma-separated" rows="4"></textarea>
+            <button (click)="auctionDepositEthscriptions()" [disabled]="txPending()">Deposit</button>
+          </div>
+          <div class="action danger">
+            <label>Emergency Withdraw Ethscription</label>
+            <input type="text" [(ngModel)]="aEmergencyHashId" placeholder="0x..." />
+            <button (click)="auctionEmergencyWithdraw()" [disabled]="txPending()">Emergency Withdraw</button>
+          </div>
+          <div class="action danger">
+            <label>Transfer Ownership</label>
+            <input type="text" [(ngModel)]="aTransferOwnership" placeholder="0x..." />
+            <button (click)="transferAuctionOwnership()" [disabled]="txPending()">Transfer</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ==================== POINTS ==================== -->
+    @if (activeTab() === 'points') {
+      <div class="tab-content">
+        <div class="state">
+          <div class="state-item"><span>Multiplier</span><span>{{ pointsMultiplier() }}x</span></div>
+          <div class="state-item"><span>Paused</span><span>{{ pointsPaused() }}</span></div>
+        </div>
+
+        <div class="actions">
+          <div class="action">
+            <label>Change Multiplier</label>
+            <input type="number" [(ngModel)]="pSetMultiplier" placeholder="e.g. 2" />
+            <button (click)="setPointsMultiplier()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Grant Manager Role</label>
+            <input type="text" [(ngModel)]="pGrantManager" placeholder="0x..." />
+            <button (click)="grantPointsManager()" [disabled]="txPending()">Grant</button>
+          </div>
+          <div class="action">
+            <label>Revoke Manager Role</label>
+            <input type="text" [(ngModel)]="pRevokeManager" placeholder="0x..." />
+            <button (click)="revokePointsManager()" [disabled]="txPending()">Revoke</button>
+          </div>
+          <div class="action danger">
+            <label>Remove Points</label>
+            <input type="text" [(ngModel)]="pRemovePointsUser" placeholder="User address 0x..." />
+            <input type="number" [(ngModel)]="pRemovePointsAmount" placeholder="Amount" />
+            <button (click)="removePoints()" [disabled]="txPending()">Remove</button>
+          </div>
+          <div class="action danger">
+            <label>Drain Points</label>
+            <input type="text" [(ngModel)]="pDrainUser" placeholder="User address 0x..." />
+            <button (click)="drainPoints()" [disabled]="txPending()">Drain</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ==================== LOTTERY ==================== -->
+    @if (activeTab() === 'lottery') {
+      <div class="tab-content">
+        <div class="status-bar">
+          <button class="pause-toggle" [class.paused]="lotteryPaused()" (click)="toggleLotteryPause()" [disabled]="txPending()">
+            {{ lotteryPaused() ? 'PAUSED — Unpause' : 'ACTIVE — Pause' }}
+          </button>
+          <button class="pause-toggle" [class.paused]="!lotteryActive()" (click)="toggleLotteryActive()" [disabled]="txPending()">
+            {{ lotteryActive() ? 'LOTTERY ON — Deactivate' : 'LOTTERY OFF — Activate' }}
+          </button>
+        </div>
+
+        <div class="state">
+          <div class="state-item"><span>Play Price</span><span>{{ lotteryPlayPrice() }} ETH</span></div>
+          <div class="state-item"><span>Balance</span><span>{{ lotteryBalance() }} ETH</span></div>
+          <div class="state-item"><span>Pool Size</span><span>{{ lotteryPoolSize() }}</span></div>
+          <div class="state-item"><span>Points Address</span><span class="mono">{{ lotteryPointsAddress() }}</span></div>
+          <div class="state-item"><span>Treasury Address</span><span class="mono">{{ lotteryTreasuryAddress() }}</span></div>
+        </div>
+
+        <div class="actions">
+          <div class="action">
+            <label>Set Play Price (ETH)</label>
+            <input type="text" [(ngModel)]="lSetPrice" placeholder="e.g. 0.00001" />
+            <button (click)="setLotteryPrice()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Points Address</label>
+            <input type="text" [(ngModel)]="lSetPointsAddress" placeholder="0x..." />
+            <button (click)="setLotteryPointsAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Treasury Address</label>
+            <input type="text" [(ngModel)]="lSetTreasuryAddress" placeholder="0x..." />
+            <button (click)="setLotteryTreasuryAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Withdraw All ETH ({{ lotteryBalance() }} ETH)</label>
+            <button (click)="lotteryWithdrawAllETH()" [disabled]="txPending()">Withdraw All</button>
+          </div>
+          <div class="action">
+            <label>Withdraw ETH (custom)</label>
+            <input type="text" [(ngModel)]="lWithdrawAmount" placeholder="Amount (ETH)" />
+            <input type="text" [(ngModel)]="lWithdrawTo" placeholder="To address 0x..." />
+            <button (click)="lotteryWithdrawETH()" [disabled]="txPending()">Withdraw</button>
+          </div>
+          <div class="action">
+            <label>Withdraw Prize (hashId)</label>
+            <input type="text" [(ngModel)]="lWithdrawPrizeHashId" placeholder="0x..." />
+            <button (click)="lotteryWithdrawPrize()" [disabled]="txPending()">Withdraw</button>
+          </div>
+          <div class="action danger">
+            <label>Transfer Ownership</label>
+            <input type="text" [(ngModel)]="lTransferOwnership" placeholder="0x..." />
+            <button (click)="transferLotteryOwnership()" [disabled]="txPending()">Transfer</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ==================== EVOLVE ==================== -->
+    @if (activeTab() === 'evolve') {
+      <div class="tab-content">
+        <div class="status-bar">
+          <button class="pause-toggle" [class.paused]="evolvePaused()" (click)="toggleEvolvePause()" [disabled]="txPending()">
+            {{ evolvePaused() ? 'PAUSED — Unpause' : 'ACTIVE — Pause' }}
+          </button>
+        </div>
+
+        <div class="state">
+          <div class="state-item"><span>Fee</span><span>{{ evolveFee() }} ETH</span></div>
+          <div class="state-item"><span>Registered Pairs</span><span>{{ evolvePairCount() }}</span></div>
+        </div>
+
+        <div class="actions">
+          <div class="action">
+            <label>Set Fee (ETH)</label>
+            <input type="text" [(ngModel)]="eSetFee" placeholder="e.g. 0.001" />
+            <button (click)="setEvolveFee()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Withdraw ETH</label>
+            <button (click)="evolveWithdrawETH()" [disabled]="txPending()">Withdraw All ETH</button>
+          </div>
+          <div class="action">
+            <label>Withdraw Ethscription</label>
+            <input type="text" [(ngModel)]="eWithdrawHashId" placeholder="hashId 0x..." />
+            <input type="text" [(ngModel)]="eWithdrawTo" placeholder="To address 0x..." />
+            <button (click)="evolveWithdrawEthscription()" [disabled]="txPending()">Withdraw</button>
+          </div>
+          <div class="action danger">
+            <label>Transfer Ownership</label>
+            <input type="text" [(ngModel)]="eTransferOwnership" placeholder="0x..." />
+            <button (click)="transferEvolveOwnership()" [disabled]="txPending()">Transfer</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ==================== TRANSFER ALL ==================== -->
+    @if (activeTab() === 'transfer-all') {
+      <div class="tab-content">
+        <p class="transfer-all-info">
+          Transfer ownership of all 5 contracts and 3 proxy admins to a new address.
+          This will execute 9 transactions sequentially. Each must be confirmed in your wallet.
+        </p>
+
+        <div class="actions">
+          <div class="action danger">
+            <label>New Owner Address</label>
+            <input type="text" [(ngModel)]="transferAllAddress" placeholder="0x..." [disabled]="transferAllRunning()" />
+            <button (click)="transferAll()" [disabled]="transferAllRunning() || !transferAllAddress">
+              {{ transferAllRunning() ? 'Transferring...' : 'Transfer All' }}
+            </button>
+          </div>
+        </div>
+
+        @if (transferAllSteps().length > 0) {
+          <div class="transfer-steps">
+            @for (step of transferAllSteps(); track step.label) {
+              <div class="transfer-step" [class.running]="step.status === 'running'" [class.done]="step.status === 'done'" [class.error]="step.status === 'error'">
+                <span class="step-status">
+                  @switch (step.status) {
+                    @case ('pending') { &#9711; }
+                    @case ('running') { &#9881; }
+                    @case ('done') { &#10003; }
+                    @case ('error') { &#10007; }
+                  }
+                </span>
+                <span class="step-label">{{ step.label }}</span>
+                @if (step.txHash) {
+                  <a class="step-tx" [href]="explorerUrl + '/tx/' + step.txHash" target="_blank" rel="noopener">
+                    {{ step.txHash.slice(0, 10) }}...
+                  </a>
+                }
+                @if (step.error) {
+                  <span class="step-error">{{ step.error }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

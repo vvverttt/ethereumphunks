@@ -215,4 +215,8 @@ export class MenuComponent {
   goToAuction(): void {
     this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
   }
+
+  goToAdmin(): void {
+    this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
+  }
 }

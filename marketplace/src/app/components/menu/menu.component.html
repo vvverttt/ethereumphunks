@@ -92,6 +92,18 @@
         </div>
       </div>
     }
+
+    <a
+      class="admin-button"
+      routerLink="/admin"
+      (click)="goToAdmin()">
+
+      <span>Admin Panel</span>
+
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </a>
   </div>
 
   @if ((connected$ | async) && (address$ | async); as address) {
