@@ -26,6 +26,7 @@ export class FooterComponent {
   lottery = (environment as any).lotteryAddress;
   auction = (environment as any).auctionAddress;
   mutation = (environment as any).evolveAddress;
+  ethsrocks = (environment as any).ethsrocksAddress;
 
   constructor(private store: Store<GlobalState>) {}
 }

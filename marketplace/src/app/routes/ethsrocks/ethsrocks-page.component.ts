@@ -11,6 +11,13 @@ import { EthsRocksService } from '@/services/ethsrocks.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
+interface TokenOption {
+  id: bigint;
+  label: string;       // e.g. "PhilipIntern #42"
+  contract: `0x${string}`;
+  isPhilipIntern: boolean;
+}
+
 @Component({
   selector: 'app-ethsrocks-page',
   standalone: true,
@@ -37,6 +44,9 @@ export class EthsRocksPageComponent implements OnInit {
   // Commitment state
   hasCommitment = signal<boolean>(false);
   commitBlock = signal<number>(0);
+  currentBlock = signal<number>(0);
+  canReveal = signal<boolean>(false);
+  blocksUntilReveal = signal<number>(0);
   loading = signal<boolean>(true);
 
   // TX state
@@ -44,10 +54,12 @@ export class EthsRocksPageComponent implements OnInit {
   txPending = signal<boolean>(false);
   txHash = signal<string>('');
 
-  // Commit form
-  usePhilipIntern = signal<boolean>(true);
-  philipOrWrappedTokenId = signal<string>('');
-  cryptoPhunksV2TokenId = signal<string>('');
+  // Auto-detected tokens
+  philipOrWrappedTokens = signal<TokenOption[]>([]);
+  cryptoPhunksV2Tokens = signal<TokenOption[]>([]);
+  selectedPhilipOrWrapped = signal<string>('');   // "contract:tokenId"
+  selectedCryptoPhunksV2 = signal<string>('');    // "contract:tokenId"
+  tokensLoading = signal<boolean>(false);
 
   explorerUrl = (environment as any).explorerUrl || 'https://etherscan.io';
 
@@ -86,9 +98,79 @@ export class EthsRocksPageComponent implements OnInit {
         if (commitment.commitBlock > 0n) {
           this.hasCommitment.set(true);
           this.commitBlock.set(Number(commitment.commitBlock));
+
+          // Check reveal readiness (REVEAL_DELAY = 2 blocks)
+          const blockNum = await this.web3Svc.l1Client.getBlockNumber();
+          const current = Number(blockNum);
+          this.currentBlock.set(current);
+          const revealBlock = Number(commitment.commitBlock) + 2;
+          const blocksLeft = revealBlock - current;
+          this.canReveal.set(blocksLeft <= 0);
+          this.blocksUntilReveal.set(Math.max(0, blocksLeft));
         }
       } catch {}
+
+      // Auto-detect tokens if no commitment
+      if (!this.hasCommitment()) {
+        await this.loadUserTokens(address);
+      }
     }
+  }
+
+  async loadUserTokens(address: `0x${string}`) {
+    this.tokensLoading.set(true);
+    try {
+      const nftAddresses = await this.ethsrocksSvc.getNftAddresses();
+
+      const [philipTokens, wrappedTokens, v2Tokens] = await Promise.all([
+        this.ethsrocksSvc.getAvailableTokens(nftAddresses.philipIntern, address),
+        this.ethsrocksSvc.getAvailableTokens(nftAddresses.wrappedV1, address),
+        this.ethsrocksSvc.getAvailableTokens(nftAddresses.cryptoPhunksV2, address),
+      ]);
+
+      const philipOrWrapped: TokenOption[] = [
+        ...philipTokens.map(id => ({
+          id,
+          label: `PhilipIntern #${id}`,
+          contract: nftAddresses.philipIntern,
+          isPhilipIntern: true,
+        })),
+        ...wrappedTokens.map(id => ({
+          id,
+          label: `Wrapped V1 #${id}`,
+          contract: nftAddresses.wrappedV1,
+          isPhilipIntern: false,
+        })),
+      ];
+
+      const v2Options: TokenOption[] = v2Tokens.map(id => ({
+        id,
+        label: `CryptoPhunksV2 #${id}`,
+        contract: nftAddresses.cryptoPhunksV2,
+        isPhilipIntern: false,
+      }));
+
+      this.philipOrWrappedTokens.set(philipOrWrapped);
+      this.cryptoPhunksV2Tokens.set(v2Options);
+
+      // Auto-select if only one option
+      if (philipOrWrapped.length === 1) {
+        this.selectedPhilipOrWrapped.set(`${philipOrWrapped[0].contract}:${philipOrWrapped[0].id}`);
+      }
+      if (v2Options.length === 1) {
+        this.selectedCryptoPhunksV2.set(`${v2Options[0].contract}:${v2Options[0].id}`);
+      }
+    } catch (e) {
+      console.error('Failed to load user tokens:', e);
+    } finally {
+      this.tokensLoading.set(false);
+    }
+  }
+
+  private parseSelection(val: string): { contract: `0x${string}`; tokenId: bigint } | null {
+    if (!val) return null;
+    const [contract, idStr] = val.split(':');
+    return { contract: contract as `0x${string}`, tokenId: BigInt(idStr) };
   }
 
   async onCommit() {
@@ -98,25 +180,20 @@ export class EthsRocksPageComponent implements OnInit {
       return;
     }
 
-    const philipRaw = this.philipOrWrappedTokenId().trim();
-    const v2Raw = this.cryptoPhunksV2TokenId().trim();
+    const sel1 = this.parseSelection(this.selectedPhilipOrWrapped());
+    const sel2 = this.parseSelection(this.selectedCryptoPhunksV2());
 
-    if (!philipRaw || !v2Raw) {
-      this.errorMessage.set('Enter both token IDs');
+    if (!sel1 || !sel2) {
+      this.errorMessage.set('Select both tokens');
       return;
     }
 
-    let philipOrWrappedId: bigint;
-    let v2Id: bigint;
-    try {
-      philipOrWrappedId = BigInt(philipRaw);
-      v2Id = BigInt(v2Raw);
-    } catch {
-      this.errorMessage.set('Invalid token ID');
-      return;
-    }
+    // Find which token option was selected to determine usePhilipIntern
+    const selectedOption = this.philipOrWrappedTokens().find(
+      t => t.contract === sel1.contract && t.id === sel1.tokenId
+    );
+    const usePhilip = selectedOption?.isPhilipIntern ?? true;
 
-    const usePhilip = this.usePhilipIntern();
     this.errorMessage.set('');
     this.txPending.set(true);
     this.txHash.set('');
@@ -124,31 +201,6 @@ export class EthsRocksPageComponent implements OnInit {
     try {
       const address = this.web3Svc.getCurrentAddress();
       if (!address) throw new Error('Wallet not connected');
-
-      // Pre-validate ERC-721 ownership + usage
-      const nftAddresses = await this.ethsrocksSvc.getNftAddresses();
-      const nftContract = usePhilip ? nftAddresses.philipIntern : nftAddresses.wrappedV1;
-      const contractLabel = usePhilip ? 'PhilipIntern' : 'WrappedV1';
-
-      const [owner1, owner2, used1, used2] = await Promise.all([
-        this.ethsrocksSvc.checkERC721Owner(nftContract, philipOrWrappedId),
-        this.ethsrocksSvc.checkERC721Owner(nftAddresses.cryptoPhunksV2, v2Id),
-        this.ethsrocksSvc.isERC721Used(nftContract, philipOrWrappedId),
-        this.ethsrocksSvc.isERC721Used(nftAddresses.cryptoPhunksV2, v2Id),
-      ]);
-
-      if (owner1.toLowerCase() !== address.toLowerCase()) {
-        throw new Error(`You don't own ${contractLabel} #${philipRaw}`);
-      }
-      if (owner2.toLowerCase() !== address.toLowerCase()) {
-        throw new Error(`You don't own CryptoPhunksV2 #${v2Raw}`);
-      }
-      if (used1) {
-        throw new Error(`${contractLabel} #${philipRaw} has already been used`);
-      }
-      if (used2) {
-        throw new Error(`CryptoPhunksV2 #${v2Raw} has already been used`);
-      }
 
       // Get backend authorization (ethscription hashes + signature)
       const auth = await this.ethsrocksSvc.getAuthorization(address);
@@ -167,9 +219,9 @@ export class EthsRocksPageComponent implements OnInit {
         missingPhunkHash: auth.missingPhunkHash! as `0x${string}`,
         quantumDystoHash: auth.quantumDystoHash! as `0x${string}`,
         quantumPhunkHash: auth.quantumPhunkHash! as `0x${string}`,
-        philipOrWrappedTokenId: philipOrWrappedId,
+        philipOrWrappedTokenId: sel1.tokenId,
         usePhilipIntern: usePhilip,
-        cryptoPhunksV2TokenId: v2Id,
+        cryptoPhunksV2TokenId: sel2.tokenId,
         value: price,
       });
 

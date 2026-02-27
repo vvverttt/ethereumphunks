@@ -62,6 +62,7 @@
       <button [class.active]="activeTab() === 'points'" (click)="activeTab.set('points')">Points</button>
       <button [class.active]="activeTab() === 'lottery'" (click)="activeTab.set('lottery')">Lottery</button>
       <button [class.active]="activeTab() === 'evolve'" (click)="activeTab.set('evolve')">Evolve</button>
+      <button [class.active]="activeTab() === 'ethsrocks'" (click)="activeTab.set('ethsrocks')">EthsRocks</button>
       <button [class.active]="activeTab() === 'transfer-all'" (click)="activeTab.set('transfer-all')">Transfer All</button>
     </div>
 
@@ -326,12 +327,82 @@
       </div>
     }
 
+    <!-- ==================== ETHSROCKS ==================== -->
+    @if (activeTab() === 'ethsrocks') {
+      <div class="tab-content">
+        <div class="status-bar">
+          <button class="pause-toggle" [class.paused]="ethsrocksPaused()" (click)="toggleEthsRocksPause()" [disabled]="txPending()">
+            {{ ethsrocksPaused() ? 'PAUSED — Unpause' : 'ACTIVE — Pause' }}
+          </button>
+        </div>
+
+        <div class="state">
+          <div class="state-item"><span>Pool Size</span><span>{{ ethsrocksPoolSize() }}</span></div>
+          <div class="state-item"><span>Balance</span><span>{{ ethsrocksBalance() }} ETH</span></div>
+          <div class="state-item"><span>Current Price</span><span>{{ ethsrocksPrice() }} ETH</span></div>
+          <div class="state-item"><span>Total Revealed</span><span>{{ ethsrocksTotalRevealed() }}</span></div>
+          <div class="state-item"><span>Pending Reveals</span><span>{{ ethsrocksPendingReveals() }}</span></div>
+          <div class="state-item"><span>Signer Address</span><span class="mono">{{ ethsrocksSignerAddress() }}</span></div>
+          <div class="state-item"><span>Treasury Address</span><span class="mono">{{ ethsrocksTreasuryAddress() }}</span></div>
+          <div class="state-item"><span>Points Address</span><span class="mono">{{ ethsrocksPointsAddress() }}</span></div>
+        </div>
+
+        <div class="actions">
+          <div class="action">
+            <label>Set Signer Address</label>
+            <input type="text" [(ngModel)]="rSetSignerAddress" placeholder="0x..." />
+            <button (click)="setEthsRocksSignerAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Treasury Address</label>
+            <input type="text" [(ngModel)]="rSetTreasuryAddress" placeholder="0x..." />
+            <button (click)="setEthsRocksTreasuryAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Set Points Address</label>
+            <input type="text" [(ngModel)]="rSetPointsAddress" placeholder="0x..." />
+            <button (click)="setEthsRocksPointsAddress()" [disabled]="txPending()">Execute</button>
+          </div>
+          <div class="action">
+            <label>Withdraw All ETH ({{ ethsrocksBalance() }} ETH)</label>
+            <button (click)="ethsrocksWithdrawAllETH()" [disabled]="txPending()">Withdraw All</button>
+          </div>
+          <div class="action">
+            <label>Withdraw ETH (custom)</label>
+            <input type="text" [(ngModel)]="rWithdrawAmount" placeholder="Amount (ETH)" />
+            <input type="text" [(ngModel)]="rWithdrawTo" placeholder="To address 0x..." />
+            <button (click)="ethsrocksWithdrawETH()" [disabled]="txPending()">Withdraw</button>
+          </div>
+          <div class="action">
+            <label>Withdraw From Pool (hashId)</label>
+            <input type="text" [(ngModel)]="rWithdrawPoolHashId" placeholder="0x..." />
+            <button (click)="ethsrocksWithdrawFromPool()" [disabled]="txPending()">Withdraw</button>
+          </div>
+          <div class="action">
+            <label>Deposit Ethscriptions to Pool</label>
+            <textarea [(ngModel)]="rDepositHashIds" placeholder="One hashId per line, or comma-separated" rows="4"></textarea>
+            <button (click)="ethsrocksDepositEthscriptions()" [disabled]="txPending()">Deposit</button>
+          </div>
+          <div class="action danger">
+            <label>Emergency Withdraw Ethscription</label>
+            <input type="text" [(ngModel)]="rEmergencyHashId" placeholder="0x..." />
+            <button (click)="ethsrocksEmergencyWithdraw()" [disabled]="txPending()">Emergency Withdraw</button>
+          </div>
+          <div class="action danger">
+            <label>Transfer Ownership</label>
+            <input type="text" [(ngModel)]="rTransferOwnership" placeholder="0x..." />
+            <button (click)="transferEthsRocksOwnership()" [disabled]="txPending()">Transfer</button>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- ==================== TRANSFER ALL ==================== -->
     @if (activeTab() === 'transfer-all') {
       <div class="tab-content">
         <p class="transfer-all-info">
-          Transfer ownership of all 5 contracts and 3 proxy admins to a new address.
-          This will execute 9 transactions sequentially. Each must be confirmed in your wallet.
+          Transfer ownership of all 6 contracts and 4 proxy admins to a new address.
+          This will execute 11 transactions sequentially. Each must be confirmed in your wallet.
         </p>
 
         <div class="actions">

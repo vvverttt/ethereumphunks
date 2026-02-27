@@ -48,52 +48,66 @@
         } @else if (remaining() <= 0) {
           <button class="btn disabled" disabled>Sold Out</button>
         } @else if (hasCommitment()) {
-          <button class="btn reveal" (click)="onReveal()" [disabled]="txPending()">
-            @if (txPending()) { Pending... } @else { Reveal Your Rock }
+          @if (!canReveal()) {
+            <p class="reveal-wait">Waiting for reveal window... {{ blocksUntilReveal() }} block(s) remaining</p>
+          }
+          <button class="btn reveal" (click)="onReveal()" [disabled]="txPending() || !canReveal()">
+            @if (txPending()) { Pending... } @else if (!canReveal()) { Wait {{ blocksUntilReveal() }} Block(s) } @else { Reveal Your Rock }
           </button>
           <button class="btn cancel" (click)="onCancel()" [disabled]="txPending()">
             @if (txPending()) { Pending... } @else { Cancel Commitment }
           </button>
         } @else if (connected$ | async) {
           <div class="commit-form">
-            <div class="token-select">
-              <label class="radio-label">
-                <input type="radio" name="nftChoice" [value]="true"
-                       [checked]="usePhilipIntern()"
-                       (change)="usePhilipIntern.set(true)" />
-                PhilipIntern
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="nftChoice" [value]="false"
-                       [checked]="!usePhilipIntern()"
-                       (change)="usePhilipIntern.set(false)" />
-                Wrapped V1
-              </label>
-            </div>
+            @if (tokensLoading()) {
+              <p class="status">Detecting your tokens...</p>
+            } @else if (philipOrWrappedTokens().length === 0 || cryptoPhunksV2Tokens().length === 0) {
+              <p class="no-tokens">
+                @if (philipOrWrappedTokens().length === 0 && cryptoPhunksV2Tokens().length === 0) {
+                  No eligible ERC-721 tokens found. You need a PhilipIntern or Wrapped V1, and a CryptoPhunksV2.
+                } @else if (philipOrWrappedTokens().length === 0) {
+                  No available PhilipIntern or Wrapped V1 tokens found.
+                } @else {
+                  No available CryptoPhunksV2 tokens found.
+                }
+              </p>
+            } @else {
+              <div class="select-row">
+                <label>PhilipIntern / Wrapped V1</label>
+                <select [ngModel]="selectedPhilipOrWrapped()"
+                        (ngModelChange)="selectedPhilipOrWrapped.set($event)"
+                        [disabled]="txPending()">
+                  @if (philipOrWrappedTokens().length > 1) {
+                    <option value="">Select token...</option>
+                  }
+                  @for (token of philipOrWrappedTokens(); track token.label) {
+                    <option [value]="token.contract + ':' + token.id">{{ token.label }}</option>
+                  }
+                </select>
+              </div>
 
-            <div class="input-row">
-              <input type="number" min="0" step="1"
-                     [placeholder]="usePhilipIntern() ? 'PhilipIntern Token ID' : 'Wrapped V1 Token ID'"
-                     [ngModel]="philipOrWrappedTokenId()"
-                     (ngModelChange)="philipOrWrappedTokenId.set($event)"
-                     [disabled]="txPending()" />
-            </div>
+              <div class="select-row">
+                <label>CryptoPhunksV2</label>
+                <select [ngModel]="selectedCryptoPhunksV2()"
+                        (ngModelChange)="selectedCryptoPhunksV2.set($event)"
+                        [disabled]="txPending()">
+                  @if (cryptoPhunksV2Tokens().length > 1) {
+                    <option value="">Select token...</option>
+                  }
+                  @for (token of cryptoPhunksV2Tokens(); track token.label) {
+                    <option [value]="token.contract + ':' + token.id">{{ token.label }}</option>
+                  }
+                </select>
+              </div>
 
-            <div class="input-row">
-              <input type="number" min="0" step="1"
-                     placeholder="CryptoPhunksV2 Token ID"
-                     [ngModel]="cryptoPhunksV2TokenId()"
-                     (ngModelChange)="cryptoPhunksV2TokenId.set($event)"
-                     [disabled]="txPending()" />
-            </div>
-
-            <button class="btn commit" (click)="onCommit()" [disabled]="txPending()">
-              @if (txPending()) {
-                Pending...
-              } @else {
-                Commit ({{ currentPrice() }} ETH)
-              }
-            </button>
+              <button class="btn commit" (click)="onCommit()" [disabled]="txPending()">
+                @if (txPending()) {
+                  Pending...
+                } @else {
+                  Commit ({{ currentPrice() }} ETH)
+                }
+              </button>
+            }
           </div>
         } @else {
           <p class="connect-msg">Connect wallet to purchase</p>

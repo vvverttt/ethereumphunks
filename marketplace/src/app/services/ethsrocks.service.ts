@@ -153,6 +153,56 @@ export class EthsRocksService {
     }) as boolean;
   }
 
+  // ─── ERC-721 Enumeration ─────────────────────────────────
+
+  private readonly enumerableAbi = [
+    {
+      inputs: [{ name: 'owner', type: 'address' }],
+      name: 'balanceOf',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [{ name: 'owner', type: 'address' }, { name: 'index', type: 'uint256' }],
+      name: 'tokenOfOwnerByIndex',
+      outputs: [{ name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+  ] as const;
+
+  async getOwnedTokenIds(nftContract: `0x${string}`, owner: `0x${string}`): Promise<bigint[]> {
+    try {
+      const balance = await this.web3Svc.l1Client.readContract({
+        address: nftContract, abi: this.enumerableAbi, functionName: 'balanceOf', args: [owner],
+      });
+      const count = Number(balance);
+      if (count === 0) return [];
+
+      const ids: bigint[] = [];
+      for (let i = 0; i < count; i++) {
+        const tokenId = await this.web3Svc.l1Client.readContract({
+          address: nftContract, abi: this.enumerableAbi, functionName: 'tokenOfOwnerByIndex', args: [owner, BigInt(i)],
+        });
+        ids.push(tokenId as bigint);
+      }
+      return ids;
+    } catch {
+      return [];
+    }
+  }
+
+  async getAvailableTokens(nftContract: `0x${string}`, owner: `0x${string}`): Promise<bigint[]> {
+    const owned = await this.getOwnedTokenIds(nftContract, owner);
+    if (owned.length === 0) return [];
+
+    const usedChecks = await Promise.all(
+      owned.map(id => this.isERC721Used(nftContract, id))
+    );
+    return owned.filter((_, i) => !usedChecks[i]);
+  }
+
   // ─── Authorization (backend signer) ─────────────────────
 
   async getAuthorization(address: string): Promise<{

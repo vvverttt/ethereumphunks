@@ -9,17 +9,20 @@ import { EtherPhunksAuctionHouseV2ABI } from '@/abi/EtherPhunksAuctionHouseV2';
 import { PointsABI } from '@/abi/Points';
 import { PhilipLotteryV68ABI } from '@/abi/PhilipLotteryV68';
 import { EtherPhunksEvolveABI } from '@/abi/EtherPhunksEvolve';
+import { EthsRocksABI } from '@/abi/EthsRocks';
 
 const marketAddress = environment.marketAddress as `0x${string}`;
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
 const pointsAddress = environment.pointsAddress as `0x${string}`;
 const lotteryAddress = (environment as any).lotteryAddress as `0x${string}`;
 const evolveAddress = (environment as any).evolveAddress as `0x${string}`;
+const ethsrocksAddress = ((environment as any).ethsrocksAddress || '') as `0x${string}`;
 
 // ProxyAdmin addresses (from EIP-1967 admin slot)
 const marketProxyAdmin = '0x1e0fe955ee24d5766e76ce69810496dc30a11c26' as `0x${string}`;
 const auctionProxyAdmin = '0xd043f41f07e7bc140e51971f7dd3c33ab35508ad' as `0x${string}`;
 const evolveProxyAdmin = '0x33d0b59ec952749bcbe0847b334b075ef47cd7dc' as `0x${string}`;
+const ethsrocksProxyAdmin = '0xc57cd985436d630cd61e5e0ca1e3af28cad68b3d' as `0x${string}`;
 
 const ProxyAdminABI = [
   { inputs: [], name: 'owner', outputs: [{ internalType: 'address', name: '', type: 'address' }], stateMutability: 'view', type: 'function' },
@@ -449,6 +452,126 @@ export class AdminService {
 
   evolveProxyAdminTransfer(addr: string) {
     return this.writeContract(evolveProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
+  }
+
+  async getEthsRocksProxyAdminOwner(): Promise<string> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksProxyAdmin, abi: ProxyAdminABI, functionName: 'owner',
+    });
+  }
+
+  ethsrocksProxyAdminTransfer(addr: string) {
+    return this.writeContract(ethsrocksProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
+  }
+
+  // =========================================================
+  // EthsRocks Reads
+  // =========================================================
+
+  async getEthsRocksOwner(): Promise<string> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'owner',
+    });
+  }
+
+  async getEthsRocksPaused(): Promise<boolean> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'paused',
+    });
+  }
+
+  async getEthsRocksPoolSize(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'poolSize',
+    });
+  }
+
+  async getEthsRocksBalance(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'getBalance',
+    });
+  }
+
+  async getEthsRocksPrice(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'currentPrice',
+    });
+  }
+
+  async getEthsRocksTotalRevealed(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'totalRevealed',
+    });
+  }
+
+  async getEthsRocksPendingReveals(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'pendingReveals',
+    });
+  }
+
+  async getEthsRocksSignerAddress(): Promise<string> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'signerAddress',
+    });
+  }
+
+  async getEthsRocksTreasuryAddress(): Promise<string> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'treasuryAddress',
+    });
+  }
+
+  async getEthsRocksPointsAddress(): Promise<string> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'pointsAddress',
+    });
+  }
+
+  // =========================================================
+  // EthsRocks Writes
+  // =========================================================
+
+  ethsrocksPause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'pause'); }
+  ethsrocksUnpause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'unpause'); }
+
+  ethsrocksSetSignerAddress(addr: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setSignerAddress', [addr]);
+  }
+  ethsrocksSetTreasuryAddress(addr: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setTreasuryAddress', [addr]);
+  }
+  ethsrocksSetPointsAddress(addr: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setPointsAddress', [addr]);
+  }
+  ethsrocksWithdrawETH(amount: bigint, to: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawETH', [amount, to]);
+  }
+  ethsrocksWithdrawFromPool(hashId: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawFromPool', [hashId]);
+  }
+  ethsrocksWithdrawFromPoolBatch(hashIds: string[]) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawFromPoolBatch', [hashIds]);
+  }
+  ethsrocksEmergencyWithdrawEthscription(hashId: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'emergencyWithdrawEthscription', [hashId]);
+  }
+  ethsrocksTransferOwnership(addr: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'transferOwnership', [addr]);
+  }
+
+  async ethsrocksDepositEthscriptions(hashIds: string[]) {
+    const { walletClient } = await this.getClients();
+    const data = encodePacked(
+      hashIds.map(() => 'bytes32' as const),
+      hashIds.map(id => id as `0x${string}`),
+    );
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data,
+      chain: walletClient.chain,
+      account: walletClient.account,
+    } as any);
   }
 
   // =========================================================

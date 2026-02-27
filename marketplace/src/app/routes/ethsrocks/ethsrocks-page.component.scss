@@ -130,6 +130,14 @@ $rocks-muted: rgba(255, 255, 255, .5);
       }
     }
 
+    .reveal-wait {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.2rem;
+      color: $rocks-accent;
+      text-align: center;
+      margin-bottom: .5rem;
+    }
+
     // ─── Action buttons ───────────────────────
     .actions {
       display: flex;
@@ -183,29 +191,25 @@ $rocks-muted: rgba(255, 255, 255, .5);
         width: 100%;
         max-width: 36rem;
 
-        .token-select {
-          display: flex;
-          gap: 2rem;
-
-          .radio-label {
-            font-family: var(--secondary-font-stack);
-            font-size: 1.2rem;
-            color: $rocks-text;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-
-            input[type="radio"] {
-              accent-color: $rocks-accent;
-            }
-          }
+        .no-tokens {
+          font-family: var(--secondary-font-stack);
+          font-size: 1.2rem;
+          color: $rocks-muted;
+          text-align: center;
         }
 
-        .input-row {
+        .select-row {
           width: 100%;
 
-          input {
+          label {
+            display: block;
+            font-family: var(--secondary-font-stack);
+            font-size: 1.1rem;
+            color: $rocks-muted;
+            margin-bottom: .4rem;
+          }
+
+          select {
             width: 100%;
             font-family: var(--secondary-font-stack);
             font-size: 1.2rem;
@@ -215,10 +219,11 @@ $rocks-muted: rgba(255, 255, 255, .5);
             color: $rocks-text;
             outline: none;
             box-sizing: border-box;
-
-            &::placeholder {
-              color: $rocks-muted;
-            }
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c3ff00' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.2rem center;
 
             &:focus {
               border-color: $rocks-accent;
@@ -229,13 +234,10 @@ $rocks-muted: rgba(255, 255, 255, .5);
               cursor: not-allowed;
             }
 
-            // Hide number spinners
-            &::-webkit-outer-spin-button,
-            &::-webkit-inner-spin-button {
-              -webkit-appearance: none;
-              margin: 0;
+            option {
+              background-color: $rocks-bg;
+              color: $rocks-text;
             }
-            -moz-appearance: textfield;
           }
         }
       }
