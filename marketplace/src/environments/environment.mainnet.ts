@@ -26,6 +26,7 @@ export const environment = {
   lotteryAddress: '0x4c6569909028F11873Ba5548900d4609a436bB98'.toLowerCase(),
   auctionAddress: '0xc1fA86b53e8e101c93c570f276bC5177832bd031'.toLowerCase(),
   auctionDeployBlock: 24518451n,
+  ethsrocksAddress: '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8'.toLowerCase(),
   evolveAddress: '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA'.toLowerCase(),
 
   evolvePairs: {

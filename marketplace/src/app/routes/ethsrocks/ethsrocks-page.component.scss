@@ -1,0 +1,180 @@
+@use 'abstracts/variables' as *;
+
+$rocks-accent: #c3ff00;
+$rocks-bg: #111a00;
+$rocks-text: #fff;
+$rocks-muted: rgba(255, 255, 255, .5);
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $rocks-bg;
+  color: $rocks-text;
+}
+
+.ethsrocks-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding-top: var(--header-height);
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8rem 2rem 4rem;
+
+    h1 {
+      font-family: var(--secondary-font-stack);
+      font-size: 4rem;
+      font-weight: normal;
+      color: $rocks-accent;
+      margin-bottom: 2rem;
+    }
+
+    .status {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.6rem;
+      color: $rocks-muted;
+    }
+
+    // ─── Stats row ────────────────────────────
+    .stats {
+      display: flex;
+      gap: 4rem;
+      margin-bottom: 4rem;
+
+      .stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .label {
+          font-family: var(--secondary-font-stack);
+          font-size: 1.2rem;
+          color: $rocks-muted;
+          text-transform: uppercase;
+        }
+
+        .value {
+          font-family: var(--secondary-font-stack);
+          font-size: 2.4rem;
+          color: $rocks-accent;
+        }
+      }
+    }
+
+    // ─── Pairs section ────────────────────────
+    .pairs-section {
+      width: 100%;
+      max-width: 60rem;
+      margin-bottom: 4rem;
+
+      h2 {
+        font-family: var(--secondary-font-stack);
+        font-size: 2rem;
+        font-weight: normal;
+        color: $rocks-text;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .pairs-desc {
+        font-size: 1.2rem;
+        color: $rocks-muted;
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .pairs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+
+        @media (max-width: $mobile) {
+          grid-template-columns: 1fr;
+        }
+
+        .pair-group {
+          background-color: rgba(255, 255, 255, .05);
+          padding: 2rem;
+
+          h3 {
+            font-family: var(--secondary-font-stack);
+            font-size: 1.2rem;
+            font-weight: normal;
+            color: $rocks-accent;
+            margin-bottom: 1.5rem;
+          }
+
+          .pair-item {
+            font-family: var(--secondary-font-stack);
+            font-size: 1.2rem;
+            padding: .8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .1);
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .or {
+              color: $rocks-muted;
+              font-size: 1rem;
+            }
+          }
+        }
+      }
+    }
+
+    // ─── Action buttons ───────────────────────
+    .actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .btn {
+        font-family: var(--secondary-font-stack);
+        font-size: 1.4rem;
+        padding: 1.2rem 4rem;
+        border: none;
+        cursor: pointer;
+
+        &.commit {
+          background-color: $rocks-accent;
+          color: $rocks-bg;
+        }
+
+        &.reveal {
+          background-color: $rocks-accent;
+          color: $rocks-bg;
+        }
+
+        &.cancel {
+          background-color: transparent;
+          border: 1px solid $rocks-muted;
+          color: $rocks-muted;
+        }
+
+        &.disabled {
+          opacity: .4;
+          cursor: not-allowed;
+        }
+
+        &:active:not(.disabled) {
+          transform: translate(0, 1px);
+        }
+      }
+
+      .connect-msg {
+        font-family: var(--secondary-font-stack);
+        font-size: 1.4rem;
+        color: $rocks-muted;
+      }
+    }
+  }
+}

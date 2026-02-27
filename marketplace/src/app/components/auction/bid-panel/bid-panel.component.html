@@ -6,7 +6,7 @@
   </div>
   <div class="bid-info-item current-bid">
     <div class="label">
-      @if (noAuction || (!bids.length && !auctionEnded && !auction?.settled && !isHistorical)) {
+      @if (noAuction || !bids.length) {
         Reserve
       } @else if (auctionEnded || auction?.settled || isHistorical) {
         Winning

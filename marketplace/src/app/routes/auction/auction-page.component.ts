@@ -261,6 +261,13 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       this.auction.set(auctionData);
       this.auctionEnded.set(true);
 
+      // Fetch reserve price for this item
+      const [globalReserve, itemReserve] = await Promise.all([
+        this.auctionSvc.getReservePrice(),
+        this.auctionSvc.getItemReservePrice(created.hashId),
+      ]);
+      this.reservePrice.set(formatEther(itemReserve > 0n ? itemReserve : globalReserve));
+
       const eth = await this.auctionSvc.getEthscriptionByHashId(created.hashId);
       if (eth) {
         this.phunkImage.set(`${this.staticUrl}/static/images/${eth.sha}`);

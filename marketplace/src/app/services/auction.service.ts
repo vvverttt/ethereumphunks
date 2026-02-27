@@ -262,18 +262,30 @@ export class AuctionService {
         fromBlock: auctionDeployBlock,
       });
 
-      const results: SettledAuction[] = [];
-      for (const log of logs) {
-        const args = log.args as any;
-        const eth = await this.getEthscriptionByHashId(args.hashId);
-        let timestamp = 0;
-        if (log.blockNumber) {
-          try {
-            const block = await this.web3Svc.l1Client.getBlock({ blockNumber: log.blockNumber });
-            timestamp = Number(block.timestamp);
-          } catch {}
-        }
-        results.push({
+      if (!logs.length) return [];
+
+      // Batch fetch all ethscriptions in one Supabase query
+      const hashIds = logs.map((log: any) => log.args.hashId.toLowerCase());
+      const { data: ethscriptions } = await supabase
+        .from('ethscriptions' + suffix)
+        .select('hashId, sha, tokenId, slug')
+        .in('hashId', hashIds);
+      const ethMap = new Map((ethscriptions ?? []).map(e => [e.hashId, e]));
+
+      // Batch fetch all block timestamps in parallel
+      const uniqueBlocks = [...new Set(logs.map(l => l.blockNumber).filter(Boolean))] as bigint[];
+      const blockResults = await Promise.all(
+        uniqueBlocks.map(bn => this.web3Svc.l1Client.getBlock({ blockNumber: bn }).catch(() => null))
+      );
+      const blockTimestamps = new Map<bigint, number>();
+      uniqueBlocks.forEach((bn, i) => {
+        if (blockResults[i]) blockTimestamps.set(bn, Number(blockResults[i]!.timestamp));
+      });
+
+      return logs.map((log: any) => {
+        const args = log.args;
+        const eth = ethMap.get(args.hashId.toLowerCase());
+        return {
           auctionId: Number(args.auctionId),
           hashId: args.hashId,
           winner: args.winner,
@@ -281,11 +293,9 @@ export class AuctionService {
           imageUrl: eth ? `${environment.staticUrl}/static/images/${eth.sha}` : '',
           tokenId: eth?.tokenId ?? 0,
           slug: eth?.slug ?? '',
-          settledTimestamp: timestamp,
-        });
-      }
-
-      return results.sort((a, b) => b.auctionId - a.auctionId);
+          settledTimestamp: log.blockNumber ? (blockTimestamps.get(log.blockNumber) ?? 0) : 0,
+        };
+      }).sort((a, b) => b.auctionId - a.auctionId);
     } catch {
       return [];
     }
