@@ -82,6 +82,8 @@ export class PhunkGridComponent implements OnChanges {
 
   showLoadMore: boolean = false;
 
+  private filterPipe = new AttributeFilterPipe();
+
   constructor(
     private store: Store<GlobalState>,
     private el: ElementRef,
@@ -116,8 +118,8 @@ export class PhunkGridComponent implements OnChanges {
     }
 
     // Show Load More when there are more items to render or fetch
-    if (changes.phunkData || changes.total || changes.limit) {
-      this.showLoadMore = this.phunkData && (this.limit < this.phunkData.length || this.phunkData.length < this.total);
+    if (changes.phunkData || changes.total || changes.limit || changes.traitFilters) {
+      this.updateShowLoadMore();
     }
   }
 
@@ -168,7 +170,16 @@ export class PhunkGridComponent implements OnChanges {
       );
     }
 
-    this.showLoadMore = this.phunkData && (this.limit < this.phunkData.length || this.phunkData.length < this.total);
+    this.updateShowLoadMore();
+  }
+
+  private updateShowLoadMore(): void {
+    if (!this.phunkData) {
+      this.showLoadMore = false;
+      return;
+    }
+    const filteredCount = this.filterPipe.transform(this.phunkData, this.traitFilters).length;
+    this.showLoadMore = this.limit < filteredCount || this.phunkData.length < this.total;
   }
 
   childrenLength() {

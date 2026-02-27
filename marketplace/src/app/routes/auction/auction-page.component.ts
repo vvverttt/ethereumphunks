@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, AfterViewChecked, ViewChild, ElementRef, computed, signal, effect } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
@@ -26,7 +26,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
   templateUrl: './auction-page.component.html',
   styleUrls: ['./auction-page.component.scss'],
 })
-export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class AuctionPageComponent implements OnInit, OnDestroy {
 
   connected$ = this.store.select(appStateSelectors.selectConnected);
 
@@ -76,13 +76,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
     return viewing < this.maxAuctionId();
   });
 
-  @ViewChild('phunkCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
-
   bgColor = signal<string>('');
   accentColor = signal<string>('');
-  imageReady = signal(false);
-  canvasActive = signal(false);
-  private pendingImage: HTMLImageElement | null = null;
 
   staticUrl = environment.staticUrl;
   explorerUrl = environment.explorerUrl;
@@ -93,53 +88,27 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
     private store: Store<GlobalState>,
     private auctionSvc: AuctionService,
     public web3Svc: Web3Service,
-  ) {
-    effect(() => {
-      const src = this.phunkImage();
-      if (!src) {
-        this.bgColor.set('');
-        this.accentColor.set('');
-        this.imageReady.set(false);
-        this.canvasActive.set(false);
-        this.pendingImage = null;
-        return;
-      }
-      this.imageReady.set(false);
-      this.canvasActive.set(false);
-      this.extractColors(src);
-    });
-  }
+  ) {}
 
-  private extractColors(src: string) {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const tmp = document.createElement('canvas');
-        tmp.width = img.naturalWidth;
-        tmp.height = img.naturalHeight;
-        const tmpCtx = tmp.getContext('2d')!;
-        tmpCtx.drawImage(img, 0, 0);
+  onMainImageLoad(event: Event) {
+    const img = event.target as HTMLImageElement;
+    try {
+      const tmp = document.createElement('canvas');
+      tmp.width = img.naturalWidth;
+      tmp.height = img.naturalHeight;
+      const tmpCtx = tmp.getContext('2d')!;
+      tmpCtx.drawImage(img, 0, 0);
 
-        const bgPixel = tmpCtx.getImageData(0, 0, 1, 1).data;
-        this.bgColor.set(`${bgPixel[0]}, ${bgPixel[1]}, ${bgPixel[2]}`);
+      const bgPixel = tmpCtx.getImageData(0, 0, 1, 1).data;
+      this.bgColor.set(`${bgPixel[0]}, ${bgPixel[1]}, ${bgPixel[2]}`);
 
-        const imageData = tmpCtx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
-        const accent = this.findAccentColor(imageData.data, bgPixel[0], bgPixel[1], bgPixel[2]);
-        this.accentColor.set(accent);
-      } catch {
-        this.bgColor.set('');
-        this.accentColor.set('');
-      }
-      this.pendingImage = img;
-      this.tryDrawCanvas();
-    };
-    img.onerror = () => {
+      const imageData = tmpCtx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+      const accent = this.findAccentColor(imageData.data, bgPixel[0], bgPixel[1], bgPixel[2]);
+      this.accentColor.set(accent);
+    } catch {
       this.bgColor.set('');
       this.accentColor.set('');
-      this.imageReady.set(true);
-    };
-    img.src = src;
+    }
   }
 
   private findAccentColor(pixels: Uint8ClampedArray, bgR: number, bgG: number, bgB: number): string {
@@ -181,51 +150,6 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
     return `${bestR}, ${bestG}, ${bestB}`;
   }
 
-  ngAfterViewChecked() {
-    this.tryDrawCanvas();
-  }
-
-  private tryDrawCanvas() {
-    if (!this.pendingImage) return;
-    const canvas = this.canvasRef?.nativeElement;
-    if (!canvas) return;
-
-    const img = this.pendingImage;
-    this.pendingImage = null;
-
-    const w = img.naturalWidth;
-    const h = img.naturalHeight;
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d')!;
-    ctx.imageSmoothingEnabled = false;
-
-    const steps = [2, 4, 8, 12, 16, 24, w];
-    let step = 0;
-
-    const drawStep = () => {
-      const size = steps[step];
-      const tmp = document.createElement('canvas');
-      tmp.width = size;
-      tmp.height = size;
-      const tmpCtx = tmp.getContext('2d')!;
-      tmpCtx.drawImage(img, 0, 0, size, size);
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(tmp, 0, 0, size, size, 0, 0, w, h);
-
-      step++;
-      if (step < steps.length) {
-        setTimeout(() => requestAnimationFrame(drawStep), 60);
-      } else {
-        this.imageReady.set(true);
-      }
-    };
-
-    this.canvasActive.set(true);
-    requestAnimationFrame(drawStep);
-  }
-
   async ngOnInit() {
     try {
       await this.loadAuction();
@@ -247,7 +171,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
 
   async loadAuction() {
     try {
-      const [auctionData, poolSizeRaw, reservePriceRaw, minBidInc] = await Promise.all([
+      const [auctionData, poolSizeRaw, globalReserve, minBidInc] = await Promise.all([
         this.auctionSvc.getAuction(),
         this.auctionSvc.getPoolSize(),
         this.auctionSvc.getReservePrice(),
@@ -256,9 +180,16 @@ export class AuctionPageComponent implements OnInit, OnDestroy, AfterViewChecked
 
       this.auction.set(auctionData);
       this.poolSize.set(Number(poolSizeRaw));
-      this.reservePrice.set(formatEther(reservePriceRaw));
       this.minBidIncrement.set(minBidInc);
       this.maxAuctionId.set(auctionData.auctionId);
+
+      // Use per-item reserve if set, otherwise fall back to global
+      if (auctionData.hashId && auctionData.hashId !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
+        const itemReserve = await this.auctionSvc.getItemReservePrice(auctionData.hashId);
+        this.reservePrice.set(formatEther(itemReserve > 0n ? itemReserve : globalReserve));
+      } else {
+        this.reservePrice.set(formatEther(globalReserve));
+      }
 
       if (auctionData.startTime > 0) {
         this.auctionEnded.set(Date.now() >= auctionData.endTime * 1000);

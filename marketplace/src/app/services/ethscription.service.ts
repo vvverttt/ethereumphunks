@@ -48,10 +48,19 @@ export class EthscriptionService {
     const binaryString = uint8Array.reduce((str, byte) => str + String.fromCharCode(byte), '');
     const base64String = btoa(binaryString);
 
-    // Create data URI (assuming it's a PNG - adjust content type if different)
-    const dataUri = `data:image/png;base64,${base64String}`;
+    // Detect MIME type from magic bytes
+    const mimeType = this.detectMimeType(uint8Array);
+    const dataUri = `data:${mimeType};base64,${base64String}`;
 
     return dataUri;
+  }
+
+  private detectMimeType(bytes: Uint8Array): string {
+    if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return 'image/gif';
+    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'image/png';
+    if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'image/jpeg';
+    if (bytes[0] === 0x3C) return 'image/svg+xml';
+    return 'image/png';
   }
 
   /**

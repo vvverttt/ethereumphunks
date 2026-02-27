@@ -89,17 +89,6 @@
   align-self: flex-end;
   margin-left: 16rem;
 
-  canvas {
-    display: none;
-    width: 42rem;
-    height: 42rem;
-    image-rendering: pixelated;
-
-    &.visible {
-      display: block;
-    }
-  }
-
   .phunk-fallback {
     width: 42rem;
     height: 42rem;

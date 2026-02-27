@@ -56,21 +56,19 @@ export class AttributeFilterPipe implements PipeTransform {
           // Skip trait-count as it's handled separately
           if (key === 'trait-count') return true;
 
-          // Find the attribute with matching key
-          const attribute = res.attributes?.find(attr => attr?.k === key);
+          // Find ALL attributes with matching key (a phunk can have multiple attrs with same key)
+          const matchingAttrs = res.attributes?.filter(attr => attr?.k === key);
 
           // Handle "none" case
           if (value === 'none') {
-            return !attribute;
+            return !matchingAttrs || matchingAttrs.length === 0;
           }
 
-          // Handle array values (items with multiple values for same trait)
-          if (Array.isArray(attribute?.v)) {
-            return attribute.v.includes(value);
-          }
-
-          // Handle regular case
-          return attribute?.v === value;
+          // Check if any matching attribute has the target value
+          return matchingAttrs?.some(attr => {
+            if (Array.isArray(attr?.v)) return attr.v.includes(value);
+            return attr?.v === value;
+          }) ?? false;
         });
       });
     }

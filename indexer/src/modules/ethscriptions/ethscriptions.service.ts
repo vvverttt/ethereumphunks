@@ -904,6 +904,32 @@ export class EthscriptionsService {
         });
       }
 
+      if (eventName === 'PoolWithdrawn') {
+        const { hashId } = args;
+
+        // Update ownership back to the depositor (tx sender = contract owner)
+        await this.storageSvc.updateEthscriptionOwner(
+          hashId.toLowerCase(),
+          auctionAddressL1,
+          transaction.from.toLowerCase()
+        );
+
+        // Transfer event so withdrawal shows in activity
+        events.push({
+          txId: transaction.hash + '-pool-withdrawn-' + log.logIndex,
+          type: 'transfer',
+          hashId: hashId.toLowerCase(),
+          from: auctionAddressL1,
+          to: transaction.from.toLowerCase(),
+          blockHash: transaction.blockHash,
+          txIndex: transaction.transactionIndex,
+          txHash: transaction.hash,
+          blockNumber: Number(transaction.blockNumber),
+          blockTimestamp: createdAt,
+          value: BigInt(0).toString(),
+        });
+      }
+
       if (eventName === 'AuctionCreated') {
         const { hashId, auctionId, startTime, endTime } = args;
 

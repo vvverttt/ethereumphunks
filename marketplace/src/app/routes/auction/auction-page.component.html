@@ -9,11 +9,9 @@
 
         <!-- Phunk Image (left) -->
         <div class="phunk-image-wrapper">
-          <canvas #phunkCanvas [class.visible]="canvasActive()"></canvas>
-          @if (phunkImage() && !canvasActive()) {
-            <img [src]="phunkImage()" class="phunk-fallback" crossorigin="anonymous" />
-          }
-          @if (!phunkImage()) {
+          @if (phunkImage()) {
+            <img [src]="phunkImage()" class="phunk-fallback" crossorigin="anonymous" (load)="onMainImageLoad($event)" />
+          } @else {
             <div class="placeholder"></div>
           }
         </div>
