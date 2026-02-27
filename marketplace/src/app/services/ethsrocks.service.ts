@@ -109,10 +109,26 @@ export class EthsRocksService {
     }
   }
 
+  // ─── Authorization (backend signer) ─────────────────────
+
+  async getAuthorization(address: string): Promise<{
+    eligible: boolean;
+    reason?: string;
+    signature?: string;
+    missingPhunkHash?: string;
+    quantumDystoHash?: string;
+    quantumPhunkHash?: string;
+    deadline?: number;
+  }> {
+    const res = await fetch(`${environment.relayUrl}/ethsrocks/authorize/${address}`);
+    return await res.json();
+  }
+
   // ─── Contract Writes ────────────────────────────────────
 
   async commit(args: {
-    merkleProof: `0x${string}`[];
+    signature: `0x${string}`;
+    deadline: bigint;
     maxPrice: bigint;
     missingPhunkHash: `0x${string}`;
     quantumDystoHash: `0x${string}`;
@@ -128,7 +144,8 @@ export class EthsRocksService {
       abi: EthsRocksABI,
       functionName: 'commit',
       args: [
-        args.merkleProof,
+        args.signature,
+        args.deadline,
         args.maxPrice,
         args.missingPhunkHash,
         args.quantumDystoHash,

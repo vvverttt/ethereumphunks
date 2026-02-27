@@ -20,7 +20,7 @@
    ========================================
    ∬  Commit-reveal purchase (MEV-safe)    ∬
    ∬  Escalating price per sale            ∬
-   ∬  Merkle + ERC-721 token-gating        ∬
+   ∬  Signer + ERC-721 token-gating         ∬
    ∬  Per-token usage tracking             ∬
    ∬  67 points on purchase                ∬
    ====================================== */
@@ -33,7 +33,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
@@ -88,6 +89,9 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
     // Hybrid refunds
     mapping(address => uint256) public pendingReturns;
+
+    // V2: Signer-based verification (replaces merkle proof)
+    address public signerAddress;
 
     // ─── Events ────────────────────────────────────────────────
 
@@ -158,7 +162,8 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
     // ─── Step 1: Commit ────────────────────────────────────────
 
     function commit(
-        bytes32[] calldata merkleProof,
+        bytes calldata signature,
+        uint256 deadline,
         uint256 maxPrice,
         bytes32 missingPhunkHash,
         bytes32 quantumDystoHash,
@@ -171,11 +176,14 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
         require(commitments[msg.sender].commitBlock == 0, "Already committed");
         require(_pool.length > pendingReveals, "Sold out");
 
-        // Merkle proof: leaf includes specific ethscription hashIds
-        bytes32 leaf = keccak256(abi.encodePacked(
-            msg.sender, missingPhunkHash, quantumDystoHash, quantumPhunkHash
+        // Signer verification: backend checks ethscription ownership and signs
+        require(signerAddress != address(0), "Signer not set");
+        require(block.timestamp <= deadline, "Signature expired");
+        bytes32 dataHash = keccak256(abi.encodePacked(
+            msg.sender, missingPhunkHash, quantumDystoHash, quantumPhunkHash, deadline, block.chainid, address(this)
         ));
-        require(MerkleProof.verify(merkleProof, merkleRoot, leaf), "Not eligible");
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(dataHash);
+        require(ECDSA.recover(ethSignedHash, signature) == signerAddress, "Not eligible");
 
         // No duplicate hashes across categories
         require(
@@ -347,6 +355,10 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
     // ─── Owner functions ───────────────────────────────────────
 
+    function setSignerAddress(address _signerAddress) external onlyOwner {
+        signerAddress = _signerAddress;
+    }
+
     function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
         merkleRoot = _merkleRoot;
     }
@@ -454,5 +466,5 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
     // ─── Storage gap for future upgrades ───────────────────────
 
-    uint256[50] private __gap;
+    uint256[49] private __gap;
 }

@@ -155,7 +155,8 @@ export const EthsRocksABI = [
   // ─── Write: Purchase ──────────────────────────────────────
   {
     inputs: [
-      { internalType: 'bytes32[]', name: 'merkleProof', type: 'bytes32[]' },
+      { internalType: 'bytes', name: 'signature', type: 'bytes' },
+      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
       { internalType: 'uint256', name: 'maxPrice', type: 'uint256' },
       { internalType: 'bytes32', name: 'missingPhunkHash', type: 'bytes32' },
       { internalType: 'bytes32', name: 'quantumDystoHash', type: 'bytes32' },
