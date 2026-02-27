@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { keccak256, encodePacked, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
+import { l1Client } from '@/constants/ethereum';
 import { StorageService } from '@/modules/storage/storage.service';
 
 // Collection slugs for ethscription eligibility
@@ -15,6 +16,15 @@ const CHAIN_ID = Number(process.env.CHAIN_ID) || 1;
 
 // Signature validity: 10 minutes
 const SIGNATURE_TTL_SECONDS = 600;
+
+// Minimal ABI for on-chain usage check
+const USED_ETHSCRIPTION_ABI = [{
+  inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+  name: 'usedEthscription',
+  outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+  stateMutability: 'view',
+  type: 'function',
+}] as const;
 
 interface EthscriptionItem {
   hashId: string;
@@ -71,10 +81,19 @@ export class EthsRocksService {
       return { eligible: false, reason: 'No QuantumPhunk found' };
     }
 
-    // Pick first available from each collection
-    const missingPhunkHash = missingPhunks[0].hashId as Hex;
-    const quantumDystoHash = quantumDystos[0].hashId as Hex;
-    const quantumPhunkHash = quantumPhunks[0].hashId as Hex;
+    // Pick first unused from each collection (filter out already-used on-chain)
+    const missingPhunkHash = await this.findUnusedHash(missingPhunks);
+    if (!missingPhunkHash) {
+      return { eligible: false, reason: 'All your MissingPhunks have already been used' };
+    }
+    const quantumDystoHash = await this.findUnusedHash(quantumDystos);
+    if (!quantumDystoHash) {
+      return { eligible: false, reason: 'All your QuantumDystoPhunks have already been used' };
+    }
+    const quantumPhunkHash = await this.findUnusedHash(quantumPhunks);
+    if (!quantumPhunkHash) {
+      return { eligible: false, reason: 'All your QuantumPhunks have already been used' };
+    }
 
     // Deadline: current time + TTL
     const deadline = Math.floor(Date.now() / 1000) + SIGNATURE_TTL_SECONDS;
@@ -97,6 +116,27 @@ export class EthsRocksService {
       quantumPhunkHash,
       deadline,
     };
+  }
+
+  private async findUnusedHash(items: EthscriptionItem[]): Promise<Hex | null> {
+    for (const item of items) {
+      const used = await this.isUsedOnChain(item.hashId as Hex);
+      if (!used) return item.hashId as Hex;
+    }
+    return null;
+  }
+
+  private async isUsedOnChain(hashId: Hex): Promise<boolean> {
+    try {
+      return await l1Client.readContract({
+        address: ETHSROCKS_ADDRESS,
+        abi: USED_ETHSCRIPTION_ABI,
+        functionName: 'usedEthscription',
+        args: [hashId],
+      });
+    } catch {
+      return false;
+    }
   }
 
   private async fetchEthscriptionsByOwner(owner: string, slugs: string[]): Promise<EthscriptionItem[]> {
