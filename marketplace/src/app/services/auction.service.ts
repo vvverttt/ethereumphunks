@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
 import { formatEther, parseEther, decodeEventLog } from 'viem';
-import { getWalletClient, getChainId, getPublicClient } from '@wagmi/core';
+import { getWalletClient, getChainId, getPublicClient, reconnect } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
 import { Web3Service } from './web3.service';
@@ -131,7 +131,13 @@ export class AuctionService {
     await this.web3Svc.switchNetwork();
 
     const chainId = environment.chainId;
-    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    let walletClient;
+    try {
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    } catch {
+      await reconnect(this.web3Svc.config);
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    }
     if (!walletClient) throw new Error('No wallet connected');
 
     const value = parseEther(String(valueEth));
@@ -151,7 +157,13 @@ export class AuctionService {
     await this.web3Svc.switchNetwork();
 
     const chainId = environment.chainId;
-    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    let walletClient;
+    try {
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    } catch {
+      await reconnect(this.web3Svc.config);
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    }
     if (!walletClient) throw new Error('No wallet connected');
 
     const hash = await walletClient.writeContract({
