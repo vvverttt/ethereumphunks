@@ -40,7 +40,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
 
     // ─── Constants ─────────────────────────────────────────────
-    uint256 public constant BASE_PRICE = 0.0049 ether;
+    uint256 public constant BASE_PRICE = 0.00245 ether;
     // No per-wallet cap — limited by per-token usage (fresh set required each time)
     uint256 public constant REVEAL_DELAY = 2;
     uint256 public constant REVEAL_EXPIRY = 256;
@@ -458,6 +458,18 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function resetUsedERC721(address nftContract, uint256 tokenId) external onlyOwner {
+        usedERC721[nftContract][tokenId] = false;
+    }
+
+    function resetUsedEthscription(bytes32 hashId) external onlyOwner {
+        usedEthscription[hashId] = false;
+    }
+
+    function resetTotalRevealed(uint256 _totalRevealed) external onlyOwner {
+        totalRevealed = _totalRevealed;
     }
 
     function renounceOwnership() public pure override {
