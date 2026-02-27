@@ -109,6 +109,50 @@ export class EthsRocksService {
     }
   }
 
+  // ─── ERC-721 Helpers ───────────────────────────────────
+
+  async getNftAddresses(): Promise<{
+    philipIntern: `0x${string}`;
+    wrappedV1: `0x${string}`;
+    cryptoPhunksV2: `0x${string}`;
+  }> {
+    const [philipIntern, wrappedV1, cryptoPhunksV2] = await Promise.all([
+      this.web3Svc.l1Client.readContract({
+        address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'philipInternAddress',
+      }),
+      this.web3Svc.l1Client.readContract({
+        address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'wrappedV1Address',
+      }),
+      this.web3Svc.l1Client.readContract({
+        address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'cryptoPhunksV2Address',
+      }),
+    ]);
+    return {
+      philipIntern: philipIntern as `0x${string}`,
+      wrappedV1: wrappedV1 as `0x${string}`,
+      cryptoPhunksV2: cryptoPhunksV2 as `0x${string}`,
+    };
+  }
+
+  async checkERC721Owner(nftContract: `0x${string}`, tokenId: bigint): Promise<`0x${string}`> {
+    const ownerOfAbi = [{
+      inputs: [{ name: 'tokenId', type: 'uint256' }],
+      name: 'ownerOf',
+      outputs: [{ name: '', type: 'address' }],
+      stateMutability: 'view',
+      type: 'function',
+    }] as const;
+    return await this.web3Svc.l1Client.readContract({
+      address: nftContract, abi: ownerOfAbi, functionName: 'ownerOf', args: [tokenId],
+    }) as `0x${string}`;
+  }
+
+  async isERC721Used(nftContract: `0x${string}`, tokenId: bigint): Promise<boolean> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'usedERC721', args: [nftContract, tokenId],
+    }) as boolean;
+  }
+
   // ─── Authorization (backend signer) ─────────────────────
 
   async getAuthorization(address: string): Promise<{

@@ -165,8 +165,78 @@ $rocks-muted: rgba(255, 255, 255, .5);
           cursor: not-allowed;
         }
 
-        &:active:not(.disabled) {
+        &:disabled {
+          opacity: .6;
+          cursor: not-allowed;
+        }
+
+        &:active:not(:disabled):not(.disabled) {
           transform: translate(0, 1px);
+        }
+      }
+
+      .commit-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.2rem;
+        width: 100%;
+        max-width: 36rem;
+
+        .token-select {
+          display: flex;
+          gap: 2rem;
+
+          .radio-label {
+            font-family: var(--secondary-font-stack);
+            font-size: 1.2rem;
+            color: $rocks-text;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+
+            input[type="radio"] {
+              accent-color: $rocks-accent;
+            }
+          }
+        }
+
+        .input-row {
+          width: 100%;
+
+          input {
+            width: 100%;
+            font-family: var(--secondary-font-stack);
+            font-size: 1.2rem;
+            padding: 1rem 1.2rem;
+            background-color: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .15);
+            color: $rocks-text;
+            outline: none;
+            box-sizing: border-box;
+
+            &::placeholder {
+              color: $rocks-muted;
+            }
+
+            &:focus {
+              border-color: $rocks-accent;
+            }
+
+            &:disabled {
+              opacity: .5;
+              cursor: not-allowed;
+            }
+
+            // Hide number spinners
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+              -webkit-appearance: none;
+              margin: 0;
+            }
+            -moz-appearance: textfield;
+          }
         }
       }
 
@@ -174,6 +244,61 @@ $rocks-muted: rgba(255, 255, 255, .5);
         font-family: var(--secondary-font-stack);
         font-size: 1.4rem;
         color: $rocks-muted;
+      }
+    }
+
+    // ─── Error + Transaction toasts ─────────────
+    .error {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding: 1rem 1.5rem;
+      background-color: rgba(255, 60, 60, .15);
+      border: 1px solid rgba(255, 60, 60, .3);
+      color: #ff6b6b;
+      font-family: var(--secondary-font-stack);
+      font-size: 1.1rem;
+      max-width: 36rem;
+      text-align: left;
+
+      .error-close {
+        background: none;
+        border: none;
+        color: #ff6b6b;
+        cursor: pointer;
+        font-size: 1.4rem;
+        padding: 0;
+        line-height: 1;
+      }
+    }
+
+    .transaction {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding: 1rem 1.5rem;
+      background-color: rgba(195, 255, 0, .1);
+      border: 1px solid rgba(195, 255, 0, .2);
+      color: $rocks-accent;
+      font-family: var(--secondary-font-stack);
+      font-size: 1.1rem;
+      max-width: 36rem;
+
+      a {
+        color: $rocks-accent;
+        text-decoration: underline;
+      }
+
+      .tx-close {
+        background: none;
+        border: none;
+        color: $rocks-accent;
+        cursor: pointer;
+        font-size: 1.4rem;
+        padding: 0;
+        line-height: 1;
       }
     }
   }

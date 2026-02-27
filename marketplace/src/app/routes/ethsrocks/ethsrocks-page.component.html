@@ -28,7 +28,7 @@
 
         <div class="pairs-grid">
           <div class="pair-group">
-            <h3>Ethscriptions (Merkle Proof)</h3>
+            <h3>Ethscriptions (Signer Verified)</h3>
             <div class="pair-item">1x MissingPhunk (OG or Quantum)</div>
             <div class="pair-item">1x QuantumDystoPhunk</div>
             <div class="pair-item">1x QuantumPhunk</div>
@@ -48,14 +48,72 @@
         } @else if (remaining() <= 0) {
           <button class="btn disabled" disabled>Sold Out</button>
         } @else if (hasCommitment()) {
-          <button class="btn reveal" (click)="onReveal()">Reveal Your Rock</button>
-          <button class="btn cancel" (click)="onCancel()">Cancel Commitment</button>
+          <button class="btn reveal" (click)="onReveal()" [disabled]="txPending()">
+            @if (txPending()) { Pending... } @else { Reveal Your Rock }
+          </button>
+          <button class="btn cancel" (click)="onCancel()" [disabled]="txPending()">
+            @if (txPending()) { Pending... } @else { Cancel Commitment }
+          </button>
         } @else if (connected$ | async) {
-          <button class="btn commit" disabled>Commit (Coming Soon)</button>
+          <div class="commit-form">
+            <div class="token-select">
+              <label class="radio-label">
+                <input type="radio" name="nftChoice" [value]="true"
+                       [checked]="usePhilipIntern()"
+                       (change)="usePhilipIntern.set(true)" />
+                PhilipIntern
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="nftChoice" [value]="false"
+                       [checked]="!usePhilipIntern()"
+                       (change)="usePhilipIntern.set(false)" />
+                Wrapped V1
+              </label>
+            </div>
+
+            <div class="input-row">
+              <input type="number" min="0" step="1"
+                     [placeholder]="usePhilipIntern() ? 'PhilipIntern Token ID' : 'Wrapped V1 Token ID'"
+                     [ngModel]="philipOrWrappedTokenId()"
+                     (ngModelChange)="philipOrWrappedTokenId.set($event)"
+                     [disabled]="txPending()" />
+            </div>
+
+            <div class="input-row">
+              <input type="number" min="0" step="1"
+                     placeholder="CryptoPhunksV2 Token ID"
+                     [ngModel]="cryptoPhunksV2TokenId()"
+                     (ngModelChange)="cryptoPhunksV2TokenId.set($event)"
+                     [disabled]="txPending()" />
+            </div>
+
+            <button class="btn commit" (click)="onCommit()" [disabled]="txPending()">
+              @if (txPending()) {
+                Pending...
+              } @else {
+                Commit ({{ currentPrice() }} ETH)
+              }
+            </button>
+          </div>
         } @else {
           <p class="connect-msg">Connect wallet to purchase</p>
         }
       </div>
+
+      @if (errorMessage()) {
+        <div class="error">
+          <button class="error-close" (click)="errorMessage.set('')">x</button>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      @if (txHash()) {
+        <div class="transaction">
+          <button class="tx-close" (click)="txHash.set('')">x</button>
+          Your transaction is pending.
+          <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank">View on Etherscan</a>
+        </div>
+      }
     }
   </div>
 </div>
