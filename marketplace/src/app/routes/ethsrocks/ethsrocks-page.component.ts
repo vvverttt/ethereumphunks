@@ -7,7 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
-import { EthsRocksService } from '@/services/ethsrocks.service';
+import { EthsRocksService, UsedPurchase } from '@/services/ethsrocks.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
@@ -54,6 +54,10 @@ export class EthsRocksPageComponent implements OnInit {
   txPending = signal<boolean>(false);
   txHash = signal<string>('');
 
+  // Purchase history
+  purchaseHistory = signal<UsedPurchase[]>([]);
+  historyLoading = signal<boolean>(false);
+
   // Auto-detected tokens
   philipOrWrappedTokens = signal<TokenOption[]>([]);
   cryptoPhunksV2Tokens = signal<TokenOption[]>([]);
@@ -78,6 +82,7 @@ export class EthsRocksPageComponent implements OnInit {
 
     await this.loadState();
     this.loading.set(false);
+    this.loadPurchaseHistory();
   }
 
   async loadState() {
@@ -164,6 +169,17 @@ export class EthsRocksPageComponent implements OnInit {
       console.error('Failed to load user tokens:', e);
     } finally {
       this.tokensLoading.set(false);
+    }
+  }
+
+  async loadPurchaseHistory() {
+    this.historyLoading.set(true);
+    try {
+      const history = await this.ethsrocksSvc.getPurchaseHistory();
+      this.purchaseHistory.set(history);
+    } catch {
+    } finally {
+      this.historyLoading.set(false);
     }
   }
 
@@ -255,6 +271,7 @@ export class EthsRocksPageComponent implements OnInit {
         this.txHash.set('');
         this.hasCommitment.set(false);
         await this.loadState();
+        this.loadPurchaseHistory();
       }
     } catch (err: any) {
       this.errorMessage.set(err?.shortMessage || err?.message || 'Reveal failed');

@@ -114,6 +114,48 @@
         }
       </div>
 
+      <div class="history-section">
+        <h2>Used Tokens</h2>
+        @if (historyLoading()) {
+          <p class="status">Loading history...</p>
+        } @else if (purchaseHistory().length === 0) {
+          <p class="status">No purchases yet</p>
+        } @else {
+          <div class="history-list">
+            @for (p of purchaseHistory(); track p.blockNumber) {
+              <div class="history-item">
+                <div class="history-header">
+                  <span class="history-buyer">{{ p.buyer.slice(0, 6) }}...{{ p.buyer.slice(-4) }}</span>
+                  <span class="history-price">{{ p.price }} ETH</span>
+                </div>
+                <div class="history-tokens">
+                  <div class="history-token">
+                    <span class="token-label">MissingPhunk</span>
+                    <span class="token-hash">{{ p.missingPhunkHash.slice(0, 10) }}...{{ p.missingPhunkHash.slice(-6) }}</span>
+                  </div>
+                  <div class="history-token">
+                    <span class="token-label">QDystoPhunk</span>
+                    <span class="token-hash">{{ p.quantumDystoHash.slice(0, 10) }}...{{ p.quantumDystoHash.slice(-6) }}</span>
+                  </div>
+                  <div class="history-token">
+                    <span class="token-label">QuantumPhunk</span>
+                    <span class="token-hash">{{ p.quantumPhunkHash.slice(0, 10) }}...{{ p.quantumPhunkHash.slice(-6) }}</span>
+                  </div>
+                  <div class="history-token">
+                    <span class="token-label">{{ p.nftLabel }}</span>
+                    <span class="token-id">#{{ p.philipOrWrappedTokenId }}</span>
+                  </div>
+                  <div class="history-token">
+                    <span class="token-label">CryptoPhunksV2</span>
+                    <span class="token-id">#{{ p.cryptoPhunksV2TokenId }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
       @if (errorMessage()) {
         <div class="error">
           <button class="error-close" (click)="errorMessage.set('')">x</button>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { formatEther } from 'viem';
+import { decodeFunctionData, formatEther } from 'viem';
 import { getWalletClient } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
@@ -7,6 +7,19 @@ import { Web3Service } from './web3.service';
 import { EthsRocksABI } from '@/abi/EthsRocks';
 
 const ethsrocksAddress = ((environment as any).ethsrocksAddress || '') as `0x${string}`;
+const ethsrocksDeployBlock = ((environment as any).ethsrocksDeployBlock as bigint) || 0n;
+
+export interface UsedPurchase {
+  buyer: string;
+  missingPhunkHash: string;
+  quantumDystoHash: string;
+  quantumPhunkHash: string;
+  nftLabel: string;           // "PhilipIntern" or "Wrapped V1"
+  philipOrWrappedTokenId: string;
+  cryptoPhunksV2TokenId: string;
+  price: string;              // formatted ETH
+  blockNumber: number;
+}
 
 export interface Commitment {
   commitBlock: bigint;
@@ -201,6 +214,56 @@ export class EthsRocksService {
       owned.map(id => this.isERC721Used(nftContract, id))
     );
     return owned.filter((_, i) => !usedChecks[i]);
+  }
+
+  // ─── Purchase History (event logs + tx decode) ──────────
+
+  async getPurchaseHistory(): Promise<UsedPurchase[]> {
+    if (!this.hasAddress) return [];
+    try {
+      // Get all RockCommitted events
+      const logs = await this.web3Svc.l1Client.getContractEvents({
+        address: ethsrocksAddress,
+        abi: EthsRocksABI,
+        eventName: 'RockCommitted',
+        fromBlock: ethsrocksDeployBlock,
+      });
+
+      // For each event, decode the commit tx input to get token details
+      const purchases: UsedPurchase[] = [];
+      for (const log of logs) {
+        try {
+          const tx = await this.web3Svc.l1Client.getTransaction({ hash: log.transactionHash! });
+          const { args } = decodeFunctionData({ abi: EthsRocksABI, data: tx.input });
+          const [, , , missingPhunkHash, quantumDystoHash, quantumPhunkHash, philipOrWrappedTokenId, usePhilipIntern, cryptoPhunksV2TokenId] = args as any;
+
+          // Check if this commit is still active (not cancelled)
+          const isUsed = await this.web3Svc.l1Client.readContract({
+            address: ethsrocksAddress, abi: EthsRocksABI,
+            functionName: 'usedEthscription', args: [missingPhunkHash],
+          });
+          if (!isUsed) continue; // Was cancelled — tokens released
+
+          const isPhilip = usePhilipIntern as boolean;
+          purchases.push({
+            buyer: (log as any).args.buyer,
+            missingPhunkHash: missingPhunkHash as string,
+            quantumDystoHash: quantumDystoHash as string,
+            quantumPhunkHash: quantumPhunkHash as string,
+            nftLabel: isPhilip ? 'PhilipIntern' : 'Wrapped V1',
+            philipOrWrappedTokenId: String(philipOrWrappedTokenId),
+            cryptoPhunksV2TokenId: String(cryptoPhunksV2TokenId),
+            price: formatEther((log as any).args.price),
+            blockNumber: Number(log.blockNumber),
+          });
+        } catch {
+          // Skip malformed entries
+        }
+      }
+      return purchases;
+    } catch {
+      return [];
+    }
   }
 
   // ─── Authorization (backend signer) ─────────────────────
