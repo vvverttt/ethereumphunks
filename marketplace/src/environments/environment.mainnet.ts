@@ -24,6 +24,7 @@ export const environment = {
   bridgeAddress: ''.toLowerCase(),
   bridgeAddressL2: '0x26e8fD77346b4B006C5Df61f9706581933560F12'.toLowerCase(),
   lotteryAddress: '0x4c6569909028F11873Ba5548900d4609a436bB98'.toLowerCase(),
+  lottery2Address: '0xD69AaB22c98536D6C623a748D8CA7202c120BA81'.toLowerCase(),
   auctionAddress: '0xc1fA86b53e8e101c93c570f276bC5177832bd031'.toLowerCase(),
   auctionDeployBlock: 24518451n,
   ethsrocksAddress: '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8'.toLowerCase(),

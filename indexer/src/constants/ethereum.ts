@@ -66,6 +66,15 @@ export const lotteryAddressL1: string =
     ? process.env.LOTTERY_ADDRESS_MAINNET
     : process.env.LOTTERY_ADDRESS_SEPOLIA)?.toLowerCase();
 
+export const lottery2AddressL1: string =
+  (chain === 'mainnet'
+    ? process.env.LOTTERY2_ADDRESS_MAINNET
+    : process.env.LOTTERY2_ADDRESS_SEPOLIA)?.toLowerCase() || '';
+
+export const lotteryAddressesL1 = new Set(
+  [lotteryAddressL1, lottery2AddressL1].filter(Boolean)
+);
+
 export const auctionAddressL1: string =
   (chain === 'mainnet'
     ? process.env.AUCTION_ADDRESS_MAINNET

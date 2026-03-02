@@ -86,6 +86,7 @@ export class AdminComponent implements OnInit {
   pDrainUser = '';
 
   // Lottery state
+  adminLotteryTier = signal<'standard' | 'premium'>('standard');
   lotteryPaused = signal(false);
   lotteryActive = signal(false);
   lotteryPlayPrice = signal('0');
@@ -144,7 +145,7 @@ export class AdminComponent implements OnInit {
 
   constructor(
     private store: Store<GlobalState>,
-    private adminSvc: AdminService,
+    public adminSvc: AdminService,
   ) {}
 
   async ngOnInit() {
@@ -361,6 +362,16 @@ export class AdminComponent implements OnInit {
   drainPoints() { this.exec(() => this.adminSvc.pointsDrainPoints(this.pDrainUser)); }
 
   // Lottery actions
+  get hasSecondLottery(): boolean { return this.adminSvc.hasSecondLottery; }
+
+  switchAdminLottery(tier: 'standard' | 'premium') {
+    this.adminLotteryTier.set(tier);
+    this.adminSvc.setLotteryAddress(
+      tier === 'premium' ? this.adminSvc.premiumLotteryAddress : this.adminSvc.standardLotteryAddress
+    );
+    this.loadLotteryState();
+  }
+
   toggleLotteryPause() {
     this.exec(
       () => this.lotteryPaused() ? this.adminSvc.lotteryUnpause() : this.adminSvc.lotteryPause(),
@@ -434,7 +445,8 @@ export class AdminComponent implements OnInit {
     const steps: TransferStep[] = [
       { label: 'Market — pause', status: 'pending' },
       { label: 'Auction — pause', status: 'pending' },
-      { label: 'Lottery — pause', status: 'pending' },
+      { label: 'Lottery (Standard) — pause', status: 'pending' },
+      ...(this.hasSecondLottery ? [{ label: 'Lottery (Premium) — pause', status: 'pending' as const }] : []),
       { label: 'Evolve — pause', status: 'pending' },
       { label: 'EthsRocks — pause', status: 'pending' },
     ];
@@ -443,7 +455,8 @@ export class AdminComponent implements OnInit {
     const fns: (() => Promise<any>)[] = [
       () => this.adminSvc.marketPause(),
       () => this.adminSvc.auctionPause(),
-      () => this.adminSvc.lotteryPause(),
+      () => { this.adminSvc.setLotteryAddress(this.adminSvc.standardLotteryAddress); return this.adminSvc.lotteryPause(); },
+      ...(this.hasSecondLottery ? [() => { this.adminSvc.setLotteryAddress(this.adminSvc.premiumLotteryAddress); return this.adminSvc.lotteryPause(); }] : []),
       () => this.adminSvc.evolvePause(),
       () => this.adminSvc.ethsrocksPause(),
     ];
@@ -475,7 +488,8 @@ export class AdminComponent implements OnInit {
     const steps: TransferStep[] = [
       { label: 'Market — unpause', status: 'pending' },
       { label: 'Auction — unpause', status: 'pending' },
-      { label: 'Lottery — unpause', status: 'pending' },
+      { label: 'Lottery (Standard) — unpause', status: 'pending' },
+      ...(this.hasSecondLottery ? [{ label: 'Lottery (Premium) — unpause', status: 'pending' as const }] : []),
       { label: 'Evolve — unpause', status: 'pending' },
       { label: 'EthsRocks — unpause', status: 'pending' },
     ];
@@ -484,7 +498,8 @@ export class AdminComponent implements OnInit {
     const fns: (() => Promise<any>)[] = [
       () => this.adminSvc.marketUnpause(),
       () => this.adminSvc.auctionUnpause(),
-      () => this.adminSvc.lotteryUnpause(),
+      () => { this.adminSvc.setLotteryAddress(this.adminSvc.standardLotteryAddress); return this.adminSvc.lotteryUnpause(); },
+      ...(this.hasSecondLottery ? [() => { this.adminSvc.setLotteryAddress(this.adminSvc.premiumLotteryAddress); return this.adminSvc.lotteryUnpause(); }] : []),
       () => this.adminSvc.evolveUnpause(),
       () => this.adminSvc.ethsrocksUnpause(),
     ];
@@ -523,7 +538,8 @@ export class AdminComponent implements OnInit {
     const steps: TransferStep[] = [
       { label: 'Market — transferOwnership', status: 'pending' },
       { label: 'Auction — transferOwnership', status: 'pending' },
-      { label: 'Lottery — transferOwnership', status: 'pending' },
+      { label: 'Lottery (Standard) — transferOwnership', status: 'pending' },
+      ...(this.hasSecondLottery ? [{ label: 'Lottery (Premium) — transferOwnership', status: 'pending' as const }] : []),
       { label: 'Evolve — transferOwnership', status: 'pending' },
       { label: 'EthsRocks — transferOwnership', status: 'pending' },
       { label: 'Points — grantRole(DEFAULT_ADMIN_ROLE)', status: 'pending' },
@@ -538,7 +554,8 @@ export class AdminComponent implements OnInit {
     const fns: (() => Promise<any>)[] = [
       () => this.adminSvc.marketTransferOwnership(newOwner),
       () => this.adminSvc.auctionTransferOwnership(newOwner),
-      () => this.adminSvc.lotteryTransferOwnership(newOwner),
+      () => { this.adminSvc.setLotteryAddress(this.adminSvc.standardLotteryAddress); return this.adminSvc.lotteryTransferOwnership(newOwner); },
+      ...(this.hasSecondLottery ? [() => { this.adminSvc.setLotteryAddress(this.adminSvc.premiumLotteryAddress); return this.adminSvc.lotteryTransferOwnership(newOwner); }] : []),
       () => this.adminSvc.evolveTransferOwnership(newOwner),
       () => this.adminSvc.ethsrocksTransferOwnership(newOwner),
       () => this.adminSvc.pointsGrantAdminRole(newOwner),

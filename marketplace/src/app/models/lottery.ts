@@ -10,6 +10,7 @@ export interface LotteryGridItem {
 
 export interface LotteryWin {
   id: number;
+  contract_address: string;
   play_id: number;
   winner: string;
   hash_id: string;

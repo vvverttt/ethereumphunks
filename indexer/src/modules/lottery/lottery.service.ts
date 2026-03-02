@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { StorageService } from '@/modules/storage/storage.service';
-import { lotteryAbi, lotteryAddressL1 } from '@/constants/ethereum';
+import { lotteryAbi, lotteryAddressesL1 } from '@/constants/ethereum';
 import { TransferEthscriptionForPreviousOwnerSignature } from '@/constants/esips';
 
 import { TransactionReceipt, decodeEventLog, zeroAddress } from 'viem';
@@ -22,11 +22,11 @@ export class LotteryService {
     txHash: string,
     createdAt: Date
   ): Promise<void> {
-    if (!lotteryAddressL1) return;
+    if (!lotteryAddressesL1.size) return;
 
-    // Filter logs from the lottery contract
+    // Filter logs from any lottery contract
     const lotteryLogs = receipt.logs.filter(
-      (log: any) => log.address?.toLowerCase() === lotteryAddressL1
+      (log: any) => lotteryAddressesL1.has(log.address?.toLowerCase())
     );
 
     if (!lotteryLogs.length) return;
@@ -34,6 +34,7 @@ export class LotteryService {
     for (const rawLog of lotteryLogs) {
       try {
         const log = rawLog as any;
+        const contractAddress = log.address?.toLowerCase();
         const decoded = decodeEventLog({
           abi: lotteryAbi,
           data: log.data,
@@ -54,7 +55,8 @@ export class LotteryService {
             txHash,
             createdAt,
             receipt,
-            log.logIndex ?? 0
+            log.logIndex ?? 0,
+            contractAddress
           );
         }
       } catch (err) {
@@ -73,7 +75,8 @@ export class LotteryService {
     txHash: string,
     createdAt: Date,
     receipt: TransactionReceipt,
-    logIndex: number
+    logIndex: number,
+    contractAddress: string
   ): Promise<void> {
     const suffix = this.storageSvc.suffix;
 
@@ -87,6 +90,7 @@ export class LotteryService {
     const { error } = await this.storageSvc.supabase
       .from('lottery_wins' + suffix)
       .upsert({
+        contract_address: contractAddress,
         play_id: playId,
         winner,
         hash_id: hashId,
@@ -96,7 +100,7 @@ export class LotteryService {
         transfer_status: 'transferred',
         tx_hash: txHash,
         created_at: createdAt,
-      }, { onConflict: 'play_id' });
+      }, { onConflict: 'contract_address,play_id' });
 
     if (error) {
       Logger.error(`Failed to record lottery win: ${error.message}`, 'LotteryService');
@@ -107,7 +111,7 @@ export class LotteryService {
       );
 
       // Update ethscription ownership: lottery contract → winner
-      await this.storageSvc.updateEthscriptionOwner(hashId, lotteryAddressL1, winner);
+      await this.storageSvc.updateEthscriptionOwner(hashId, contractAddress, winner);
 
       // Award 67 buyer points to the lottery winner (lottery play counts as a buy)
       this.storageSvc.incrementUserPoints(winner, 67);
@@ -122,7 +126,7 @@ export class LotteryService {
 
       // Find the ESIP-2 transfer log to get its logIndex
       const esip2Log = receipt.logs.find(
-        (log: any) => log.address?.toLowerCase() === lotteryAddressL1
+        (log: any) => log.address?.toLowerCase() === contractAddress
           && log.topics?.[0] === TransferEthscriptionForPreviousOwnerSignature
       );
       const transferLogIndex = (esip2Log as any)?.logIndex ?? 0;
@@ -136,7 +140,7 @@ export class LotteryService {
           type: 'transfer',
           value: '0',
           hashId,
-          from: lotteryAddressL1,
+          from: contractAddress,
           to: winner,
           blockNumber: Number(receipt.blockNumber),
           blockHash: receipt.blockHash?.toLowerCase() || '',
@@ -153,7 +157,7 @@ export class LotteryService {
           type: 'PrizeAwarded',
           value: '0',
           hashId,
-          from: lotteryAddressL1,
+          from: contractAddress,
           to: winner,
           blockNumber: Number(receipt.blockNumber),
           blockHash: receipt.blockHash?.toLowerCase() || '',

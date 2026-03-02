@@ -13,6 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
 const auctionDeployBlock = ((environment as any).auctionDeployBlock as bigint) || 0n;
+const MAX_BLOCK_RANGE = 45000n;
 
 export interface AuctionData {
   hashId: string;
@@ -211,17 +212,35 @@ export class AuctionService {
   }
 
   // =========================================================
+  // Chunked event fetching (RPC block range limit workaround)
+  // =========================================================
+
+  private async getEventsPaginated(eventName: 'AuctionCreated' | 'AuctionBid' | 'AuctionExtended' | 'AuctionSettled' | 'PoolDeposited' | 'PoolWithdrawn'): Promise<any[]> {
+    const latestBlock = await this.web3Svc.l1Client.getBlockNumber();
+    const allLogs: any[] = [];
+
+    for (let from = auctionDeployBlock; from <= latestBlock; from += MAX_BLOCK_RANGE) {
+      const to = from + MAX_BLOCK_RANGE - 1n > latestBlock ? latestBlock : from + MAX_BLOCK_RANGE - 1n;
+      const logs = await this.web3Svc.l1Client.getContractEvents({
+        address: auctionAddress,
+        abi: EtherPhunksAuctionHouseV2ABI,
+        eventName,
+        fromBlock: from,
+        toBlock: to,
+      });
+      allLogs.push(...logs);
+    }
+
+    return allLogs;
+  }
+
+  // =========================================================
   // Event Logs (bid history)
   // =========================================================
 
   async getBidHistory(currentAuctionId: number): Promise<AuctionBidEvent[]> {
     try {
-      const logs = await this.web3Svc.l1Client.getContractEvents({
-        address: auctionAddress,
-        abi: EtherPhunksAuctionHouseV2ABI,
-        eventName: 'AuctionBid',
-        fromBlock: auctionDeployBlock,
-      });
+      const logs = await this.getEventsPaginated('AuctionBid');
 
       return logs
         .filter((log: any) => Number(log.args.auctionId) === currentAuctionId)
@@ -255,12 +274,7 @@ export class AuctionService {
 
   async getSettledAuctions(): Promise<SettledAuction[]> {
     try {
-      const logs = await this.web3Svc.l1Client.getContractEvents({
-        address: auctionAddress,
-        abi: EtherPhunksAuctionHouseV2ABI,
-        eventName: 'AuctionSettled',
-        fromBlock: auctionDeployBlock,
-      });
+      const logs = await this.getEventsPaginated('AuctionSettled');
 
       if (!logs.length) return [];
 
@@ -303,12 +317,7 @@ export class AuctionService {
 
   async getAuctionCreatedEvent(auctionId: number): Promise<{ hashId: string; startTime: number; endTime: number } | null> {
     try {
-      const logs = await this.web3Svc.l1Client.getContractEvents({
-        address: auctionAddress,
-        abi: EtherPhunksAuctionHouseV2ABI,
-        eventName: 'AuctionCreated',
-        fromBlock: auctionDeployBlock,
-      });
+      const logs = await this.getEventsPaginated('AuctionCreated');
       const match = logs.find((log: any) => Number(log.args.auctionId) === auctionId);
       if (!match) return null;
       const args = match.args as any;
@@ -324,12 +333,7 @@ export class AuctionService {
 
   async getAuctionSettledEvent(auctionId: number): Promise<{ winner: string; amount: bigint } | null> {
     try {
-      const logs = await this.web3Svc.l1Client.getContractEvents({
-        address: auctionAddress,
-        abi: EtherPhunksAuctionHouseV2ABI,
-        eventName: 'AuctionSettled',
-        fromBlock: auctionDeployBlock,
-      });
+      const logs = await this.getEventsPaginated('AuctionSettled');
       const match = logs.find((log: any) => Number(log.args.auctionId) === auctionId);
       if (!match) return null;
       const args = match.args as any;

@@ -7,7 +7,7 @@ import { StorageService } from '@/modules/storage/storage.service';
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { auctionAbiV2, auctionAddressL1, chain, evolveAddressL1, lotteryAddressL1, marketAbiL1, marketAddressL1, marketAddressesL1, mutationAbi, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { auctionAbiV2, auctionAddressL1, chain, evolveAddressL1, lotteryAddressesL1, marketAbiL1, marketAddressL1, marketAddressesL1, mutationAbi, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -72,7 +72,7 @@ export class EthscriptionsService {
     // Skip auction/lottery contracts — their event processors handle ownership + activity
     const possibleTransfer = this.utilitySvc.possibleTransfer(input);
     const toAddress = transaction.to?.toLowerCase();
-    if (possibleTransfer && toAddress !== auctionAddressL1 && toAddress !== lotteryAddressL1) {
+    if (possibleTransfer && toAddress !== auctionAddressL1 && !lotteryAddressesL1.has(toAddress)) {
       const event = await this.processTransferEvent(
         input,
         transaction as Transaction,
@@ -113,7 +113,7 @@ export class EthscriptionsService {
     // Skip lottery and auction contracts — ownership is handled by their own event processors
     const esip2Transfers = receipt.logs.filter(
       (log: any) => log.topics[0] === esips.TransferEthscriptionForPreviousOwnerSignature
-        && log.address?.toLowerCase() !== lotteryAddressL1
+        && !lotteryAddressesL1.has(log.address?.toLowerCase())
         && log.address?.toLowerCase() !== auctionAddressL1
     );
     if (esip2Transfers.length) {

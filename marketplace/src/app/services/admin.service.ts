@@ -15,6 +15,7 @@ const marketAddress = environment.marketAddress as `0x${string}`;
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
 const pointsAddress = environment.pointsAddress as `0x${string}`;
 const lotteryAddress = (environment as any).lotteryAddress as `0x${string}`;
+const lottery2Address = ((environment as any).lottery2Address || '') as `0x${string}`;
 const evolveAddress = (environment as any).evolveAddress as `0x${string}`;
 const ethsrocksAddress = ((environment as any).ethsrocksAddress || '') as `0x${string}`;
 
@@ -35,6 +36,17 @@ const DEFAULT_ADMIN_ROLE = '0x00000000000000000000000000000000000000000000000000
   providedIn: 'root'
 })
 export class AdminService {
+
+  private _lotteryAddress: `0x${string}` = lotteryAddress;
+
+  get activeLotteryAddress(): `0x${string}` { return this._lotteryAddress; }
+  get hasSecondLottery(): boolean { return !!lottery2Address; }
+  get standardLotteryAddress(): `0x${string}` { return lotteryAddress; }
+  get premiumLotteryAddress(): `0x${string}` { return lottery2Address; }
+
+  setLotteryAddress(address: `0x${string}`) {
+    this._lotteryAddress = address;
+  }
 
   constructor(private web3Svc: Web3Service) {}
 
@@ -290,49 +302,49 @@ export class AdminService {
 
   async getLotteryOwner(): Promise<string> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'owner',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'owner',
     });
   }
 
   async getLotteryPaused(): Promise<boolean> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'paused',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'paused',
     });
   }
 
   async getLotteryActive(): Promise<boolean> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'active',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'active',
     });
   }
 
   async getLotteryPlayPrice(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'playPrice',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'playPrice',
     });
   }
 
   async getLotteryBalance(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'getBalance',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'getBalance',
     });
   }
 
   async getLotteryPointsAddress(): Promise<string> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'pointsAddress',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'pointsAddress',
     });
   }
 
   async getLotteryTreasuryAddress(): Promise<string> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'treasuryAddress',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'treasuryAddress',
     });
   }
 
   async getLotteryPoolSize(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'poolSize',
+      address: this._lotteryAddress, abi: PhilipLotteryV68ABI, functionName: 'poolSize',
     });
   }
 
@@ -340,29 +352,29 @@ export class AdminService {
   // Lottery Writes
   // =========================================================
 
-  lotteryPause() { return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'pause'); }
-  lotteryUnpause() { return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'unpause'); }
+  lotteryPause() { return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'pause'); }
+  lotteryUnpause() { return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'unpause'); }
 
   lotterySetPrice(price: bigint) {
-    return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'setPrice', [price]);
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'setPrice', [price]);
   }
   lotterySetActive(active: boolean) {
-    return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'setActive', [active]);
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'setActive', [active]);
   }
   lotterySetPointsAddress(addr: string) {
-    return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'setPointsAddress', [addr]);
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'setPointsAddress', [addr]);
   }
   lotterySetTreasuryAddress(addr: string) {
-    return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'setTreasuryAddress', [addr]);
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'setTreasuryAddress', [addr]);
   }
   lotteryWithdrawETH(amount: bigint, to: string) {
-    return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'withdrawETH', [amount, to]);
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'withdrawETH', [amount, to]);
   }
   lotteryWithdrawPrize(hashId: string) {
-    return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'withdrawPrize', [hashId]);
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'withdrawPrize', [hashId]);
   }
   lotteryTransferOwnership(addr: string) {
-    return this.writeContract(lotteryAddress, PhilipLotteryV68ABI, 'transferOwnership', [addr]);
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV68ABI, 'transferOwnership', [addr]);
   }
 
   // =========================================================

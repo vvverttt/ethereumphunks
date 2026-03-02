@@ -231,6 +231,23 @@
     <!-- ==================== LOTTERY ==================== -->
     @if (activeTab() === 'lottery') {
       <div class="tab-content">
+
+        @if (hasSecondLottery) {
+          <div class="lottery-selector">
+            <button [class.active]="adminLotteryTier() === 'standard'" (click)="switchAdminLottery('standard')">
+              Standard
+            </button>
+            <button [class.active]="adminLotteryTier() === 'premium'" (click)="switchAdminLottery('premium')">
+              Premium
+            </button>
+          </div>
+        }
+
+        <div class="state-item contract-address">
+          <span>Contract</span>
+          <span class="mono">{{ adminSvc.activeLotteryAddress }}</span>
+        </div>
+
         <div class="status-bar">
           <button class="pause-toggle" [class.paused]="lotteryPaused()" (click)="toggleLotteryPause()" [disabled]="txPending()">
             {{ lotteryPaused() ? 'PAUSED — Unpause' : 'ACTIVE — Pause' }}

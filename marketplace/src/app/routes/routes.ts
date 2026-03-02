@@ -36,7 +36,7 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent)
   },
   {
-    path: 'ethsrocks',
+    path: 'ethsrocksdeployer',
     loadComponent: () => import('@/routes/ethsrocks/ethsrocks-page.component').then(mod => mod.EthsRocksPageComponent)
   },
   {

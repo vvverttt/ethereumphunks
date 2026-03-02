@@ -97,6 +97,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
     }));
   });
 
+  hasSecondLottery = this.lotterySvc.hasSecondLottery;
+  activeTier = signal<'standard' | 'premium'>('standard');
+
   staticUrl = environment.staticUrl;
   philipFallback = '/assets/images/lottery/philip.png';
   private philipImageUrl = '';
@@ -406,6 +409,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
             if (!winRecord) {
               winRecord = {
                 id: 0,
+                contract_address: this.lotterySvc.address.toLowerCase(),
                 play_id: playId,
                 winner: (address || '').toLowerCase(),
                 hash_id: won.hashId,
@@ -514,6 +518,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
       this.wonPrize.set({
         id: 0,
+        contract_address: this.lotterySvc.address.toLowerCase(),
         play_id: 0,
         winner: 'demo',
         hash_id: winner.hashId,
@@ -718,6 +723,31 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
   onSpinAgain() {
     window.location.reload();
+  }
+
+  async switchTier(tier: 'standard' | 'premium') {
+    if (tier === this.activeTier()) return;
+    if (this.spinPhase() !== 'idle' && this.spinPhase() !== 'won') return;
+
+    this.activeTier.set(tier);
+    this.lotterySvc.setAddress(
+      tier === 'premium' ? this.lotterySvc.premiumAddress : this.lotterySvc.standardAddress
+    );
+
+    // Reload everything for the new contract
+    this.wonPrize.set(null);
+    this.stopFireworks();
+    this.spinPhase.set('idle');
+    this.errorMessage.set('');
+    this.recentWins.set([]);
+    this.totalWinsCount.set(0);
+    await this.loadContractState();
+    this.initGrid();
+
+    // Re-subscribe to recent wins for the new contract
+    this.recentWinsSub?.unsubscribe();
+    this.totalWinsCountSub?.unsubscribe();
+    this.subscribeRecentWins();
   }
 
   // =========================================================

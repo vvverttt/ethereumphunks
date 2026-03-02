@@ -15,6 +15,7 @@ const supabaseKey = environment.supabaseKey;
 const supabase = createClient(supabaseUrl, supabaseKey);
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const lotteryAddress = (environment as any).lotteryAddress as `0x${string}`;
+const lottery2Address = ((environment as any).lottery2Address || '') as `0x${string}`;
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,17 @@ const lotteryAddress = (environment as any).lotteryAddress as `0x${string}`;
 export class LotteryService {
 
   private gasSvc = inject(GasService);
+  private _address: `0x${string}` = lotteryAddress;
+
+  get address(): `0x${string}` { return this._address; }
+
+  get hasSecondLottery(): boolean { return !!lottery2Address; }
+  get standardAddress(): `0x${string}` { return lotteryAddress; }
+  get premiumAddress(): `0x${string}` { return lottery2Address; }
+
+  setAddress(address: `0x${string}`) {
+    this._address = address;
+  }
 
   constructor(
     private web3Svc: Web3Service,
@@ -33,7 +45,7 @@ export class LotteryService {
 
   async getPlayPrice(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'playPrice',
     });
@@ -46,7 +58,7 @@ export class LotteryService {
 
   async isActive(): Promise<boolean> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'active',
     });
@@ -54,7 +66,7 @@ export class LotteryService {
 
   async getPoolSize(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'poolSize',
     });
@@ -62,7 +74,7 @@ export class LotteryService {
 
   async getPoolItems(offset: number, limit: number): Promise<string[]> {
     const result = await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'getPoolItems',
       args: [BigInt(offset), BigInt(limit)],
@@ -72,7 +84,7 @@ export class LotteryService {
 
   async getContractBalance(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'getBalance',
     });
@@ -80,7 +92,7 @@ export class LotteryService {
 
   async getOwner(): Promise<string> {
     return await this.web3Svc.l1Client.readContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'owner',
     });
@@ -106,7 +118,7 @@ export class LotteryService {
     // Let the wallet handle everything — no gas overrides
     console.time('[Lottery] writeContract');
     const hash = await walletClient.writeContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'play',
       value: playPrice,
@@ -129,7 +141,7 @@ export class LotteryService {
     if (!publicClient) throw new Error('No public client');
 
     const { request } = await publicClient.simulateContract({
-      address: lotteryAddress,
+      address: this._address,
       abi: PhilipLotteryV68ABI,
       functionName: 'withdrawETH',
       args: [amount, to as `0x${string}`],
@@ -151,7 +163,7 @@ export class LotteryService {
     const data = ('0x' + hashIds.map(h => h.replace('0x', '').padStart(64, '0')).join('')) as `0x${string}`;
 
     return await walletClient.sendTransaction({
-      to: lotteryAddress,
+      to: this._address,
       data,
       account: walletClient.account,
       chain: walletClient.chain,
@@ -163,10 +175,12 @@ export class LotteryService {
   // =========================================================
 
   fetchAllWins(): Observable<LotteryWin[]> {
+    const addr = this._address.toLowerCase();
     const query$ = from(
       supabase
         .from('lottery_wins' + suffix)
         .select('*')
+        .eq('contract_address', addr)
         .order('created_at', { ascending: false })
         .limit(5000)
     ).pipe(map(r => (r.data || []) as LotteryWin[]));
@@ -193,10 +207,12 @@ export class LotteryService {
   }
 
   fetchRecentWins(): Observable<LotteryWin[]> {
+    const addr = this._address.toLowerCase();
     const query$ = from(
       supabase
         .from('lottery_wins' + suffix)
         .select('*')
+        .eq('contract_address', addr)
         .order('created_at', { ascending: false })
         .limit(20)
     ).pipe(map(r => (r.data || []) as LotteryWin[]));
@@ -330,10 +346,12 @@ export class LotteryService {
   }
 
   fetchTotalWinsCount(): Observable<number> {
+    const addr = this._address.toLowerCase();
     return from(
       supabase
         .from('lottery_wins' + suffix)
         .select('*', { count: 'exact', head: true })
+        .eq('contract_address', addr)
     ).pipe(map(r => r.count ?? 0));
   }
 }

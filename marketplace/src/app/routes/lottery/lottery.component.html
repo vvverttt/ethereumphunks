@@ -19,6 +19,24 @@
     <h1>Philip Lottery<br /><span>V67</span></h1>
   </div>
 
+  <!-- Tier Toggle -->
+  @if (hasSecondLottery) {
+    <div class="tier-toggle">
+      <button
+        class="tier-button"
+        [class.active]="activeTier() === 'standard'"
+        (click)="switchTier('standard')">
+        Standard
+      </button>
+      <button
+        class="tier-button"
+        [class.active]="activeTier() === 'premium'"
+        (click)="switchTier('premium')">
+        Premium
+      </button>
+    </div>
+  }
+
   <!-- Grid Container -->
   <div class="grid-container" [class.shown]="loadedIn()" [class.spinning]="spinPhase() !== 'idle'">
     <div class="images-grid">

@@ -111,6 +111,43 @@ $lottery-muted: #c3ff00;
 }
 
 // =========================================================
+// Tier Toggle
+// =========================================================
+
+.tier-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border: 2px solid $lottery-accent;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tier-button {
+  font-family: '04B_30', monospace;
+  font-size: 1.2rem;
+  padding: 0.8rem 2rem;
+  border: none;
+  background-color: transparent;
+  color: $lottery-accent;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:not(:last-child) {
+    border-right: 2px solid $lottery-accent;
+  }
+
+  &:hover:not(.active) {
+    background-color: rgba($lottery-accent, 0.1);
+  }
+
+  &.active {
+    background-color: $lottery-accent;
+    color: $lottery-bg;
+  }
+}
+
+// =========================================================
 // Grid
 // =========================================================
 
