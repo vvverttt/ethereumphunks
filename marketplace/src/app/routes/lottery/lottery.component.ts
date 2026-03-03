@@ -337,9 +337,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
 
-      // Dedicated Alchemy client for fast receipt polling (only used here)
+      // Dedicated Ankr client for fast receipt polling (only used here)
       const receiptRpc = (environment as any).receiptRpcUrl;
-      console.log('[Lottery] Receipt RPC:', receiptRpc ? 'Alchemy' : 'default (publicnode)');
+      console.log('[Lottery] Receipt RPC:', receiptRpc ? 'dedicated (ankr)' : 'default (publicnode)');
       const receiptClient = receiptRpc
         ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
         : this.web3Svc.l1Client;
