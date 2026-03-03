@@ -152,12 +152,11 @@ export class SplashComponent {
 
           const pixels = await this.pixelArtSvc.processPixelArtImage(image);
           const svg = this.pixelArtSvc.convertToSvg(pixels);
-          const stripped = this.pixelArtSvc.stripColors(svg);
-          const base64 = this.pixelArtSvc.convertToBase64(stripped);
+          const base64 = this.pixelArtSvc.convertToBase64(svg);
 
           return {
             src: base64,
-            type: 'gray' as const
+            type: 'loading' as const
           };
         } catch (error) {
           console.error(`Error processing image ${sha}:`, error);
