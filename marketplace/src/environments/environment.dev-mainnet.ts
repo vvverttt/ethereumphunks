@@ -8,6 +8,7 @@ export const environment = {
   chainId: 1,
 
   rpcHttpProvider: 'https://ethereum-rpc.publicnode.com',
+  receiptRpcUrl: 'https://rpc.ankr.com/eth',
   // rpcHttpProvider: 'https://cloudflare-eth.com',
   // rpcHttpProvider: 'http://reth.dappnode:8545',
   explorerUrl: 'https://etherscan.io',

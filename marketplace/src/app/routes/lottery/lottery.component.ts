@@ -4,8 +4,9 @@ import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 
 import { Subscription, firstValueFrom } from 'rxjs';
-import { formatEther } from 'viem';
+import { createPublicClient, http, formatEther } from 'viem';
 import { decodeEventLog } from 'viem';
+import { mainnet } from 'viem/chains';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
@@ -170,6 +171,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.totalWinsCountSub?.unsubscribe();
     this.winWatchSub?.unsubscribe();
     clearTimeout(this.spinTimeout);
+    clearInterval(this.confirmTimer);
     this.stopFireworks();
     window.removeEventListener('beforeunload', this.beforeUnloadHandler);
   }
@@ -330,23 +332,49 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const hash = await this.lotterySvc.play();
       if (!hash) throw new Error('Transaction failed');
 
-      // Show confirming phase with timer while tx is mined
+      // Wait for on-chain confirmation before spinning
       this.spinPhase.set('confirming');
       this.confirmElapsed.set(0);
-      this.confirmTimer = setInterval(() => {
-        this.confirmElapsed.update(v => v + 1);
-      }, 1000);
+      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
 
-      // Race: RPC receipt poll vs Supabase realtime
+      // Dedicated Alchemy client for fast receipt polling (only used here)
+      const receiptRpc = (environment as any).receiptRpcUrl;
+      console.log('[Lottery] Receipt RPC:', receiptRpc ? 'Alchemy' : 'default (publicnode)');
+      const receiptClient = receiptRpc
+        ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
+        : this.web3Svc.l1Client;
+
+      const manualReceiptPoll = (): Promise<{ source: 'receipt'; receipt: any }> => {
+        return new Promise((resolve, reject) => {
+          let attempts = 0;
+          const timer = setInterval(async () => {
+            attempts++;
+            try {
+              const receipt = await receiptClient.getTransactionReceipt({
+                hash: hash as `0x${string}`,
+              });
+              if (receipt) {
+                clearInterval(timer);
+                resolve({ source: 'receipt', receipt });
+              }
+            } catch {
+              // Receipt not available yet
+            }
+            if (attempts >= 60) {
+              clearInterval(timer);
+              reject(new Error('Transaction confirmation timed out'));
+            }
+          }, 1000);
+        });
+      };
+
       type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin };
       const confirmation = await Promise.race([
-        this.web3Svc.pollReceipt(hash).then(receipt => ({ source: 'receipt' as const, receipt })),
+        manualReceiptPoll(),
         this.lotterySvc.watchForWinByTxHash(hash).then(win => ({ source: 'supabase' as const, win })),
       ]) as ConfirmResult;
-      clearInterval(this.confirmTimer);
 
-      // Start spinning after confirmation
-      this.startSpin();
+      clearInterval(this.confirmTimer);
 
       // Extract win data from whichever source responded first
       let wonHashId = '';
@@ -376,7 +404,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Resolve winner details while spin is running
+      // Resolve winner details BEFORE starting spin
       let winCellIndex = this.spinPath[
         (wonHashId ? playId : Math.floor(Math.random() * this.spinPath.length)) % this.spinPath.length
       ];
@@ -430,7 +458,8 @@ export class LotteryComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Signal deceleration — advanceFrame enforces MIN_ROTATIONS before slowing
+      // Now start spinning with real data loaded, then immediately signal deceleration
+      this.startSpin();
       this.targetWinIndex = winCellIndex;
       this.shouldDecelerate = true;
 
