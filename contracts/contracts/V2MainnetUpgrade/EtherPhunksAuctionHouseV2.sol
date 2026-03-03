@@ -324,6 +324,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
     // ─── Owner functions ─────────────────────────────────────
 
     function setDuration(uint256 _duration) external onlyOwner {
+        require(_duration >= 60, "Min 60 seconds");
         duration = _duration;
     }
 
@@ -338,6 +339,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
     }
 
     function setMinBidIncrementPercentage(uint8 _minBidIncrementPercentage) external onlyOwner {
+        require(_minBidIncrementPercentage >= 1, "Min 1%");
         minBidIncrementPercentage = _minBidIncrementPercentage;
     }
 
@@ -368,7 +370,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         require(sent, "Transfer failed");
     }
 
-    function withdrawFromPool(bytes32 hashId) external onlyOwner {
+    function withdrawFromPool(bytes32 hashId) external onlyOwner nonReentrant {
         require(inPool[hashId], "Not in pool");
 
         // O(1) swap-and-pop
@@ -422,6 +424,18 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
             }
 
             emit AuctionSettled(auction.hashId, auction.auctionId, address(0), 0);
+        }
+
+        // Clean pool state if item is in the pool
+        if (inPool[hashId]) {
+            uint256 idx = _poolIndex[hashId];
+            bytes32 lastHash = _pool[_pool.length - 1];
+            _pool[idx] = lastHash;
+            _poolIndex[lastHash] = idx;
+            _pool.pop();
+            inPool[hashId] = false;
+            delete _poolIndex[hashId];
+            delete depositor[hashId];
         }
 
         // Re-register in escrow so transfer validation passes

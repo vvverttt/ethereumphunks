@@ -46,6 +46,9 @@ contract EtherPhunksMarketV3 is
     uint256 public contractVersion;
     address public pointsAddress;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() { _disableInitializers(); }
+
     struct Offer {
         bool isForSale;
         bytes32 phunkId;
@@ -112,14 +115,14 @@ contract EtherPhunksMarketV3 is
     function offerPhunkForSale(
         bytes32 phunkId,
         uint minSalePriceInWei
-    ) external nonReentrant {
+    ) external whenNotPaused nonReentrant {
         _offerPhunkForSale(phunkId, minSalePriceInWei);
     }
 
     function batchOfferPhunkForSale(
         bytes32[] calldata phunkIds,
         uint[] calldata minSalePricesInWei
-    ) external nonReentrant {
+    ) external whenNotPaused nonReentrant {
         require(phunkIds.length == minSalePricesInWei.length, "Lengths mismatch");
         for (uint i = 0; i < phunkIds.length; i++) {
             _offerPhunkForSale(phunkIds[i], minSalePricesInWei[i]);
@@ -130,7 +133,7 @@ contract EtherPhunksMarketV3 is
         bytes32 phunkId,
         uint minSalePriceInWei,
         address toAddress
-    ) public nonReentrant {
+    ) public whenNotPaused nonReentrant {
         if (userEthscriptionDefinitelyNotStored(msg.sender, phunkId)) {
             revert EthscriptionNotDeposited();
         }
@@ -203,8 +206,7 @@ contract EtherPhunksMarketV3 is
 
         pendingWithdrawals[seller] += sellerAmount;
         if (royalty > 0 && royaltyReceiver != address(0)) {
-            (bool sent, ) = royaltyReceiver.call{value: royalty}("");
-            require(sent, "Royalty transfer failed");
+            pendingWithdrawals[royaltyReceiver] += royalty;
         }
 
         _addPoints(msg.sender, 100);
@@ -334,7 +336,7 @@ contract EtherPhunksMarketV3 is
     }
 
     receive() external payable {
-        require(!paused(), "Contract is paused");
+        revert("No direct ETH transfers");
     }
 
     // =========================================================

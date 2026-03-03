@@ -91,7 +91,10 @@ contract Mutation is
     // hashId → address that last sent this ethscription to the contract
     mapping(bytes32 => address) public depositor;
 
-    // ─── Initializer ──────────────────────────────────────
+    // ─── Constructor & Initializer ──────────────────────────
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() { _disableInitializers(); }
 
     function initialize(uint256 _evolveFee) public initializer {
         __Ownable_init(msg.sender);
@@ -111,6 +114,9 @@ contract Mutation is
         uint256 startId = pairCount;
 
         for (uint256 i = 0; i < _ogHashIds.length; i++) {
+            require(!registered[_ogHashIds[i]], "OG already registered");
+            require(!registered[_quantumHashIds[i]], "Quantum already registered");
+
             uint256 pid = pairCount++;
 
             ogHashId[pid] = _ogHashIds[i];
@@ -170,7 +176,9 @@ contract Mutation is
         }
     }
 
-    receive() external payable {}
+    receive() external payable {
+        revert("No direct ETH transfers");
+    }
 
     // ─── Internal: Evolve (OG → Quantum) ──────────────────
 
@@ -181,9 +189,11 @@ contract Mutation is
         if (qDepositor == address(0)) revert PartnerNotAvailable();
 
         // Charge fee on first evolve only
+        uint256 feeRequired = 0;
         if (!feePaid[pid]) {
             if (msg.value < evolveFee) revert InsufficientFee();
             feePaid[pid] = true;
+            feeRequired = evolveFee;
         }
 
         // Transfer quantum ethscription to user
@@ -195,6 +205,12 @@ contract Mutation is
         delete depositor[qHashId];
 
         emit Evolved(user, pid, ogHashId[pid], qHashId);
+
+        // Refund excess ETH
+        if (msg.value > feeRequired) {
+            (bool sent, ) = payable(user).call{value: msg.value - feeRequired}("");
+            require(sent, "Refund failed");
+        }
     }
 
     // ─── Internal: Devolve (Quantum → OG) ─────────────────
@@ -216,6 +232,12 @@ contract Mutation is
         delete depositor[oHashId];
 
         emit Devolved(user, pid, quantumHashId[pid], oHashId);
+
+        // Refund any ETH sent (devolve is free)
+        if (msg.value > 0) {
+            (bool sent, ) = payable(user).call{value: msg.value}("");
+            require(sent, "Refund failed");
+        }
     }
 
     // ─── Explicit swap (for owner or anyone who deposited via fallback) ─

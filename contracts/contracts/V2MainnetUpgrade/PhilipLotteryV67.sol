@@ -244,6 +244,7 @@ contract PhilipLotteryV67 is
     // =========================================================
 
     function setPrice(uint256 _price) external onlyOwner {
+        require(_price > 0, "Price must be > 0");
         playPrice = _price;
         emit PriceSet(_price);
     }
@@ -277,7 +278,7 @@ contract PhilipLotteryV67 is
     // Prize withdrawal (single + batch)
     // =========================================================
 
-    function withdrawPrize(bytes32 hashId) external onlyOwner {
+    function withdrawPrize(bytes32 hashId) external onlyOwner nonReentrant {
         require(inPool[hashId], "Not in pool");
         _removeFromPool(hashId);
         _transferEthscription(owner(), owner(), hashId);

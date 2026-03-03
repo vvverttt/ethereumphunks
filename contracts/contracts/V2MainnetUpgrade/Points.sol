@@ -60,7 +60,7 @@ contract Points is Pausable, AccessControl, ReentrancyGuard {
     function transferPoints(address to, uint256 amount) external whenNotPaused nonReentrant {
         require(points[msg.sender] >= amount, "Insufficient points");
         points[msg.sender] -= amount;
-        _addPoints(to, amount);
+        points[to] += amount;
         emit PointsTransferred(msg.sender, to, amount);
     }
 
@@ -83,5 +83,18 @@ contract Points is Pausable, AccessControl, ReentrancyGuard {
 
     function revokeManager(address manager) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _revokeRole(POINTS_MANAGER_ROLE, manager);
+    }
+
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
+    }
+
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
+    }
+
+    function renounceRole(bytes32 role, address callerConfirmation) public override {
+        require(role != DEFAULT_ADMIN_ROLE, "Cannot renounce admin role");
+        super.renounceRole(role, callerConfirmation);
     }
 }

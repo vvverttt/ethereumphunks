@@ -180,7 +180,9 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
         require(signerAddress != address(0), "Signer not set");
         require(block.timestamp <= deadline, "Signature expired");
         bytes32 dataHash = keccak256(abi.encodePacked(
-            msg.sender, missingPhunkHash, quantumDystoHash, quantumPhunkHash, deadline, block.chainid, address(this)
+            msg.sender, missingPhunkHash, quantumDystoHash, quantumPhunkHash,
+            philipOrWrappedTokenId, usePhilipIntern, cryptoPhunksV2TokenId,
+            deadline, block.chainid, address(this)
         ));
         bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(dataHash);
         require(ECDSA.recover(ethSignedHash, signature) == signerAddress, "Not eligible");
@@ -246,9 +248,12 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
         totalRevealed++;
 
         // Random seed uses future blockhash unknown at commit time
+        bytes32 futureBlockhash = blockhash(c.commitBlock + REVEAL_DELAY);
+        require(futureBlockhash != bytes32(0), "Blockhash unavailable");
+
         bytes32 randomHash = keccak256(abi.encodePacked(
             _lastRandomHash,
-            blockhash(c.commitBlock + REVEAL_DELAY),
+            futureBlockhash,
             msg.sender,
             totalRevealed
         ));
@@ -391,7 +396,7 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
         require(sent, "Transfer failed");
     }
 
-    function withdrawFromPool(bytes32 hashId) external onlyOwner {
+    function withdrawFromPool(bytes32 hashId) external onlyOwner nonReentrant {
         require(inPool[hashId], "Not in pool");
         require(_pool.length > pendingReveals, "Would strand pending reveals");
 
