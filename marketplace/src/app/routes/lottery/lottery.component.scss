@@ -572,6 +572,72 @@ $lottery-muted: #c3ff00;
 // Recent Wins
 // =========================================================
 
+.how-it-works {
+  width: 100%;
+  max-width: 726px;
+  margin-top: 3rem;
+  font-family: var(--secondary-font-stack);
+
+  .inner {
+    width: 100%;
+  }
+
+  h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $lottery-text;
+    margin: 0;
+    padding-bottom: 1.5rem;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .step-number {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: $lottery-accent;
+    color: $lottery-bg;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .step-text {
+    strong {
+      font-size: 1.1rem;
+      color: $lottery-accent;
+    }
+
+    p {
+      margin: 0.25rem 0 0;
+      font-size: 1rem;
+      color: $lottery-text;
+      line-height: 1.4;
+    }
+  }
+
+  .how-note {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: rgba($lottery-text, 0.7);
+    line-height: 1.4;
+  }
+}
+
 .recent-wins {
   width: 100%;
   max-width: 726px;

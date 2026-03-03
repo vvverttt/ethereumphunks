@@ -4,9 +4,7 @@ import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 
 import { Subscription, firstValueFrom } from 'rxjs';
-import { createPublicClient, http, formatEther } from 'viem';
-import { decodeEventLog } from 'viem';
-import { mainnet } from 'viem/chains';
+import { formatEther, decodeEventLog } from 'viem';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
@@ -120,6 +118,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   private fireworks: any = null;
   private playInProgress = false;
   private pendingWinRecord: LotteryWin | null = null;
+  private readonly PENDING_COMMIT_KEY = 'lottery_pending_commit';
   private beforeUnloadHandler = (e: BeforeUnloadEvent) => {
     if (this.playInProgress) {
       e.preventDefault();
@@ -161,7 +160,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
       } catch {}
     }
 
-    // Check for pending commitment (user may have closed browser between commit and reveal)
+    // Check for unconfirmed commit tx in localStorage (user refreshed mid-commit)
+    await this.resumePendingCommitTx();
+
+    // Check for confirmed commitment on-chain (user refreshed between commit and reveal)
     await this.checkPendingCommitment();
 
     // Staggered load-in animation (matches OG timing)
@@ -170,6 +172,55 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
     // Prevent accidental navigation during play
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
+  }
+
+  // Resume an unconfirmed commit tx found in localStorage (user refreshed during committing phase)
+  private async resumePendingCommitTx() {
+    const stored = localStorage.getItem(this.PENDING_COMMIT_KEY);
+    if (!stored) return;
+
+    try {
+      const { txHash, address: storedAddress, contractAddress } = JSON.parse(stored);
+      // Only resume if same wallet + same lottery contract
+      const address = await firstValueFrom(this.address$);
+      if (!address || address.toLowerCase() !== storedAddress?.toLowerCase()) return;
+      if (contractAddress && contractAddress.toLowerCase() !== this.lotterySvc.address.toLowerCase()) return;
+
+      // Check if commitment already exists on-chain (tx already mined)
+      const commitment = await this.lotterySvc.getCommitment(address);
+      if (commitment.commitBlock > 0n) {
+        // Already confirmed — clear localStorage, let checkPendingCommitment handle it
+        localStorage.removeItem(this.PENDING_COMMIT_KEY);
+        return;
+      }
+
+      // Commitment not on-chain yet — tx may still be pending, poll for receipt
+      this.spinPhase.set('committing');
+      this.confirmElapsed.set(0);
+      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
+
+      try {
+        const receipt = await this.pollReceipt(txHash);
+        clearInterval(this.confirmTimer);
+        localStorage.removeItem(this.PENDING_COMMIT_KEY);
+
+        if (receipt?.status === 'reverted') {
+          this.spinPhase.set('idle');
+          this.errorMessage.set('Previous commit transaction failed. Please try again.');
+          return;
+        }
+
+        // Commit confirmed — now check on-chain commitment and show resume
+        await this.checkPendingCommitment();
+        this.spinPhase.set('idle');
+      } catch {
+        clearInterval(this.confirmTimer);
+        localStorage.removeItem(this.PENDING_COMMIT_KEY);
+        this.spinPhase.set('idle');
+      }
+    } catch {
+      localStorage.removeItem(this.PENDING_COMMIT_KEY);
+    }
   }
 
   private async checkPendingCommitment() {
@@ -364,6 +415,14 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const commitHash = await this.lotterySvc.commitPlay();
       if (!commitHash) throw new Error('Commit transaction failed');
 
+      // Save to localStorage so we can resume on page refresh
+      const address = await firstValueFrom(this.address$);
+      localStorage.setItem(this.PENDING_COMMIT_KEY, JSON.stringify({
+        txHash: commitHash,
+        address,
+        contractAddress: this.lotterySvc.address,
+      }));
+
       this.spinPhase.set('committing');
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
@@ -371,6 +430,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       // Wait for commit receipt
       const commitReceipt = await this.pollReceipt(commitHash);
       clearInterval(this.confirmTimer);
+      localStorage.removeItem(this.PENDING_COMMIT_KEY);
 
       if (!commitReceipt) throw new Error('Commit confirmation timed out');
 
@@ -534,6 +594,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
     } catch (err: any) {
       clearInterval(this.confirmTimer);
+      localStorage.removeItem(this.PENDING_COMMIT_KEY);
       this.stopSpin();
       this.spinPhase.set('idle');
       const msg = err?.shortMessage || err?.message || 'Transaction failed';
@@ -696,37 +757,22 @@ export class LotteryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Reusable receipt polling helper
+  // Reusable receipt polling helper (uses public RPC directly — Alchemy is CORS-blocked from browser)
   private pollReceipt(hash: string): Promise<any> {
-    const receiptRpc = (environment as any).receiptRpcUrl;
-    const receiptClient = receiptRpc
-      ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
-      : this.web3Svc.l1Client;
-
     return new Promise((resolve, reject) => {
       let attempts = 0;
-      let consecutiveErrors = 0;
-      let useFallback = false;
       const timer = setInterval(async () => {
         attempts++;
-        const client = useFallback ? this.web3Svc.l1Client : receiptClient;
         try {
-          const receipt = await client.getTransactionReceipt({ hash: hash as `0x${string}` });
+          const receipt = await this.web3Svc.l1Client.getTransactionReceipt({ hash: hash as `0x${string}` });
           if (receipt) {
             clearInterval(timer);
-            console.log(`[Lottery] Receipt found after ${attempts}s via ${useFallback ? 'fallback' : 'primary'}`);
+            console.log(`[Lottery] Receipt found after ${attempts}s`);
             resolve(receipt);
           }
-          consecutiveErrors = 0;
         } catch (err: any) {
-          consecutiveErrors++;
-          if (consecutiveErrors <= 3 || consecutiveErrors % 10 === 0) {
+          if (attempts <= 3 || attempts % 10 === 0) {
             console.warn(`[Lottery] Receipt poll error #${attempts}:`, err?.message || err);
-          }
-          if (consecutiveErrors >= 5 && !useFallback) {
-            console.warn('[Lottery] Switching to fallback RPC');
-            useFallback = true;
-            consecutiveErrors = 0;
           }
         }
         if (attempts >= 120) {
