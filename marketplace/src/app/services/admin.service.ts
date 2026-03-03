@@ -628,7 +628,7 @@ export class AdminService {
     return this.writeContract(pointsAddress, PointsABI, 'grantRole', [DEFAULT_ADMIN_ROLE, addr]);
   }
 
-  pointsRenounceAdminRole(callerAddress: string) {
-    return this.writeContract(pointsAddress, PointsABI, 'renounceRole', [DEFAULT_ADMIN_ROLE, callerAddress]);
+  pointsRevokeAdminRole(addr: string) {
+    return this.writeContract(pointsAddress, PointsABI, 'revokeRole', [DEFAULT_ADMIN_ROLE, addr]);
   }
 }
