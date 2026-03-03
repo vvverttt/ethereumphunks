@@ -428,33 +428,44 @@ export class LotteryComponent implements OnInit, OnDestroy {
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
 
-      // Wait for commit receipt
-      const commitReceipt = await this.pollReceipt(commitHash);
+      // Race: receipt polling vs on-chain commitment check (whichever confirms first)
+      type CommitResult = { source: 'receipt'; receipt: any } | { source: 'onchain'; commitBlock: bigint };
+      const commitConfirmation = await Promise.race([
+        this.pollReceipt(commitHash).then(receipt => ({ source: 'receipt' as const, receipt })),
+        this.pollCommitmentOnChain(address!).then(commitBlock => ({ source: 'onchain' as const, commitBlock })),
+      ]) as CommitResult;
+
       clearInterval(this.confirmTimer);
       localStorage.removeItem(this.PENDING_COMMIT_KEY);
 
-      if (!commitReceipt) throw new Error('Commit confirmation timed out');
-
-      // Extract commitBlock from PlayCommitted event
+      // Extract commitBlock from whichever source responded first
       let commitBlock = 0n;
-      for (const log of commitReceipt.logs) {
-        try {
-          const decoded = decodeEventLog({
-            abi: PhilipLotteryV67ABI,
-            data: log.data,
-            topics: log.topics,
-          });
-          if (decoded.eventName === 'PlayCommitted') {
-            const args = decoded.args as any;
-            commitBlock = BigInt(args.commitBlock);
-          }
-        } catch {}
+      if (commitConfirmation.source === 'onchain') {
+        commitBlock = commitConfirmation.commitBlock;
+      } else {
+        const commitReceipt = commitConfirmation.receipt;
+        if (!commitReceipt) throw new Error('Commit confirmation timed out');
+
+        // Extract commitBlock from PlayCommitted event
+        for (const log of commitReceipt.logs) {
+          try {
+            const decoded = decodeEventLog({
+              abi: PhilipLotteryV67ABI,
+              data: log.data,
+              topics: log.topics,
+            });
+            if (decoded.eventName === 'PlayCommitted') {
+              const args = decoded.args as any;
+              commitBlock = BigInt(args.commitBlock);
+            }
+          } catch {}
+        }
       }
       if (commitBlock === 0n) {
         // Fallback: read commitment from contract
-        const address = await firstValueFrom(this.address$);
-        if (address) {
-          const commitment = await this.lotterySvc.getCommitment(address);
+        const addr = await firstValueFrom(this.address$);
+        if (addr) {
+          const commitment = await this.lotterySvc.getCommitment(addr);
           commitBlock = commitment.commitBlock;
         }
       }
@@ -487,11 +498,12 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const revealHash = await this.lotterySvc.revealPlay();
       if (!revealHash) throw new Error('Reveal transaction failed');
 
-      // Race receipt vs Supabase for reveal confirmation
-      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin };
+      // Race: receipt vs Supabase vs on-chain commitment cleared
+      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin } | { source: 'onchain' };
       const confirmation = await Promise.race([
         this.pollReceipt(revealHash).then(receipt => ({ source: 'receipt' as const, receipt })),
         this.lotterySvc.watchForWinByTxHash(revealHash).then(win => ({ source: 'supabase' as const, win })),
+        this.pollCommitmentCleared(address!).then(() => ({ source: 'onchain' as const })),
       ]) as ConfirmResult;
 
       clearInterval(this.confirmTimer);
@@ -507,7 +519,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
         wonHashId = win.hash_id;
         playId = win.play_id;
         winRecord = win;
-      } else {
+      } else if (confirmation.source === 'receipt') {
         // Parse PrizeAwarded event from receipt
         for (const log of confirmation.receipt.logs) {
           try {
@@ -523,6 +535,23 @@ export class LotteryComponent implements OnInit, OnDestroy {
             }
           } catch {}
         }
+      } else {
+        // On-chain commitment cleared — reveal succeeded, try to get receipt now
+        try {
+          const receipt = await this.web3Svc.l1Client.getTransactionReceipt({ hash: revealHash as `0x${string}` });
+          if (receipt) {
+            for (const log of receipt.logs) {
+              try {
+                const decoded = decodeEventLog({ abi: PhilipLotteryV67ABI, data: log.data, topics: log.topics });
+                if (decoded.eventName === 'PrizeAwarded') {
+                  const args = decoded.args as any;
+                  wonHashId = args.hashId;
+                  playId = Number(args.playId);
+                }
+              } catch {}
+            }
+          }
+        } catch {}
       }
 
       // Resolve winner details BEFORE starting spin
@@ -676,10 +705,11 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const revealHash = await this.lotterySvc.revealPlay();
       if (!revealHash) throw new Error('Reveal transaction failed');
 
-      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin };
+      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin } | { source: 'onchain' };
       const confirmation = await Promise.race([
         this.pollReceipt(revealHash).then(receipt => ({ source: 'receipt' as const, receipt })),
         this.lotterySvc.watchForWinByTxHash(revealHash).then(win => ({ source: 'supabase' as const, win })),
+        this.pollCommitmentCleared(address).then(() => ({ source: 'onchain' as const })),
       ]) as ConfirmResult;
 
       clearInterval(this.confirmTimer);
@@ -693,7 +723,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
         wonHashId = confirmation.win.hash_id;
         playId = confirmation.win.play_id;
         winRecord = confirmation.win;
-      } else {
+      } else if (confirmation.source === 'receipt') {
         for (const log of confirmation.receipt.logs) {
           try {
             const decoded = decodeEventLog({ abi: PhilipLotteryV67ABI, data: log.data, topics: log.topics });
@@ -704,6 +734,23 @@ export class LotteryComponent implements OnInit, OnDestroy {
             }
           } catch {}
         }
+      } else {
+        // On-chain commitment cleared — try to get receipt now
+        try {
+          const receipt = await this.web3Svc.l1Client.getTransactionReceipt({ hash: revealHash as `0x${string}` });
+          if (receipt) {
+            for (const log of receipt.logs) {
+              try {
+                const decoded = decodeEventLog({ abi: PhilipLotteryV67ABI, data: log.data, topics: log.topics });
+                if (decoded.eventName === 'PrizeAwarded') {
+                  const args = decoded.args as any;
+                  wonHashId = args.hashId;
+                  playId = Number(args.playId);
+                }
+              } catch {}
+            }
+          }
+        } catch {}
       }
 
       let winCellIndex = this.spinPath[
@@ -832,6 +879,50 @@ export class LotteryComponent implements OnInit, OnDestroy {
           reject(new Error('Transaction confirmation timed out'));
         }
       }, 1000);
+    });
+  }
+
+  // Poll on-chain commitment as a faster alternative to receipt polling
+  private pollCommitmentOnChain(address: string): Promise<bigint> {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const timer = setInterval(async () => {
+        attempts++;
+        try {
+          const commitment = await this.lotterySvc.getCommitment(address);
+          if (commitment.commitBlock > 0n) {
+            clearInterval(timer);
+            console.log(`[Lottery] Commitment found on-chain after ${attempts * 3}s`);
+            resolve(commitment.commitBlock);
+          }
+        } catch {}
+        if (attempts >= 40) { // 40 * 3s = 120s same timeout as pollReceipt
+          clearInterval(timer);
+          reject(new Error('Commitment poll timed out'));
+        }
+      }, 3000);
+    });
+  }
+
+  // Poll until on-chain commitment is cleared (reveal succeeded)
+  private pollCommitmentCleared(address: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const timer = setInterval(async () => {
+        attempts++;
+        try {
+          const commitment = await this.lotterySvc.getCommitment(address);
+          if (commitment.commitBlock === 0n) {
+            clearInterval(timer);
+            console.log(`[Lottery] Commitment cleared on-chain after ${attempts * 3}s`);
+            resolve();
+          }
+        } catch {}
+        if (attempts >= 40) {
+          clearInterval(timer);
+          reject(new Error('Commitment cleared poll timed out'));
+        }
+      }, 3000);
     });
   }
 
