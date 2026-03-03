@@ -24,6 +24,8 @@ const marketProxyAdmin = '0x1e0fe955ee24d5766e76ce69810496dc30a11c26' as `0x${st
 const auctionProxyAdmin = '0xd043f41f07e7bc140e51971f7dd3c33ab35508ad' as `0x${string}`;
 const evolveProxyAdmin = '0x33d0b59ec952749bcbe0847b334b075ef47cd7dc' as `0x${string}`;
 const ethsrocksProxyAdmin = '0xc57cd985436d630cd61e5e0ca1e3af28cad68b3d' as `0x${string}`;
+const lotteryProxyAdmin = '0x426335fa9f974Ffb0c5Dc11313dc4cb4dd615E7d' as `0x${string}`;
+const lottery2ProxyAdmin = '0x29c9Cf618A057A2AF7885f03E0F211Bf07c4D885' as `0x${string}`;
 
 const ProxyAdminABI = [
   { inputs: [], name: 'owner', outputs: [{ internalType: 'address', name: '', type: 'address' }], stateMutability: 'view', type: 'function' },
@@ -486,6 +488,26 @@ export class AdminService {
 
   ethsrocksProxyAdminTransfer(addr: string) {
     return this.writeContract(ethsrocksProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
+  }
+
+  async getLotteryProxyAdminOwner(): Promise<string> {
+    return await this.web3Svc.l1Client.readContract({
+      address: lotteryProxyAdmin, abi: ProxyAdminABI, functionName: 'owner',
+    });
+  }
+
+  lotteryProxyAdminTransfer(addr: string) {
+    return this.writeContract(lotteryProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
+  }
+
+  async getLottery2ProxyAdminOwner(): Promise<string> {
+    return await this.web3Svc.l1Client.readContract({
+      address: lottery2ProxyAdmin, abi: ProxyAdminABI, functionName: 'owner',
+    });
+  }
+
+  lottery2ProxyAdminTransfer(addr: string) {
+    return this.writeContract(lottery2ProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
   }
 
   // =========================================================

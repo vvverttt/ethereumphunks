@@ -556,6 +556,8 @@ export class AdminComponent implements OnInit {
       { label: 'Auction ProxyAdmin — transferOwnership', status: 'pending' },
       { label: 'Evolve ProxyAdmin — transferOwnership', status: 'pending' },
       { label: 'EthsRocks ProxyAdmin — transferOwnership', status: 'pending' },
+      { label: 'Lottery (Standard) ProxyAdmin — transferOwnership', status: 'pending' },
+      ...(this.hasSecondLottery ? [{ label: 'Lottery (Premium) ProxyAdmin — transferOwnership', status: 'pending' as const }] : []),
     ];
     this.transferAllSteps.set([...steps]);
 
@@ -572,6 +574,8 @@ export class AdminComponent implements OnInit {
       () => this.adminSvc.auctionProxyAdminTransfer(newOwner),
       () => this.adminSvc.evolveProxyAdminTransfer(newOwner),
       () => this.adminSvc.ethsrocksProxyAdminTransfer(newOwner),
+      () => this.adminSvc.lotteryProxyAdminTransfer(newOwner),
+      ...(this.hasSecondLottery ? [() => this.adminSvc.lottery2ProxyAdminTransfer(newOwner)] : []),
     ];
 
     for (let i = 0; i < fns.length; i++) {
