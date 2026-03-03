@@ -4,7 +4,8 @@ import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 
 import { Subscription, firstValueFrom } from 'rxjs';
-import { formatEther, decodeEventLog } from 'viem';
+import { createPublicClient, http, formatEther, decodeEventLog } from 'viem';
+import { mainnet } from 'viem/chains';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
@@ -757,22 +758,44 @@ export class LotteryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Reusable receipt polling helper (uses public RPC directly — Alchemy is CORS-blocked from browser)
+  // Reusable receipt polling helper (Alchemy primary, publicnode fallback for CORS on localhost)
   private pollReceipt(hash: string): Promise<any> {
+    const receiptRpc = (environment as any).receiptRpcUrl;
+    const alchemyClient = receiptRpc
+      ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
+      : this.web3Svc.l1Client;
+
     return new Promise((resolve, reject) => {
       let attempts = 0;
+      let networkErrors = 0;
+      let useFallback = false;
       const timer = setInterval(async () => {
         attempts++;
+        const client = useFallback ? this.web3Svc.l1Client : alchemyClient;
         try {
-          const receipt = await this.web3Svc.l1Client.getTransactionReceipt({ hash: hash as `0x${string}` });
+          const receipt = await client.getTransactionReceipt({ hash: hash as `0x${string}` });
           if (receipt) {
             clearInterval(timer);
-            console.log(`[Lottery] Receipt found after ${attempts}s`);
+            console.log(`[Lottery] Receipt found after ${attempts}s via ${useFallback ? 'fallback' : 'alchemy'}`);
             resolve(receipt);
           }
+          networkErrors = 0; // successful call (even if receipt null) = network is fine
         } catch (err: any) {
+          const msg = err?.message || '';
+          const isNotFound = msg.includes('could not be found');
+          if (isNotFound) {
+            // Normal — tx not mined yet, not a network error
+          } else {
+            // Actual network/CORS error
+            networkErrors++;
+            if (networkErrors >= 3 && !useFallback) {
+              console.warn('[Lottery] Alchemy unreachable, switching to fallback RPC');
+              useFallback = true;
+              networkErrors = 0;
+            }
+          }
           if (attempts <= 3 || attempts % 10 === 0) {
-            console.warn(`[Lottery] Receipt poll error #${attempts}:`, err?.message || err);
+            console.warn(`[Lottery] Receipt poll #${attempts}:`, msg.slice(0, 100));
           }
         }
         if (attempts >= 120) {
