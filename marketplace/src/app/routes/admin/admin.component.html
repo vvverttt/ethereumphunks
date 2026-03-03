@@ -296,6 +296,10 @@
             <input type="text" [(ngModel)]="lWithdrawPrizeHashId" placeholder="0x..." />
             <button (click)="lotteryWithdrawPrize()" [disabled]="txPending()">Withdraw</button>
           </div>
+          <div class="action">
+            <label>Withdraw All Prizes (batch)</label>
+            <button (click)="lotteryWithdrawAllPrizes()" [disabled]="txPending()">Withdraw All</button>
+          </div>
           <div class="action danger">
             <label>Transfer Ownership</label>
             <input type="text" [(ngModel)]="lTransferOwnership" placeholder="0x..." />

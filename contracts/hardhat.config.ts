@@ -53,17 +53,12 @@ const config: HardhatUserConfig = {
     //   accounts: [`0x${process.env.SEPOLIA_PK}`],
     // },
   },
+  sourcify: {
+    enabled: true,
+  },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
     customChains: [
-      {
-        network: 'mainnet',
-        chainId: 1,
-        urls: {
-          apiURL: 'https://api.etherscan.io/api',
-          browserURL: 'https://etherscan.io',
-        }
-      },
       {
         network: 'magma',
         chainId: 6969696969,

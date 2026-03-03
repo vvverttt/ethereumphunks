@@ -397,6 +397,19 @@ export class AdminComponent implements OnInit {
   }
   lotteryWithdrawETH() { this.exec(() => this.adminSvc.lotteryWithdrawETH(parseEther(this.lWithdrawAmount), this.lWithdrawTo), () => this.loadLotteryState()); }
   lotteryWithdrawPrize() { this.exec(() => this.adminSvc.lotteryWithdrawPrize(this.lWithdrawPrizeHashId)); }
+  async lotteryWithdrawAllPrizes() {
+    this.exec(async () => {
+      const size = await this.adminSvc.getLotteryPoolSize();
+      if (size === 0n) throw new Error('Pool is empty');
+      const items = await this.web3Svc.l1Client.readContract({
+        address: this.adminSvc['_lotteryAddress'] as `0x${string}`,
+        abi: [{ inputs: [{ type: 'uint256' }, { type: 'uint256' }], name: 'getPoolItems', outputs: [{ type: 'bytes32[]' }], stateMutability: 'view', type: 'function' }],
+        functionName: 'getPoolItems',
+        args: [0n, size],
+      }) as string[];
+      return this.adminSvc.lotteryWithdrawPrizeBatch(items as string[]);
+    }, () => this.loadLotteryState());
+  }
   transferLotteryOwnership() { this.exec(() => this.adminSvc.lotteryTransferOwnership(this.lTransferOwnership)); }
 
   // Evolve actions

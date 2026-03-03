@@ -394,4 +394,11 @@ contract EtherPhunksMarketV3 is
     function unpause() public onlyOwner {
         _unpause();
     }
+
+    function renounceOwnership() public pure override {
+        revert("Cannot renounce ownership");
+    }
+
+    // ─── Storage gap for future upgrades ───────────────────────
+    uint256[50] private __gap;
 }

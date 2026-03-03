@@ -273,4 +273,11 @@ contract Mutation is
         );
         delete depositor[hashId];
     }
+
+    function renounceOwnership() public pure override {
+        revert("Cannot renounce ownership");
+    }
+
+    // ─── Storage gap for future upgrades ───────────────────────
+    uint256[50] private __gap;
 }

@@ -15,28 +15,57 @@
 * ░░░░░░░░░░░░░░░░░░░░░░░░░ *
 ****************************/
 
+/* ========================================
+   ∬  PhilipLotteryV67 (Upgradeable)      ∬
+   ========================================
+   ∬  Upgradeable proxy (transparent)     ∬
+   ∬  Hybrid push/pull refunds            ∬
+   ∬  Batch withdraw (withdrawPrizeBatch) ∬
+   ∬  Emergency ethscription recovery     ∬
+   ∬  On-chain points (67 per play)       ∬
+   ∬  No contract callers (tx.origin)     ∬
+   ∬  Auto-send revenue to treasury       ∬
+   ====================================== */
+
 pragma solidity 0.8.20;
 
 import "./EthscriptionsEscrower.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./interfaces/IPoints.sol";
 
-contract PhilipLotteryV67 is EthscriptionsEscrower, Ownable, Pausable, ReentrancyGuard {
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
+contract PhilipLotteryV67 is
+    Initializable,
+    EthscriptionsEscrower,
+    OwnableUpgradeable,
+    PausableUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     uint256 public playPrice;
     uint256 public totalPlays;
     bool public active;
+    address public pointsAddress;
+    address payable public treasuryAddress;
 
     bytes32[] private _prizePool;
+    mapping(bytes32 => uint256) private _poolIndex;
     mapping(bytes32 => bool) public inPool;
     mapping(bytes32 => address) public depositor;
+    mapping(address => uint256) public playerPlays;
+    bytes32 private _lastRandomHash;
+
+    // Hybrid push/pull refunds
+    mapping(address => uint256) public pendingReturns;
+
+    // ─── Events ──────────────────────────────────────────────
 
     event LotteryPlayed(
         uint256 indexed playId,
         address indexed player,
-        uint256 price,
-        uint256 randomSeed
+        uint256 price
     );
 
     event PrizeAwarded(
@@ -49,9 +78,29 @@ contract PhilipLotteryV67 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
     event PrizeWithdrawn(bytes32 indexed hashId);
     event PriceSet(uint256 newPrice);
     event ActiveToggled(bool active);
+    event TreasuryAddressChanged(address indexed oldAddress, address indexed newAddress);
+    event PointsAddressChanged(address indexed oldAddress, address indexed newAddress);
 
-    constructor(uint256 _playPrice) Ownable(msg.sender) {
+    // ─── Constructor & Initializer ───────────────────────────
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
+        uint256 _playPrice,
+        address _pointsAddress,
+        address payable _treasuryAddress
+    ) public initializer {
+        __Ownable_init(msg.sender);
+        __Pausable_init();
+        __ReentrancyGuard_init();
+
+        require(_treasuryAddress != address(0), "Invalid treasury");
         playPrice = _playPrice;
+        pointsAddress = _pointsAddress;
+        treasuryAddress = _treasuryAddress;
         active = true;
     }
 
@@ -73,14 +122,16 @@ contract PhilipLotteryV67 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
         for (uint256 i = 0; i < userCalldata.length / 32; i++) {
             bytes32 hashId = abi.decode(userCalldata[i * 32 : (i + 1) * 32], (bytes32));
 
+            require(hashId != bytes32(0), "Invalid hashId");
             require(!inPool[hashId], "Already in pool");
 
-            // Record in escrow storage (tracks block number for cooldown)
+            // Record in escrow storage (set to 1 so cooldown is always satisfied)
             EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
                 previousOwner
-            ][hashId] = block.number;
+            ][hashId] = 1;
 
             // Add to prize pool
+            _poolIndex[hashId] = _prizePool.length;
             _prizePool.push(hashId);
             inPool[hashId] = true;
             depositor[hashId] = previousOwner;
@@ -94,40 +145,74 @@ contract PhilipLotteryV67 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
     // =========================================================
 
     function play() external payable nonReentrant whenNotPaused {
+        require(msg.sender == tx.origin, "No contracts");
         require(active, "Lottery inactive");
         require(msg.value >= playPrice, "Insufficient payment");
         require(_prizePool.length > 0, "No prizes available");
 
         totalPlays++;
+        playerPlays[msg.sender]++;
 
-        uint256 randomSeed = uint256(keccak256(abi.encodePacked(
+        // Award points on-chain
+        if (pointsAddress != address(0)) {
+            try IPoints(pointsAddress).addPoints(msg.sender, 67) {} catch {}
+        }
+
+        bytes32 randomHash = keccak256(abi.encodePacked(
+            _lastRandomHash,
             block.prevrandao,
             block.timestamp,
+            block.basefee,
+            blockhash(block.number - 1),
             totalPlays,
-            msg.sender
-        )));
-
-        uint256 winIndex = randomSeed % _prizePool.length;
+            msg.sender,
+            gasleft()
+        ));
+        _lastRandomHash = randomHash;
+        uint256 winIndex = uint256(randomHash) % _prizePool.length;
         bytes32 wonHashId = _prizePool[winIndex];
         address dep = depositor[wonHashId];
 
         // Remove from pool (swap with last, then pop)
-        _prizePool[winIndex] = _prizePool[_prizePool.length - 1];
+        bytes32 lastHash = _prizePool[_prizePool.length - 1];
+        _prizePool[winIndex] = lastHash;
+        _poolIndex[lastHash] = winIndex;
         _prizePool.pop();
         inPool[wonHashId] = false;
         delete depositor[wonHashId];
+        delete _poolIndex[wonHashId];
 
         // Transfer ethscription to winner via escrower protocol event
         _transferEthscription(dep, msg.sender, wonHashId);
 
-        emit LotteryPlayed(totalPlays, msg.sender, msg.value, randomSeed);
+        emit LotteryPlayed(totalPlays, msg.sender, msg.value);
         emit PrizeAwarded(totalPlays, msg.sender, wonHashId);
 
-        // Refund excess payment
-        if (msg.value > playPrice) {
-            (bool sent, ) = payable(msg.sender).call{value: msg.value - playPrice}("");
-            require(sent, "Refund failed");
+        // Send play price to treasury (hybrid: fallback to pendingReturns)
+        (bool sent, ) = treasuryAddress.call{value: playPrice}("");
+        if (!sent) {
+            pendingReturns[treasuryAddress] += playPrice;
         }
+
+        // Refund excess payment (hybrid: fallback to pendingReturns)
+        if (msg.value > playPrice) {
+            (bool refundSent, ) = payable(msg.sender).call{value: msg.value - playPrice}("");
+            if (!refundSent) {
+                pendingReturns[msg.sender] += msg.value - playPrice;
+            }
+        }
+    }
+
+    // =========================================================
+    // Pull payment (withdraw failed refunds)
+    // =========================================================
+
+    function withdraw() external nonReentrant {
+        uint256 amount = pendingReturns[msg.sender];
+        require(amount > 0, "Nothing to withdraw");
+        pendingReturns[msg.sender] = 0;
+        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        require(sent, "Transfer failed");
     }
 
     // =========================================================
@@ -168,6 +253,19 @@ contract PhilipLotteryV67 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
         emit ActiveToggled(_active);
     }
 
+    function setPointsAddress(address _pointsAddress) external onlyOwner {
+        address oldAddress = pointsAddress;
+        pointsAddress = _pointsAddress;
+        emit PointsAddressChanged(oldAddress, _pointsAddress);
+    }
+
+    function setTreasuryAddress(address payable _treasuryAddress) external onlyOwner {
+        require(_treasuryAddress != address(0), "Invalid treasury");
+        address oldAddress = treasuryAddress;
+        treasuryAddress = _treasuryAddress;
+        emit TreasuryAddressChanged(oldAddress, _treasuryAddress);
+    }
+
     function withdrawETH(uint256 amount, address payable to) external onlyOwner nonReentrant {
         require(to != address(0), "Invalid address");
         require(amount <= address(this).balance, "Insufficient balance");
@@ -175,23 +273,68 @@ contract PhilipLotteryV67 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
         require(sent, "Transfer failed");
     }
 
+    // =========================================================
+    // Prize withdrawal (single + batch)
+    // =========================================================
+
     function withdrawPrize(bytes32 hashId) external onlyOwner {
         require(inPool[hashId], "Not in pool");
+        _removeFromPool(hashId);
+        _transferEthscription(owner(), owner(), hashId);
+        emit PrizeWithdrawn(hashId);
+    }
 
-        // Find and remove from array
-        for (uint256 i = 0; i < _prizePool.length; i++) {
-            if (_prizePool[i] == hashId) {
-                _prizePool[i] = _prizePool[_prizePool.length - 1];
-                _prizePool.pop();
-                break;
-            }
+    function withdrawPrizeBatch(bytes32[] calldata hashIds) external onlyOwner nonReentrant {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            bytes32 hashId = hashIds[i];
+            require(inPool[hashId], "Not in pool");
+            _removeFromPool(hashId);
+            _transferEthscription(owner(), owner(), hashId);
+            emit PrizeWithdrawn(hashId);
         }
-        inPool[hashId] = false;
+    }
 
-        // Transfer back to owner
+    // =========================================================
+    // Emergency: recover stuck ethscriptions
+    // =========================================================
+
+    function emergencyWithdrawEthscription(bytes32 hashId) external onlyOwner nonReentrant {
+        // Clean pool state if it's in the pool
+        if (inPool[hashId]) {
+            _removeFromPool(hashId);
+        }
+
+        // Re-register in escrow and transfer to owner
+        EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
+            owner()
+        ][hashId] = 1;
         _transferEthscription(owner(), owner(), hashId);
 
         emit PrizeWithdrawn(hashId);
+    }
+
+    // =========================================================
+    // Internal: O(1) pool removal (swap-and-pop)
+    // =========================================================
+
+    function _removeFromPool(bytes32 hashId) internal {
+        uint256 idx = _poolIndex[hashId];
+        bytes32 lastHash = _prizePool[_prizePool.length - 1];
+        _prizePool[idx] = lastHash;
+        _poolIndex[lastHash] = idx;
+        _prizePool.pop();
+
+        inPool[hashId] = false;
+        delete depositor[hashId];
+        delete _poolIndex[hashId];
+    }
+
+    // =========================================================
+    // Safety overrides
+    // =========================================================
+
+    function renounceOwnership() public pure override {
+        revert("Cannot renounce ownership");
     }
 
     function pause() external onlyOwner {
@@ -202,5 +345,6 @@ contract PhilipLotteryV67 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
         _unpause();
     }
 
-    receive() external payable {}
+    // ─── Storage gap for future upgrades ───────────────────────
+    uint256[50] private __gap;
 }
