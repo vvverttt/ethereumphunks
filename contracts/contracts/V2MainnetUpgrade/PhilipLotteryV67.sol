@@ -19,6 +19,7 @@
    ∬  PhilipLotteryV67 (Upgradeable)      ∬
    ========================================
    ∬  Upgradeable proxy (transparent)     ∬
+   ∬  Commit-reveal randomness (MEV-safe) ∬
    ∬  Hybrid push/pull refunds            ∬
    ∬  Batch withdraw (withdrawPrizeBatch) ∬
    ∬  Emergency ethscription recovery     ∬
@@ -44,6 +45,17 @@ contract PhilipLotteryV67 is
     PausableUpgradeable,
     ReentrancyGuardUpgradeable
 {
+    // ─── Constants ─────────────────────────────────────────────
+    uint256 public constant REVEAL_DELAY = 2;
+    uint256 public constant REVEAL_EXPIRY = 256;
+
+    // ─── Commitment struct ───────────────────────────────────
+    struct PlayCommitment {
+        uint256 commitBlock;
+        uint256 priceLocked;
+    }
+
+    // ─── State (original layout — do not reorder) ────────────
     uint256 public playPrice;
     uint256 public totalPlays;
     bool public active;
@@ -59,6 +71,11 @@ contract PhilipLotteryV67 is
 
     // Hybrid push/pull refunds
     mapping(address => uint256) public pendingReturns;
+
+    // ─── New state (commit-reveal, consumes 3 __gap slots) ───
+    mapping(address => PlayCommitment) public commitments;
+    uint256 public pendingReveals;
+    uint256 public totalRevealed;
 
     // ─── Events ──────────────────────────────────────────────
 
@@ -80,6 +97,8 @@ contract PhilipLotteryV67 is
     event ActiveToggled(bool active);
     event TreasuryAddressChanged(address indexed oldAddress, address indexed newAddress);
     event PointsAddressChanged(address indexed oldAddress, address indexed newAddress);
+    event PlayCommitted(address indexed player, uint256 price, uint256 commitBlock);
+    event PlayCancelled(address indexed player);
 
     // ─── Constructor & Initializer ───────────────────────────
 
@@ -141,32 +160,58 @@ contract PhilipLotteryV67 is
     }
 
     // =========================================================
-    // Play (pay fee, win random ethscription)
+    // Step 1: Commit (pay fee, lock commitment)
     // =========================================================
 
-    function play() external payable nonReentrant whenNotPaused {
+    function commitPlay() external payable nonReentrant whenNotPaused {
         require(msg.sender == tx.origin, "No contracts");
         require(active, "Lottery inactive");
         require(msg.value >= playPrice, "Insufficient payment");
-        require(_prizePool.length > 0, "No prizes available");
+        require(_prizePool.length > pendingReveals, "No prizes available");
+        require(commitments[msg.sender].commitBlock == 0, "Already committed");
 
+        pendingReveals++;
+        commitments[msg.sender] = PlayCommitment({
+            commitBlock: block.number,
+            priceLocked: playPrice
+        });
+
+        // Refund overpayment (hybrid push/pull)
+        if (msg.value > playPrice) {
+            (bool refundSent, ) = payable(msg.sender).call{value: msg.value - playPrice}("");
+            if (!refundSent) {
+                pendingReturns[msg.sender] += msg.value - playPrice;
+            }
+        }
+
+        emit PlayCommitted(msg.sender, playPrice, block.number);
+    }
+
+    // =========================================================
+    // Step 2: Reveal (use future blockhash for randomness)
+    // =========================================================
+
+    function revealPlay() external nonReentrant whenNotPaused {
+        PlayCommitment memory c = commitments[msg.sender];
+        require(c.commitBlock > 0, "No commitment");
+        require(block.number > c.commitBlock + REVEAL_DELAY, "Too early");
+        require(block.number <= c.commitBlock + REVEAL_EXPIRY, "Expired");
+
+        delete commitments[msg.sender];
+        pendingReveals--;
         totalPlays++;
+        totalRevealed++;
         playerPlays[msg.sender]++;
 
-        // Award points on-chain
-        if (pointsAddress != address(0)) {
-            try IPoints(pointsAddress).addPoints(msg.sender, 67) {} catch {}
-        }
+        // Random seed uses future blockhash unknown at commit time
+        bytes32 futureBlockhash = blockhash(c.commitBlock + REVEAL_DELAY);
+        require(futureBlockhash != bytes32(0), "Blockhash unavailable");
 
         bytes32 randomHash = keccak256(abi.encodePacked(
             _lastRandomHash,
-            block.prevrandao,
-            block.timestamp,
-            block.basefee,
-            blockhash(block.number - 1),
-            totalPlays,
+            futureBlockhash,
             msg.sender,
-            gasleft()
+            totalRevealed
         ));
         _lastRandomHash = randomHash;
         uint256 winIndex = uint256(randomHash) % _prizePool.length;
@@ -185,22 +230,39 @@ contract PhilipLotteryV67 is
         // Transfer ethscription to winner via escrower protocol event
         _transferEthscription(dep, msg.sender, wonHashId);
 
-        emit LotteryPlayed(totalPlays, msg.sender, msg.value);
+        // Award points on-chain
+        if (pointsAddress != address(0)) {
+            try IPoints(pointsAddress).addPoints(msg.sender, 67) {} catch {}
+        }
+
+        emit LotteryPlayed(totalPlays, msg.sender, c.priceLocked);
         emit PrizeAwarded(totalPlays, msg.sender, wonHashId);
 
-        // Send play price to treasury (hybrid: fallback to pendingReturns)
-        (bool sent, ) = treasuryAddress.call{value: playPrice}("");
+        // Send locked price to treasury (hybrid: fallback to pendingReturns)
+        (bool sent, ) = treasuryAddress.call{value: c.priceLocked}("");
         if (!sent) {
-            pendingReturns[treasuryAddress] += playPrice;
+            pendingReturns[treasuryAddress] += c.priceLocked;
+        }
+    }
+
+    // =========================================================
+    // Cancel expired commitment (refund ETH)
+    // =========================================================
+
+    function cancelPlay() external nonReentrant {
+        PlayCommitment memory c = commitments[msg.sender];
+        require(c.commitBlock > 0, "No commitment");
+        require(block.number > c.commitBlock + REVEAL_EXPIRY, "Not expired");
+
+        delete commitments[msg.sender];
+        pendingReveals--;
+
+        (bool sent, ) = payable(msg.sender).call{value: c.priceLocked}("");
+        if (!sent) {
+            pendingReturns[msg.sender] += c.priceLocked;
         }
 
-        // Refund excess payment (hybrid: fallback to pendingReturns)
-        if (msg.value > playPrice) {
-            (bool refundSent, ) = payable(msg.sender).call{value: msg.value - playPrice}("");
-            if (!refundSent) {
-                pendingReturns[msg.sender] += msg.value - playPrice;
-            }
-        }
+        emit PlayCancelled(msg.sender);
     }
 
     // =========================================================
@@ -237,6 +299,11 @@ contract PhilipLotteryV67 is
 
     function getBalance() external view returns (uint256) {
         return address(this).balance;
+    }
+
+    function getCommitment(address player) external view returns (uint256 commitBlock, uint256 priceLocked) {
+        PlayCommitment memory c = commitments[player];
+        return (c.commitBlock, c.priceLocked);
     }
 
     // =========================================================
@@ -280,6 +347,7 @@ contract PhilipLotteryV67 is
 
     function withdrawPrize(bytes32 hashId) external onlyOwner nonReentrant {
         require(inPool[hashId], "Not in pool");
+        require(_prizePool.length > pendingReveals, "Reserved for pending reveals");
         _removeFromPool(hashId);
         _transferEthscription(owner(), owner(), hashId);
         emit PrizeWithdrawn(hashId);
@@ -289,6 +357,7 @@ contract PhilipLotteryV67 is
         for (uint256 i = 0; i < hashIds.length; i++) {
             bytes32 hashId = hashIds[i];
             require(inPool[hashId], "Not in pool");
+            require(_prizePool.length > pendingReveals, "Reserved for pending reveals");
             _removeFromPool(hashId);
             _transferEthscription(owner(), owner(), hashId);
             emit PrizeWithdrawn(hashId);
@@ -346,6 +415,6 @@ contract PhilipLotteryV67 is
         _unpause();
     }
 
-    // ─── Storage gap for future upgrades ───────────────────────
-    uint256[50] private __gap;
+    // ─── Storage gap for future upgrades (50 - 3 new slots = 47) ──
+    uint256[47] private __gap;
 }

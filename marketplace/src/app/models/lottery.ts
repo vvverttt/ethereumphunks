@@ -22,4 +22,4 @@ export interface LotteryWin {
   created_at: string;
 }
 
-export type SpinPhase = 'idle' | 'loading' | 'confirming' | 'spinning' | 'decelerating' | 'won';
+export type SpinPhase = 'idle' | 'loading' | 'committing' | 'waiting' | 'revealing' | 'confirming' | 'spinning' | 'decelerating' | 'won';

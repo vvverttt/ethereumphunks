@@ -82,6 +82,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
   buttonShown = signal(false);
   errorMessage = signal('');
   confirmElapsed = signal(0);
+  waitingBlocks = signal(0);
+  hasPendingCommitment = signal(false);
+  commitmentExpired = signal(false);
   private confirmTimer: any;
   depositStatus = signal('');
   ownedItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean }[]>([]);
@@ -158,12 +161,40 @@ export class LotteryComponent implements OnInit, OnDestroy {
       } catch {}
     }
 
+    // Check for pending commitment (user may have closed browser between commit and reveal)
+    await this.checkPendingCommitment();
+
     // Staggered load-in animation (matches OG timing)
     setTimeout(() => this.loadedIn.set(true), 300);
     setTimeout(() => this.buttonShown.set(true), 1400);
 
     // Prevent accidental navigation during play
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
+  }
+
+  private async checkPendingCommitment() {
+    try {
+      const address = await firstValueFrom(this.address$);
+      if (!address) return;
+
+      const commitment = await this.lotterySvc.getCommitment(address);
+      if (commitment.commitBlock === 0n) return;
+
+      const currentBlock = await this.lotterySvc.getBlockNumber();
+      const expiry = commitment.commitBlock + 256n;
+
+      if (currentBlock > expiry) {
+        // Commitment expired — show cancel option
+        this.hasPendingCommitment.set(true);
+        this.commitmentExpired.set(true);
+      } else {
+        // Active commitment — can reveal or needs to wait
+        this.hasPendingCommitment.set(true);
+        this.commitmentExpired.set(false);
+      }
+    } catch (err) {
+      console.error('Failed to check pending commitment:', err);
+    }
   }
 
   ngOnDestroy() {
@@ -298,7 +329,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Check if user has enough ETH for play price + gas
+    // Check if user has enough ETH for play price + gas (2 txs)
     try {
       const address = await firstValueFrom(this.address$);
       if (address) {
@@ -308,7 +339,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
           this.web3Svc.l1Client.getBlock(),
         ]);
         const baseFee = block.baseFeePerGas ?? 1000000000n;
-        const gasBuffer = 150000n * baseFee * 3n; // 150k gas * 3x baseFee
+        const gasBuffer = 300000n * baseFee * 3n; // 300k gas for 2 txs
         if (balance < playPrice + gasBuffer) {
           this.errorMessage.set('Insufficient ETH for play + gas');
           return;
@@ -321,6 +352,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.stopFireworks();
     this.spinPhase.set('loading');
     this.playInProgress = true;
+    this.hasPendingCommitment.set(false);
 
     // Reset grid items to unrevealed
     this.gridItems.update(items =>
@@ -328,67 +360,81 @@ export class LotteryComponent implements OnInit, OnDestroy {
     );
 
     try {
-      // Send transaction
-      const hash = await this.lotterySvc.play();
-      if (!hash) throw new Error('Transaction failed');
+      // ─── Step 1: Commit ───────────────────────────────────
+      const commitHash = await this.lotterySvc.commitPlay();
+      if (!commitHash) throw new Error('Commit transaction failed');
 
-      // Wait for on-chain confirmation before spinning
-      this.spinPhase.set('confirming');
+      this.spinPhase.set('committing');
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
 
-      // Dedicated Alchemy client for fast receipt polling (only used here)
-      const receiptRpc = (environment as any).receiptRpcUrl;
-      console.log('[Lottery] Receipt RPC:', receiptRpc ? 'dedicated (alchemy)' : 'default (publicnode)');
-      const receiptClient = receiptRpc
-        ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
-        : this.web3Svc.l1Client;
+      // Wait for commit receipt
+      const commitReceipt = await this.pollReceipt(commitHash);
+      clearInterval(this.confirmTimer);
 
-      const manualReceiptPoll = (): Promise<{ source: 'receipt'; receipt: any }> => {
-        return new Promise((resolve, reject) => {
-          let attempts = 0;
-          let consecutiveErrors = 0;
-          let useFallback = false;
-          const timer = setInterval(async () => {
-            attempts++;
-            const client = useFallback ? this.web3Svc.l1Client : receiptClient;
-            try {
-              const receipt = await client.getTransactionReceipt({
-                hash: hash as `0x${string}`,
-              });
-              if (receipt) {
-                clearInterval(timer);
-                console.log(`[Lottery] Receipt found after ${attempts}s via ${useFallback ? 'fallback' : 'primary'}`);
-                resolve({ source: 'receipt', receipt });
-              }
-              consecutiveErrors = 0;
-            } catch (err: any) {
-              consecutiveErrors++;
-              if (consecutiveErrors <= 3 || consecutiveErrors % 10 === 0) {
-                console.warn(`[Lottery] Receipt poll error #${attempts}:`, err?.message || err);
-              }
-              // Switch to fallback (publicnode) after 5 consecutive errors
-              if (consecutiveErrors >= 5 && !useFallback) {
-                console.warn('[Lottery] Switching to fallback RPC for receipt polling');
-                useFallback = true;
-                consecutiveErrors = 0;
-              }
-            }
-            if (attempts >= 120) {
-              clearInterval(timer);
-              reject(new Error('Transaction confirmation timed out'));
-            }
-          }, 1000);
-        });
-      };
+      if (!commitReceipt) throw new Error('Commit confirmation timed out');
 
+      // Extract commitBlock from PlayCommitted event
+      let commitBlock = 0n;
+      for (const log of commitReceipt.logs) {
+        try {
+          const decoded = decodeEventLog({
+            abi: PhilipLotteryV67ABI,
+            data: log.data,
+            topics: log.topics,
+          });
+          if (decoded.eventName === 'PlayCommitted') {
+            const args = decoded.args as any;
+            commitBlock = BigInt(args.commitBlock);
+          }
+        } catch {}
+      }
+      if (commitBlock === 0n) {
+        // Fallback: read commitment from contract
+        const address = await firstValueFrom(this.address$);
+        if (address) {
+          const commitment = await this.lotterySvc.getCommitment(address);
+          commitBlock = commitment.commitBlock;
+        }
+      }
+      if (commitBlock === 0n) throw new Error('Failed to read commitment');
+
+      // ─── Step 2: Wait for blocks ─────────────────────────
+      this.spinPhase.set('waiting');
+      this.waitingBlocks.set(0);
+      const targetBlock = commitBlock + 2n;
+
+      await new Promise<void>((resolve) => {
+        const blockPoll = setInterval(async () => {
+          try {
+            const currentBlock = await this.lotterySvc.getBlockNumber();
+            const elapsed = Number(currentBlock - commitBlock);
+            this.waitingBlocks.set(Math.min(elapsed, 2));
+            if (currentBlock > targetBlock) {
+              clearInterval(blockPoll);
+              resolve();
+            }
+          } catch {}
+        }, 2000);
+      });
+
+      // ─── Step 3: Reveal ───────────────────────────────────
+      this.spinPhase.set('revealing');
+      this.confirmElapsed.set(0);
+      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
+
+      const revealHash = await this.lotterySvc.revealPlay();
+      if (!revealHash) throw new Error('Reveal transaction failed');
+
+      // Race receipt vs Supabase for reveal confirmation
       type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin };
       const confirmation = await Promise.race([
-        manualReceiptPoll(),
-        this.lotterySvc.watchForWinByTxHash(hash).then(win => ({ source: 'supabase' as const, win })),
+        this.pollReceipt(revealHash).then(receipt => ({ source: 'receipt' as const, receipt })),
+        this.lotterySvc.watchForWinByTxHash(revealHash).then(win => ({ source: 'supabase' as const, win })),
       ]) as ConfirmResult;
 
       clearInterval(this.confirmTimer);
+      this.hasPendingCommitment.set(false);
 
       // Extract win data from whichever source responded first
       let wonHashId = '';
@@ -459,7 +505,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
                 token_id: won.tokenId,
                 collection_slug: won.slug,
                 transfer_status: 'transferred',
-                tx_hash: hash,
+                tx_hash: revealHash,
                 created_at: new Date().toISOString(),
               };
             }
@@ -492,9 +538,203 @@ export class LotteryComponent implements OnInit, OnDestroy {
       this.spinPhase.set('idle');
       const msg = err?.shortMessage || err?.message || 'Transaction failed';
       this.errorMessage.set(msg);
+      // Re-check for pending commitment (commit may have succeeded but reveal failed)
+      this.checkPendingCommitment();
     } finally {
       this.playInProgress = false;
     }
+  }
+
+  // Resume a pending commitment (user refreshed or reveal failed)
+  async onResumeReveal() {
+    const connected = await firstValueFrom(this.connected$);
+    if (!connected) { this.web3Svc.connect(); return; }
+
+    const address = await firstValueFrom(this.address$);
+    if (!address) return;
+
+    this.errorMessage.set('');
+    this.wonPrize.set(null);
+    this.stopFireworks();
+    this.playInProgress = true;
+
+    try {
+      const commitment = await this.lotterySvc.getCommitment(address);
+      if (commitment.commitBlock === 0n) {
+        this.hasPendingCommitment.set(false);
+        return;
+      }
+
+      const currentBlock = await this.lotterySvc.getBlockNumber();
+      const targetBlock = commitment.commitBlock + 2n;
+      const expiry = commitment.commitBlock + 256n;
+
+      if (currentBlock > expiry) {
+        this.commitmentExpired.set(true);
+        this.errorMessage.set('Commitment expired. Cancel to reclaim your ETH.');
+        return;
+      }
+
+      // Wait for blocks if needed
+      if (currentBlock <= targetBlock) {
+        this.spinPhase.set('waiting');
+        this.waitingBlocks.set(Math.min(Number(currentBlock - commitment.commitBlock), 2));
+        await new Promise<void>((resolve) => {
+          const blockPoll = setInterval(async () => {
+            try {
+              const block = await this.lotterySvc.getBlockNumber();
+              const elapsed = Number(block - commitment.commitBlock);
+              this.waitingBlocks.set(Math.min(elapsed, 2));
+              if (block > targetBlock) { clearInterval(blockPoll); resolve(); }
+            } catch {}
+          }, 2000);
+        });
+      }
+
+      // Reveal
+      this.spinPhase.set('revealing');
+      this.confirmElapsed.set(0);
+      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
+
+      const revealHash = await this.lotterySvc.revealPlay();
+      if (!revealHash) throw new Error('Reveal transaction failed');
+
+      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin };
+      const confirmation = await Promise.race([
+        this.pollReceipt(revealHash).then(receipt => ({ source: 'receipt' as const, receipt })),
+        this.lotterySvc.watchForWinByTxHash(revealHash).then(win => ({ source: 'supabase' as const, win })),
+      ]) as ConfirmResult;
+
+      clearInterval(this.confirmTimer);
+      this.hasPendingCommitment.set(false);
+
+      let wonHashId = '';
+      let playId = 0;
+      let winRecord: LotteryWin | null = null;
+
+      if (confirmation.source === 'supabase') {
+        wonHashId = confirmation.win.hash_id;
+        playId = confirmation.win.play_id;
+        winRecord = confirmation.win;
+      } else {
+        for (const log of confirmation.receipt.logs) {
+          try {
+            const decoded = decodeEventLog({ abi: PhilipLotteryV67ABI, data: log.data, topics: log.topics });
+            if (decoded.eventName === 'PrizeAwarded') {
+              const args = decoded.args as any;
+              wonHashId = args.hashId;
+              playId = Number(args.playId);
+            }
+          } catch {}
+        }
+      }
+
+      let winCellIndex = this.spinPath[
+        (wonHashId ? playId : Math.floor(Math.random() * this.spinPath.length)) % this.spinPath.length
+      ];
+
+      if (wonHashId) {
+        try {
+          let won: { hashId: string; sha: string; tokenId: number; slug: string } | null = null;
+          if (winRecord?.sha) {
+            won = { hashId: winRecord.hash_id, sha: winRecord.sha, tokenId: winRecord.token_id, slug: winRecord.collection_slug };
+          } else {
+            const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds([wonHashId.toLowerCase()]);
+            won = ethscriptions[0] || null;
+          }
+          if (won) {
+            const existingIdx = this.gridItems().findIndex(item => item.sha === won!.sha);
+            if (existingIdx !== -1) { winCellIndex = existingIdx; }
+            else {
+              this.gridItems.update(items => items.map((item, i) =>
+                i === winCellIndex ? { ...item, hashId: won!.hashId, sha: won!.sha, imageUrl: `${this.staticUrl}/static/images/${won!.sha}` } : item
+              ));
+            }
+            if (!winRecord) {
+              winRecord = {
+                id: 0, contract_address: this.lotterySvc.address.toLowerCase(), play_id: playId,
+                winner: address.toLowerCase(), hash_id: won.hashId, sha: won.sha, token_id: won.tokenId,
+                collection_slug: won.slug, transfer_status: 'transferred', tx_hash: revealHash, created_at: new Date().toISOString(),
+              };
+            }
+            this.wonPrize.set(winRecord);
+            this.pendingWinRecord = winRecord;
+          }
+        } catch (err) { console.error('Failed to look up won ethscription:', err); }
+      }
+
+      this.startSpin();
+      this.targetWinIndex = winCellIndex;
+      this.shouldDecelerate = true;
+      this.lotterySvc.getPoolSize().then(newSize => this.poolSize.set(Number(newSize)));
+    } catch (err: any) {
+      clearInterval(this.confirmTimer);
+      this.stopSpin();
+      this.spinPhase.set('idle');
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Reveal failed');
+      this.checkPendingCommitment();
+    } finally {
+      this.playInProgress = false;
+    }
+  }
+
+  // Cancel an expired commitment to reclaim ETH
+  async onCancelPlay() {
+    try {
+      this.spinPhase.set('loading');
+      const hash = await this.lotterySvc.cancelPlay();
+      if (hash) {
+        await this.pollReceipt(hash);
+        this.hasPendingCommitment.set(false);
+        this.commitmentExpired.set(false);
+        this.spinPhase.set('idle');
+        this.errorMessage.set('');
+      }
+    } catch (err: any) {
+      this.spinPhase.set('idle');
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Cancel failed');
+    }
+  }
+
+  // Reusable receipt polling helper
+  private pollReceipt(hash: string): Promise<any> {
+    const receiptRpc = (environment as any).receiptRpcUrl;
+    const receiptClient = receiptRpc
+      ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
+      : this.web3Svc.l1Client;
+
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      let consecutiveErrors = 0;
+      let useFallback = false;
+      const timer = setInterval(async () => {
+        attempts++;
+        const client = useFallback ? this.web3Svc.l1Client : receiptClient;
+        try {
+          const receipt = await client.getTransactionReceipt({ hash: hash as `0x${string}` });
+          if (receipt) {
+            clearInterval(timer);
+            console.log(`[Lottery] Receipt found after ${attempts}s via ${useFallback ? 'fallback' : 'primary'}`);
+            resolve(receipt);
+          }
+          consecutiveErrors = 0;
+        } catch (err: any) {
+          consecutiveErrors++;
+          if (consecutiveErrors <= 3 || consecutiveErrors % 10 === 0) {
+            console.warn(`[Lottery] Receipt poll error #${attempts}:`, err?.message || err);
+          }
+          if (consecutiveErrors >= 5 && !useFallback) {
+            console.warn('[Lottery] Switching to fallback RPC');
+            useFallback = true;
+            consecutiveErrors = 0;
+          }
+        }
+        if (attempts >= 120) {
+          clearInterval(timer);
+          reject(new Error('Transaction confirmation timed out'));
+        }
+      }, 1000);
+    });
   }
 
   // =========================================================

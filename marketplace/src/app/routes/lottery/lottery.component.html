@@ -65,16 +65,39 @@
     </div>
   </div>
 
+  <!-- Pending Commitment Banner -->
+  @if (hasPendingCommitment() && spinPhase() === 'idle') {
+    <div class="pending-commitment">
+      @if (commitmentExpired()) {
+        <p>Your previous commitment has expired.</p>
+        <button class="play-button" [class.shown]="true" (click)="onCancelPlay()">
+          Cancel &amp; Reclaim ETH
+        </button>
+      } @else {
+        <p>You have a pending lottery commitment.</p>
+        <button class="play-button" [class.shown]="true" (click)="onResumeReveal()">
+          Resume Reveal
+        </button>
+      }
+    </div>
+  }
+
   <!-- Play Button -->
   <div class="action-area">
     <button
       class="play-button"
       [class.shown]="buttonShown()"
-      [class.spinning]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading' || spinPhase() === 'confirming'"
-      [disabled]="spinPhase() === 'spinning' || spinPhase() === 'decelerating' || spinPhase() === 'loading' || spinPhase() === 'confirming' || (poolSize() === 0 && spinPhase() !== 'won') || !isActive()"
+      [class.spinning]="spinPhase() !== 'idle' && spinPhase() !== 'won'"
+      [disabled]="spinPhase() !== 'idle' && spinPhase() !== 'won' || (poolSize() === 0 && spinPhase() !== 'won') || !isActive() || hasPendingCommitment()"
       (click)="spinPhase() === 'won' ? onSpinAgain() : onPlay()">
       @if (spinPhase() === 'loading') {
         Confirm in wallet...
+      } @else if (spinPhase() === 'committing') {
+        Committing... {{ confirmElapsed() }}s
+      } @else if (spinPhase() === 'waiting') {
+        Waiting for blocks... ({{ waitingBlocks() }}/2)
+      } @else if (spinPhase() === 'revealing') {
+        Revealing... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'confirming') {
         Confirming... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'spinning') {

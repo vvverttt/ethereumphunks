@@ -102,32 +102,83 @@ export class LotteryService {
   // Contract Writes
   // =========================================================
 
-  async play(): Promise<string | undefined> {
+  async commitPlay(): Promise<string | undefined> {
     await this.web3Svc.switchNetwork();
 
-    // After switchNetwork('l1') we're guaranteed on the target chain
     const chainId = environment.chainId;
     const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
-    const publicClient = getPublicClient(this.web3Svc.config, { chainId });
 
     if (!walletClient) throw new Error('No wallet connected');
-    if (!publicClient) throw new Error('No public client');
 
     const playPrice = await this.getPlayPrice();
 
-    // Let the wallet handle everything — no gas overrides
-    console.time('[Lottery] writeContract');
+    console.time('[Lottery] commitPlay');
     const hash = await walletClient.writeContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
-      functionName: 'play',
+      functionName: 'commitPlay',
       value: playPrice,
       chain: walletClient.chain,
       account: walletClient.account,
     });
-    console.timeEnd('[Lottery] writeContract');
-    console.log('[Lottery] tx hash:', hash);
+    console.timeEnd('[Lottery] commitPlay');
+    console.log('[Lottery] commitPlay tx hash:', hash);
     return hash;
+  }
+
+  async revealPlay(): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+
+    const chainId = environment.chainId;
+    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+
+    if (!walletClient) throw new Error('No wallet connected');
+
+    console.time('[Lottery] revealPlay');
+    const hash = await walletClient.writeContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'revealPlay',
+      chain: walletClient.chain,
+      account: walletClient.account,
+    });
+    console.timeEnd('[Lottery] revealPlay');
+    console.log('[Lottery] revealPlay tx hash:', hash);
+    return hash;
+  }
+
+  async cancelPlay(): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+
+    const chainId = environment.chainId;
+    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+
+    if (!walletClient) throw new Error('No wallet connected');
+
+    const hash = await walletClient.writeContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'cancelPlay',
+      chain: walletClient.chain,
+      account: walletClient.account,
+    });
+    console.log('[Lottery] cancelPlay tx hash:', hash);
+    return hash;
+  }
+
+  async getCommitment(address: string): Promise<{ commitBlock: bigint; priceLocked: bigint }> {
+    const result = await this.web3Svc.l1Client.readContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'getCommitment',
+      args: [address as `0x${string}`],
+    });
+    const [commitBlock, priceLocked] = result as [bigint, bigint];
+    return { commitBlock, priceLocked };
+  }
+
+  async getBlockNumber(): Promise<bigint> {
+    return await this.web3Svc.l1Client.getBlockNumber();
   }
 
   async withdrawETH(amount: bigint, to: string): Promise<string | undefined> {
