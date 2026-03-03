@@ -7,10 +7,8 @@ export const environment = {
   production: false,
   chainId: 1,
 
-  rpcHttpProvider: 'https://ethereum-rpc.publicnode.com',
+  rpcHttpProvider: 'https://eth.llamarpc.com',
   receiptRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO',
-  // rpcHttpProvider: 'https://cloudflare-eth.com',
-  // rpcHttpProvider: 'http://reth.dappnode:8545',
   explorerUrl: 'https://etherscan.io',
   externalMarketUrl: 'https://ethscriptions.com',
 

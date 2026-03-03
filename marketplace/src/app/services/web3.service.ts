@@ -87,8 +87,8 @@ export class Web3Service {
       chain: this.chains[0],
       transport: fallback([
         http(environment.rpcHttpProvider),
-        http('https://rpc.ankr.com/eth'),
-        http('https://cloudflare-eth.com'),
+        http('https://1rpc.io/eth'),
+        http('https://rpc.mevblocker.io'),
       ], { rank: false }),
     });
 
@@ -102,8 +102,8 @@ export class Web3Service {
       transports: {
         [environment.chainId]: fallback([
           http(environment.rpcHttpProvider),
-          http('https://rpc.ankr.com/eth'),
-          http('https://cloudflare-eth.com'),
+          http('https://1rpc.io/eth'),
+          http('https://rpc.mevblocker.io'),
         ]),
         6969696969: http(environment.magmaRpcHttpProvider)
       },
