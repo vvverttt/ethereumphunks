@@ -347,20 +347,34 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const manualReceiptPoll = (): Promise<{ source: 'receipt'; receipt: any }> => {
         return new Promise((resolve, reject) => {
           let attempts = 0;
+          let consecutiveErrors = 0;
+          let useFallback = false;
           const timer = setInterval(async () => {
             attempts++;
+            const client = useFallback ? this.web3Svc.l1Client : receiptClient;
             try {
-              const receipt = await receiptClient.getTransactionReceipt({
+              const receipt = await client.getTransactionReceipt({
                 hash: hash as `0x${string}`,
               });
               if (receipt) {
                 clearInterval(timer);
+                console.log(`[Lottery] Receipt found after ${attempts}s via ${useFallback ? 'fallback' : 'primary'}`);
                 resolve({ source: 'receipt', receipt });
               }
-            } catch {
-              // Receipt not available yet
+              consecutiveErrors = 0;
+            } catch (err: any) {
+              consecutiveErrors++;
+              if (consecutiveErrors <= 3 || consecutiveErrors % 10 === 0) {
+                console.warn(`[Lottery] Receipt poll error #${attempts}:`, err?.message || err);
+              }
+              // Switch to fallback (publicnode) after 5 consecutive errors
+              if (consecutiveErrors >= 5 && !useFallback) {
+                console.warn('[Lottery] Switching to fallback RPC for receipt polling');
+                useFallback = true;
+                consecutiveErrors = 0;
+              }
             }
-            if (attempts >= 60) {
+            if (attempts >= 120) {
               clearInterval(timer);
               reject(new Error('Transaction confirmation timed out'));
             }
@@ -766,12 +780,25 @@ export class LotteryComponent implements OnInit, OnDestroy {
     // Reload everything for the new contract
     this.wonPrize.set(null);
     this.stopFireworks();
+    this.stopSpin();
     this.spinPhase.set('idle');
+    this.activeFrameIndex.set(-1);
     this.errorMessage.set('');
     this.recentWins.set([]);
     this.totalWinsCount.set(0);
+
+    // Reset load-in animation so grid replays staggered entrance
+    this.loadedIn.set(false);
+    this.buttonShown.set(false);
+    // Clear grid items so Angular destroys DOM nodes (forces animation replay)
+    this.gridItems.set([]);
+
     await this.loadContractState();
-    this.initGrid();
+    await this.initGrid();
+
+    // Replay staggered load-in animation (same timing as ngOnInit)
+    setTimeout(() => this.loadedIn.set(true), 300);
+    setTimeout(() => this.buttonShown.set(true), 1400);
 
     // Re-subscribe to recent wins for the new contract
     this.recentWinsSub?.unsubscribe();
