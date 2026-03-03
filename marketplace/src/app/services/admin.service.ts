@@ -348,6 +348,12 @@ export class AdminService {
     });
   }
 
+  async getLotteryPoolItems(offset: bigint, limit: bigint): Promise<string[]> {
+    return await this.web3Svc.l1Client.readContract({
+      address: this._lotteryAddress, abi: PhilipLotteryV67ABI, functionName: 'getPoolItems', args: [offset, limit],
+    }) as string[];
+  }
+
   // =========================================================
   // Lottery Writes
   // =========================================================
