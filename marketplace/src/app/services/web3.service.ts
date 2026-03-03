@@ -547,8 +547,11 @@ export class Web3Service {
    * @throws Error if phunk is not in escrow
    */
   async withdrawPhunk(hashId: string, contractAddress: string = marketAddress): Promise<string | undefined> {
-    const escrowed = await this.isInEscrow(hashId, contractAddress);
-    if (!escrowed) throw new Error('Phunk not in escrow');
+    // Skip isInEscrow check for old market — its view function reverts for OG collection items
+    if (!oldMarketAddresses.includes(contractAddress.toLowerCase())) {
+      const escrowed = await this.isInEscrow(hashId, contractAddress);
+      if (!escrowed) throw new Error('Phunk not in escrow');
+    }
     return await this._writeMarketContractAt(contractAddress, 'withdrawPhunk', [hashId]);
   }
 
