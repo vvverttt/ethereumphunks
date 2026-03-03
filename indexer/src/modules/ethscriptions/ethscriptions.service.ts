@@ -616,9 +616,6 @@ export class EthscriptionsService {
       // Remove listing (may already be removed by PhunkNoLongerForSale in the same tx)
       await this.storageSvc.removeListing(hashId);
 
-      // Award 67 points to the buyer in Supabase
-      this.storageSvc.incrementUserPoints(toAddress.toLowerCase(), 67);
-
       return {
         txId: txn.hash + log.logIndex,
         type: eventName,

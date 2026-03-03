@@ -113,9 +113,6 @@ export class LotteryService {
       // Update ethscription ownership: lottery contract → winner
       await this.storageSvc.updateEthscriptionOwner(hashId, contractAddress, winner);
 
-      // Award 67 buyer points to the lottery winner (lottery play counts as a buy)
-      this.storageSvc.incrementUserPoints(winner, 67);
-
       // Remove any stale events for this hashId in this tx (re-indexing cleanup)
       await this.storageSvc.supabase
         .from('events' + suffix)
