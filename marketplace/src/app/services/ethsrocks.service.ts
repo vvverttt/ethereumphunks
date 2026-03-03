@@ -268,7 +268,12 @@ export class EthsRocksService {
 
   // ─── Authorization (backend signer) ─────────────────────
 
-  async getAuthorization(address: string): Promise<{
+  async getAuthorization(
+    address: string,
+    philipOrWrappedTokenId: bigint,
+    usePhilipIntern: boolean,
+    cryptoPhunksV2TokenId: bigint,
+  ): Promise<{
     eligible: boolean;
     reason?: string;
     signature?: string;
@@ -277,7 +282,12 @@ export class EthsRocksService {
     quantumPhunkHash?: string;
     deadline?: number;
   }> {
-    const res = await fetch(`${environment.relayUrl}/ethsrocks/authorize/${address}`);
+    const params = new URLSearchParams({
+      philipOrWrappedTokenId: philipOrWrappedTokenId.toString(),
+      usePhilipIntern: String(usePhilipIntern),
+      cryptoPhunksV2TokenId: cryptoPhunksV2TokenId.toString(),
+    });
+    const res = await fetch(`${environment.relayUrl}/ethsrocks/authorize/${address}?${params}`);
     return await res.json();
   }
 

@@ -218,8 +218,8 @@ export class EthsRocksPageComponent implements OnInit {
       const address = this.web3Svc.getCurrentAddress();
       if (!address) throw new Error('Wallet not connected');
 
-      // Get backend authorization (ethscription hashes + signature)
-      const auth = await this.ethsrocksSvc.getAuthorization(address);
+      // Get backend authorization (ethscription hashes + signature, bound to token IDs)
+      const auth = await this.ethsrocksSvc.getAuthorization(address, sel1.tokenId, usePhilip, sel2.tokenId);
       if (!auth.eligible) {
         throw new Error(auth.reason || 'Not eligible — missing required ethscriptions');
       }

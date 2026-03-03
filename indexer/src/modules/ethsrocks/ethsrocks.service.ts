@@ -49,7 +49,12 @@ export class EthsRocksService {
     return this.signerAccount?.address?.toLowerCase() || null;
   }
 
-  async authorize(buyerAddress: string): Promise<{
+  async authorize(
+    buyerAddress: string,
+    philipOrWrappedTokenId: bigint,
+    usePhilipIntern: boolean,
+    cryptoPhunksV2TokenId: bigint,
+  ): Promise<{
     eligible: boolean;
     reason?: string;
     signature?: string;
@@ -98,10 +103,10 @@ export class EthsRocksService {
     // Deadline: current time + TTL
     const deadline = Math.floor(Date.now() / 1000) + SIGNATURE_TTL_SECONDS;
 
-    // Sign: keccak256(abi.encodePacked(buyer, missingHash, dystoHash, phunkHash, deadline, chainId, contractAddress))
+    // Sign: must match contract's keccak256(abi.encodePacked(buyer, hashes..., tokenIds..., deadline, chainId, contract))
     const dataHash = keccak256(encodePacked(
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'uint256', 'uint256', 'address'],
-      [addr as Hex, missingPhunkHash, quantumDystoHash, quantumPhunkHash, BigInt(deadline), BigInt(CHAIN_ID), ETHSROCKS_ADDRESS]
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'uint256', 'bool', 'uint256', 'uint256', 'uint256', 'address'],
+      [addr as Hex, missingPhunkHash, quantumDystoHash, quantumPhunkHash, philipOrWrappedTokenId, usePhilipIntern, cryptoPhunksV2TokenId, BigInt(deadline), BigInt(CHAIN_ID), ETHSROCKS_ADDRESS]
     ));
 
     const signature = await this.signerAccount.signMessage({
