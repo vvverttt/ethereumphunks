@@ -396,6 +396,41 @@ export class LotteryService {
     return data?.[0] || null;
   }
 
+  /**
+   * Insert a win record directly from the frontend as a fallback
+   * in case the indexer is slow. Uses upsert so it won't duplicate
+   * if the indexer also records it.
+   */
+  async insertWinFallback(win: {
+    contractAddress: string;
+    playId: number;
+    winner: string;
+    hashId: string;
+    sha: string;
+    tokenId: number;
+    collectionSlug: string;
+    txHash: string;
+  }): Promise<void> {
+    try {
+      await supabase
+        .from('lottery_wins' + suffix)
+        .upsert({
+          contract_address: win.contractAddress.toLowerCase(),
+          play_id: win.playId,
+          winner: win.winner.toLowerCase(),
+          hash_id: win.hashId.toLowerCase(),
+          sha: win.sha,
+          token_id: win.tokenId,
+          collection_slug: win.collectionSlug,
+          transfer_status: 'transferred',
+          tx_hash: win.txHash.toLowerCase(),
+          created_at: new Date().toISOString(),
+        }, { onConflict: 'contract_address,play_id' });
+    } catch (err) {
+      console.warn('[Lottery] Failed to insert win fallback:', err);
+    }
+  }
+
   fetchTotalWinsCount(): Observable<number> {
     const addr = this._address.toLowerCase();
     return from(

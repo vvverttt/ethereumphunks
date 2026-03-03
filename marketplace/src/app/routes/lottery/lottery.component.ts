@@ -579,6 +579,21 @@ export class LotteryComponent implements OnInit, OnDestroy {
         }
       }
 
+      // Insert win into Supabase immediately (fallback in case indexer is slow)
+      if (wonHashId && winRecord) {
+        const address = await firstValueFrom(this.address$);
+        this.lotterySvc.insertWinFallback({
+          contractAddress: this.lotterySvc.address,
+          playId,
+          winner: address || '',
+          hashId: wonHashId,
+          sha: winRecord.sha,
+          tokenId: winRecord.token_id,
+          collectionSlug: winRecord.collection_slug,
+          txHash: revealHash,
+        });
+      }
+
       // Now start spinning with real data loaded, then immediately signal deceleration
       this.startSpin();
       this.targetWinIndex = winCellIndex;
@@ -723,6 +738,20 @@ export class LotteryComponent implements OnInit, OnDestroy {
             this.pendingWinRecord = winRecord;
           }
         } catch (err) { console.error('Failed to look up won ethscription:', err); }
+      }
+
+      // Insert win into Supabase immediately (fallback in case indexer is slow)
+      if (wonHashId && winRecord) {
+        this.lotterySvc.insertWinFallback({
+          contractAddress: this.lotterySvc.address,
+          playId,
+          winner: address || '',
+          hashId: wonHashId,
+          sha: winRecord.sha,
+          tokenId: winRecord.token_id,
+          collectionSlug: winRecord.collection_slug,
+          txHash: revealHash,
+        });
       }
 
       this.startSpin();
