@@ -8,7 +8,7 @@ export const environment = {
   chainId: 1,
 
   rpcHttpProvider: 'https://ethereum-rpc.publicnode.com',
-  receiptRpcUrl: 'https://rpc.ankr.com/eth',
+  receiptRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO',
   explorerUrl: 'https://etherscan.io',
   externalMarketUrl: 'https://ethscriptions.com',
 
