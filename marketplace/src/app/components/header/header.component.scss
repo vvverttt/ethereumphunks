@@ -318,6 +318,12 @@
         overflow: hidden;
         width: 15rem;
 
+        img {
+          &.phunk-icon {
+            margin-left: -10px;
+          }
+        }
+
         svg {
           overflow: visible;
           width: 20rem;
@@ -353,6 +359,13 @@
         img {
           height: 2.8rem;
           width: auto;
+
+          &.phunk-icon {
+            width: 20px;
+            height: 2.8rem;
+            margin-left: -8px;
+            margin-top: -2px;
+          }
         }
       }
 
