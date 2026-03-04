@@ -62,6 +62,12 @@ export class HeaderComponent {
 
   isStandaloneMarket = environment.standalone;
 
+  openDystolabz(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    window.open('https://dystolabz.com', '_blank', 'noopener,noreferrer');
+  }
+
   constructor(
     private store: Store<GlobalState>,
     public web3Svc: Web3Service,

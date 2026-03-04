@@ -82,10 +82,11 @@
 
 <ng-template #logo>
   @if ((theme$ | async) === 'dark') {
-    <img src="assets/etherphunks-logo-pink.svg" alt="EtherPhunks" height="38" />
+    <img src="assets/etherphunks-logo-pink.svg" alt="EtherPhunks" width="250" height="38" />
   } @else {
-    <img src="assets/etherphunks-logo.svg" alt="EtherPhunks" height="38" />
+    <img src="assets/etherphunks-logo.svg" alt="EtherPhunks" width="250" height="38" />
   }
+  <img src="assets/phunk-animated.png" alt="Dystolabz" class="phunk-icon" (click)="openDystolabz($event)" style="cursor: pointer;" />
 </ng-template>
 
 <ng-template #themSwitcher>

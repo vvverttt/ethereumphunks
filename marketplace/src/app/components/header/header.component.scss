@@ -34,9 +34,26 @@
       align-items: center;
 
       width: 19rem;
-      height: 4rem;
+      margin-top: 8px;
 
       pointer-events: all;
+
+      img {
+        width: 250px;
+        height: 38px;
+        object-fit: cover;
+        object-position: left top;
+
+        &.phunk-icon {
+          width: 28px;
+          height: 38px;
+          margin-left: -22px;
+          margin-top: -4px;
+          object-fit: contain;
+          object-position: center;
+          image-rendering: pixelated;
+        }
+      }
 
       svg {
         path {
