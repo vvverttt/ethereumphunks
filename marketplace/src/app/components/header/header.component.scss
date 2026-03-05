@@ -372,6 +372,9 @@
 
       &.connected {
         .logo {
+          margin-top: -4px;
+          align-items: center;
+
           img:not(.phunk-icon) {
             display: none;
           }
