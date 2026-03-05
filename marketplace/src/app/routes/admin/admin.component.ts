@@ -73,6 +73,8 @@ export class AdminComponent implements OnInit {
   aEmergencyHashId = '';
   aDepositHashIds = '';
   aTransferOwnership = '';
+  aSetItemReserveHashIds = '';
+  aSetItemReservePrices = '';
 
   // Points state
   pointsMultiplier = signal('0');
@@ -84,6 +86,8 @@ export class AdminComponent implements OnInit {
   pRemovePointsUser = '';
   pRemovePointsAmount = '';
   pDrainUser = '';
+  pAddPointsUser = '';
+  pAddPointsAmount = '';
 
   // Lottery state
   adminLotteryTier = signal<'standard' | 'premium'>('standard');
@@ -102,6 +106,7 @@ export class AdminComponent implements OnInit {
   lWithdrawTo = '';
   lWithdrawPrizeHashId = '';
   lTransferOwnership = '';
+  lEmergencyHashId = '';
 
   // Evolve state
   evolvePaused = signal(false);
@@ -112,6 +117,8 @@ export class AdminComponent implements OnInit {
   eWithdrawHashId = '';
   eWithdrawTo = '';
   eTransferOwnership = '';
+  eRegisterOgHashes = '';
+  eRegisterQuantumHashes = '';
 
   // EthsRocks state
   ethsrocksPaused = signal(false);
@@ -133,6 +140,10 @@ export class AdminComponent implements OnInit {
   rEmergencyHashId = '';
   rDepositHashIds = '';
   rTransferOwnership = '';
+  rResetERC721Contract = '';
+  rResetERC721TokenId = '';
+  rResetEthscriptionHashId = '';
+  rResetTotalRevealed = '';
 
   // Batch operations (pause/unpause all, transfer all)
   batchRunning = signal(false);
@@ -352,6 +363,12 @@ export class AdminComponent implements OnInit {
     if (!hashIds.length) return;
     this.exec(() => this.adminSvc.auctionDepositEthscriptions(hashIds), () => this.loadAuctionState());
   }
+  auctionSetItemReservePrices() {
+    const hashIds = this.aSetItemReserveHashIds.split(/[\n,]+/).map(s => s.trim()).filter(s => s.startsWith('0x'));
+    const prices = this.aSetItemReservePrices.split(/[\n,]+/).map(s => parseEther(s.trim()));
+    if (!hashIds.length || hashIds.length !== prices.length) return;
+    this.exec(() => this.adminSvc.auctionSetItemReservePrices(hashIds, prices), () => this.loadAuctionState());
+  }
   transferAuctionOwnership() { this.exec(() => this.adminSvc.auctionTransferOwnership(this.aTransferOwnership)); }
 
   // Points actions
@@ -360,6 +377,13 @@ export class AdminComponent implements OnInit {
   revokePointsManager() { this.exec(() => this.adminSvc.pointsRevokeManager(this.pRevokeManager)); }
   removePoints() { this.exec(() => this.adminSvc.pointsRemovePoints(this.pRemovePointsUser, BigInt(this.pRemovePointsAmount))); }
   drainPoints() { this.exec(() => this.adminSvc.pointsDrainPoints(this.pDrainUser)); }
+  addPoints() { this.exec(() => this.adminSvc.pointsAddPoints(this.pAddPointsUser, BigInt(this.pAddPointsAmount)), () => this.loadPointsState()); }
+  togglePointsPause() {
+    this.exec(
+      () => this.pointsPaused() ? this.adminSvc.pointsUnpause() : this.adminSvc.pointsPause(),
+      () => this.loadPointsState()
+    );
+  }
 
   // Lottery actions
   get hasSecondLottery(): boolean { return this.adminSvc.hasSecondLottery; }
@@ -405,6 +429,7 @@ export class AdminComponent implements OnInit {
       return this.adminSvc.lotteryWithdrawPrizeBatch(items as string[]);
     }, () => this.loadLotteryState());
   }
+  lotteryEmergencyWithdraw() { this.exec(() => this.adminSvc.lotteryEmergencyWithdrawEthscription(this.lEmergencyHashId)); }
   transferLotteryOwnership() { this.exec(() => this.adminSvc.lotteryTransferOwnership(this.lTransferOwnership)); }
 
   // Evolve actions
@@ -417,6 +442,12 @@ export class AdminComponent implements OnInit {
   setEvolveFee() { this.exec(() => this.adminSvc.evolveSetFee(parseEther(this.eSetFee)), () => this.loadEvolveState()); }
   evolveWithdrawETH() { this.exec(() => this.adminSvc.evolveWithdrawETH(), () => this.loadEvolveState()); }
   evolveWithdrawEthscription() { this.exec(() => this.adminSvc.evolveWithdrawEthscription(this.eWithdrawHashId, this.eWithdrawTo)); }
+  evolveRegisterPairs() {
+    const og = this.eRegisterOgHashes.split(/[\n,]+/).map(s => s.trim()).filter(s => s.startsWith('0x'));
+    const q = this.eRegisterQuantumHashes.split(/[\n,]+/).map(s => s.trim()).filter(s => s.startsWith('0x'));
+    if (!og.length || og.length !== q.length) return;
+    this.exec(() => this.adminSvc.evolveRegisterPairs(og, q), () => this.loadEvolveState());
+  }
   transferEvolveOwnership() { this.exec(() => this.adminSvc.evolveTransferOwnership(this.eTransferOwnership)); }
 
   // EthsRocks actions
@@ -445,6 +476,9 @@ export class AdminComponent implements OnInit {
     if (!hashIds.length) return;
     this.exec(() => this.adminSvc.ethsrocksDepositEthscriptions(hashIds), () => this.loadEthsRocksState());
   }
+  resetEthsRocksUsedERC721() { this.exec(() => this.adminSvc.ethsrocksResetUsedERC721(this.rResetERC721Contract, BigInt(this.rResetERC721TokenId)), () => this.loadEthsRocksState()); }
+  resetEthsRocksUsedEthscription() { this.exec(() => this.adminSvc.ethsrocksResetUsedEthscription(this.rResetEthscriptionHashId), () => this.loadEthsRocksState()); }
+  resetEthsRocksTotalRevealed() { this.exec(() => this.adminSvc.ethsrocksResetTotalRevealed(BigInt(this.rResetTotalRevealed)), () => this.loadEthsRocksState()); }
   transferEthsRocksOwnership() { this.exec(() => this.adminSvc.ethsrocksTransferOwnership(this.rTransferOwnership)); }
 
   // Pause All (Market, Auction, Lottery, Evolve, EthsRocks)

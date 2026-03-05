@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { Store } from '@ngrx/store';
 
@@ -10,7 +10,7 @@ import { CollectionsDropdownComponent } from '@/components/collections-dropdown/
 
 import { Web3Service } from '@/services/web3.service';
 
-import { Subject, map, tap, withLatestFrom } from 'rxjs';
+import { Subject, firstValueFrom, map, tap, withLatestFrom } from 'rxjs';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
@@ -62,14 +62,21 @@ export class HeaderComponent {
 
   isStandaloneMarket = environment.standalone;
 
-  openDystolabz(event: Event): void {
+  async openDystolabz(event: Event): Promise<void> {
     event.stopPropagation();
     event.preventDefault();
-    window.open('https://dystolabz.com', '_blank', 'noopener,noreferrer');
+    const isIPhone = /iPhone/i.test(navigator.userAgent);
+    const connected = await firstValueFrom(this.connected$);
+    if (isIPhone && connected) {
+      this.router.navigate(['/']);
+    } else {
+      window.open('https://dystolabz.com', '_blank', 'noopener,noreferrer');
+    }
   }
 
   constructor(
     private store: Store<GlobalState>,
+    private router: Router,
     public web3Svc: Web3Service,
   ) {
     this.toggleTheme$.pipe(

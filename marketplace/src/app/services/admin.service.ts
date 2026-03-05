@@ -297,6 +297,11 @@ export class AdminService {
   pointsDrainPoints(user: string) {
     return this.writeContract(pointsAddress, PointsABI, 'drainPoints', [user]);
   }
+  pointsAddPoints(user: string, amount: bigint) {
+    return this.writeContract(pointsAddress, PointsABI, 'addPoints', [user, amount]);
+  }
+  pointsPause() { return this.writeContract(pointsAddress, PointsABI, 'pause'); }
+  pointsUnpause() { return this.writeContract(pointsAddress, PointsABI, 'unpause'); }
 
   // =========================================================
   // Lottery Reads
@@ -601,6 +606,15 @@ export class AdminService {
   }
   ethsrocksEmergencyWithdrawEthscription(hashId: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'emergencyWithdrawEthscription', [hashId]);
+  }
+  ethsrocksResetUsedERC721(nftContract: string, tokenId: bigint) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'resetUsedERC721', [nftContract, tokenId]);
+  }
+  ethsrocksResetUsedEthscription(hashId: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'resetUsedEthscription', [hashId]);
+  }
+  ethsrocksResetTotalRevealed(total: bigint) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'resetTotalRevealed', [total]);
   }
   ethsrocksTransferOwnership(addr: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'transferOwnership', [addr]);
