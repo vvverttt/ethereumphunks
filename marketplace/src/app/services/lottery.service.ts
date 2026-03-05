@@ -134,6 +134,11 @@ export class LotteryService {
 
     if (!walletClient) throw new Error('No wallet connected');
 
+    const feeData = await this.web3Svc.l1Client.estimateFeesPerGas();
+    const minPriority = parseGwei('0.1');
+    const priority = feeData.maxPriorityFeePerGas && feeData.maxPriorityFeePerGas > minPriority
+      ? feeData.maxPriorityFeePerGas : minPriority;
+
     console.time('[Lottery] revealPlay');
     const hash = await walletClient.writeContract({
       address: this._address,
@@ -141,6 +146,7 @@ export class LotteryService {
       functionName: 'revealPlay',
       chain: walletClient.chain,
       account: walletClient.account,
+      maxPriorityFeePerGas: priority,
     });
     console.timeEnd('[Lottery] revealPlay');
     console.log('[Lottery] revealPlay tx hash:', hash);
@@ -155,12 +161,18 @@ export class LotteryService {
 
     if (!walletClient) throw new Error('No wallet connected');
 
+    const feeData = await this.web3Svc.l1Client.estimateFeesPerGas();
+    const minPriority = parseGwei('0.1');
+    const priority = feeData.maxPriorityFeePerGas && feeData.maxPriorityFeePerGas > minPriority
+      ? feeData.maxPriorityFeePerGas : minPriority;
+
     const hash = await walletClient.writeContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'cancelPlay',
       chain: walletClient.chain,
       account: walletClient.account,
+      maxPriorityFeePerGas: priority,
     });
     console.log('[Lottery] cancelPlay tx hash:', hash);
     return hash;
