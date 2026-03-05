@@ -370,6 +370,20 @@
         }
       }
 
+      &.connected {
+        .logo {
+          img:not(.phunk-icon) {
+            display: none;
+          }
+
+          img.phunk-icon {
+            width: 28px;
+            height: 28px;
+            margin-left: 0;
+          }
+        }
+      }
+
       .search-wrapper {
         app-search {}
         app-collections-dropdown {}

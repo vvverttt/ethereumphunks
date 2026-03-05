@@ -1,4 +1,4 @@
-<div class="inner" [class.menu-active]="menuActive$ | async">
+<div class="inner" [class.menu-active]="menuActive$ | async" [class.connected]="connected$ | async">
 
   @if (isStandaloneMarket) {
     <a [routerLink]="['/']" class="logo standalone">
