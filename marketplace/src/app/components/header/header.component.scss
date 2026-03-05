@@ -316,6 +316,7 @@
     .inner {
       .logo {
         width: 18rem;
+        margin-top: 12px;
 
         img {
           &.phunk-icon {
@@ -353,7 +354,7 @@
 
       .logo {
         width: auto;
-        margin-top: 4px;
+        margin-top: 8px;
         align-items: center;
 
         img {
@@ -363,7 +364,7 @@
           &.phunk-icon {
             width: 20px;
             height: 2.8rem;
-            margin-left: -6px;
+            margin-left: 4px;
             margin-top: 0;
           }
         }
