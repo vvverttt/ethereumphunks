@@ -31,7 +31,7 @@
     .logo {
       grid-area: logo;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
 
       width: 19rem;
       margin-top: 8px;
@@ -48,9 +48,9 @@
           width: 28px;
           height: 38px;
           margin-left: -22px;
-          margin-top: -4px;
+          margin-top: 0;
           object-fit: contain;
-          object-position: center;
+          object-position: top;
           image-rendering: pixelated;
         }
       }

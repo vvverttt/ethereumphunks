@@ -43,7 +43,7 @@ const bridgeAddressL2 = environment.bridgeAddressL2;
 const projectId = 'fb5073eb31498f38d17c73bcabc03255';
 
 const metadata = {
-  name: 'DystoLabz Market',
+  name: 'QuantumPhunks Market',
   description: 'QuantumPhunks Marketplace',
   url: typeof window !== 'undefined' ? window.location.origin : 'https://etherphunks.eth.limo',
   icons: ['https://etherphunks.eth.limo/favicon.ico']
