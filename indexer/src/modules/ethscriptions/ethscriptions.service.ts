@@ -69,10 +69,11 @@ export class EthscriptionsService {
     }
 
     // Check if possible transfer
-    // Skip auction/lottery contracts — their event processors handle ownership + activity
+    // Skip auction contracts — their event processors handle ownership + activity
+    // Lottery deposits are processed here; prize awards are handled by lottery event processor
     const possibleTransfer = this.utilitySvc.possibleTransfer(input);
     const toAddress = transaction.to?.toLowerCase();
-    if (possibleTransfer && toAddress !== auctionAddressL1 && !lotteryAddressesL1.has(toAddress)) {
+    if (possibleTransfer && toAddress !== auctionAddressL1) {
       const event = await this.processTransferEvent(
         input,
         transaction as Transaction,
