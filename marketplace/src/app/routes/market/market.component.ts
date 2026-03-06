@@ -27,6 +27,7 @@ import { UtilService } from '@/services/util.service';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { CalcPipe } from '@/pipes/calculate.pipe';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
+import { AttributeFilterPipe } from '@/pipes/attribute-filter';
 
 import { setChat } from '@/state/actions/chat.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -67,6 +68,7 @@ const defaultActionState = {
     WeiToEthPipe,
     CalcPipe,
     FormatCashPipe,
+    AttributeFilterPipe,
   ],
   selector: 'app-phunk-grid-view',
   templateUrl: './market.component.html',
