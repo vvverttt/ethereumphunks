@@ -107,6 +107,11 @@ export class AdminComponent implements OnInit {
   lWithdrawPrizeHashId = '';
   lTransferOwnership = '';
   lEmergencyHashId = '';
+  lRedirectFrom = '';
+  lRedirectTo = '';
+  lCheckPendingAddr = '';
+  lotteryPendingReturns = signal('');
+  lotteryTotalCommittedETH = signal('0');
 
   // Evolve state
   evolvePaused = signal(false);
@@ -242,7 +247,7 @@ export class AdminComponent implements OnInit {
 
   async loadLotteryState() {
     try {
-      const [paused, active, price, balance, pts, treasury, poolSize] = await Promise.all([
+      const [paused, active, price, balance, pts, treasury, poolSize, committedETH] = await Promise.all([
         this.adminSvc.getLotteryPaused(),
         this.adminSvc.getLotteryActive(),
         this.adminSvc.getLotteryPlayPrice(),
@@ -250,6 +255,7 @@ export class AdminComponent implements OnInit {
         this.adminSvc.getLotteryPointsAddress(),
         this.adminSvc.getLotteryTreasuryAddress(),
         this.adminSvc.getLotteryPoolSize(),
+        this.adminSvc.lotteryGetTotalCommittedETH(),
       ]);
       this.lotteryPaused.set(paused);
       this.lotteryActive.set(active);
@@ -258,6 +264,7 @@ export class AdminComponent implements OnInit {
       this.lotteryPointsAddress.set(pts);
       this.lotteryTreasuryAddress.set(treasury);
       this.lotteryPoolSize.set(poolSize.toString());
+      this.lotteryTotalCommittedETH.set(formatEther(committedETH));
     } catch (e) { console.error('Lottery state error:', e); }
   }
 
@@ -430,6 +437,15 @@ export class AdminComponent implements OnInit {
     }, () => this.loadLotteryState());
   }
   lotteryEmergencyWithdraw() { this.exec(() => this.adminSvc.lotteryEmergencyWithdrawEthscription(this.lEmergencyHashId)); }
+  lotteryRedirectPendingReturns() { this.exec(() => this.adminSvc.lotteryRedirectPendingReturns(this.lRedirectFrom, this.lRedirectTo), () => this.loadLotteryState()); }
+  async lotteryCheckPendingReturns() {
+    try {
+      const amount = await this.adminSvc.lotteryGetPendingReturns(this.lCheckPendingAddr);
+      this.lotteryPendingReturns.set(formatEther(amount));
+    } catch (e: any) {
+      this.lotteryPendingReturns.set('Error');
+    }
+  }
   transferLotteryOwnership() { this.exec(() => this.adminSvc.lotteryTransferOwnership(this.lTransferOwnership)); }
 
   // Evolve actions

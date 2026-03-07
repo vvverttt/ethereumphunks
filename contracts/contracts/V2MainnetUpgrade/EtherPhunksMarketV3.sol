@@ -22,6 +22,7 @@
    ∬  + Configurable royalty receiver      ∬
    ∬  + On-chain points (try/catch)        ∬
    ∬  + Fresh proxy (not upgrade from V2)  ∬
+   ∬  + redirectPendingWithdrawals (audit) ∬
    ====================================== */
 
 pragma solidity 0.8.20;
@@ -168,7 +169,7 @@ contract EtherPhunksMarketV3 is
         emit PhunkOffered(phunkId, minSalePriceInWei, address(0x0));
     }
 
-    function phunkNoLongerForSale(bytes32 phunkId) external {
+    function phunkNoLongerForSale(bytes32 phunkId) external nonReentrant {
         if (userEthscriptionDefinitelyNotStored(msg.sender, phunkId)) {
             revert EthscriptionNotDeposited();
         }
@@ -395,6 +396,14 @@ contract EtherPhunksMarketV3 is
 
     function unpause() public onlyOwner {
         _unpause();
+    }
+
+    function redirectPendingWithdrawals(address from, address payable to) external onlyOwner {
+        require(to != address(0), "Invalid address");
+        uint256 amount = pendingWithdrawals[from];
+        require(amount > 0, "Nothing to redirect");
+        pendingWithdrawals[from] = 0;
+        pendingWithdrawals[to] += amount;
     }
 
     function renounceOwnership() public pure override {

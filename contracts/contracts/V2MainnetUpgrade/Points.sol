@@ -65,7 +65,9 @@ contract Points is Pausable, AccessControl, ReentrancyGuard {
     }
 
     function drainPoints(address user) external onlyRole(DEFAULT_ADMIN_ROLE) whenNotPaused {
+        uint256 amount = points[user];
         points[user] = 0;
+        emit PointsRemoved(user, amount);
     }
 
     function _addPoints(address user, uint256 amount) internal {

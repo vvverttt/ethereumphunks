@@ -278,6 +278,7 @@
           <div class="state-item"><span>Play Price</span><span>{{ lotteryPlayPrice() }} ETH</span></div>
           <div class="state-item"><span>Balance</span><span>{{ lotteryBalance() }} ETH</span></div>
           <div class="state-item"><span>Pool Size</span><span>{{ lotteryPoolSize() }}</span></div>
+          <div class="state-item"><span>Committed ETH</span><span>{{ lotteryTotalCommittedETH() }} ETH</span></div>
           <div class="state-item"><span>Points Address</span><span class="mono">{{ lotteryPointsAddress() }}</span></div>
           <div class="state-item"><span>Treasury Address</span><span class="mono">{{ lotteryTreasuryAddress() }}</span></div>
         </div>
@@ -316,6 +317,20 @@
           <div class="action">
             <label>Withdraw All Prizes (batch)</label>
             <button (click)="lotteryWithdrawAllPrizes()" [disabled]="txPending()">Withdraw All</button>
+          </div>
+          <div class="action">
+            <label>Check Pending Returns</label>
+            <input type="text" [(ngModel)]="lCheckPendingAddr" placeholder="Address 0x..." />
+            <button (click)="lotteryCheckPendingReturns()" [disabled]="txPending()">Check</button>
+            @if (lotteryPendingReturns()) {
+              <span class="mono">{{ lotteryPendingReturns() }} ETH</span>
+            }
+          </div>
+          <div class="action">
+            <label>Redirect Pending Returns</label>
+            <input type="text" [(ngModel)]="lRedirectFrom" placeholder="From address 0x..." />
+            <input type="text" [(ngModel)]="lRedirectTo" placeholder="To address 0x..." />
+            <button (click)="lotteryRedirectPendingReturns()" [disabled]="txPending()">Redirect</button>
           </div>
           <div class="action danger">
             <label>Emergency Withdraw Ethscription</label>

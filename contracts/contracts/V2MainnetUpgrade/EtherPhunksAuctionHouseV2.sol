@@ -23,6 +23,9 @@
    ∬  Hybrid push/pull refunds             ∬
    ∬  Per-item reserve prices              ∬
    ∬  67 points on win                     ∬
+   ∬  + withdrawETH protection (audit)     ∬
+   ∬  + redirectPendingReturns (audit)     ∬
+   ∬  + RefundEscrowed event (audit)       ∬
    ====================================== */
 
 pragma solidity 0.8.20;
@@ -79,6 +82,9 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
     // Current auction
     Auction public auction;
 
+    // Committed ETH protection (audit fix — consumes 1 __gap slot)
+    uint256 public totalCommittedETH;
+
     // ─── Events ──────────────────────────────────────────────
 
     event AuctionCreated(bytes32 indexed hashId, uint256 auctionId, uint256 startTime, uint256 endTime);
@@ -87,6 +93,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
     event AuctionSettled(bytes32 indexed hashId, uint256 auctionId, address winner, uint256 amount);
     event PoolDeposited(bytes32 indexed hashId);
     event PoolWithdrawn(bytes32 indexed hashId);
+    event RefundEscrowed(address indexed recipient, uint256 amount);
 
     // ─── Constructor ─────────────────────────────────────────
 
@@ -186,6 +193,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         uint256 prevAmount = auction.amount;
 
         // Update state FIRST (CEI pattern)
+        totalCommittedETH = totalCommittedETH - prevAmount + msg.value;
         auction.amount = msg.value;
         auction.bidder = payable(msg.sender);
 
@@ -200,6 +208,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
             (bool sent, ) = prevBidder.call{value: prevAmount}("");
             if (!sent) {
                 pendingReturns[prevBidder] += prevAmount;
+                emit RefundEscrowed(prevBidder, prevAmount);
             }
         }
 
@@ -224,6 +233,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         require(!auction.settled, "Already settled");
 
         auction.settled = true;
+        totalCommittedETH -= auction.amount;
 
         if (auction.bidder != address(0)) {
             // Winner exists — transfer ethscription to winner
@@ -239,6 +249,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
             (bool sent, ) = treasuryAddress.call{value: auction.amount}("");
             if (!sent) {
                 pendingReturns[treasuryAddress] += auction.amount;
+                emit RefundEscrowed(treasuryAddress, auction.amount);
             }
         } else {
             // No bids — return to pool
@@ -365,7 +376,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     function withdrawETH(uint256 amount, address payable to) external onlyOwner nonReentrant {
         require(to != address(0), "Invalid address");
-        require(amount <= address(this).balance, "Insufficient balance");
+        require(amount <= address(this).balance - totalCommittedETH, "Exceeds available balance");
         (bool sent, ) = to.call{value: amount}("");
         require(sent, "Transfer failed");
     }
@@ -415,11 +426,13 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         // If this is the active auction item, refund the current bidder and mark settled
         if (auction.hashId == hashId && auction.startTime != 0 && !auction.settled) {
             auction.settled = true;
+            totalCommittedETH -= auction.amount;
 
             if (auction.bidder != address(0)) {
                 (bool sent, ) = auction.bidder.call{value: auction.amount}("");
                 if (!sent) {
                     pendingReturns[auction.bidder] += auction.amount;
+                    emit RefundEscrowed(auction.bidder, auction.amount);
                 }
             }
 
@@ -453,11 +466,19 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         _unpause();
     }
 
+    function redirectPendingReturns(address from, address payable to) external onlyOwner {
+        require(to != address(0), "Invalid address");
+        uint256 amount = pendingReturns[from];
+        require(amount > 0, "Nothing to redirect");
+        pendingReturns[from] = 0;
+        pendingReturns[to] += amount;
+    }
+
     function renounceOwnership() public pure override {
         revert("Cannot renounce ownership");
     }
 
-    // ─── Storage gap for future upgrades ────────────────────
+    // ─── Storage gap for future upgrades (50 - 1 consumed = 49) ──
 
-    uint256[50] private __gap;
+    uint256[49] private __gap;
 }

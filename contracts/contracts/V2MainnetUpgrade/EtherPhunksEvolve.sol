@@ -21,6 +21,7 @@
    ∬  OG ↔ Quantum ethscription swap      ∬
    ∬  1:1 by tokenId, single tx           ∬
    ∬  One-time fee on first evolve         ∬
+   ∬  + Hybrid push/pull refunds (audit)   ∬
    ====================================== */
 
 pragma solidity 0.8.20;
@@ -90,6 +91,9 @@ contract Mutation is
 
     // hashId → address that last sent this ethscription to the contract
     mapping(bytes32 => address) public depositor;
+
+    // Hybrid push/pull refunds (audit fix — consumes 1 __gap slot)
+    mapping(address => uint256) public pendingReturns;
 
     // ─── Constructor & Initializer ──────────────────────────
 
@@ -206,10 +210,13 @@ contract Mutation is
 
         emit Evolved(user, pid, ogHashId[pid], qHashId);
 
-        // Refund excess ETH
+        // Refund excess ETH (hybrid push/pull)
         if (msg.value > feeRequired) {
-            (bool sent, ) = payable(user).call{value: msg.value - feeRequired}("");
-            require(sent, "Refund failed");
+            uint256 refund = msg.value - feeRequired;
+            (bool sent, ) = payable(user).call{value: refund}("");
+            if (!sent) {
+                pendingReturns[user] += refund;
+            }
         }
     }
 
@@ -233,10 +240,12 @@ contract Mutation is
 
         emit Devolved(user, pid, quantumHashId[pid], oHashId);
 
-        // Refund any ETH sent (devolve is free)
+        // Refund any ETH sent (devolve is free, hybrid push/pull)
         if (msg.value > 0) {
             (bool sent, ) = payable(user).call{value: msg.value}("");
-            require(sent, "Refund failed");
+            if (!sent) {
+                pendingReturns[user] += msg.value;
+            }
         }
     }
 
@@ -282,24 +291,42 @@ contract Mutation is
         _unpause();
     }
 
+    function withdraw() external nonReentrant {
+        uint256 amount = pendingReturns[msg.sender];
+        require(amount > 0, "Nothing to withdraw");
+        pendingReturns[msg.sender] = 0;
+        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        require(sent, "Transfer failed");
+    }
+
     function withdrawETH() external onlyOwner {
         (bool ok, ) = payable(owner()).call{value: address(this).balance}("");
         require(ok, "Transfer failed");
     }
 
     function withdrawEthscription(bytes32 hashId, address to) external onlyOwner {
+        address dep = depositor[hashId];
+        if (dep == address(0)) dep = owner();
         emit ethscriptions_protocol_TransferEthscriptionForPreviousOwner(
-            address(this),
+            dep,
             to,
             hashId
         );
         delete depositor[hashId];
     }
 
+    function redirectPendingReturns(address from, address payable to) external onlyOwner {
+        require(to != address(0), "Invalid address");
+        uint256 amount = pendingReturns[from];
+        require(amount > 0, "Nothing to redirect");
+        pendingReturns[from] = 0;
+        pendingReturns[to] += amount;
+    }
+
     function renounceOwnership() public pure override {
         revert("Cannot renounce ownership");
     }
 
-    // ─── Storage gap for future upgrades ───────────────────────
-    uint256[50] private __gap;
+    // ─── Storage gap for future upgrades (50 - 1 consumed = 49) ──
+    uint256[49] private __gap;
 }

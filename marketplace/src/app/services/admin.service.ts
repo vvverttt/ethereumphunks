@@ -392,6 +392,19 @@ export class AdminService {
   lotteryEmergencyWithdrawEthscription(hashId: string) {
     return this.writeContract(this._lotteryAddress, PhilipLotteryV67ABI, 'emergencyWithdrawEthscription', [hashId]);
   }
+  lotteryRedirectPendingReturns(from: string, to: string) {
+    return this.writeContract(this._lotteryAddress, PhilipLotteryV67ABI, 'redirectPendingReturns', [from, to]);
+  }
+  lotteryGetPendingReturns(addr: string) {
+    return this.web3Svc.l1Client.readContract({
+      address: this._lotteryAddress, abi: PhilipLotteryV67ABI, functionName: 'pendingReturns', args: [addr as `0x${string}`],
+    }) as Promise<bigint>;
+  }
+  lotteryGetTotalCommittedETH() {
+    return this.web3Svc.l1Client.readContract({
+      address: this._lotteryAddress, abi: PhilipLotteryV67ABI, functionName: 'totalCommittedETH',
+    }) as Promise<bigint>;
+  }
   lotteryTransferOwnership(addr: string) {
     return this.writeContract(this._lotteryAddress, PhilipLotteryV67ABI, 'transferOwnership', [addr]);
   }

@@ -23,6 +23,8 @@
    ∬  Signer + ERC-721 token-gating         ∬
    ∬  Per-token usage tracking             ∬
    ∬  67 points on purchase                ∬
+   ∬  + withdrawETH protection (audit)     ∬
+   ∬  + redirectPendingReturns (audit)     ∬
    ====================================== */
 
 pragma solidity 0.8.20;
@@ -92,6 +94,9 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
     // V2: Signer-based verification (replaces merkle proof)
     address public signerAddress;
+
+    // Committed ETH protection (audit fix — consumes 1 __gap slot)
+    uint256 public totalCommittedETH;
 
     // ─── Events ────────────────────────────────────────────────
 
@@ -215,6 +220,7 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
         // Effects
         pendingReveals++;
+        totalCommittedETH += price;
         commitments[msg.sender] = Commitment({
             commitBlock: block.number,
             priceLocked: price,
@@ -246,6 +252,7 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
         delete commitments[msg.sender];
         pendingReveals--;
         totalRevealed++;
+        totalCommittedETH -= c.priceLocked;
 
         // Random seed uses future blockhash unknown at commit time
         bytes32 futureBlockhash = blockhash(c.commitBlock + REVEAL_DELAY);
@@ -295,6 +302,7 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
         delete commitments[msg.sender];
         pendingReveals--;
+        totalCommittedETH -= c.priceLocked;
 
         // Release used tokens
         usedEthscription[c.missingPhunkHash] = false;
@@ -391,7 +399,7 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
 
     function withdrawETH(uint256 amount, address payable to) external onlyOwner nonReentrant {
         require(to != address(0), "Invalid address");
-        require(amount <= address(this).balance, "Insufficient balance");
+        require(amount <= address(this).balance - totalCommittedETH, "Exceeds available balance");
         (bool sent, ) = to.call{value: amount}("");
         require(sent, "Transfer failed");
     }
@@ -477,11 +485,19 @@ contract EthsRocks is Initializable, EthscriptionsEscrower, OwnableUpgradeable, 
         totalRevealed = _totalRevealed;
     }
 
+    function redirectPendingReturns(address from, address payable to) external onlyOwner {
+        require(to != address(0), "Invalid address");
+        uint256 amount = pendingReturns[from];
+        require(amount > 0, "Nothing to redirect");
+        pendingReturns[from] = 0;
+        pendingReturns[to] += amount;
+    }
+
     function renounceOwnership() public pure override {
         revert("Cannot renounce ownership");
     }
 
-    // ─── Storage gap for future upgrades ───────────────────────
+    // ─── Storage gap for future upgrades (49 - 1 consumed = 48) ──
 
-    uint256[49] private __gap;
+    uint256[48] private __gap;
 }
