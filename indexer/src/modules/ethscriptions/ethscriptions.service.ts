@@ -111,10 +111,11 @@ export class EthscriptionsService {
     }
 
     // Filter logs for ethscription transfers (esip2)
-    // Skip lottery and auction contracts — ownership is handled by their own event processors
+    // Skip auction contracts — ownership is handled by its own event processor
+    // Lottery ESIP-2 logs are allowed through: withdrawals need them for ownership updates,
+    // and for prize awards the lottery processor cleans up duplicates
     const esip2Transfers = receipt.logs.filter(
       (log: any) => log.topics[0] === esips.TransferEthscriptionForPreviousOwnerSignature
-        && !lotteryAddressesL1.has(log.address?.toLowerCase())
         && log.address?.toLowerCase() !== auctionAddressL1
     );
     if (esip2Transfers.length) {
