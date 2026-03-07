@@ -89,6 +89,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
   ownedItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean }[]>([]);
   ownedLoading = signal(false);
   selectedCount = computed(() => this.ownedItems().filter(i => i.selected).length);
+  poolItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean }[]>([]);
+  poolLoading = signal(false);
+  poolSelectedCount = computed(() => this.poolItems().filter(i => i.selected).length);
+  withdrawStatus = signal('');
   headerImages = computed(() => {
     const items = this.gridItems();
     if (!items.length) {
@@ -157,6 +161,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
           const balance = await this.lotterySvc.getContractBalance();
           this.contractBalance.set(formatEther(balance));
           this.loadOwnedItems(address);
+          this.loadPoolItems();
         }
       } catch {}
     }
@@ -1233,6 +1238,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.recentWinsSub?.unsubscribe();
     this.totalWinsCountSub?.unsubscribe();
     this.subscribeRecentWins();
+
+    // Reload owner panel data if owner
+    if (this.isOwner()) {
+      const address = await firstValueFrom(this.address$);
+      if (address) this.loadOwnedItems(address);
+      this.loadPoolItems();
+    }
   }
 
   // =========================================================
@@ -1286,6 +1298,88 @@ export class LotteryComponent implements OnInit, OnDestroy {
       }
     } catch (err: any) {
       this.depositStatus.set(err?.shortMessage || err?.message || 'Deposit failed');
+    }
+  }
+
+  // =========================================================
+  // Owner: Withdraw Prizes from Pool
+  // =========================================================
+
+  async loadPoolItems() {
+    this.poolLoading.set(true);
+    try {
+      const size = Number(await this.lotterySvc.getPoolSize());
+      if (size === 0) {
+        this.poolItems.set([]);
+        return;
+      }
+
+      // Fetch pool hashIds in chunks to avoid RPC limits
+      const CHUNK = 100;
+      const allHashIds: string[] = [];
+      for (let offset = 0; offset < size; offset += CHUNK) {
+        const limit = Math.min(CHUNK, size - offset);
+        const chunk = await this.lotterySvc.getPoolItems(offset, limit);
+        allHashIds.push(...(chunk as string[]));
+      }
+
+      // Look up metadata from Supabase (also chunked for large pools)
+      const allMeta: any[] = [];
+      for (let i = 0; i < allHashIds.length; i += 200) {
+        const batch = allHashIds.slice(i, i + 200);
+        const meta = await this.lotterySvc.getEthscriptionsByHashIds(batch);
+        allMeta.push(...meta);
+      }
+
+      const metaMap = new Map(allMeta.map((m: any) => [m.hashId, m]));
+      this.poolItems.set(
+        allHashIds.map(h => {
+          const meta = metaMap.get(h) || {};
+          return { hashId: h, sha: meta.sha || '', tokenId: meta.tokenId ?? 0, slug: meta.slug || '', selected: false };
+        })
+      );
+    } catch (err) {
+      console.error('Failed to load pool items:', err);
+    } finally {
+      this.poolLoading.set(false);
+    }
+  }
+
+  togglePoolItem(hashId: string) {
+    this.poolItems.update(items =>
+      items.map(item =>
+        item.hashId === hashId ? { ...item, selected: !item.selected } : item
+      )
+    );
+  }
+
+  async onWithdrawPrizes() {
+    const selected = this.poolItems().filter(i => i.selected);
+    if (selected.length === 0) {
+      this.withdrawStatus.set('Select items to withdraw');
+      return;
+    }
+
+    this.withdrawStatus.set(`Withdrawing ${selected.length} item(s)...`);
+
+    try {
+      const hashIds = selected.map(i => i.hashId);
+      const hash = await this.lotterySvc.withdrawPrizeBatch(hashIds);
+      if (hash) {
+        this.withdrawStatus.set('Waiting for confirmation...');
+        await this.web3Svc.pollReceipt(hash);
+        this.withdrawStatus.set(`Withdrew ${selected.length} item(s)!`);
+
+        // Remove withdrawn items from pool list
+        this.poolItems.update(items => items.filter(i => !i.selected));
+
+        // Refresh pool size and grid
+        const newSize = await this.lotterySvc.getPoolSize();
+        this.poolSize.set(Number(newSize));
+        this.initGrid();
+      }
+    } catch (err: any) {
+      this.withdrawStatus.set(err?.shortMessage || err?.message || 'Withdraw failed');
     }
   }
 

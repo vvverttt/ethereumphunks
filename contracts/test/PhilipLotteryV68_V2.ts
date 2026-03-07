@@ -428,6 +428,164 @@ describe('PhilipLotteryV68_V2', function () {
   });
 
   // =========================================================
+  // Audit fix: totalCommittedETH tracking
+  // =========================================================
+  describe('totalCommittedETH tracking', () => {
+    it('Should increment on commitPlay', async () => {
+      expect(await lottery.totalCommittedETH()).to.equal(0);
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      expect(await lottery.totalCommittedETH()).to.equal(playPrice);
+    });
+
+    it('Should decrement on revealPlay', async () => {
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      await mineBlocks(3);
+      await lottery.connect(player).revealPlay();
+      expect(await lottery.totalCommittedETH()).to.equal(0);
+    });
+
+    it('Should decrement on cancelPlay', async () => {
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      expect(await lottery.totalCommittedETH()).to.equal(playPrice);
+      await mineBlocks(257);
+      await lottery.connect(player).cancelPlay();
+      expect(await lottery.totalCommittedETH()).to.equal(0);
+    });
+
+    it('Should track correctly with multiple commits', async () => {
+      const signers = await ethers.getSigners();
+      await lottery.connect(signers[4]).commitPlay({ value: playPrice });
+      await lottery.connect(signers[5]).commitPlay({ value: playPrice });
+      expect(await lottery.totalCommittedETH()).to.equal(playPrice * 2n);
+
+      await mineBlocks(3);
+      await lottery.connect(signers[4]).revealPlay();
+      expect(await lottery.totalCommittedETH()).to.equal(playPrice);
+    });
+  });
+
+  // =========================================================
+  // Audit fix: withdrawETH protects committed funds
+  // =========================================================
+  describe('withdrawETH protection', () => {
+    it('Should allow withdrawETH when no commits', async () => {
+      // Player commits and reveals — ETH goes to treasury, contract balance = 0
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      await mineBlocks(3);
+      await lottery.connect(player).revealPlay();
+      // totalCommittedETH should be 0 now
+      expect(await lottery.totalCommittedETH()).to.equal(0);
+    });
+
+    it('Should revert withdrawETH if it would take committed funds', async () => {
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      // Contract has playPrice, totalCommittedETH = playPrice, available = 0
+      await expect(lottery.withdrawETH(playPrice, treasury.address))
+        .to.be.revertedWith('Exceeds available balance');
+    });
+
+    it('Should allow withdrawETH of excess after commits', async () => {
+      // Two players commit — contract has 2x playPrice
+      const signers = await ethers.getSigners();
+      await lottery.connect(signers[4]).commitPlay({ value: playPrice });
+      await lottery.connect(signers[5]).commitPlay({ value: playPrice });
+
+      // One reveals — treasury gets playPrice, contract still has 1x playPrice committed
+      await mineBlocks(3);
+      await lottery.connect(signers[4]).revealPlay();
+
+      // Contract balance = playPrice (from signers[5] commit), committed = playPrice
+      // Available should be 0
+      await expect(lottery.withdrawETH(1n, treasury.address))
+        .to.be.revertedWith('Exceeds available balance');
+
+      // Second reveals — now available = 0 committed, balance may be 0 (treasury got both)
+      await lottery.connect(signers[5]).revealPlay();
+      expect(await lottery.totalCommittedETH()).to.equal(0);
+    });
+  });
+
+  // =========================================================
+  // Audit fix: emergencyWithdrawEthscription respects pending
+  // =========================================================
+  describe('emergencyWithdrawEthscription pending check', () => {
+    it('Should revert emergency withdraw if pool reserved for pending reveals', async () => {
+      // Commit 5 players to exhaust pool
+      const signers = await ethers.getSigners();
+      for (let i = 0; i < 5; i++) {
+        await lottery.connect(signers[i + 4]).commitPlay({ value: playPrice });
+      }
+      await expect(lottery.emergencyWithdrawEthscription(prizes[0]))
+        .to.be.revertedWith('Reserved for pending reveals');
+    });
+
+    it('Should allow emergency withdraw of non-pool items even with pending', async () => {
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      // Emergency withdraw a hashId not in pool — should work (no pool check needed)
+      const fakeHash = createHashId('not-in-pool');
+      await lottery.emergencyWithdrawEthscription(fakeHash);
+    });
+  });
+
+  // =========================================================
+  // Audit fix: RefundEscrowed event
+  // =========================================================
+  describe('RefundEscrowed event', () => {
+    it('Should emit RefundEscrowed when treasury push fails', async () => {
+      const RejectFactory = await ethers.getContractFactory('MockRejectETH');
+      const rejecter = await RejectFactory.deploy();
+      await rejecter.waitForDeployment();
+      await lottery.setTreasuryAddress(await rejecter.getAddress());
+
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      await mineBlocks(3);
+      await expect(lottery.connect(player).revealPlay())
+        .to.emit(lottery, 'RefundEscrowed')
+        .withArgs(await rejecter.getAddress(), playPrice);
+    });
+  });
+
+  // =========================================================
+  // Audit fix: redirectPendingReturns
+  // =========================================================
+  describe('redirectPendingReturns', () => {
+    it('Should redirect pending returns to new address', async () => {
+      // Create stuck pendingReturns via rejecting treasury
+      const RejectFactory = await ethers.getContractFactory('MockRejectETH');
+      const rejecter = await RejectFactory.deploy();
+      await rejecter.waitForDeployment();
+      const rejecterAddr = await rejecter.getAddress();
+      await lottery.setTreasuryAddress(rejecterAddr);
+
+      await lottery.connect(player).commitPlay({ value: playPrice });
+      await mineBlocks(3);
+      await lottery.connect(player).revealPlay();
+
+      expect(await lottery.pendingReturns(rejecterAddr)).to.equal(playPrice);
+
+      // Redirect to treasury EOA
+      await lottery.redirectPendingReturns(rejecterAddr, treasury.address);
+      expect(await lottery.pendingReturns(rejecterAddr)).to.equal(0);
+      expect(await lottery.pendingReturns(treasury.address)).to.equal(playPrice);
+    });
+
+    it('Should revert if nothing to redirect', async () => {
+      await expect(lottery.redirectPendingReturns(player.address, treasury.address))
+        .to.be.revertedWith('Nothing to redirect');
+    });
+
+    it('Should revert if non-owner calls', async () => {
+      await expect(lottery.connect(player).redirectPendingReturns(player.address, treasury.address))
+        .to.be.revertedWithCustomError(lottery, 'OwnableUnauthorizedAccount');
+    });
+
+    it('Should revert with zero address', async () => {
+      await expect(lottery.redirectPendingReturns(player.address, ethers.ZeroAddress))
+        .to.be.revertedWith('Invalid address');
+    });
+  });
+
+  // =========================================================
   // Proxy upgrade tests — simulate upgrading from V68 to V68_V2
   // =========================================================
   describe('Proxy upgrade (V68 → V68_V2)', () => {

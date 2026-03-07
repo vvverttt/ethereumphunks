@@ -66,6 +66,32 @@ export const PhilipLotteryV67ABI = [
     type: 'event',
   },
   {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'recipient', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' },
+    ],
+    name: 'RefundEscrowed',
+    type: 'event',
+  },
+  {
+    inputs: [],
+    name: 'totalCommittedETH',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'from', type: 'address' },
+      { internalType: 'address payable', name: 'to', type: 'address' },
+    ],
+    name: 'redirectPendingReturns',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'commitPlay',
     outputs: [],

@@ -72,10 +72,11 @@ contract PhilipLotteryV68_V2 is
     // Hybrid push/pull refunds
     mapping(address => uint256) public pendingReturns;
 
-    // Commit-reveal state
+    // Commit-reveal state + accounting (consumes 5 __gap slots total)
     mapping(address => PlayCommitment) public commitments;
     uint256 public pendingReveals;
     uint256 public totalRevealed;
+    uint256 public totalCommittedETH;
 
     // ─── Events ──────────────────────────────────────────────
 
@@ -99,6 +100,7 @@ contract PhilipLotteryV68_V2 is
     event PointsAddressChanged(address indexed oldAddress, address indexed newAddress);
     event PlayCommitted(address indexed player, uint256 price, uint256 commitBlock);
     event PlayCancelled(address indexed player);
+    event RefundEscrowed(address indexed recipient, uint256 amount);
 
     // ─── Constructor & Initializer ───────────────────────────
 
@@ -171,6 +173,7 @@ contract PhilipLotteryV68_V2 is
         require(commitments[msg.sender].commitBlock == 0, "Already committed");
 
         pendingReveals++;
+        totalCommittedETH += playPrice;
         commitments[msg.sender] = PlayCommitment({
             commitBlock: block.number,
             priceLocked: playPrice
@@ -178,9 +181,11 @@ contract PhilipLotteryV68_V2 is
 
         // Refund overpayment (hybrid push/pull)
         if (msg.value > playPrice) {
-            (bool refundSent, ) = payable(msg.sender).call{value: msg.value - playPrice}("");
+            uint256 overpayment = msg.value - playPrice;
+            (bool refundSent, ) = payable(msg.sender).call{value: overpayment}("");
             if (!refundSent) {
-                pendingReturns[msg.sender] += msg.value - playPrice;
+                pendingReturns[msg.sender] += overpayment;
+                emit RefundEscrowed(msg.sender, overpayment);
             }
         }
 
@@ -199,6 +204,7 @@ contract PhilipLotteryV68_V2 is
 
         delete commitments[msg.sender];
         pendingReveals--;
+        totalCommittedETH -= c.priceLocked;
         totalPlays++;
         totalRevealed++;
         playerPlays[msg.sender]++;
@@ -242,6 +248,7 @@ contract PhilipLotteryV68_V2 is
         (bool sent, ) = treasuryAddress.call{value: c.priceLocked}("");
         if (!sent) {
             pendingReturns[treasuryAddress] += c.priceLocked;
+            emit RefundEscrowed(treasuryAddress, c.priceLocked);
         }
     }
 
@@ -256,10 +263,12 @@ contract PhilipLotteryV68_V2 is
 
         delete commitments[msg.sender];
         pendingReveals--;
+        totalCommittedETH -= c.priceLocked;
 
         (bool sent, ) = payable(msg.sender).call{value: c.priceLocked}("");
         if (!sent) {
             pendingReturns[msg.sender] += c.priceLocked;
+            emit RefundEscrowed(msg.sender, c.priceLocked);
         }
 
         emit PlayCancelled(msg.sender);
@@ -336,7 +345,7 @@ contract PhilipLotteryV68_V2 is
 
     function withdrawETH(uint256 amount, address payable to) external onlyOwner nonReentrant {
         require(to != address(0), "Invalid address");
-        require(amount <= address(this).balance, "Insufficient balance");
+        require(amount <= address(this).balance - totalCommittedETH, "Exceeds available balance");
         (bool sent, ) = to.call{value: amount}("");
         require(sent, "Transfer failed");
     }
@@ -371,6 +380,7 @@ contract PhilipLotteryV68_V2 is
     function emergencyWithdrawEthscription(bytes32 hashId) external onlyOwner nonReentrant {
         // Clean pool state if it's in the pool
         if (inPool[hashId]) {
+            require(_prizePool.length > pendingReveals, "Reserved for pending reveals");
             _removeFromPool(hashId);
         }
 
@@ -407,6 +417,14 @@ contract PhilipLotteryV68_V2 is
         revert("Cannot renounce ownership");
     }
 
+    function redirectPendingReturns(address from, address payable to) external onlyOwner {
+        require(to != address(0), "Invalid address");
+        uint256 amount = pendingReturns[from];
+        require(amount > 0, "Nothing to redirect");
+        pendingReturns[from] = 0;
+        pendingReturns[to] += amount;
+    }
+
     function pause() external onlyOwner {
         _pause();
     }
@@ -415,6 +433,6 @@ contract PhilipLotteryV68_V2 is
         _unpause();
     }
 
-    // ─── Storage gap for future upgrades (50 - 3 new slots = 47) ──
-    uint256[47] private __gap;
+    // ─── Storage gap for future upgrades (50 - 5 consumed = 45) ──
+    uint256[45] private __gap;
 }

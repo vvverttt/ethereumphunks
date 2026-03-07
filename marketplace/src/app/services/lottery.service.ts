@@ -214,6 +214,27 @@ export class LotteryService {
     return await walletClient.writeContract(request);
   }
 
+  async withdrawPrizeBatch(hashIds: string[]): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+
+    const chainId = getChainId(this.web3Svc.config);
+    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    const publicClient = getPublicClient(this.web3Svc.config, { chainId });
+
+    if (!walletClient) throw new Error('No wallet connected');
+    if (!publicClient) throw new Error('No public client');
+
+    const { request } = await publicClient.simulateContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'withdrawPrizeBatch',
+      args: [hashIds as `0x${string}`[]],
+      account: walletClient.account.address,
+    });
+
+    return await walletClient.writeContract(request);
+  }
+
   async depositPrizes(hashIds: string[]): Promise<string | undefined> {
     await this.web3Svc.switchNetwork();
 

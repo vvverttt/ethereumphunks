@@ -122,7 +122,7 @@
     }
     <div class="price-info">
       Play: {{ playPrice() }} ETH
-      <span class="pool-info">&middot; {{ poolSize() }} artifacts left</span>
+      <span class="pool-info">&middot; {{ poolSize() }} QuantumPhunks left</span>
     </div>
 
     @if (errorMessage()) {
@@ -185,6 +185,36 @@
           <p class="deposit-status">{{ depositStatus() }}</p>
         }
       </div>
+
+      <div class="deposit-section">
+        <h4>Pool Items</h4>
+        @if (poolLoading()) {
+          <p class="deposit-status">Loading...</p>
+        } @else if (poolItems().length === 0) {
+          <p class="deposit-status">Pool is empty</p>
+        } @else {
+          <div class="owned-grid">
+            @for (item of poolItems(); track item.hashId) {
+              <div
+                class="owned-item"
+                [class.selected]="item.selected"
+                (click)="togglePoolItem(item.hashId)">
+                <img [src]="staticUrl + '/static/images/' + item.sha" width="50" height="50" />
+                <span class="owned-label">#{{ item.tokenId }}</span>
+              </div>
+            }
+          </div>
+          <button
+            class="deposit-button"
+            [disabled]="poolSelectedCount() === 0"
+            (click)="onWithdrawPrizes()">
+            Withdraw {{ poolSelectedCount() }} from Contract
+          </button>
+        }
+        @if (withdrawStatus()) {
+          <p class="deposit-status">{{ withdrawStatus() }}</p>
+        }
+      </div>
     </div>
   }
 
@@ -211,7 +241,7 @@
           <span class="step-number">3</span>
           <div class="step-text">
             <strong>Reveal</strong>
-            <p>Confirm the reveal transaction to claim your random prize. The artifact is sent directly to your wallet.</p>
+            <p>Confirm the reveal transaction to claim your random prize. The QuantumPhunk is sent directly to your wallet.</p>
           </div>
         </div>
       </div>
@@ -225,7 +255,7 @@
       <h3>Recent Wins</h3>
       <div class="section-stats-wrapper">
         <p>
-          <a class="highlight" routerLink="/lottery/wins">View all won artifacts.</a>
+          <a class="highlight" routerLink="/lottery/wins">View all won QuantumPhunks.</a>
         </p>
       </div>
       <div class="wins-grid">
