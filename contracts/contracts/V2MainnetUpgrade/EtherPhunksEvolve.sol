@@ -305,10 +305,8 @@ contract Mutation is
     }
 
     function withdrawEthscription(bytes32 hashId, address to) external onlyOwner {
-        address dep = depositor[hashId];
-        if (dep == address(0)) dep = owner();
         emit ethscriptions_protocol_TransferEthscriptionForPreviousOwner(
-            dep,
+            address(this),
             to,
             hashId
         );
