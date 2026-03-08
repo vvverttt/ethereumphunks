@@ -289,7 +289,7 @@ describe('EtherPhunksEvolve (Mutation)', function () {
     it('Should allow owner to withdrawEthscription', async () => {
       await expect(evolve.withdrawEthscription(ogHashes[0], owner.address))
         .to.emit(evolve, 'ethscriptions_protocol_TransferEthscriptionForPreviousOwner')
-        .withArgs(await getAddr(), owner.address, ogHashes[0]);
+        .withArgs(owner.address, owner.address, ogHashes[0]);
     });
 
     it('Should revert renounceOwnership', async () => {
