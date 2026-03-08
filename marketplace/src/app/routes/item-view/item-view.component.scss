@@ -307,7 +307,11 @@ app-phunk-billboard {
       user-select: none;
     }
 
-    .evolve,
+    .evolve {
+      background-color: rgba(var(--mutated-color), 1);
+      color: rgba(var(--black), 1);
+    }
+
     .devolve {
       background-color: rgba(var(--magma), 1);
       color: rgba(var(--white), 1);

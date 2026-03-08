@@ -38,7 +38,7 @@ export class ThemeService {
       '--text-color': '0, 0, 0',
       '--dark-text': '0, 0, 0',
       '--pink': '255, 4, 180',
-      '--base-color': '255, 223, 0',
+      '--base-color': '195, 255, 0',
       '--highlight': '195, 255, 0',
       '--button-color': '0, 0, 0',
 

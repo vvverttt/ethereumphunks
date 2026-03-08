@@ -31,14 +31,14 @@ if (!process.env.RPC_URL_MAINNET) {
   process.env.RPC_URL_MAINNET = 'https://ethereum-rpc.publicnode.com';
 }
 if (!process.env.RPC_URL_MAINNET_BACKUP) {
-  process.env.RPC_URL_MAINNET_BACKUP = 'https://eth.llamarpc.com,https://rpc.ankr.com/eth,https://eth.drpc.org';
+  process.env.RPC_URL_MAINNET_BACKUP = 'https://eth.llamarpc.com,https://rpc.ankr.com/eth';
 }
 
 if (!process.env.SUPABASE_URL) {
   process.env.SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
 }
 if (!process.env.SUPABASE_SERVICE_ROLE) {
-  process.env.SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDMxNDA0MywiZXhwIjoyMDg1ODkwMDQzfQ.n4_1A7B6MRHTaeXX7CZkzEsveAJ1KzHziHhxH5qsYAs';
+  throw new Error('SUPABASE_SERVICE_ROLE env var is required');
 }
 
 if (!process.env.MARKET_ADDRESS_MAINNET_L1) {
