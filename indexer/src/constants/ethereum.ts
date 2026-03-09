@@ -89,7 +89,7 @@ export const l1Client = createPublicClient({
     ...backupUrls.map(url => http(url.trim(), { timeout: 30_000 })),
   ], {
     rank: false,
-    retryCount: 3,
+    retryCount: 0,
   }),
   batch: {
     multicall: true,

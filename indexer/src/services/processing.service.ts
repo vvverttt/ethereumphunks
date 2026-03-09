@@ -18,7 +18,7 @@ import { FormattedTransaction, GetBlockReturnType, Transaction, TransactionRecei
 
 const CONFIRMATIONS = 6;
 const BLOCK_HISTORY = 30;
-const MAX_BLOCK_RETRIES = 5;
+const MAX_BLOCK_RETRIES = 2;
 
 interface ProcessedBlock {
   number: number,
