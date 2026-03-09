@@ -31,7 +31,7 @@ if (!process.env.RPC_URL_MAINNET) {
   process.env.RPC_URL_MAINNET = 'https://ethereum-rpc.publicnode.com';
 }
 if (!process.env.RPC_URL_MAINNET_BACKUP) {
-  process.env.RPC_URL_MAINNET_BACKUP = 'https://eth.llamarpc.com,https://rpc.ankr.com/eth';
+  process.env.RPC_URL_MAINNET_BACKUP = 'https://eth.llamarpc.com';
 }
 
 if (!process.env.SUPABASE_URL) {
