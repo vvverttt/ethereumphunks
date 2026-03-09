@@ -42,9 +42,12 @@ export class AppService implements OnModuleInit {
   async startIndexer(): Promise<void> {
     try {
       await this.utilSvc.delay(10000);
+      Logger.debug('Pausing queue...', chain.toUpperCase());
       await this.blockQueue.pauseQueue();
+      Logger.debug('Queue paused. Getting last block...', chain.toUpperCase());
 
       let startBlock = (await this.storageSvc.getLastBlock(chainId));
+      Logger.debug(`Last block: ${startBlock}`, chain.toUpperCase());
 
       // On first run, start from current block minus 100 to avoid OOM from syncing millions of blocks
       if (startBlock === null) {
