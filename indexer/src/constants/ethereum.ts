@@ -85,10 +85,11 @@ const backupUrls = (l1RpcURL_BACKUP || '').split(',').filter(Boolean);
 export const l1Client = createPublicClient({
   chain: chain === 'mainnet' ? mainnet : sepolia,
   transport: fallback([
-    http(l1RpcURL),
-    ...backupUrls.map(url => http(url.trim())),
+    http(l1RpcURL, { timeout: 30_000 }),
+    ...backupUrls.map(url => http(url.trim(), { timeout: 30_000 })),
   ], {
     rank: false,
+    retryCount: 3,
   }),
   batch: {
     multicall: true,
