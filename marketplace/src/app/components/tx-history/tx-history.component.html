@@ -15,7 +15,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (event of tokenSales; track event.txHash + '-' + event.type) {
+          @for (event of tokenSales; track event.txId) {
             <tr [class]="(event.type | lowercase) || 'transfer'">
 
               <td>
