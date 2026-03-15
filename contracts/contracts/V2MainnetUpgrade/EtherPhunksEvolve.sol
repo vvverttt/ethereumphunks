@@ -61,6 +61,12 @@ contract Mutation is
 
     event PairsRegistered(uint256 startPairId, uint256 count);
 
+    event QuantumHashIdUpdated(
+        uint256 indexed pairId,
+        bytes32 oldQuantumHashId,
+        bytes32 newQuantumHashId
+    );
+
     // ─── Errors ────────────────────────────────────────────
 
     error InvalidDataLength();
@@ -136,6 +142,34 @@ contract Mutation is
         }
 
         emit PairsRegistered(startId, _ogHashIds.length);
+    }
+
+    // ─── Admin: Update quantum hashId for a pair ─────────
+    // Used when a quantum ethscription is re-minted with a new hashId.
+    // The old quantum MUST be withdrawn via withdrawEthscription() first.
+
+    function updateQuantumHashId(
+        uint256 pid,
+        bytes32 newQuantumHashId
+    ) external onlyOwner {
+        require(pid < pairCount, "Invalid pair ID");
+        require(newQuantumHashId != bytes32(0), "Zero hashId");
+
+        bytes32 oldQuantumHashId = quantumHashId[pid];
+        require(oldQuantumHashId != newQuantumHashId, "Same hashId");
+        require(!registered[newQuantumHashId], "New quantum already registered");
+
+        // Clear old quantum mappings
+        delete registered[oldQuantumHashId];
+        delete pairIdOf[oldQuantumHashId];
+        delete depositor[oldQuantumHashId];
+
+        // Set new quantum mappings
+        quantumHashId[pid] = newQuantumHashId;
+        pairIdOf[newQuantumHashId] = pid;
+        registered[newQuantumHashId] = true;
+
+        emit QuantumHashIdUpdated(pid, oldQuantumHashId, newQuantumHashId);
     }
 
     // ─── Fallback: Receive ethscription & auto-swap ───────
@@ -305,8 +339,9 @@ contract Mutation is
     }
 
     function withdrawEthscription(bytes32 hashId, address to) external onlyOwner {
+        address prevOwner = depositor[hashId] != address(0) ? depositor[hashId] : to;
         emit ethscriptions_protocol_TransferEthscriptionForPreviousOwner(
-            address(this),
+            prevOwner,
             to,
             hashId
         );

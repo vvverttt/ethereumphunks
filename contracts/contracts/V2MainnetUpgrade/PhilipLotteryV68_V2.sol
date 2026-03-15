@@ -162,6 +162,23 @@ contract PhilipLotteryV68_V2 is
     }
 
     // =========================================================
+    // Re-emit deposit transfer events (fixes ethscriptions.com indexing for
+    // items deposited before this event was added)
+    // =========================================================
+
+    function reEmitDepositEvents(bytes32[] calldata hashIds) external onlyOwner {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            bytes32 hashId = hashIds[i];
+            require(inPool[hashId], "Not in pool");
+            emit ethscriptions_protocol_TransferEthscriptionForPreviousOwner(
+                depositor[hashId],
+                address(this),
+                hashId
+            );
+        }
+    }
+
+    // =========================================================
     // Step 1: Commit (pay fee, lock commitment)
     // =========================================================
 

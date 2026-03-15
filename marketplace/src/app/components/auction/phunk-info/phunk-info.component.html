@@ -17,7 +17,7 @@
 
 @if (attributes().length) {
   <div class="one-of-label">
-    One of {{ attributes()[0].v | traitCount : slug }}
+    One of {{ attributes()[0] | traitCount : slug }}
     <span class="type-name">{{ attributes()[0].v }}</span>
   </div>
   <div class="trait-count-label">

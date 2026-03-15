@@ -290,7 +290,8 @@ export class DataService {
         if (attr.k === 'Description' || attr.k === 'Name') return;
         const values = Array.isArray(attr.v) ? attr.v : [attr.v];
         values.forEach(v => {
-          flatRarity[v] = (flatRarity[v] || 0) + 1;
+          const key = `${attr.k}:${v}`;
+          flatRarity[key] = (flatRarity[key] || 0) + 1;
         });
       });
     });

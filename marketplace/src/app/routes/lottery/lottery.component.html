@@ -82,6 +82,16 @@
     </div>
   }
 
+  <!-- Stuck ETH recovery — only shown when pendingReturns > 0 (push refund failed) -->
+  @if (hasPendingReturns() && (connected$ | async)) {
+    <div class="pending-commitment">
+      <p>You have {{ pendingReturnsFormatted() }} ETH stuck in the contract from a failed refund.</p>
+      <button class="play-button" [class.shown]="true" (click)="onWithdrawPending()">
+        Withdraw {{ pendingReturnsFormatted() }} ETH
+      </button>
+    </div>
+  }
+
   <!-- Play Button -->
   <div class="action-area">
     <button

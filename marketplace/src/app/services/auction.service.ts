@@ -309,7 +309,7 @@ export class AuctionService {
           slug: eth?.slug ?? '',
           settledTimestamp: log.blockNumber ? (blockTimestamps.get(log.blockNumber) ?? 0) : 0,
         };
-      }).sort((a, b) => b.auctionId - a.auctionId);
+      }).filter(a => a.tokenId > 0).sort((a, b) => b.auctionId - a.auctionId);
     } catch {
       return [];
     }

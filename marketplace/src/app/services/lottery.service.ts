@@ -178,6 +178,31 @@ export class LotteryService {
     return hash;
   }
 
+  async getPendingReturns(address: string): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'pendingReturns',
+      args: [address as `0x${string}`],
+    });
+  }
+
+  async withdrawPending(): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+    const chainId = getChainId(this.web3Svc.config);
+    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    const publicClient = getPublicClient(this.web3Svc.config, { chainId });
+    if (!walletClient) throw new Error('No wallet connected');
+    if (!publicClient) throw new Error('No public client');
+    const { request } = await publicClient.simulateContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'withdraw',
+      account: walletClient.account.address,
+    });
+    return await walletClient.writeContract(request);
+  }
+
   async getCommitment(address: string): Promise<{ commitBlock: bigint; priceLocked: bigint }> {
     const result = await this.web3Svc.l1Client.readContract({
       address: this._address,

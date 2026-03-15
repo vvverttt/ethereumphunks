@@ -33,7 +33,7 @@
             </div>
 
             @if (phunk.attributes && phunk.attributes.length) {
-              <h2 i18n>One of {{ phunk.attributes[0].v | traitCount : phunk.slug }}
+              <h2 i18n>One of {{ phunk.attributes[0] | traitCount : phunk.slug }}
                 <a
                   class="highlight"
                   [routerLink]="['/', 'curated', phunk.slug, 'market', 'all']"
@@ -277,15 +277,15 @@
                               [queryParams]="item | queryParams">
 
                               <span>{{ item.v }}</span>
-                              @if (item.v | traitCount : phunk.slug) {
+                              @if (item | traitCount : phunk.slug) {
                                 <span class="percent">
-                                  ({{ (+(item.v | traitCount : phunk.slug) / (phunk.collection?.supply || 0)) | percent : '1.1-1' }})
+                                  ({{ (+(item | traitCount : phunk.slug) / (phunk.collection?.supply || 0)) | percent : '1.1-1' }})
                                 </span>
                               }
                             </a>
 
                             <span class="trait-count">
-                              <span>{{ (item.v | traitCount : phunk.slug) && (item.v | traitCount : phunk.slug) + ' ' + phunk.collection?.name + ' have this.' }}</span>
+                              <span>{{ (item | traitCount : phunk.slug) && (item | traitCount : phunk.slug) + ' ' + phunk.collection?.name + ' have this.' }}</span>
                             </span>
                           }
                         </div>

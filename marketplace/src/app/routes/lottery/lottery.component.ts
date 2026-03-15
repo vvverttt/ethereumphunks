@@ -84,6 +84,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
   waitingBlocks = signal(0);
   hasPendingCommitment = signal(false);
   commitmentExpired = signal(false);
+  pendingReturns = signal<bigint>(0n);
+  pendingReturnsFormatted = computed(() => formatEther(this.pendingReturns()));
+  hasPendingReturns = computed(() => this.pendingReturns() > 0n);
   private confirmTimer: any;
   depositStatus = signal('');
   ownedItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean }[]>([]);
@@ -171,6 +174,14 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
     // Check for confirmed commitment on-chain (user refreshed between commit and reveal)
     await this.checkPendingCommitment();
+
+    // Check for stuck ETH in pendingReturns (failed push refund)
+    if (address) {
+      try {
+        const pr = await this.lotterySvc.getPendingReturns(address);
+        this.pendingReturns.set(pr);
+      } catch {}
+    }
 
     // Staggered load-in animation (matches OG timing)
     setTimeout(() => this.loadedIn.set(true), 300);
@@ -1380,6 +1391,22 @@ export class LotteryComponent implements OnInit, OnDestroy {
       }
     } catch (err: any) {
       this.withdrawStatus.set(err?.shortMessage || err?.message || 'Withdraw failed');
+    }
+  }
+
+  // =========================================================
+  // User: Withdraw stuck ETH from pendingReturns
+  // =========================================================
+
+  async onWithdrawPending() {
+    try {
+      const hash = await this.lotterySvc.withdrawPending();
+      if (hash) {
+        await this.web3Svc.pollReceipt(hash);
+        this.pendingReturns.set(0n);
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
     }
   }
 
