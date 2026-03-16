@@ -151,7 +151,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     } catch {}
 
     await this.loadContractState();
-    this.initGrid();
+    await this.initGrid();
     this.subscribeRecentWins();
 
     // Check if current user is owner
@@ -339,6 +339,18 @@ export class LotteryComponent implements OnInit, OnDestroy {
             imageUrl: eth?.sha
               ? `${this.staticUrl}/static/images/${eth.sha}`
               : fallback,
+            flipping: false,
+            revealed: false,
+            rightFacing: false,
+          });
+        }
+        // Always pad to 8 slots with fallback
+        while (items.length < 8) {
+          items.push({
+            index: items.length,
+            hashId: '',
+            sha: '',
+            imageUrl: fallback,
             flipping: false,
             revealed: false,
             rightFacing: false,
