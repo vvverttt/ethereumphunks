@@ -63,6 +63,11 @@ export class MarketFiltersComponent {
   selectFilter($event: any): void {
     const filters = { ...this.activeTraitFilters };
     let urlParams = new HttpParams();
+
+    // Preserve address param so owned route still works on reload
+    const currentAddress = this.route.snapshot.queryParams['address'];
+    if (currentAddress) urlParams = urlParams.append('address', currentAddress);
+
     Object.keys(filters).forEach((key) => {
       if (filters[key] === null) delete filters[key];
       if (filters[key]) urlParams = urlParams.append(key, filters[key]);
