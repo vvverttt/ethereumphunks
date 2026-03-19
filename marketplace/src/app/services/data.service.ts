@@ -710,13 +710,9 @@ export class DataService {
       const collection = data[`collections${prefix}`];
       const collectionName = collection?.name;
 
-      const nft = data[`nfts${prefix}`]?.[0];
-      if (nft) delete nft?.hashId;
-
-      delete data[`nfts${prefix}`];
       delete data[`collections${prefix}`];
 
-      const newPhunk = { ...data, collection, collectionName, nft } as Phunk;
+      const newPhunk = { ...data, collection, collectionName } as Phunk;
       newPhunk.isEscrowed = data?.owner === environment.marketAddress
         || (environment as any).oldMarketAddresses?.includes(data?.owner);
       newPhunk.isBridged = data?.owner === environment.bridgeAddress;
@@ -729,8 +725,7 @@ export class DataService {
       .from('ethscriptions' + this.suffix)
       .select(`
         *,
-        collections${this.suffix}(singleName,slug,name,supply,hasBackgrounds),
-        nfts${this.suffix}(hashId,tokenId,owner)
+        collections${this.suffix}(singleName,slug,name,supply,hasBackgrounds)
       `)
       .eq('hashId', hashId)
       .limit(1);
