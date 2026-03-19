@@ -8,16 +8,14 @@ import { interval } from 'rxjs';
 export class PwaUpdateService {
   constructor(private swUpdate: SwUpdate) {
     if (swUpdate.isEnabled) {
-      // Check for updates every 5 minutes
+      // Check immediately on load, then every 5 minutes
+      swUpdate.checkForUpdate();
       interval(5 * 60 * 1000).subscribe(() => swUpdate.checkForUpdate());
 
-      // Handle available updates
+      // Auto-activate new versions immediately
       swUpdate.versionUpdates.subscribe(event => {
         if (event.type === 'VERSION_READY') {
-          // Prompt user to update
-          // if (confirm('A new version is available. Would you like to update?')) {
-          //   window.location.reload();
-          // }
+          window.location.reload();
         }
       });
 

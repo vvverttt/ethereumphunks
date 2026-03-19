@@ -12,7 +12,7 @@ import { SocketService } from '@/services/socket.service';
 
 import { GlobalState, LinkedAccount } from '@/models/global-state';
 
-import { catchError, EMPTY, filter, from, map, mergeMap, of, switchMap, tap, withLatestFrom } from 'rxjs';
+import { catchError, EMPTY, filter, from, map, merge, mergeMap, of, switchMap, tap, withLatestFrom } from 'rxjs';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -30,16 +30,19 @@ export class AppStateEffects {
     switchMap(() => {
       return this.dataSvc.fetchGlobalConfig().pipe(
         switchMap((config) => {
-          return from(this.web3Svc.checkContractPaused()).pipe(
+          // Emit config immediately so UI can render, then update with paused status
+          const immediate = of(appStateActions.setGlobalConfig({ config }));
+          const withPaused = from(this.web3Svc.checkContractPaused()).pipe(
             map((paused) => {
               const newConfig = {
                 ...config,
                 maintenance: paused || config.maintenance,
               };
-              console.table(newConfig);
               return appStateActions.setGlobalConfig({ config: newConfig });
-            })
-          )
+            }),
+            catchError(() => of(appStateActions.setGlobalConfig({ config }))),
+          );
+          return merge(immediate, withPaused);
         })
       )
     })
