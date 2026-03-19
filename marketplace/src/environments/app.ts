@@ -1,5 +1,5 @@
 export const appConfig = {
-  version: '1.9.9',
+  version: '2.0.0',
   standalone: false,
   defaultCollection: 'quantummissingphunksv67',
 };

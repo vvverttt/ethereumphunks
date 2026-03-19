@@ -16,7 +16,7 @@ import { AttributeItem } from '@/models/attributes';
 
 import { createClient, RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
-import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, takeWhile, tap, shareReplay } from 'rxjs';
+import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, tap, shareReplay } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -381,7 +381,10 @@ export class DataService {
           attributes: [],
         };
       })),
-      switchMap((res: any) => this.addAttributes(slug, res)),
+      // Emit data immediately, then re-emit with attributes when ready
+      switchMap((phunks: Phunk[]) => this.addAttributes(slug, phunks).pipe(
+        startWith(phunks),
+      )),
     ) as Observable<Phunk[]>;
 
     return merge(
@@ -446,9 +449,13 @@ export class DataService {
           ...item.ethscription.ethscription,
           listing: item.ethscription.listing ? item.ethscription.listing[0] : null,
           bid: item.ethscription.bid ? item.ethscription.bid[0] : null,
+          attributes: [],
         }
       })),
-      switchMap((res: any) => this.addAttributes(slug, res)),
+      // Emit grid data immediately, then re-emit with attributes when ready
+      switchMap((phunks: Phunk[]) => this.addAttributes(slug, phunks).pipe(
+        startWith(phunks),
+      )),
     ) as Observable<any>;
 
     return merge(
@@ -739,7 +746,7 @@ export class DataService {
       switchMap((phunk: Phunk) => {
         const base = {
           ...phunk,
-          consensus: false,
+          consensus: true,
           listing: null,
           loading: true,
           attributes: phunk.attributes || [],
@@ -754,9 +761,8 @@ export class DataService {
           catchError(() => of(null)),
         );
 
-        // Emit base immediately (consensus: false keeps takeWhile alive),
-        // then emit as soon as attributes resolve (listing may still be null).
-        return combineLatest([attributes$, listing$]).pipe(
+        // Emit base immediately, then hydrate with attributes + listing in parallel
+        return forkJoin([attributes$, listing$]).pipe(
           map(([attributes, listing]) => ({
             ...phunk,
             consensus: true,
@@ -773,11 +779,9 @@ export class DataService {
       }),
     );
 
+    // Fetch once + update on real-time DB changes (no polling)
     return merge(
-      timer(0, 5000).pipe(
-        switchMap(() => fetch$),
-        takeWhile((phunk) => !phunk?.consensus, true)
-      ),
+      fetch$,
       this.watchSinglePhunk(hashId).pipe(
         switchMap(() => fetch$)
       )
@@ -1103,29 +1107,24 @@ export class DataService {
       switchMap((res: any) => {
         if (res.error) throw res.error;
         const data = res.data;
+        const total = data.total_count || data.data?.length || 0;
+
+        // Emit data immediately without attributes, then re-emit with attributes
+        const baseData = data.data.map((item: Phunk) => ({
+          ...item,
+          attributes: [],
+        } as Phunk));
+
         return this.getAttributes(slug).pipe(
-          map((attributes) => {
-            const mappedData = data.data.map((item: Phunk) => ({
+          map((attributes) => ({
+            data: data.data.map((item: Phunk) => ({
               ...item,
               attributes: attributes?.[item.sha] || [],
-            } as Phunk));
-
-            // Workaround: If total_count is 0 but we have data, use data length
-            const total = data.total_count || mappedData.length;
-
-            return {
-              data: mappedData,
-              total
-            }
-          }),
-          catchError(() => {
-            const mappedData = data.data.map((item: Phunk) => ({
-              ...item,
-              attributes: [],
-            } as Phunk));
-            const total = data.total_count || mappedData.length;
-            return of({ data: mappedData, total });
-          }),
+            } as Phunk)),
+            total,
+          })),
+          startWith({ data: baseData, total }),
+          catchError(() => of({ data: baseData, total })),
         )
       }),
       catchError(() => {
