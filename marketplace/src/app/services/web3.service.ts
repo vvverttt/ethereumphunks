@@ -88,16 +88,14 @@ export class Web3Service {
       chain: this.chains[0],
       transport: fallback([
         http(environment.rpcHttpProvider),
-        http('https://cloudflare-eth.com'),
-        http('https://eth.drpc.org'),
+        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
       ], { rank: false }),
     });
 
     this.l1PollingClient = createPublicClient({
       chain: this.chains[0],
       transport: fallback([
-        http('https://cloudflare-eth.com'),
-        http('https://eth.drpc.org'),
+        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
       ], { rank: false }),
     });
 
