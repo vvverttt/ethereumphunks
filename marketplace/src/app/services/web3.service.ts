@@ -87,8 +87,8 @@ export class Web3Service {
       chain: this.chains[0],
       transport: fallback([
         http(environment.rpcHttpProvider),
-        http('https://1rpc.io/eth'),
-        http('https://rpc.mevblocker.io'),
+        http('https://cloudflare-eth.com'),
+        http('https://eth.drpc.org'),
       ], { rank: false }),
     });
 
