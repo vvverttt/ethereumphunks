@@ -35,7 +35,7 @@ if (!process.env.RPC_URL_MAINNET_BACKUP) {
 }
 
 if (!process.env.SUPABASE_URL) {
-  process.env.SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
+  process.env.SUPABASE_URL = 'https://kfnprbhoodmgfhqojmqp.supabase.co';
 }
 if (!process.env.SUPABASE_SERVICE_ROLE) {
   throw new Error('SUPABASE_SERVICE_ROLE env var is required');

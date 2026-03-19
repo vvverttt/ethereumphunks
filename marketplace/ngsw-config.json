@@ -32,7 +32,7 @@
     {
       "name": "supabase-storage",
       "urls": [
-        "https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/**"
+        "https://kfnprbhoodmgfhqojmqp.supabase.co/storage/**"
       ],
       "cacheConfig": {
         "strategy": "performance",
