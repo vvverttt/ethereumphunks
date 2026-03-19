@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
-import { formatEther, parseEther, decodeEventLog, createPublicClient, http } from 'viem';
+import { formatEther, parseEther, decodeEventLog, createPublicClient, http, fallback } from 'viem';
 import { mainnet } from 'viem/chains';
 import { getWalletClient, getChainId, getPublicClient, reconnect } from '@wagmi/core';
 
@@ -19,7 +19,11 @@ const MAX_BLOCK_RANGE = 10000n;
 // Dedicated client for eth_getLogs (Alchemy free tier limits to 10 blocks)
 const logsClient = createPublicClient({
   chain: mainnet,
-  transport: http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+  transport: fallback([
+    http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+    http('https://eth.llamarpc.com'),
+    http('https://1rpc.io/eth'),
+  ], { rank: false }),
 });
 
 export interface AuctionData {
