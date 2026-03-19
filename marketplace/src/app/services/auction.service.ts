@@ -247,8 +247,23 @@ export class AuctionService {
 
   async getBidHistory(currentAuctionId: number): Promise<AuctionBidEvent[]> {
     try {
-      const logs = await this.getEventsPaginated('AuctionBid');
+      // Try DB first
+      const { data } = await supabase
+        .from('auctionBids' + suffix)
+        .select('fromAddress, amount, txHash')
+        .eq('auctionId', currentAuctionId)
+        .order('createdAt', { ascending: false });
 
+      if (data?.length) {
+        return data.map((b: any) => ({
+          sender: b.fromAddress,
+          value: BigInt(b.amount || '0'),
+          txHash: b.txHash || '',
+        }));
+      }
+
+      // Fall back to RPC if no DB data
+      const logs = await this.getEventsPaginated('AuctionBid');
       return logs
         .filter((log: any) => Number(log.args.auctionId) === currentAuctionId)
         .map((log: any) => ({
@@ -281,42 +296,36 @@ export class AuctionService {
 
   async getSettledAuctions(): Promise<SettledAuction[]> {
     try {
-      const logs = await this.getEventsPaginated('AuctionSettled');
+      // Read settled auctions from DB instead of scanning RPC logs
+      const { data: auctions } = await supabase
+        .from('auctions' + suffix)
+        .select('auctionId, hashId, amount, bidder, settled, createdAt')
+        .eq('settled', true)
+        .order('auctionId', { ascending: false });
 
-      if (!logs.length) return [];
+      if (!auctions?.length) return [];
 
-      // Batch fetch all ethscriptions in one Supabase query
-      const hashIds = logs.map((log: any) => log.args.hashId.toLowerCase());
+      // Batch fetch ethscription details
+      const hashIds = auctions.map(a => a.hashId.toLowerCase());
       const { data: ethscriptions } = await supabase
         .from('ethscriptions' + suffix)
         .select('hashId, sha, tokenId, slug')
         .in('hashId', hashIds);
       const ethMap = new Map((ethscriptions ?? []).map(e => [e.hashId, e]));
 
-      // Batch fetch all block timestamps in parallel
-      const uniqueBlocks = [...new Set(logs.map(l => l.blockNumber).filter(Boolean))] as bigint[];
-      const blockResults = await Promise.all(
-        uniqueBlocks.map(bn => logsClient.getBlock({ blockNumber: bn }).catch(() => null))
-      );
-      const blockTimestamps = new Map<bigint, number>();
-      uniqueBlocks.forEach((bn, i) => {
-        if (blockResults[i]) blockTimestamps.set(bn, Number(blockResults[i]!.timestamp));
-      });
-
-      return logs.map((log: any) => {
-        const args = log.args;
-        const eth = ethMap.get(args.hashId.toLowerCase());
+      return auctions.map(a => {
+        const eth = ethMap.get(a.hashId.toLowerCase());
         return {
-          auctionId: Number(args.auctionId),
-          hashId: args.hashId,
-          winner: args.winner,
-          amount: args.amount,
+          auctionId: a.auctionId,
+          hashId: a.hashId,
+          winner: a.bidder || '',
+          amount: BigInt(a.amount || '0'),
           imageUrl: eth ? `${environment.staticUrl}/static/images/${eth.sha}` : '',
           tokenId: eth?.tokenId ?? 0,
           slug: eth?.slug ?? '',
-          settledTimestamp: log.blockNumber ? (blockTimestamps.get(log.blockNumber) ?? 0) : 0,
+          settledTimestamp: Math.floor(new Date(a.createdAt).getTime() / 1000),
         };
-      }).filter(a => a.tokenId > 0).sort((a, b) => b.auctionId - a.auctionId);
+      }).filter(a => a.tokenId > 0);
     } catch {
       return [];
     }
@@ -324,14 +333,16 @@ export class AuctionService {
 
   async getAuctionCreatedEvent(auctionId: number): Promise<{ hashId: string; startTime: number; endTime: number } | null> {
     try {
-      const logs = await this.getEventsPaginated('AuctionCreated');
-      const match = logs.find((log: any) => Number(log.args.auctionId) === auctionId);
-      if (!match) return null;
-      const args = match.args as any;
+      const { data } = await supabase
+        .from('auctions' + suffix)
+        .select('hashId, startTime, endTime')
+        .eq('auctionId', auctionId)
+        .limit(1);
+      if (!data?.length) return null;
       return {
-        hashId: args.hashId,
-        startTime: Number(args.startTime),
-        endTime: Number(args.endTime),
+        hashId: data[0].hashId,
+        startTime: Math.floor(new Date(data[0].startTime).getTime() / 1000),
+        endTime: Math.floor(new Date(data[0].endTime).getTime() / 1000),
       };
     } catch {
       return null;
@@ -340,11 +351,14 @@ export class AuctionService {
 
   async getAuctionSettledEvent(auctionId: number): Promise<{ winner: string; amount: bigint } | null> {
     try {
-      const logs = await this.getEventsPaginated('AuctionSettled');
-      const match = logs.find((log: any) => Number(log.args.auctionId) === auctionId);
-      if (!match) return null;
-      const args = match.args as any;
-      return { winner: args.winner, amount: args.amount };
+      const { data } = await supabase
+        .from('auctions' + suffix)
+        .select('bidder, amount, settled')
+        .eq('auctionId', auctionId)
+        .eq('settled', true)
+        .limit(1);
+      if (!data?.length) return null;
+      return { winner: data[0].bidder, amount: BigInt(data[0].amount || '0') };
     } catch {
       return null;
     }
