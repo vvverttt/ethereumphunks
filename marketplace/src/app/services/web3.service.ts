@@ -61,6 +61,7 @@ export class Web3Service {
   connectedState!: Observable<any>;
 
   l1Client!: PublicClient;
+  l1PollingClient!: PublicClient;
   l2Client!: PublicClient;
 
   config!: Config;
@@ -92,6 +93,14 @@ export class Web3Service {
       ], { rank: false }),
     });
 
+    this.l1PollingClient = createPublicClient({
+      chain: this.chains[0],
+      transport: fallback([
+        http('https://cloudflare-eth.com'),
+        http('https://eth.drpc.org'),
+      ], { rank: false }),
+    });
+
     this.l2Client = createPublicClient({
       chain: this.chains[1],
       transport: http(this.chains[1]?.rpcUrls.default.http[0] || environment.magmaRpcHttpProvider)
@@ -102,8 +111,8 @@ export class Web3Service {
       transports: {
         [environment.chainId]: fallback([
           http(environment.rpcHttpProvider),
-          http('https://1rpc.io/eth'),
-          http('https://rpc.mevblocker.io'),
+          http('https://cloudflare-eth.com'),
+          http('https://eth.drpc.org'),
         ]),
         6969696969: http(environment.magmaRpcHttpProvider)
       },
@@ -321,7 +330,7 @@ export class Web3Service {
   blockWatcher!: WatchBlockNumberReturnType | undefined;
   startBlockWatcher(): void {
     if (this.blockWatcher) return;
-    this.blockWatcher = this.l1Client.watchBlockNumber({
+    this.blockWatcher = this.l1PollingClient.watchBlockNumber({
       emitOnBegin: true,
       pollingInterval: 12_000,
       onBlockNumber: (blockNumber) => {
@@ -343,7 +352,7 @@ export class Web3Service {
   pointsWatcher!: WatchContractEventReturnType | undefined;
   startPointsWatcher(): void {
     if (this.pointsWatcher) return;
-    this.pointsWatcher = this.l1Client.watchContractEvent({
+    this.pointsWatcher = this.l1PollingClient.watchContractEvent({
       address: pointsAddress as `0x${string}`,
       abi: PointsABI,
       onLogs: (logs) => {

@@ -41,7 +41,7 @@ export class GasService {
   }
 
   private fetchGasPrice() {
-    return this.http.post<any>(environment.rpcHttpProvider, {
+    return this.http.post<any>('https://cloudflare-eth.com', {
       jsonrpc: '2.0',
       method: 'eth_gasPrice',
       params: [],
