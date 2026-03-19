@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
-import { formatEther, parseEther, decodeEventLog } from 'viem';
+import { formatEther, parseEther, decodeEventLog, createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
 import { getWalletClient, getChainId, getPublicClient, reconnect } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
@@ -14,6 +15,12 @@ const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
 const auctionDeployBlock = ((environment as any).auctionDeployBlock as bigint) || 0n;
 const MAX_BLOCK_RANGE = 45000n;
+
+// Dedicated client for eth_getLogs (Alchemy free tier limits to 10 blocks)
+const logsClient = createPublicClient({
+  chain: mainnet,
+  transport: http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+});
 
 export interface AuctionData {
   hashId: string;
@@ -216,12 +223,12 @@ export class AuctionService {
   // =========================================================
 
   private async getEventsPaginated(eventName: 'AuctionCreated' | 'AuctionBid' | 'AuctionExtended' | 'AuctionSettled' | 'PoolDeposited' | 'PoolWithdrawn'): Promise<any[]> {
-    const latestBlock = await this.web3Svc.l1Client.getBlockNumber();
+    const latestBlock = await logsClient.getBlockNumber();
     const allLogs: any[] = [];
 
     for (let from = auctionDeployBlock; from <= latestBlock; from += MAX_BLOCK_RANGE) {
       const to = from + MAX_BLOCK_RANGE - 1n > latestBlock ? latestBlock : from + MAX_BLOCK_RANGE - 1n;
-      const logs = await this.web3Svc.l1Client.getContractEvents({
+      const logs = await logsClient.getContractEvents({
         address: auctionAddress,
         abi: EtherPhunksAuctionHouseV2ABI,
         eventName,
@@ -289,7 +296,7 @@ export class AuctionService {
       // Batch fetch all block timestamps in parallel
       const uniqueBlocks = [...new Set(logs.map(l => l.blockNumber).filter(Boolean))] as bigint[];
       const blockResults = await Promise.all(
-        uniqueBlocks.map(bn => this.web3Svc.l1Client.getBlock({ blockNumber: bn }).catch(() => null))
+        uniqueBlocks.map(bn => logsClient.getBlock({ blockNumber: bn }).catch(() => null))
       );
       const blockTimestamps = new Map<bigint, number>();
       uniqueBlocks.forEach((bn, i) => {
