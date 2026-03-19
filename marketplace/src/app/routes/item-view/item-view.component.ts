@@ -4,6 +4,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ViewChild, ViewChildren, ElementRef, QueryList, Component, signal } from '@angular/core';
 
 import { signTypedData } from '@wagmi/core';
+import { formatEther } from 'viem';
 import { HttpClient } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
@@ -122,9 +123,15 @@ export class ItemViewComponent {
         this.store.dispatch(marketStateActions.setMarketSlug({ marketSlug: phunk.slug }));
       }
       this.isRegisteredPair.set(false);
+      this.evolveCost.set(null);
       if (phunk?.hashId && this.web3Svc.isEvolveSlug(phunk.slug)) {
         this.web3Svc.readEvolveContract('registered', [phunk.hashId])
-          .then((result: boolean) => this.isRegisteredPair.set(result))
+          .then((result: boolean) => {
+            this.isRegisteredPair.set(result);
+            if (result && this.web3Svc.isOgEvolveSlug(phunk.slug)) {
+              this.loadEvolveCost(phunk.hashId);
+            }
+          })
           .catch(() => this.isRegisteredPair.set(false));
       }
     }),
@@ -171,6 +178,7 @@ export class ItemViewComponent {
   isMobile$ = this.store.select(appStateSelectors.selectIsMobile);
 
   isRegisteredPair = signal<boolean>(false);
+  evolveCost = signal<string | null>(null);
 
   expanded = false;
 
@@ -716,6 +724,21 @@ export class ItemViewComponent {
       this.store.dispatch(upsertNotification({ notification }));
     } finally {
       this.closeBridge();
+    }
+  }
+
+  async loadEvolveCost(hashId: string): Promise<void> {
+    try {
+      const pairId = await this.web3Svc.readEvolveContract('pairIdOf', [hashId]);
+      const paid = await this.web3Svc.readEvolveContract('feePaid', [pairId]);
+      if (paid) {
+        this.evolveCost.set('0');
+      } else {
+        const fee = await this.web3Svc.readEvolveContract('evolveFee') as bigint;
+        this.evolveCost.set(formatEther(fee));
+      }
+    } catch {
+      this.evolveCost.set(null);
     }
   }
 

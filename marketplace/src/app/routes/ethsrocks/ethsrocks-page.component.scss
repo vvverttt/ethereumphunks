@@ -65,6 +65,12 @@ $rocks-muted: rgba(255, 255, 255, .5);
           font-size: 2.4rem;
           color: $rocks-accent;
         }
+
+        .value-usd {
+          font-family: var(--secondary-font-stack);
+          font-size: 1.4rem;
+          color: $rocks-muted;
+        }
       }
     }
 
@@ -126,6 +132,141 @@ $rocks-muted: rgba(255, 255, 255, .5);
               font-size: 1rem;
             }
           }
+        }
+      }
+    }
+
+    // ─── Price curve chart ────────────────────
+    .price-chart {
+      width: 100%;
+      margin-bottom: 4rem;
+
+      h2 {
+        font-family: var(--secondary-font-stack);
+        font-size: 2rem;
+        font-weight: normal;
+        color: $rocks-text;
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .chart-scroll {
+        overflow-x: auto;
+        background-color: rgba(255, 255, 255, .03);
+        border: 1px solid rgba(255, 255, 255, .08);
+        padding: 2rem 2rem 1rem;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+          height: 6px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: rgba(195, 255, 0, .3);
+          border-radius: 3px;
+        }
+        &::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, .05);
+        }
+      }
+
+      svg {
+        display: block;
+        min-width: 100%;
+        height: 340px;
+
+        .chart-axis {
+          stroke: rgba(255, 255, 255, .2);
+          stroke-width: 1;
+        }
+
+        .chart-grid {
+          stroke: rgba(255, 255, 255, .06);
+          stroke-width: 1;
+          stroke-dasharray: 4 4;
+        }
+
+        .chart-label-y {
+          fill: $rocks-muted;
+          font-size: 12px;
+          font-family: var(--secondary-font-stack);
+        }
+
+        .chart-label-usd {
+          fill: rgba(195, 255, 0, .5);
+          font-size: 10px;
+          font-family: var(--secondary-font-stack);
+        }
+
+        .chart-bar {
+          &.bar-sold {
+            fill: $rocks-accent;
+          }
+          &.bar-next {
+            fill: #fff;
+            stroke: $rocks-accent;
+            stroke-width: 1;
+          }
+          &.bar-future {
+            fill: rgba(255, 255, 255, .12);
+          }
+        }
+
+        .chart-sale-num {
+          fill: rgba(255, 255, 255, .3);
+          font-size: 9px;
+          font-family: var(--secondary-font-stack);
+
+          &.num-sold {
+            fill: rgba(195, 255, 0, .5);
+          }
+          &.num-next {
+            fill: #fff;
+            font-size: 10px;
+            font-weight: bold;
+          }
+        }
+
+        .chart-price-label {
+          fill: rgba(195, 255, 0, .7);
+          font-size: 9px;
+          font-family: var(--secondary-font-stack);
+
+          &.label-next {
+            fill: $rocks-accent;
+            font-size: 11px;
+            font-weight: bold;
+          }
+        }
+
+        .chart-eth-label {
+          fill: rgba(255, 255, 255, .4);
+          font-size: 8px;
+          font-family: var(--secondary-font-stack);
+        }
+      }
+
+      .chart-legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1.2rem;
+        font-family: var(--secondary-font-stack);
+        font-size: 1.2rem;
+
+        .legend-sold {
+          color: $rocks-accent;
+        }
+
+        .legend-remaining {
+          color: $rocks-muted;
+        }
+
+        .legend-next {
+          color: #fff;
+        }
+
+        .legend-increment {
+          color: rgba(195, 255, 0, .6);
         }
       }
     }

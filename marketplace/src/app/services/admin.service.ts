@@ -574,12 +574,6 @@ export class AdminService {
     });
   }
 
-  async getEthsRocksSignerAddress(): Promise<string> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'signerAddress',
-    });
-  }
-
   async getEthsRocksTreasuryAddress(): Promise<string> {
     return await this.web3Svc.l1Client.readContract({
       address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'treasuryAddress',
@@ -599,9 +593,6 @@ export class AdminService {
   ethsrocksPause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'pause'); }
   ethsrocksUnpause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'unpause'); }
 
-  ethsrocksSetSignerAddress(addr: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setSignerAddress', [addr]);
-  }
   ethsrocksSetTreasuryAddress(addr: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setTreasuryAddress', [addr]);
   }
@@ -620,17 +611,35 @@ export class AdminService {
   ethsrocksEmergencyWithdrawEthscription(hashId: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'emergencyWithdrawEthscription', [hashId]);
   }
-  ethsrocksResetUsedERC721(nftContract: string, tokenId: bigint) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'resetUsedERC721', [nftContract, tokenId]);
-  }
-  ethsrocksResetUsedEthscription(hashId: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'resetUsedEthscription', [hashId]);
-  }
   ethsrocksResetTotalRevealed(total: bigint) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'resetTotalRevealed', [total]);
   }
   ethsrocksTransferOwnership(addr: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'transferOwnership', [addr]);
+  }
+  ethsrocksSetPriceFeed(addr: string) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setPriceFeed', [addr]);
+  }
+  ethsrocksSetUsdPerSale(amount: bigint) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setUsdPerSale', [amount]);
+  }
+  ethsrocksSetMaxStaleness(seconds: bigint) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setMaxStaleness', [seconds]);
+  }
+  ethsrocksSetBlocked(wallet: string, isBlocked: boolean) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setBlocked', [wallet, isBlocked]);
+  }
+  ethsrocksSetBlockedBatch(wallets: string[], isBlocked: boolean) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setBlockedBatch', [wallets, isBlocked]);
+  }
+  ethsrocksSetAllowed(wallet: string, isAllowed: boolean) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setAllowed', [wallet, isAllowed]);
+  }
+  ethsrocksSetAllowedBatch(wallets: string[], isAllowed: boolean) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setAllowedBatch', [wallets, isAllowed]);
+  }
+  ethsrocksSetAllowlistEnabled(enabled: boolean) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setAllowlistEnabled', [enabled]);
   }
 
   async ethsrocksDepositEthscriptions(hashIds: string[]) {

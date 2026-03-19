@@ -98,25 +98,6 @@ export const EthsRocksABI = [
     type: 'function',
   },
 
-  // ─── View: Usage tracking ─────────────────────────────────
-  {
-    inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
-    name: 'usedEthscription',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { internalType: 'address', name: '', type: 'address' },
-      { internalType: 'uint256', name: '', type: 'uint256' },
-    ],
-    name: 'usedERC721',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-
   // ─── View: Pool ───────────────────────────────────────────
   {
     inputs: [
@@ -129,41 +110,10 @@ export const EthsRocksABI = [
     type: 'function',
   },
 
-  // ─── View: Addresses ──────────────────────────────────────
-  {
-    inputs: [],
-    name: 'philipInternAddress',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'wrappedV1Address',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'cryptoPhunksV2Address',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-
-  // ─── Write: Purchase ──────────────────────────────────────
+  // ─── Write: Purchase (V2 — open, no gating) ──────────────
   {
     inputs: [
-      { internalType: 'bytes', name: 'signature', type: 'bytes' },
-      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
       { internalType: 'uint256', name: 'maxPrice', type: 'uint256' },
-      { internalType: 'bytes32', name: 'missingPhunkHash', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'quantumDystoHash', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'quantumPhunkHash', type: 'bytes32' },
-      { internalType: 'uint256', name: 'philipOrWrappedTokenId', type: 'uint256' },
-      { internalType: 'bool', name: 'usePhilipIntern', type: 'bool' },
-      { internalType: 'uint256', name: 'cryptoPhunksV2TokenId', type: 'uint256' },
     ],
     name: 'commit',
     outputs: [],
@@ -192,14 +142,37 @@ export const EthsRocksABI = [
     type: 'function',
   },
 
-  // ─── View: Admin ─────────────────────────────────────────
+  // ─── View: Oracle ────────────────────────────────────────
   {
     inputs: [],
-    name: 'signerAddress',
+    name: 'priceFeed',
     outputs: [{ internalType: 'address', name: '', type: 'address' }],
     stateMutability: 'view',
     type: 'function',
   },
+  {
+    inputs: [],
+    name: 'usdPerSale',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'maxStaleness',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getEthUsdPrice',
+    outputs: [{ internalType: 'int256', name: '', type: 'int256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+
+  // ─── View: Admin ─────────────────────────────────────────
   {
     inputs: [],
     name: 'treasuryAddress',
@@ -230,13 +203,6 @@ export const EthsRocksABI = [
   },
 
   // ─── Write: Admin ──────────────────────────────────────────
-  {
-    inputs: [{ internalType: 'address', name: '_signer', type: 'address' }],
-    name: 'setSignerAddress',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
   {
     inputs: [{ internalType: 'address payable', name: '_treasury', type: 'address' }],
     name: 'setTreasuryAddress',
@@ -304,25 +270,97 @@ export const EthsRocksABI = [
     type: 'function',
   },
   {
-    inputs: [
-      { internalType: 'address', name: 'nftContract', type: 'address' },
-      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
-    ],
-    name: 'resetUsedERC721',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ internalType: 'bytes32', name: 'hashId', type: 'bytes32' }],
-    name: 'resetUsedEthscription',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
     inputs: [{ internalType: 'uint256', name: '_totalRevealed', type: 'uint256' }],
     name: 'resetTotalRevealed',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '_priceFeed', type: 'address' }],
+    name: 'setPriceFeed',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '_usdPerSale', type: 'uint256' }],
+    name: 'setUsdPerSale',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '_maxStaleness', type: 'uint256' }],
+    name: 'setMaxStaleness',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'wallet', type: 'address' },
+      { internalType: 'bool', name: 'isBlocked', type: 'bool' },
+    ],
+    name: 'setBlocked',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address[]', name: 'wallets', type: 'address[]' },
+      { internalType: 'bool', name: 'isBlocked', type: 'bool' },
+    ],
+    name: 'setBlockedBatch',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'blocked',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'allowed',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'allowlistEnabled',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'wallet', type: 'address' },
+      { internalType: 'bool', name: 'isAllowed', type: 'bool' },
+    ],
+    name: 'setAllowed',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address[]', name: 'wallets', type: 'address[]' },
+      { internalType: 'bool', name: 'isAllowed', type: 'bool' },
+    ],
+    name: 'setAllowedBatch',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bool', name: '_enabled', type: 'bool' }],
+    name: 'setAllowlistEnabled',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

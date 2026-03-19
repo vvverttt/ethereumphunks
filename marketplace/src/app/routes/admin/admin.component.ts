@@ -132,11 +132,9 @@ export class AdminComponent implements OnInit {
   ethsrocksPrice = signal('0');
   ethsrocksTotalRevealed = signal('0');
   ethsrocksPendingReveals = signal('0');
-  ethsrocksSignerAddress = signal('');
   ethsrocksTreasuryAddress = signal('');
   ethsrocksPointsAddress = signal('');
   // EthsRocks inputs
-  rSetSignerAddress = '';
   rSetTreasuryAddress = '';
   rSetPointsAddress = '';
   rWithdrawAmount = '';
@@ -145,9 +143,6 @@ export class AdminComponent implements OnInit {
   rEmergencyHashId = '';
   rDepositHashIds = '';
   rTransferOwnership = '';
-  rResetERC721Contract = '';
-  rResetERC721TokenId = '';
-  rResetEthscriptionHashId = '';
   rResetTotalRevealed = '';
 
   // Batch operations (pause/unpause all, transfer all)
@@ -283,14 +278,13 @@ export class AdminComponent implements OnInit {
 
   async loadEthsRocksState() {
     try {
-      const [paused, poolSize, balance, price, revealed, pending, signer, treasury, pts] = await Promise.all([
+      const [paused, poolSize, balance, price, revealed, pending, treasury, pts] = await Promise.all([
         this.adminSvc.getEthsRocksPaused(),
         this.adminSvc.getEthsRocksPoolSize(),
         this.adminSvc.getEthsRocksBalance(),
         this.adminSvc.getEthsRocksPrice(),
         this.adminSvc.getEthsRocksTotalRevealed(),
         this.adminSvc.getEthsRocksPendingReveals(),
-        this.adminSvc.getEthsRocksSignerAddress(),
         this.adminSvc.getEthsRocksTreasuryAddress(),
         this.adminSvc.getEthsRocksPointsAddress(),
       ]);
@@ -300,7 +294,6 @@ export class AdminComponent implements OnInit {
       this.ethsrocksPrice.set(formatEther(price));
       this.ethsrocksTotalRevealed.set(revealed.toString());
       this.ethsrocksPendingReveals.set(pending.toString());
-      this.ethsrocksSignerAddress.set(signer);
       this.ethsrocksTreasuryAddress.set(treasury);
       this.ethsrocksPointsAddress.set(pts);
     } catch (e) { console.error('EthsRocks state error:', e); }
@@ -473,7 +466,6 @@ export class AdminComponent implements OnInit {
       () => this.loadEthsRocksState()
     );
   }
-  setEthsRocksSignerAddress() { this.exec(() => this.adminSvc.ethsrocksSetSignerAddress(this.rSetSignerAddress), () => this.loadEthsRocksState()); }
   setEthsRocksTreasuryAddress() { this.exec(() => this.adminSvc.ethsrocksSetTreasuryAddress(this.rSetTreasuryAddress), () => this.loadEthsRocksState()); }
   setEthsRocksPointsAddress() { this.exec(() => this.adminSvc.ethsrocksSetPointsAddress(this.rSetPointsAddress), () => this.loadEthsRocksState()); }
   async ethsrocksWithdrawAllETH() {
@@ -492,8 +484,6 @@ export class AdminComponent implements OnInit {
     if (!hashIds.length) return;
     this.exec(() => this.adminSvc.ethsrocksDepositEthscriptions(hashIds), () => this.loadEthsRocksState());
   }
-  resetEthsRocksUsedERC721() { this.exec(() => this.adminSvc.ethsrocksResetUsedERC721(this.rResetERC721Contract, BigInt(this.rResetERC721TokenId)), () => this.loadEthsRocksState()); }
-  resetEthsRocksUsedEthscription() { this.exec(() => this.adminSvc.ethsrocksResetUsedEthscription(this.rResetEthscriptionHashId), () => this.loadEthsRocksState()); }
   resetEthsRocksTotalRevealed() { this.exec(() => this.adminSvc.ethsrocksResetTotalRevealed(BigInt(this.rResetTotalRevealed)), () => this.loadEthsRocksState()); }
   transferEthsRocksOwnership() { this.exec(() => this.adminSvc.ethsrocksTransferOwnership(this.rTransferOwnership)); }
 

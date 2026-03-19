@@ -14,33 +14,80 @@
         </div>
         <div class="stat">
           <span class="label">Sold</span>
-          <span class="value">{{ totalSold() }} / {{ poolSize() }}</span>
+          <span class="value">{{ totalSold() }} / {{ totalSupply() }}</span>
         </div>
         <div class="stat">
           <span class="label">Available</span>
           <span class="value">{{ remaining() }}</span>
         </div>
-      </div>
-
-      <div class="pairs-section">
-        <h2>Required Pairs</h2>
-        <p class="pairs-desc">Each purchase requires a unique set of 5 tokens:</p>
-
-        <div class="pairs-grid">
-          <div class="pair-group">
-            <h3>Ethscriptions (Signer Verified)</h3>
-            <div class="pair-item">1x MissingPhunk (OG or Quantum)</div>
-            <div class="pair-item">1x QuantumDystoPhunk</div>
-            <div class="pair-item">1x QuantumPhunk</div>
-          </div>
-
-          <div class="pair-group">
-            <h3>ERC-721 (On-Chain)</h3>
-            <div class="pair-item">1x PhilipIntern <span class="or">OR</span> Wrapped V1 Phunk</div>
-            <div class="pair-item">1x CryptoPhunksV2</div>
-          </div>
+        <div class="stat">
+          <span class="label">Per Sale</span>
+          <span class="value">+{{ priceIncrementEth() }}</span>
         </div>
       </div>
+
+      <!-- Price Bar Chart -->
+      @if (totalSupply() > 0) {
+        <div class="price-chart">
+          <h2>Price Per Sale</h2>
+          <div class="chart-scroll">
+            <svg [attr.viewBox]="chartViewBox()">
+              <!-- Y axis -->
+              <line x1="0" y1="0" x2="0" y2="300" class="chart-axis" />
+              <line x1="0" y1="300" [attr.x2]="chartTotalWidth()" y2="300" class="chart-axis" />
+              <line x1="0" y1="150" [attr.x2]="chartTotalWidth()" y2="150" class="chart-grid" />
+              <line x1="0" y1="0" [attr.x2]="chartTotalWidth()" y2="0" class="chart-grid" />
+
+              <!-- Y-axis labels -->
+              <text x="-10" y="6" class="chart-label-y" text-anchor="end">{{ chartMaxEth() }}</text>
+              <text x="-10" y="156" class="chart-label-y" text-anchor="end">{{ chartMidEth() }}</text>
+              <text x="-10" y="306" class="chart-label-y" text-anchor="end">0</text>
+
+              <!-- Bars -->
+              @for (bar of chartBars(); track bar.sale) {
+                <rect
+                  [attr.x]="bar.x"
+                  [attr.y]="bar.y"
+                  [attr.width]="barWidth"
+                  [attr.height]="bar.height"
+                  [class.bar-sold]="bar.state === 'sold'"
+                  [class.bar-next]="bar.state === 'next'"
+                  [class.bar-future]="bar.state === 'future'"
+                  class="chart-bar" />
+
+                <!-- Sale number below each bar -->
+                <text
+                  [attr.x]="bar.x + barWidth / 2"
+                  y="316"
+                  class="chart-sale-num"
+                  [class.num-sold]="bar.state === 'sold'"
+                  [class.num-next]="bar.state === 'next'"
+                  text-anchor="middle">
+                  {{ bar.sale }}
+                </text>
+
+                <!-- Price labels above bar — every 10th, #1, last, and next -->
+                @if (bar.sale === 1 || bar.sale === totalSupply() || bar.sale % 10 === 0 || bar.state === 'next') {
+                  <text
+                    [attr.x]="bar.x + barWidth / 2"
+                    [attr.y]="bar.y - 6"
+                    class="chart-price-label"
+                    [class.label-next]="bar.state === 'next'"
+                    text-anchor="middle">
+                    {{ bar.eth }}
+                  </text>
+                }
+              }
+            </svg>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-sold">Sold: {{ totalSold() }}</span>
+            <span class="legend-remaining">Remaining: {{ remaining() }}</span>
+            <span class="legend-next">Next: {{ currentPriceEth() }}</span>
+            <span class="legend-increment">+{{ priceIncrementEth() }} per sale</span>
+          </div>
+        </div>
+      }
 
       <div class="actions">
         @if (isPaused()) {
@@ -48,74 +95,38 @@
         } @else if (remaining() <= 0) {
           <button class="btn disabled" disabled>Sold Out</button>
         } @else if (hasCommitment()) {
-          @if (!canReveal()) {
-            <p class="reveal-wait">Waiting for reveal window... {{ blocksUntilReveal() }} block(s) remaining</p>
-          }
-          <button class="btn reveal" (click)="onReveal()" [disabled]="txPending() || !canReveal()">
-            @if (txPending()) { Pending... } @else if (!canReveal()) { Wait {{ blocksUntilReveal() }} Block(s) } @else { Reveal Your Rock }
-          </button>
-          <button class="btn cancel" (click)="onCancel()" [disabled]="txPending()">
-            @if (txPending()) { Pending... } @else { Cancel Commitment }
-          </button>
-        } @else if (connected$ | async) {
-          <div class="commit-form">
-            @if (tokensLoading()) {
-              <p class="status">Detecting your tokens...</p>
-            } @else if (philipOrWrappedTokens().length === 0 || cryptoPhunksV2Tokens().length === 0) {
-              <p class="no-tokens">
-                @if (philipOrWrappedTokens().length === 0 && cryptoPhunksV2Tokens().length === 0) {
-                  No eligible ERC-721 tokens found. You need a PhilipIntern or Wrapped V1, and a CryptoPhunksV2.
-                } @else if (philipOrWrappedTokens().length === 0) {
-                  No available PhilipIntern or Wrapped V1 tokens found.
-                } @else {
-                  No available CryptoPhunksV2 tokens found.
-                }
-              </p>
-            } @else {
-              <div class="select-row">
-                <label>PhilipIntern / Wrapped V1</label>
-                <select [ngModel]="selectedPhilipOrWrapped()"
-                        (ngModelChange)="selectedPhilipOrWrapped.set($event)"
-                        [disabled]="txPending()">
-                  @if (philipOrWrappedTokens().length > 1) {
-                    <option value="">Select token...</option>
-                  }
-                  @for (token of philipOrWrappedTokens(); track token.label) {
-                    <option [value]="token.contract + ':' + token.id">{{ token.label }}</option>
-                  }
-                </select>
-              </div>
-
-              <div class="select-row">
-                <label>CryptoPhunksV2</label>
-                <select [ngModel]="selectedCryptoPhunksV2()"
-                        (ngModelChange)="selectedCryptoPhunksV2.set($event)"
-                        [disabled]="txPending()">
-                  @if (cryptoPhunksV2Tokens().length > 1) {
-                    <option value="">Select token...</option>
-                  }
-                  @for (token of cryptoPhunksV2Tokens(); track token.label) {
-                    <option [value]="token.contract + ':' + token.id">{{ token.label }}</option>
-                  }
-                </select>
-              </div>
-
-              <button class="btn commit" (click)="onCommit()" [disabled]="txPending()">
-                @if (txPending()) {
-                  Pending...
-                } @else {
-                  Commit ({{ currentPrice() }} ETH)
-                }
-              </button>
+          @if (isExpired()) {
+            <p class="reveal-wait">Reveal window expired. Cancel to get your ETH back.</p>
+            <button class="btn cancel" (click)="onCancel()" [disabled]="txPending()">
+              @if (txPending()) { Pending... } @else { Cancel & Refund }
+            </button>
+          } @else {
+            @if (!canReveal()) {
+              <p class="reveal-wait">Waiting for reveal window... {{ blocksUntilReveal() }} block(s) remaining</p>
             }
-          </div>
+            <button class="btn reveal" (click)="onReveal()" [disabled]="txPending() || !canReveal()">
+              @if (txPending()) { Pending... } @else if (!canReveal()) { Wait {{ blocksUntilReveal() }} Block(s) } @else { Reveal Your Rock }
+            </button>
+          }
+        } @else if (connected$ | async) {
+          @if (walletChecked()) {
+            <button class="btn commit" (click)="onCommit()" [disabled]="txPending()">
+              @if (txPending()) {
+                Pending...
+              } @else {
+                Commit ({{ currentPrice() }} ETH)
+              }
+            </button>
+          } @else {
+            <p class="status">Checking wallet...</p>
+          }
         } @else {
           <p class="connect-msg">Connect wallet to purchase</p>
         }
       </div>
 
       <div class="history-section">
-        <h2>Used Tokens</h2>
+        <h2>Purchase History</h2>
         @if (historyLoading()) {
           <p class="status">Loading history...</p>
         } @else if (purchaseHistory().length === 0) {
@@ -127,28 +138,7 @@
                 <div class="history-header">
                   <span class="history-buyer">{{ p.buyer.slice(0, 6) }}...{{ p.buyer.slice(-4) }}</span>
                   <span class="history-price">{{ p.price }} ETH</span>
-                </div>
-                <div class="history-tokens">
-                  <div class="history-token">
-                    <span class="token-label">MissingPhunk</span>
-                    <span class="token-hash">{{ p.missingPhunkHash.slice(0, 10) }}...{{ p.missingPhunkHash.slice(-6) }}</span>
-                  </div>
-                  <div class="history-token">
-                    <span class="token-label">QDystoPhunk</span>
-                    <span class="token-hash">{{ p.quantumDystoHash.slice(0, 10) }}...{{ p.quantumDystoHash.slice(-6) }}</span>
-                  </div>
-                  <div class="history-token">
-                    <span class="token-label">QuantumPhunk</span>
-                    <span class="token-hash">{{ p.quantumPhunkHash.slice(0, 10) }}...{{ p.quantumPhunkHash.slice(-6) }}</span>
-                  </div>
-                  <div class="history-token">
-                    <span class="token-label">{{ p.nftLabel }}</span>
-                    <span class="token-id">#{{ p.philipOrWrappedTokenId }}</span>
-                  </div>
-                  <div class="history-token">
-                    <span class="token-label">CryptoPhunksV2</span>
-                    <span class="token-id">#{{ p.cryptoPhunksV2TokenId }}</span>
-                  </div>
+                  <span class="history-sale">#{{ p.saleNumber }}</span>
                 </div>
               </div>
             }

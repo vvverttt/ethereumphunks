@@ -406,17 +406,11 @@
           <div class="state-item"><span>Current Price</span><span>{{ ethsrocksPrice() }} ETH</span></div>
           <div class="state-item"><span>Total Revealed</span><span>{{ ethsrocksTotalRevealed() }}</span></div>
           <div class="state-item"><span>Pending Reveals</span><span>{{ ethsrocksPendingReveals() }}</span></div>
-          <div class="state-item"><span>Signer Address</span><span class="mono">{{ ethsrocksSignerAddress() }}</span></div>
           <div class="state-item"><span>Treasury Address</span><span class="mono">{{ ethsrocksTreasuryAddress() }}</span></div>
           <div class="state-item"><span>Points Address</span><span class="mono">{{ ethsrocksPointsAddress() }}</span></div>
         </div>
 
         <div class="actions">
-          <div class="action">
-            <label>Set Signer Address</label>
-            <input type="text" [(ngModel)]="rSetSignerAddress" placeholder="0x..." />
-            <button (click)="setEthsRocksSignerAddress()" [disabled]="txPending()">Execute</button>
-          </div>
           <div class="action">
             <label>Set Treasury Address</label>
             <input type="text" [(ngModel)]="rSetTreasuryAddress" placeholder="0x..." />
@@ -446,17 +440,6 @@
             <label>Deposit Ethscriptions to Pool</label>
             <textarea [(ngModel)]="rDepositHashIds" placeholder="One hashId per line, or comma-separated" rows="4"></textarea>
             <button (click)="ethsrocksDepositEthscriptions()" [disabled]="txPending()">Deposit</button>
-          </div>
-          <div class="action">
-            <label>Reset Used ERC-721 Token</label>
-            <input type="text" [(ngModel)]="rResetERC721Contract" placeholder="NFT contract 0x..." />
-            <input type="number" [(ngModel)]="rResetERC721TokenId" placeholder="Token ID" />
-            <button (click)="resetEthsRocksUsedERC721()" [disabled]="txPending()">Reset</button>
-          </div>
-          <div class="action">
-            <label>Reset Used Ethscription</label>
-            <input type="text" [(ngModel)]="rResetEthscriptionHashId" placeholder="hashId 0x..." />
-            <button (click)="resetEthsRocksUsedEthscription()" [disabled]="txPending()">Reset</button>
           </div>
           <div class="action">
             <label>Reset Total Revealed</label>

@@ -210,7 +210,7 @@
                         (owner | lowercase) === (address | lowercase)
                       ) {
                         <button class="evolve" (click)="submitEvolve(phunk)">
-                          <span>Evolve</span>
+                          <span>Evolve @if (evolveCost() !== null && evolveCost() !== '0') { ({{ evolveCost() }} ETH) }</span>
                           <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'evolvePhunk' }" />
                         </button>
                       }

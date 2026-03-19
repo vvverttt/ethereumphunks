@@ -488,6 +488,38 @@ $lottery-muted: #c3ff00;
     }
   }
 
+  .owner-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    ng-select {
+      flex: 1 1 140px;
+      min-width: 140px;
+      max-width: 200px;
+      font-size: 0.8rem;
+    }
+
+    .clear-filters {
+      font-family: '04B_30', monospace;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: $lottery-text;
+      padding: 6px 12px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      white-space: nowrap;
+
+      &:hover {
+        border-color: rgba(var(--pink), 1);
+        color: rgba(var(--pink), 1);
+      }
+    }
+  }
+
   .deposit-section {
     margin-top: 2rem;
     padding-top: 2rem;

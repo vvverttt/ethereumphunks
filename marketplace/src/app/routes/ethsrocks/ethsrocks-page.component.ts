@@ -1,29 +1,23 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
-import { EthsRocksService, UsedPurchase } from '@/services/ethsrocks.service';
+import { EthsRocksService, RockPurchase } from '@/services/ethsrocks.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
-interface TokenOption {
-  id: bigint;
-  label: string;       // e.g. "PhilipIntern #42"
-  contract: `0x${string}`;
-  isPhilipIntern: boolean;
-}
+// Fixed ETH increment per sale (matches contract BASE_PRICE)
+const BASE_PRICE_ETH = 0.001;
 
 @Component({
   selector: 'app-ethsrocks-page',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
   ],
   templateUrl: './ethsrocks-page.component.html',
   styleUrls: ['./ethsrocks-page.component.scss'],
@@ -46,8 +40,10 @@ export class EthsRocksPageComponent implements OnInit {
   commitBlock = signal<number>(0);
   currentBlock = signal<number>(0);
   canReveal = signal<boolean>(false);
+  isExpired = signal<boolean>(false);
   blocksUntilReveal = signal<number>(0);
   loading = signal<boolean>(true);
+  walletChecked = signal<boolean>(false);
 
   // TX state
   errorMessage = signal<string>('');
@@ -55,15 +51,66 @@ export class EthsRocksPageComponent implements OnInit {
   txHash = signal<string>('');
 
   // Purchase history
-  purchaseHistory = signal<UsedPurchase[]>([]);
+  purchaseHistory = signal<RockPurchase[]>([]);
   historyLoading = signal<boolean>(false);
 
-  // Auto-detected tokens
-  philipOrWrappedTokens = signal<TokenOption[]>([]);
-  cryptoPhunksV2Tokens = signal<TokenOption[]>([]);
-  selectedPhilipOrWrapped = signal<string>('');   // "contract:tokenId"
-  selectedCryptoPhunksV2 = signal<string>('');    // "contract:tokenId"
-  tokensLoading = signal<boolean>(false);
+  // Price curve chart
+  totalSupply = signal<number>(0);
+
+  // Bar chart — one bar per sale
+  barWidth = 12;
+  barGap = 4;
+  chartH = 300;
+
+  chartBars = computed(() => {
+    const supply = this.totalSupply();
+    if (supply <= 0) return [];
+    const sold = this.totalSold();
+    const maxEth = BASE_PRICE_ETH * supply;
+    const h = this.chartH;
+
+    const bars: { x: number; y: number; height: number; sale: number; eth: string; state: 'sold' | 'next' | 'future' }[] = [];
+    for (let i = 1; i <= supply; i++) {
+      const ethPrice = BASE_PRICE_ETH * i;
+      const barH = (ethPrice / maxEth) * h;
+      const x = (i - 1) * (this.barWidth + this.barGap);
+      bars.push({
+        x,
+        y: h - barH,
+        height: barH,
+        sale: i,
+        eth: ethPrice.toFixed(4) + ' ETH',
+        state: i <= sold ? 'sold' : i === sold + 1 ? 'next' : 'future',
+      });
+    }
+    return bars;
+  });
+
+  chartTotalWidth = computed(() => {
+    const supply = this.totalSupply();
+    return supply * (this.barWidth + this.barGap);
+  });
+
+  chartViewBox = computed(() => {
+    const w = this.chartTotalWidth();
+    return `-80 -35 ${w + 100} ${this.chartH + 75}`;
+  });
+
+  chartMaxEth = computed(() => {
+    const supply = this.totalSupply();
+    return supply > 0 ? (BASE_PRICE_ETH * supply).toFixed(4) + ' ETH' : '';
+  });
+  chartMidEth = computed(() => {
+    const supply = this.totalSupply();
+    return supply > 0 ? (BASE_PRICE_ETH * supply / 2).toFixed(4) + ' ETH' : '';
+  });
+  currentPriceEth = computed(() => {
+    const sold = this.totalSold();
+    return (BASE_PRICE_ETH * (sold + 1)).toFixed(4) + ' ETH';
+  });
+  priceIncrementEth = computed(() => {
+    return BASE_PRICE_ETH.toFixed(4) + ' ETH';
+  });
 
   explorerUrl = (environment as any).explorerUrl || 'https://etherscan.io';
 
@@ -83,6 +130,11 @@ export class EthsRocksPageComponent implements OnInit {
     await this.loadState();
     this.loading.set(false);
     this.loadPurchaseHistory();
+
+    // Re-check commitment when wallet address becomes available after page load
+    this.address$.subscribe(addr => {
+      if (addr) this.loadState();
+    });
   }
 
   async loadState() {
@@ -93,6 +145,7 @@ export class EthsRocksPageComponent implements OnInit {
       this.totalSold.set(state.totalSold);
       this.remaining.set(state.remaining);
       this.isPaused.set(state.paused);
+      this.totalSupply.set(state.poolSize + state.totalSold);
     }
 
     // Check if connected user has a commitment
@@ -104,71 +157,20 @@ export class EthsRocksPageComponent implements OnInit {
           this.hasCommitment.set(true);
           this.commitBlock.set(Number(commitment.commitBlock));
 
-          // Check reveal readiness (REVEAL_DELAY = 2 blocks)
           const blockNum = await this.web3Svc.l1Client.getBlockNumber();
           const current = Number(blockNum);
           this.currentBlock.set(current);
           const revealBlock = Number(commitment.commitBlock) + 2;
+          const expiryBlock = Number(commitment.commitBlock) + 256;
           const blocksLeft = revealBlock - current;
-          this.canReveal.set(blocksLeft <= 0);
+          this.canReveal.set(blocksLeft <= 0 && current <= expiryBlock);
+          this.isExpired.set(current > expiryBlock);
           this.blocksUntilReveal.set(Math.max(0, blocksLeft));
+        } else {
+          this.hasCommitment.set(false);
         }
       } catch {}
-
-      // Auto-detect tokens if no commitment
-      if (!this.hasCommitment()) {
-        await this.loadUserTokens(address);
-      }
-    }
-  }
-
-  async loadUserTokens(address: `0x${string}`) {
-    this.tokensLoading.set(true);
-    try {
-      const nftAddresses = await this.ethsrocksSvc.getNftAddresses();
-
-      const [philipTokens, wrappedTokens, v2Tokens] = await Promise.all([
-        this.ethsrocksSvc.getAvailableTokens(nftAddresses.philipIntern, address),
-        this.ethsrocksSvc.getAvailableTokens(nftAddresses.wrappedV1, address),
-        this.ethsrocksSvc.getAvailableTokens(nftAddresses.cryptoPhunksV2, address),
-      ]);
-
-      const philipOrWrapped: TokenOption[] = [
-        ...philipTokens.map(id => ({
-          id,
-          label: `PhilipIntern #${id}`,
-          contract: nftAddresses.philipIntern,
-          isPhilipIntern: true,
-        })),
-        ...wrappedTokens.map(id => ({
-          id,
-          label: `Wrapped V1 #${id}`,
-          contract: nftAddresses.wrappedV1,
-          isPhilipIntern: false,
-        })),
-      ];
-
-      const v2Options: TokenOption[] = v2Tokens.map(id => ({
-        id,
-        label: `CryptoPhunksV2 #${id}`,
-        contract: nftAddresses.cryptoPhunksV2,
-        isPhilipIntern: false,
-      }));
-
-      this.philipOrWrappedTokens.set(philipOrWrapped);
-      this.cryptoPhunksV2Tokens.set(v2Options);
-
-      // Auto-select if only one option
-      if (philipOrWrapped.length === 1) {
-        this.selectedPhilipOrWrapped.set(`${philipOrWrapped[0].contract}:${philipOrWrapped[0].id}`);
-      }
-      if (v2Options.length === 1) {
-        this.selectedCryptoPhunksV2.set(`${v2Options[0].contract}:${v2Options[0].id}`);
-      }
-    } catch (e) {
-      console.error('Failed to load user tokens:', e);
-    } finally {
-      this.tokensLoading.set(false);
+      this.walletChecked.set(true);
     }
   }
 
@@ -183,12 +185,6 @@ export class EthsRocksPageComponent implements OnInit {
     }
   }
 
-  private parseSelection(val: string): { contract: `0x${string}`; tokenId: bigint } | null {
-    if (!val) return null;
-    const [contract, idStr] = val.split(':');
-    return { contract: contract as `0x${string}`, tokenId: BigInt(idStr) };
-  }
-
   async onCommit() {
     const connected = await firstValueFrom(this.connected$);
     if (!connected) {
@@ -196,50 +192,13 @@ export class EthsRocksPageComponent implements OnInit {
       return;
     }
 
-    const sel1 = this.parseSelection(this.selectedPhilipOrWrapped());
-    const sel2 = this.parseSelection(this.selectedCryptoPhunksV2());
-
-    if (!sel1 || !sel2) {
-      this.errorMessage.set('Select both tokens');
-      return;
-    }
-
-    // Find which token option was selected to determine usePhilipIntern
-    const selectedOption = this.philipOrWrappedTokens().find(
-      t => t.contract === sel1.contract && t.id === sel1.tokenId
-    );
-    const usePhilip = selectedOption?.isPhilipIntern ?? true;
-
     this.errorMessage.set('');
     this.txPending.set(true);
     this.txHash.set('');
 
     try {
-      const address = this.web3Svc.getCurrentAddress();
-      if (!address) throw new Error('Wallet not connected');
-
-      // Get backend authorization (ethscription hashes + signature, bound to token IDs)
-      const auth = await this.ethsrocksSvc.getAuthorization(address, sel1.tokenId, usePhilip, sel2.tokenId);
-      if (!auth.eligible) {
-        throw new Error(auth.reason || 'Not eligible — missing required ethscriptions');
-      }
-
-      // Get current price
       const price = await this.ethsrocksSvc.getCurrentPrice();
-
-      // Call commit
-      const hash = await this.ethsrocksSvc.commit({
-        signature: auth.signature! as `0x${string}`,
-        deadline: BigInt(auth.deadline!),
-        maxPrice: price,
-        missingPhunkHash: auth.missingPhunkHash! as `0x${string}`,
-        quantumDystoHash: auth.quantumDystoHash! as `0x${string}`,
-        quantumPhunkHash: auth.quantumPhunkHash! as `0x${string}`,
-        philipOrWrappedTokenId: sel1.tokenId,
-        usePhilipIntern: usePhilip,
-        cryptoPhunksV2TokenId: sel2.tokenId,
-        value: price,
-      });
+      const hash = await this.ethsrocksSvc.commit(price, price);
 
       if (hash) {
         this.txHash.set(hash);

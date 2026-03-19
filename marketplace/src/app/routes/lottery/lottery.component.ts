@@ -1,6 +1,8 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { Store } from '@ngrx/store';
 
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -10,10 +12,12 @@ import { mainnet } from 'viem/chains';
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { LotteryGridItem, LotteryWin, SpinPhase } from '@/models/lottery';
+import { Attribute } from '@/models/attributes';
 import { PhilipLotteryV67ABI } from '@/abi/PhilipLotteryV67';
 
 import { Web3Service } from '@/services/web3.service';
 import { LotteryService } from '@/services/lottery.service';
+import { DataService } from '@/services/data.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as notifActions from '@/state/actions/notification.actions';
@@ -45,7 +49,7 @@ const MAX_STEP_DELAY = 400;
 @Component({
   selector: 'app-lottery',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, NgSelectModule],
   templateUrl: './lottery.component.html',
   styleUrls: ['./lottery.component.scss']
 })
@@ -89,10 +93,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
   hasPendingReturns = computed(() => this.pendingReturns() > 0n);
   private confirmTimer: any;
   depositStatus = signal('');
-  ownedItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean }[]>([]);
+  ownedItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean; attributes?: Attribute[] }[]>([]);
   ownedLoading = signal(false);
   selectedCount = computed(() => this.ownedItems().filter(i => i.selected).length);
-  poolItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean }[]>([]);
+  poolItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean; attributes?: Attribute[] }[]>([]);
   poolLoading = signal(false);
   poolSelectedCount = computed(() => this.poolItems().filter(i => i.selected).length);
   withdrawStatus = signal('');
@@ -133,10 +137,19 @@ export class LotteryComponent implements OnInit, OnDestroy {
     }
   };
 
+  // Owner panel attribute filters
+  ownerFilterData = signal<{ [key: string]: string[] }>({});
+  ownerActiveFilters: { [key: string]: string | null } = {};
+  ownerFilterVersion = signal(0);
+  filteredOwnedItems = computed(() => { this.ownerFilterVersion(); return this.applyAttrFilter(this.ownedItems(), this.ownerActiveFilters); });
+  filteredPoolItems = computed(() => { this.ownerFilterVersion(); return this.applyAttrFilter(this.poolItems(), this.ownerActiveFilters); });
+  ownerFilterKeys = computed(() => Object.keys(this.ownerFilterData()));
+
   constructor(
     private store: Store<GlobalState>,
     private web3Svc: Web3Service,
     private lotterySvc: LotteryService,
+    private dataSvc: DataService,
     private ngZone: NgZone,
   ) {}
 
@@ -182,6 +195,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
         this.pendingReturns.set(pr);
       } catch {}
     }
+
+    // Re-check commitment when wallet connects after page load
+    this.address$.subscribe(addr => {
+      if (addr && !this.hasPendingCommitment()) {
+        this.checkPendingCommitment();
+      }
+    });
 
     // Staggered load-in animation (matches OG timing)
     setTimeout(() => this.loadedIn.set(true), 300);
@@ -1278,7 +1298,21 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.ownedLoading.set(true);
     try {
       const items = await this.lotterySvc.getOwnedEthscriptions(address);
-      this.ownedItems.set(items.map(item => ({ ...item, selected: false })));
+      // Attach attributes from the data service
+      const slug = 'cryptophunksv67';
+      const attrMap = await firstValueFrom(this.dataSvc.getAttributes(slug));
+      const withAttrs = items.map(item => ({
+        ...item,
+        selected: false,
+        attributes: attrMap?.[item.sha] || [],
+      }));
+      this.ownedItems.set(withAttrs);
+
+      // Load filter options if not already loaded
+      if (Object.keys(this.ownerFilterData()).length === 0) {
+        const filters = await this.dataSvc.getFilters(slug);
+        if (filters) this.ownerFilterData.set(filters);
+      }
     } catch (err) {
       console.error('Failed to load owned items:', err);
     } finally {
@@ -1355,12 +1389,23 @@ export class LotteryComponent implements OnInit, OnDestroy {
       }
 
       const metaMap = new Map(allMeta.map((m: any) => [m.hashId, m]));
+      const slug = 'cryptophunksv67';
+      const attrMap = await firstValueFrom(this.dataSvc.getAttributes(slug));
       this.poolItems.set(
         allHashIds.map(h => {
           const meta = metaMap.get(h) || {};
-          return { hashId: h, sha: meta.sha || '', tokenId: meta.tokenId ?? 0, slug: meta.slug || '', selected: false };
+          return {
+            hashId: h, sha: meta.sha || '', tokenId: meta.tokenId ?? 0, slug: meta.slug || '',
+            selected: false, attributes: attrMap?.[meta.sha] || [],
+          };
         })
       );
+
+      // Load filter options if not already loaded
+      if (Object.keys(this.ownerFilterData()).length === 0) {
+        const filters = await this.dataSvc.getFilters(slug);
+        if (filters) this.ownerFilterData.set(filters);
+      }
     } catch (err) {
       console.error('Failed to load pool items:', err);
     } finally {
@@ -1443,5 +1488,43 @@ export class LotteryComponent implements OnInit, OnDestroy {
     } catch (err: any) {
       this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
     }
+  }
+
+  // =========================================================
+  // Owner: Attribute Filtering
+  // =========================================================
+
+  selectOwnerFilter(): void {
+    for (const key of Object.keys(this.ownerActiveFilters)) {
+      if (this.ownerActiveFilters[key] === null) delete this.ownerActiveFilters[key];
+    }
+    this.ownerFilterVersion.update(v => v + 1);
+  }
+
+  clearOwnerFilters(): void {
+    this.ownerActiveFilters = {};
+    this.ownerFilterVersion.update(v => v + 1);
+  }
+
+  private applyAttrFilter(
+    items: { hashId: string; sha: string; tokenId: number; slug: string; selected: boolean; attributes?: Attribute[] }[],
+    filters: { [key: string]: string | null }
+  ) {
+    const keys = Object.keys(filters).filter(k => filters[k] != null);
+    if (keys.length === 0) return items;
+
+    return items.filter(item => {
+      if (!item.attributes) return false;
+      return keys.every(key => {
+        const value = filters[key];
+        if (key === 'trait-count') {
+          return item.attributes!.length === Number(value) + 2;
+        }
+        if (value === 'none') {
+          return !item.attributes!.some(a => a.k === key);
+        }
+        return item.attributes!.some(a => a.k === key && (Array.isArray(a.v) ? a.v.includes(value!) : a.v === value));
+      });
+    });
   }
 }

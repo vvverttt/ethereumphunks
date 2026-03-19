@@ -166,15 +166,37 @@
         Withdraw Funds
       </button>
 
+      <!-- Attribute Filters -->
+      @if (ownerFilterKeys().length) {
+        <div class="owner-filters">
+          @for (key of ownerFilterKeys(); track key) {
+            <ng-select
+              [(ngModel)]="ownerActiveFilters[key]"
+              [placeholder]="key"
+              [searchable]="true"
+              [clearable]="true"
+              [class.active]="ownerActiveFilters[key]"
+              (change)="selectOwnerFilter()">
+              @for (val of ownerFilterData()[key]; track val) {
+                <ng-option [value]="val">{{ val }}</ng-option>
+              }
+            </ng-select>
+          }
+          @if (ownerFilterKeys().length) {
+            <button class="clear-filters" (click)="clearOwnerFilters()">Clear</button>
+          }
+        </div>
+      }
+
       <div class="deposit-section">
-        <h4>Your Items</h4>
+        <h4>Your Items ({{ filteredOwnedItems().length }})</h4>
         @if (ownedLoading()) {
           <p class="deposit-status">Loading...</p>
         } @else if (ownedItems().length === 0) {
           <p class="deposit-status">No items in wallet</p>
         } @else {
           <div class="owned-grid">
-            @for (item of ownedItems(); track item.hashId) {
+            @for (item of filteredOwnedItems(); track item.hashId) {
               <div
                 class="owned-item"
                 [class.selected]="item.selected"
@@ -197,14 +219,14 @@
       </div>
 
       <div class="deposit-section">
-        <h4>Pool Items</h4>
+        <h4>Pool Items ({{ filteredPoolItems().length }})</h4>
         @if (poolLoading()) {
           <p class="deposit-status">Loading...</p>
         } @else if (poolItems().length === 0) {
           <p class="deposit-status">Pool is empty</p>
         } @else {
           <div class="owned-grid">
-            @for (item of poolItems(); track item.hashId) {
+            @for (item of filteredPoolItems(); track item.hashId) {
               <div
                 class="owned-item"
                 [class.selected]="item.selected"
