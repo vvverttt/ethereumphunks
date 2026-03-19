@@ -41,7 +41,7 @@ export class GasService {
   }
 
   private fetchGasPrice() {
-    return this.http.post<any>('https://cloudflare-eth.com', {
+    return this.http.post<any>('https://eth.drpc.org', {
       jsonrpc: '2.0',
       method: 'eth_gasPrice',
       params: [],
