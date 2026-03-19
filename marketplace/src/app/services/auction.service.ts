@@ -14,7 +14,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
 const auctionDeployBlock = ((environment as any).auctionDeployBlock as bigint) || 0n;
-const MAX_BLOCK_RANGE = 45000n;
+const MAX_BLOCK_RANGE = 10000n;
 
 // Dedicated client for eth_getLogs (Alchemy free tier limits to 10 blocks)
 const logsClient = createPublicClient({
