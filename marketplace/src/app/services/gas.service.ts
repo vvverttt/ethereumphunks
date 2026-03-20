@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, interval, switchMap, catchError, of, startWith } from 'rxjs';
+import { BehaviorSubject, interval, switchMap, catchError, of, startWith, filter } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface GasData {
@@ -30,9 +30,10 @@ export class GasService {
   gas$ = this.gasSubject.asObservable();
 
   constructor() {
-    interval(15000)
+    interval(60_000)
       .pipe(
         startWith(0),
+        filter(() => typeof document === 'undefined' || document.visibilityState === 'visible'),
         switchMap(() => this.fetchGasPrice())
       )
       .subscribe(data => {

@@ -335,15 +335,16 @@ export class Web3Service {
     if (this.blockWatcher) return;
     this.blockWatcher = this.l1PollingClient.watchBlockNumber({
       emitOnBegin: true,
-      pollingInterval: 12_000,
+      pollingInterval: 30_000,
       onBlockNumber: (blockNumber) => {
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
         const currentBlock = Number(blockNumber);
         this.store.dispatch(appStateActions.setCurrentBlock({ currentBlock }));
       },
       onError: (error) => {
         console.error('[Web3Service] Block watcher error, restarting:', error);
         this.blockWatcher = undefined;
-        setTimeout(() => this.startBlockWatcher(), 5_000);
+        setTimeout(() => this.startBlockWatcher(), 10_000);
       }
     });
   }

@@ -123,8 +123,8 @@ export class DataService {
     // Initial fetch
     const initial$ = fetchBlock();
 
-    // Polling fallback every 15s (covers dropped WebSocket)
-    const polling$ = timer(15_000, 15_000).pipe(
+    // Polling fallback every 60s (covers dropped WebSocket)
+    const polling$ = timer(60_000, 60_000).pipe(
       switchMap(() => fetchBlock()),
       filter((block) => block > 0),
     );
