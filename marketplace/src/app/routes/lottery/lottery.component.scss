@@ -175,11 +175,6 @@ $lottery-muted: #c3ff00;
 .grid-item {
   position: relative;
   image-rendering: pixelated;
-  -webkit-perspective: 800px;
-  perspective: 800px;
-  // Force GPU layer on iOS to prevent 3D rendering glitches
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
 
   // Padding hack for reliable 1:1 aspect ratio on all iOS Safari versions
   // (aspect-ratio property fails on iOS when children are absolutely positioned)
@@ -189,18 +184,13 @@ $lottery-muted: #c3ff00;
     padding-bottom: 100%;
   }
 
-  // 3D card flip container – inset so images are smaller than the frame
+  // 2D card flip using scaleX — more reliable on iOS Safari than 3D rotateY+backface-visibility
   .card-inner {
     position: absolute;
     top: 8%;
     left: 10%;
     right: 8%;
     bottom: 8%;
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-    -webkit-transition: -webkit-transform 0.22s ease;
-    transition: transform 0.22s ease;
-    will-change: transform;
     z-index: 2;
   }
 
@@ -210,43 +200,51 @@ $lottery-muted: #c3ff00;
     left: 0;
     width: 100%;
     height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
     object-fit: contain;
     object-position: right bottom;
     image-rendering: pixelated;
-    // Explicit z-index helps iOS Safari layer 3D faces correctly
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
+    -webkit-transition: opacity 0.12s ease, -webkit-transform 0.18s ease;
+    transition: opacity 0.12s ease, transform 0.18s ease;
   }
 
   .card-front {
     z-index: 2;
+    opacity: 1;
   }
 
   .card-back {
     z-index: 1;
-    -webkit-transform: rotateY(180deg);
-    transform: rotateY(180deg);
-    -webkit-transition: -webkit-transform 0.15s ease;
-    transition: transform 0.15s ease;
+    opacity: 0;
+    -webkit-transform: scaleX(1);
+    transform: scaleX(1);
   }
 
-  // Right-facing phase: mirror the back image so it shows as a "punk" (right-facing)
+  // Right-facing phase: mirror the back image
   &.right-facing .card-back {
-    -webkit-transform: rotateY(180deg) scaleX(-1);
-    transform: rotateY(180deg) scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
   }
 
-  // Spin flip: rotate card to reveal back (real image)
-  &.flipping .card-inner,
-  &.revealed .card-inner {
-    -webkit-transform: rotateY(180deg);
-    transform: rotateY(180deg);
+  // Spin flip: hide front, show back
+  &.flipping .card-front {
+    opacity: 0;
+    -webkit-transform: scaleX(0);
+    transform: scaleX(0);
+  }
+  &.flipping .card-back {
+    z-index: 3;
+    opacity: 1;
   }
 
-  &.revealed .card-inner {
+  // Revealed (winner): keep back visible
+  &.revealed .card-front {
+    opacity: 0;
+    -webkit-transform: scaleX(0);
+    transform: scaleX(0);
+  }
+  &.revealed .card-back {
     z-index: 5;
+    opacity: 1;
   }
 
   // Frame layers - visible only on active cell
@@ -259,8 +257,6 @@ $lottery-muted: #c3ff00;
     bottom: 8%;
     background-color: #c3ff00;
     z-index: 1;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
   }
 
   .frame-border {
@@ -274,8 +270,6 @@ $lottery-muted: #c3ff00;
     image-rendering: pixelated;
     z-index: 6;
     pointer-events: none;
-    -webkit-transform: translateZ(1px);
-    transform: translateZ(1px);
   }
 
   &.active-frame {
