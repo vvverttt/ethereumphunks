@@ -42,11 +42,17 @@ export const marketStateReducer: ActionReducer<MarketState, Action> = createRedu
     return setMarketType
   }),
   on(actions.setMarketSlug, (state, { marketSlug }) => {
-    const setMarketSlug = {
-      ...state,
-      marketSlug
-    };
-    return setMarketSlug;
+    // If slug changed, clear old data so UI shows loading state
+    if (state.marketSlug !== marketSlug) {
+      return {
+        ...state,
+        marketSlug,
+        marketData: [],
+        all: [],
+        activeMarketRouteData: { data: [], total: 0 },
+      };
+    }
+    return { ...state, marketSlug };
   }),
   on(actions.setOwned, (state, { owned }) => {
     const setOwned = {

@@ -120,6 +120,8 @@ export class MarketStateEffects {
     ofType(marketStateActions.setMarketSlug),
     distinctUntilChanged((a, b) => a.marketSlug === b.marketSlug),
     switchMap(({ marketSlug }) => {
+      // Clear old events immediately on collection switch
+      this.store.dispatch(dataStateActions.setEvents({ events: [] }));
       return combineLatest([
         this.store.select(appStateSelectors.selectEventTypeFilter),
         this.store.select(appStateSelectors.selectEventPage)
