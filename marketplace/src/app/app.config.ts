@@ -29,6 +29,12 @@ import { TokenIdParsePipe } from '@/pipes/token-id-parse.pipe';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { MinMaxPipe } from '@/pipes/min-max';
 
+function isWalletBrowser(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /MetaMask|Rainbow|Trust|Coinbase|TokenPocket|imToken|BitKeep/i.test(ua);
+}
+
 export const config = {
   providers: [
     { provide: TimeagoFormatter, useClass: TimeagoDefaultFormatter },
@@ -65,7 +71,7 @@ export const config = {
       // withHashLocation(),
     ),
     provideServiceWorker('ngsw-worker.js', {
-        enabled: !isDevMode(),
+        enabled: !isDevMode() && !isWalletBrowser(),
         registrationStrategy: 'registerWhenStable:30000'
     })
 ]
