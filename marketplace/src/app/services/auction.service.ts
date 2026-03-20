@@ -21,7 +21,7 @@ const logsClient = createPublicClient({
   chain: mainnet,
   transport: fallback([
     http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-    http('https://eth.llamarpc.com'),
+    http('https://rpc.mevblocker.io'),
     http('https://1rpc.io/eth'),
   ], { rank: false }),
 });

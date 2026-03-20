@@ -89,7 +89,7 @@ export class Web3Service {
       transport: fallback([
         http(environment.rpcHttpProvider),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http('https://eth.llamarpc.com'),
+        http('https://rpc.mevblocker.io'),
         http('https://1rpc.io/eth'),
       ], { rank: false }),
     });
@@ -98,7 +98,7 @@ export class Web3Service {
       chain: this.chains[0],
       transport: fallback([
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http('https://eth.llamarpc.com'),
+        http('https://rpc.mevblocker.io'),
         http('https://1rpc.io/eth'),
       ], { rank: false }),
     });
@@ -114,7 +114,7 @@ export class Web3Service {
         [environment.chainId]: fallback([
           http(environment.rpcHttpProvider),
           http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-          http('https://eth.llamarpc.com'),
+          http('https://rpc.mevblocker.io'),
           http('https://1rpc.io/eth'),
         ]),
         6969696969: http(environment.magmaRpcHttpProvider)
