@@ -85,6 +85,9 @@ $lottery-muted: #c3ff00;
   height: 100%;
   pointer-events: none;
   z-index: 20;
+  // Force GPU compositing on iOS so canvas renders above 3D-transformed grid
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 // =========================================================
@@ -174,6 +177,9 @@ $lottery-muted: #c3ff00;
   image-rendering: pixelated;
   -webkit-perspective: 800px;
   perspective: 800px;
+  // Force GPU layer on iOS to prevent 3D rendering glitches
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 
   // Padding hack for reliable 1:1 aspect ratio on all iOS Safari versions
   // (aspect-ratio property fails on iOS when children are absolutely positioned)
@@ -194,6 +200,7 @@ $lottery-muted: #c3ff00;
     transform-style: preserve-3d;
     -webkit-transition: -webkit-transform 0.22s ease;
     transition: transform 0.22s ease;
+    will-change: transform;
     z-index: 2;
   }
 
@@ -208,9 +215,17 @@ $lottery-muted: #c3ff00;
     object-fit: contain;
     object-position: right bottom;
     image-rendering: pixelated;
+    // Explicit z-index helps iOS Safari layer 3D faces correctly
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+
+  .card-front {
+    z-index: 2;
   }
 
   .card-back {
+    z-index: 1;
     -webkit-transform: rotateY(180deg);
     transform: rotateY(180deg);
     -webkit-transition: -webkit-transform 0.15s ease;
@@ -244,6 +259,8 @@ $lottery-muted: #c3ff00;
     bottom: 8%;
     background-color: #c3ff00;
     z-index: 1;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   .frame-border {
@@ -257,6 +274,8 @@ $lottery-muted: #c3ff00;
     image-rendering: pixelated;
     z-index: 6;
     pointer-events: none;
+    -webkit-transform: translateZ(1px);
+    transform: translateZ(1px);
   }
 
   &.active-frame {
