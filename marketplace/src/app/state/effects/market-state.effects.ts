@@ -4,7 +4,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { ROUTER_NAVIGATION, RouterNavigationPayload, getRouterSelectors } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
 
-import { combineLatest, distinctUntilChanged, filter, from, map, mergeMap, of, scan, switchMap, tap, withLatestFrom } from 'rxjs';
+import { combineLatest, distinctUntilChanged, EMPTY, filter, from, map, mergeMap, of, scan, switchMap, tap, withLatestFrom } from 'rxjs';
 
 import * as marketStateActions from '../actions/market-state.actions';
 import * as marketStateSelectors from '../selectors/market-state.selectors';
@@ -68,8 +68,7 @@ export class MarketStateEffects {
       // console.log({ action, marketType, marketSlug, queryAddress });
 
       if (!marketType || !marketSlug) {
-        this.store.dispatch(marketStateActions.clearActiveMarketRouteData());
-        return from([]);
+        return EMPTY;
       }
 
       if (queryAddress && typeof queryAddress === 'string') {
