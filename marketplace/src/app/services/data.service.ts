@@ -1066,7 +1066,19 @@ export class DataService {
       };
     }).pipe(switchMap(() => rpcFetch$));
 
-    return merge(rpcFetch$, changes$);
+    return merge(rpcFetch$, changes$).pipe(
+      tap((collections) => this.prefetchAttributes(collections)),
+    );
+  }
+
+  /**
+   * Prefetch attributes for all collections in background so switching is instant
+   */
+  private prefetchAttributes(collections: Collection[]): void {
+    if (!collections?.length) return;
+    for (const c of collections) {
+      if (c.slug) this.getAttributes(c.slug).subscribe();
+    }
   }
 
   /**

@@ -154,8 +154,8 @@ export class MarketStateEffects {
     ofType(marketStateActions.setMarketSlug),
     distinctUntilChanged((a, b) => a.marketSlug === b.marketSlug),
     switchMap(({ marketSlug }) => {
-      // Fetch all items (up to 10000) for /market/all view
-      return this.dataSvc.fetchAllWithPagination(marketSlug, 0, 10000, {}).pipe(
+      // Only fetch first page initially, pagination loads more as needed
+      return this.dataSvc.fetchAllWithPagination(marketSlug, 0, this.defaultFetchLength + 1, {}).pipe(
         map((data: MarketState['activeMarketRouteData']) => data.data)
       );
     }),
