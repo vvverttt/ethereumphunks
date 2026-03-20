@@ -690,7 +690,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
       localStorage.removeItem(this.PENDING_COMMIT_KEY);
       this.stopSpin();
       this.spinPhase.set('idle');
-      const msg = err?.shortMessage || err?.message || 'Transaction failed';
+      let msg = err?.shortMessage || err?.message || 'Transaction failed';
+      if (msg.includes('No contracts')) {
+        msg = 'Smart contract wallets are not supported. Please use a regular wallet.';
+      }
       this.errorMessage.set(msg);
       // Re-check for pending commitment (commit may have succeeded but reveal failed)
       this.checkPendingCommitment();
