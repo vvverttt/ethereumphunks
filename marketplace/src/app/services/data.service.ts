@@ -83,30 +83,9 @@ export class DataService {
       }),
     );
 
-    const changes$ = new Observable(subscriber => {
-      const channel = supabase
-        .channel('_global_config')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: '_global_config',
-            filter: `network=eq.${environment.chainId}`
-          },
-          payload => subscriber.next((payload as any).new)
-        )
-        .subscribe();
-
-      return () => channel.unsubscribe();
-    });
-
-    return merge(
-      initial$,
-      changes$.pipe(switchMap(() => initial$))
-    ).pipe(
+    // No realtime channel — config rarely changes, fetched on every page load
+    return initial$.pipe(
       filter(config => !!config),
-      // tap((config) => console.log('fetchGlobalConfig', config)),
     );
   }
 
@@ -127,34 +106,13 @@ export class DataService {
     // Initial fetch
     const initial$ = fetchBlock();
 
-    // Polling fallback every 60s (covers dropped WebSocket)
+    // Poll every 60s (no realtime channel needed — saves DB IO)
     const polling$ = timer(60_000, 60_000).pipe(
       switchMap(() => fetchBlock()),
       filter((block) => block > 0),
     );
 
-    // Realtime changes
-    const changes$ = new Observable<number>(subscriber => {
-      const channel = supabase
-        .channel('blocks')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'blocks'
-          },
-          (payload: any) => {
-            if (payload.new.network !== environment.chainId) return;
-            subscriber.next(payload.new.blockNumber);
-          }
-        )
-        .subscribe();
-
-      return () => channel.unsubscribe();
-    });
-
-    return merge(initial$, changes$, polling$).pipe(
+    return merge(initial$, polling$).pipe(
       share()
     );
   }
@@ -1044,29 +1002,8 @@ export class DataService {
       // tap((res) => console.log('fetchCollections', res)),
     );
 
-    // Realtime changes
-    const changes$ = new Observable<Collection[]>(subscriber => {
-      const channel = supabase
-        .channel('collections_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'collections' + this.suffix
-          },
-          (payload) => {
-            subscriber.next(payload.new as Collection[]);
-          }
-        )
-        .subscribe();
-
-      return () => {
-        channel.unsubscribe();
-      };
-    }).pipe(switchMap(() => rpcFetch$));
-
-    return merge(rpcFetch$, changes$).pipe(
+    // No realtime channel — collections rarely change, saves DB IO
+    return rpcFetch$.pipe(
       tap((collections) => this.prefetchAttributes(collections)),
     );
   }
