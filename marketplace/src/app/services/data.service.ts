@@ -37,6 +37,10 @@ export class DataService {
 
   private attributeCache = new Map<string, Observable<AttributeItem | null>>();
   rarityCache = new Map<string, Record<string, number>>();
+  private phunkCache = new Map<string, { data: Observable<Phunk>; timestamp: number }>();
+  private marketDataCache = new Map<string, { data: Observable<Phunk[]>; timestamp: number }>();
+  private eventsCache = new Map<string, { data: Observable<Event[]>; timestamp: number }>();
+  private readonly CACHE_TTL = 30_000; // 30 seconds
 
   constructor(
     @Inject(Web3Service) private web3Svc: Web3Service,
@@ -431,6 +435,12 @@ export class DataService {
   fetchMarketData(slug: string): Observable<Phunk[]> {
     if (!slug) return of([]);
 
+    // Return cached data if fresh
+    const cached = this.marketDataCache.get(slug);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+      return cached.data;
+    }
+
     const rpcFetch$ = from(
       supabase.rpc(
         'fetch_ethscriptions_with_listings_and_bids' + this.suffix,
@@ -448,12 +458,16 @@ export class DataService {
       switchMap((phunks: Phunk[]) => this.addAttributes(slug, phunks)),
     ) as Observable<any>;
 
-    return merge(
+    const result$ = merge(
       rpcFetch$,
       this.watchEthscriptionsBySlug(slug).pipe(
+        tap(() => this.marketDataCache.delete(slug)),
         switchMap(() => rpcFetch$)
       )
-    );
+    ).pipe(shareReplay({ bufferSize: 1, refCount: true }));
+
+    this.marketDataCache.set(slug, { data: result$, timestamp: Date.now() });
+    return result$;
   }
 
   /**
@@ -510,6 +524,13 @@ export class DataService {
     type: EventType,
     slug: string,
   ): Observable<Event[]> {
+    // Cache key includes all params
+    const cacheKey = `${slug}:${type}:${offset}:${limit}`;
+    const cached = this.eventsCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+      return cached.data;
+    }
+
     const query = supabase.rpc(
       'fetch_events' + this.suffix,
       {
@@ -542,12 +563,16 @@ export class DataService {
       }),
     );
 
-    return merge(
+    const result$ = merge(
       rpcFetch$,
       this.watchEthscriptionsBySlug(slug).pipe(
+        tap(() => this.eventsCache.delete(cacheKey)),
         switchMap(() => rpcFetch$)
       )
-    );
+    ).pipe(shareReplay({ bufferSize: 1, refCount: true }));
+
+    this.eventsCache.set(cacheKey, { data: result$, timestamp: Date.now() });
+    return result$;
   }
 
   /**
@@ -703,6 +728,12 @@ export class DataService {
   fetchSinglePhunk(hashId: string): Observable<Phunk> {
     if (!hashId) return of({} as Phunk);
 
+    // Return cached observable if fresh
+    const cached = this.phunkCache.get(hashId);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+      return cached.data;
+    }
+
     function formatPhunkFromResponse(data: any, prefix: string) {
       const collection = data[`collections${prefix}`];
       const collectionName = collection?.name;
@@ -770,12 +801,16 @@ export class DataService {
     );
 
     // Fetch once + update on real-time DB changes (no polling)
-    return merge(
+    const result$ = merge(
       fetch$,
       this.watchSinglePhunk(hashId).pipe(
+        tap(() => this.phunkCache.delete(hashId)), // Invalidate cache on real-time update
         switchMap(() => fetch$)
       )
-    );
+    ).pipe(shareReplay({ bufferSize: 1, refCount: true }));
+
+    this.phunkCache.set(hashId, { data: result$, timestamp: Date.now() });
+    return result$;
   }
 
   /**
