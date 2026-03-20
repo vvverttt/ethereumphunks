@@ -40,7 +40,7 @@ export class DataService {
   private phunkCache = new Map<string, { data: Observable<Phunk>; timestamp: number }>();
   private marketDataCache = new Map<string, { data: Observable<Phunk[]>; timestamp: number }>();
   private eventsCache = new Map<string, { data: Observable<Event[]>; timestamp: number }>();
-  private readonly CACHE_TTL = 30_000; // 30 seconds
+  private readonly CACHE_TTL = 1_800_000; // 30 minutes
 
   constructor(
     @Inject(Web3Service) private web3Svc: Web3Service,
