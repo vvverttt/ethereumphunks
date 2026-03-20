@@ -1,18 +1,14 @@
 import { inject, Injectable } from '@angular/core';
-import { createClient } from '@supabase/supabase-js';
 import { Observable, from, merge, map, switchMap, firstValueFrom } from 'rxjs';
 import { formatEther, parseGwei } from 'viem';
 import { getPublicClient, getWalletClient, getChainId } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
+import { supabase } from './supabase';
 import { Web3Service } from './web3.service';
 import { GasService } from './gas.service';
 import { PhilipLotteryV67ABI } from '@/abi/PhilipLotteryV67';
 import { LotteryWin } from '@/models/lottery';
-
-const supabaseUrl = environment.supabaseUrl;
-const supabaseKey = environment.supabaseKey;
-const supabase = createClient(supabaseUrl, supabaseKey);
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const lotteryAddress = (environment as any).lotteryAddress as `0x${string}`;
 const lottery2Address = ((environment as any).lottery2Address || '') as `0x${string}`;

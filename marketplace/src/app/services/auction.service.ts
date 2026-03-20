@@ -1,16 +1,12 @@
 import { Injectable } from '@angular/core';
-import { createClient } from '@supabase/supabase-js';
 import { formatEther, parseEther, decodeEventLog, createPublicClient, http, fallback } from 'viem';
 import { mainnet } from 'viem/chains';
 import { getWalletClient, getChainId, getPublicClient, reconnect } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
+import { supabase } from './supabase';
 import { Web3Service } from './web3.service';
 import { EtherPhunksAuctionHouseV2ABI } from '@/abi/EtherPhunksAuctionHouseV2';
-
-const supabaseUrl = environment.supabaseUrl;
-const supabaseKey = environment.supabaseKey;
-const supabase = createClient(supabaseUrl, supabaseKey);
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
 const auctionDeployBlock = ((environment as any).auctionDeployBlock as bigint) || 0n;

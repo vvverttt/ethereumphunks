@@ -14,18 +14,15 @@ import { CommentWithReplies } from '@/models/comment';
 import { Collection } from '@/models/data.state';
 import { AttributeItem } from '@/models/attributes';
 
-import { createClient, RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
+import { RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
 import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, tap, shareReplay } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
+import { supabase } from './supabase';
 
 import * as dataStateActions from '@/state/actions/data-state.actions';
 import * as appStateActions from '@/state/actions/app-state.actions';
-
-const supabaseUrl = environment.supabaseUrl;
-const supabaseKey = environment.supabaseKey;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 @Injectable({
   providedIn: 'root'
