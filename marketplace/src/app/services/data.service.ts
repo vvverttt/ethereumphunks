@@ -378,10 +378,7 @@ export class DataService {
           attributes: [],
         };
       })),
-      // Emit data immediately, then re-emit with attributes when ready
-      switchMap((phunks: Phunk[]) => this.addAttributes(slug, phunks).pipe(
-        startWith(phunks),
-      )),
+      switchMap((phunks: Phunk[]) => this.addAttributes(slug, phunks)),
     ) as Observable<Phunk[]>;
 
     return merge(
@@ -446,13 +443,9 @@ export class DataService {
           ...item.ethscription.ethscription,
           listing: item.ethscription.listing ? item.ethscription.listing[0] : null,
           bid: item.ethscription.bid ? item.ethscription.bid[0] : null,
-          attributes: [],
         }
       })),
-      // Emit grid data immediately, then re-emit with attributes when ready
-      switchMap((phunks: Phunk[]) => this.addAttributes(slug, phunks).pipe(
-        startWith(phunks),
-      )),
+      switchMap((phunks: Phunk[]) => this.addAttributes(slug, phunks)),
     ) as Observable<any>;
 
     return merge(
@@ -1106,12 +1099,6 @@ export class DataService {
         const data = res.data;
         const total = data.total_count || data.data?.length || 0;
 
-        // Emit data immediately without attributes, then re-emit with attributes
-        const baseData = data.data.map((item: Phunk) => ({
-          ...item,
-          attributes: [],
-        } as Phunk));
-
         return this.getAttributes(slug).pipe(
           map((attributes) => ({
             data: data.data.map((item: Phunk) => ({
@@ -1120,8 +1107,10 @@ export class DataService {
             } as Phunk)),
             total,
           })),
-          startWith({ data: baseData, total }),
-          catchError(() => of({ data: baseData, total })),
+          catchError(() => of({
+            data: data.data.map((item: Phunk) => ({ ...item, attributes: [] } as Phunk)),
+            total,
+          })),
         )
       }),
       catchError(() => {
