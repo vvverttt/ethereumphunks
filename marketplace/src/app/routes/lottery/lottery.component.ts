@@ -524,17 +524,37 @@ export class LotteryComponent implements OnInit, OnDestroy {
       this.waitingBlocks.set(0);
       const targetBlock = commitBlock + 2n;
 
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve, reject) => {
+        let blockAttempts = 0;
+        let blockErrors = 0;
+        console.log(`[Lottery] Waiting for blocks: commitBlock=${commitBlock}, target=${targetBlock}`);
         const blockPoll = setInterval(async () => {
+          blockAttempts++;
           try {
             const currentBlock = await this.lotterySvc.getBlockNumber();
+            blockErrors = 0;
             const elapsed = Number(currentBlock - commitBlock);
             this.waitingBlocks.set(Math.min(elapsed, 2));
+            if (blockAttempts <= 3 || blockAttempts % 10 === 0) {
+              console.log(`[Lottery] Block wait #${blockAttempts}: current=${currentBlock}, target=${targetBlock}, elapsed=${elapsed}`);
+            }
             if (currentBlock > targetBlock) {
               clearInterval(blockPoll);
+              console.log(`[Lottery] Block target reached after ${blockAttempts * 2}s`);
               resolve();
             }
-          } catch {}
+          } catch (err: any) {
+            blockErrors++;
+            if (blockAttempts <= 3 || blockAttempts % 5 === 0) {
+              console.warn(`[Lottery] Block wait #${blockAttempts} error:`, err?.message?.slice(0, 80));
+            }
+          }
+          if (blockAttempts >= 45) { // 45 * 2s = 90s timeout
+            clearInterval(blockPoll);
+            // Force proceed to reveal — block target is likely already met
+            console.warn(`[Lottery] Block wait timed out after ${blockAttempts * 2}s, proceeding to reveal`);
+            resolve();
+          }
         }, 2000);
       });
 
@@ -736,14 +756,26 @@ export class LotteryComponent implements OnInit, OnDestroy {
       if (currentBlock <= targetBlock) {
         this.spinPhase.set('waiting');
         this.waitingBlocks.set(Math.min(Number(currentBlock - commitment.commitBlock), 2));
+        console.log(`[Lottery] Resume: waiting for blocks, target=${targetBlock}`);
         await new Promise<void>((resolve) => {
+          let blockAttempts = 0;
           const blockPoll = setInterval(async () => {
+            blockAttempts++;
             try {
               const block = await this.lotterySvc.getBlockNumber();
               const elapsed = Number(block - commitment.commitBlock);
               this.waitingBlocks.set(Math.min(elapsed, 2));
               if (block > targetBlock) { clearInterval(blockPoll); resolve(); }
-            } catch {}
+            } catch (err: any) {
+              if (blockAttempts <= 3 || blockAttempts % 5 === 0) {
+                console.warn(`[Lottery] Resume block wait #${blockAttempts} error:`, err?.message?.slice(0, 80));
+              }
+            }
+            if (blockAttempts >= 45) {
+              clearInterval(blockPoll);
+              console.warn('[Lottery] Resume block wait timed out, proceeding to reveal');
+              resolve();
+            }
           }, 2000);
         });
       }
