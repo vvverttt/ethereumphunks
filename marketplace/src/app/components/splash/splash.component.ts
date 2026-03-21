@@ -7,7 +7,9 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, from, map, Observable, of, startWith, switchMap } from 'rxjs';
 
 import { Collection } from '@/models/data.state';
+import { AttributeItem } from '@/models/attributes';
 
+import { DataService } from '@/services/data.service';
 import { PixelArtService } from '@/services/pixel-art.service';
 import { ImageService } from '@/services/image.service';
 
@@ -51,33 +53,45 @@ export class SplashComponent {
     distinctUntilChanged((prev, curr) => prev?.slug === curr?.slug),
     switchMap((collection) => {
       if (!collection) return of(this.defaultImages);
-      const shas = collection.previews?.map(({ sha }) => sha);
+      const previewShas = collection.previews?.map(({ sha }) => sha);
 
-      if (!shas?.length) return of(this.defaultImages);
+      if (!previewShas?.length) return of(this.defaultImages);
 
-      return from(this.createImageArray(shas)).pipe(
-        switchMap((images) => {
-          return this.mintImage$.pipe(
-            map((mintImage) => {
-              if (!mintImage || !collection.isMinting) return images;
-              const newImages: Image[] = [...images];
-              const centerIndex = Math.floor(this.IMAGE_LIMIT / 2);
-              newImages[centerIndex] = {
-                src: mintImage,
-                type: 'mint'
-              };
-              return newImages;
-            }),
-          );
-        }),
-        startWith(this.defaultImages)
+      // For cryptophunksv67, bias toward rarer items
+      const needsRarity = collection.slug === 'cryptophunksv67';
+
+      const shas$ = needsRarity
+        ? this.dataSvc.getAttributes(collection.slug).pipe(
+            map((attributes) => this.pickRareShas(previewShas, attributes)),
+          )
+        : of(previewShas);
+
+      return shas$.pipe(
+        switchMap((shas) => from(this.createImageArray(shas)).pipe(
+          switchMap((images) => {
+            return this.mintImage$.pipe(
+              map((mintImage) => {
+                if (!mintImage || !collection.isMinting) return images;
+                const newImages: Image[] = [...images];
+                const centerIndex = Math.floor(this.IMAGE_LIMIT / 2);
+                newImages[centerIndex] = {
+                  src: mintImage,
+                  type: 'mint'
+                };
+                return newImages;
+              }),
+            );
+          }),
+          startWith(this.defaultImages)
+        )),
       );
     }),
   );
 
   constructor(
     private pixelArtSvc: PixelArtService,
-    private imageSvc: ImageService
+    private imageSvc: ImageService,
+    private dataSvc: DataService
   ) {}
 
   // async formatImages(images: Image[]): Promise<Image[]> {
@@ -178,6 +192,78 @@ export class SplashComponent {
     }
 
     return imageArray;
+  }
+
+  /**
+   * Picks SHAs biased toward rarer items for the splash header.
+   * Tier 1 (highest): Special trait "One of One" or "Character"
+   * Tier 2: Rare Type values (Alien, Cosmic, Ape, Zombie, Robot, Cyborg, Mythic, Guardian)
+   * Tier 3: Everything else, scored by overall trait rarity
+   * Mostly shows tier 1 & 2, mixed with a couple from tier 3 for variety.
+   */
+  private pickRareShas(previewShas: string[], attributes: AttributeItem | null): string[] {
+    if (!attributes) return previewShas;
+
+    // Rare Type values
+    const rareTypes = new Set([
+      'Alien', 'Cosmic', 'Ape', 'Zombie', 'Robot', 'Cyborg', 'Mythic', 'Guardian'
+    ]);
+    // Special trait values
+    const specialValues = new Set(['One of One', 'Character']);
+
+    const tier1: string[] = []; // Special: One of One, Character
+    const tier2: string[] = []; // Rare Type: Alien, Cosmic, etc.
+    const tier3: string[] = []; // Everything else
+
+    for (const [sha, attrs] of Object.entries(attributes)) {
+      let isSpecial = false;
+      let isRareType = false;
+
+      for (const attr of attrs) {
+        if (attr.k === 'Special' && specialValues.has(attr.v)) isSpecial = true;
+        if (attr.k === 'Type' && rareTypes.has(attr.v)) isRareType = true;
+      }
+
+      if (isSpecial) tier1.push(sha);
+      else if (isRareType) tier2.push(sha);
+      else tier3.push(sha);
+    }
+
+    // Shuffle each tier for variety on each reload
+    this.shuffleArray(tier1);
+    this.shuffleArray(tier2);
+    this.shuffleArray(tier3);
+
+    // Fill 9 slots: ~3 special, ~4 rare type, ~2 common (adjust based on availability)
+    const picked: string[] = [];
+    const t1Count = Math.min(tier1.length, 3);
+    const t2Count = Math.min(tier2.length, this.IMAGE_LIMIT - t1Count - 2);
+    const t3Count = this.IMAGE_LIMIT - t1Count - t2Count;
+
+    for (let i = 0; i < t1Count; i++) picked.push(tier1[i]);
+    for (let i = 0; i < t2Count; i++) picked.push(tier2[i]);
+    for (let i = 0; i < t3Count && i < tier3.length; i++) picked.push(tier3[i]);
+
+    // If we still don't have enough, fill from whatever's left
+    const used = new Set(picked);
+    for (const pool of [tier1, tier2, tier3]) {
+      for (const sha of pool) {
+        if (picked.length >= this.IMAGE_LIMIT) break;
+        if (!used.has(sha)) { picked.push(sha); used.add(sha); }
+      }
+    }
+
+    // Final shuffle so tiers aren't grouped together
+    this.shuffleArray(picked);
+
+    return picked;
+  }
+
+  private shuffleArray<T>(arr: T[]): void {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
   }
 
   formatNumber(num: string): string | null {
