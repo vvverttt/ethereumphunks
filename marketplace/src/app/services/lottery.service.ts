@@ -108,6 +108,11 @@ export class LotteryService {
 
     const playPrice = await this.getPlayPrice();
 
+    const feeData = await this.web3Svc.l1Client.estimateFeesPerGas();
+    const minPriority = parseGwei('0.1');
+    const priority = feeData.maxPriorityFeePerGas && feeData.maxPriorityFeePerGas > minPriority
+      ? feeData.maxPriorityFeePerGas : minPriority;
+
     console.time('[Lottery] commitPlay');
     const hash = await walletClient.writeContract({
       address: this._address,
@@ -116,6 +121,7 @@ export class LotteryService {
       value: playPrice,
       chain: walletClient.chain,
       account: walletClient.account,
+      maxPriorityFeePerGas: priority,
     });
     console.timeEnd('[Lottery] commitPlay');
     console.log('[Lottery] commitPlay tx hash:', hash);

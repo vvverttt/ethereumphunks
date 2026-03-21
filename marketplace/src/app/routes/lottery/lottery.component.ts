@@ -891,6 +891,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     const alchemyClient = receiptRpc
       ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
       : this.web3Svc.l1Client;
+    const fallbackClient = this.web3Svc.l1Client;
 
     return new Promise((resolve, reject) => {
       let attempts = 0;
@@ -898,22 +899,30 @@ export class LotteryComponent implements OnInit, OnDestroy {
       let useFallback = false;
       const timer = setInterval(async () => {
         attempts++;
-        const client = useFallback ? this.web3Svc.l1Client : alchemyClient;
+        // Alternate: every 5th attempt try fallback RPC even if Alchemy is working
+        // This catches cases where Alchemy has indexing lag but the main RPC has the receipt
+        const useAlt = !useFallback && attempts % 5 === 0;
+        const client = (useFallback || useAlt) ? fallbackClient : alchemyClient;
         try {
           const receipt = await client.getTransactionReceipt({ hash: hash as `0x${string}` });
           if (receipt) {
             clearInterval(timer);
-            console.log(`[Lottery] Receipt found after ${attempts}s via ${useFallback ? 'fallback' : 'alchemy'}`);
+            const via = useFallback ? 'fallback' : useAlt ? 'fallback-alt' : 'alchemy';
+            console.log(`[Lottery] Receipt found after ${attempts}s via ${via}`);
             resolve(receipt);
           }
-          networkErrors = 0; // successful call (even if receipt null) = network is fine
+          networkErrors = 0;
         } catch (err: any) {
           const msg = err?.message || '';
           const isNotFound = msg.includes('could not be found');
           if (isNotFound) {
-            // Normal — tx not mined yet, not a network error
+            // After 15 "not found" responses, switch to fallback permanently
+            // Alchemy may have indexing lag while the main RPC already has the receipt
+            if (!useFallback && attempts >= 15) {
+              console.warn('[Lottery] Alchemy still not found after 15s, switching to fallback RPC');
+              useFallback = true;
+            }
           } else {
-            // Actual network/CORS error
             networkErrors++;
             if (networkErrors >= 3 && !useFallback) {
               console.warn('[Lottery] Alchemy unreachable, switching to fallback RPC');
@@ -943,15 +952,15 @@ export class LotteryComponent implements OnInit, OnDestroy {
           const commitment = await this.lotterySvc.getCommitment(address);
           if (commitment.commitBlock > 0n) {
             clearInterval(timer);
-            console.log(`[Lottery] Commitment found on-chain after ${attempts * 3}s`);
+            console.log(`[Lottery] Commitment found on-chain after ${attempts * 2}s`);
             resolve(commitment.commitBlock);
           }
         } catch {}
-        if (attempts >= 40) { // 40 * 3s = 120s same timeout as pollReceipt
+        if (attempts >= 60) { // 60 * 2s = 120s same timeout as pollReceipt
           clearInterval(timer);
           reject(new Error('Commitment poll timed out'));
         }
-      }, 3000);
+      }, 2000);
     });
   }
 
@@ -963,17 +972,24 @@ export class LotteryComponent implements OnInit, OnDestroy {
         attempts++;
         try {
           const commitment = await this.lotterySvc.getCommitment(address);
+          if (attempts <= 3 || attempts % 10 === 0) {
+            console.log(`[Lottery] Commitment cleared poll #${attempts}: commitBlock=${commitment.commitBlock}`);
+          }
           if (commitment.commitBlock === 0n) {
             clearInterval(timer);
-            console.log(`[Lottery] Commitment cleared on-chain after ${attempts * 3}s`);
+            console.log(`[Lottery] Commitment cleared on-chain after ${attempts * 2}s`);
             resolve();
           }
-        } catch {}
-        if (attempts >= 40) {
+        } catch (err: any) {
+          if (attempts <= 3 || attempts % 10 === 0) {
+            console.warn(`[Lottery] Commitment cleared poll #${attempts} error:`, err?.message?.slice(0, 80));
+          }
+        }
+        if (attempts >= 60) { // 60 * 2s = 120s
           clearInterval(timer);
           reject(new Error('Commitment cleared poll timed out'));
         }
-      }, 3000);
+      }, 2000);
     });
   }
 
