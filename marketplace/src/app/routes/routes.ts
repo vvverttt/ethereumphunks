@@ -23,13 +23,16 @@ export const routes: Routes = [
     redirectTo: ':slug/market/:marketType',
     pathMatch: 'full'
   },
+  // Lottery temporarily hidden
   {
     path: 'lottery',
-    loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent)
+    redirectTo: 'cryptophunksv67',
+    pathMatch: 'full'
   },
   {
     path: 'lottery/wins',
-    loadComponent: () => import('@/routes/lottery/lottery-wins.component').then(mod => mod.LotteryWinsComponent)
+    redirectTo: 'cryptophunksv67',
+    pathMatch: 'full'
   },
   {
     path: 'auction',
