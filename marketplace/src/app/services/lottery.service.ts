@@ -280,12 +280,12 @@ export class LotteryService {
   // =========================================================
 
   fetchAllWins(): Observable<LotteryWin[]> {
-    const addr = this._address.toLowerCase();
+    const addresses = [lotteryAddress, lottery2Address].filter(Boolean).map(a => a.toLowerCase());
     const query$ = from(
       supabase
         .from('lottery_wins' + suffix)
         .select('*')
-        .eq('contract_address', addr)
+        .in('contract_address', addresses)
         .order('created_at', { ascending: false })
         .limit(5000)
     ).pipe(map(r => (r.data || []) as LotteryWin[]));
