@@ -183,27 +183,29 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       this.minBidIncrement.set(minBidInc);
       this.maxAuctionId.set(auctionData.auctionId);
 
-      // Use per-item reserve if set, otherwise fall back to global
-      if (auctionData.hashId && auctionData.hashId !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
-        const itemReserve = await this.auctionSvc.getItemReservePrice(auctionData.hashId);
-        this.reservePrice.set(formatEther(itemReserve > 0n ? itemReserve : globalReserve));
-      } else {
-        this.reservePrice.set(formatEther(globalReserve));
-      }
-
       if (auctionData.startTime > 0) {
         this.auctionEnded.set(Date.now() >= auctionData.endTime * 1000);
       }
 
-      if (auctionData.hashId && auctionData.hashId !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
-        const eth = await this.auctionSvc.getEthscriptionByHashId(auctionData.hashId);
+      const hasHashId = auctionData.hashId && auctionData.hashId !== '0x0000000000000000000000000000000000000000000000000000000000000000';
+
+      if (hasHashId) {
+        // Fetch item reserve, ethscription details, and bid history in parallel
+        const [itemReserve, eth, bidHistory] = await Promise.all([
+          this.auctionSvc.getItemReservePrice(auctionData.hashId),
+          this.auctionSvc.getEthscriptionByHashId(auctionData.hashId),
+          this.auctionSvc.getBidHistory(auctionData.auctionId),
+        ]);
+
+        this.reservePrice.set(formatEther(itemReserve > 0n ? itemReserve : globalReserve));
+        this.bids.set(bidHistory);
+
         if (eth) {
           this.phunkImage.set(`${this.staticUrl}/static/images/${eth.sha}`);
           this.phunkTokenId.set(eth.tokenId);
           this.phunkSlug.set(eth.slug);
           this.phunkSha.set(eth.sha);
 
-          // Store live auction entry for the slider (persists when browsing history)
           this.liveAuctionEntry.set({
             auctionId: auctionData.auctionId,
             hashId: auctionData.hashId,
@@ -220,9 +222,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
             this.collectionName.set(name);
           }
         }
-
-        const bidHistory = await this.auctionSvc.getBidHistory(auctionData.auctionId);
-        this.bids.set(bidHistory);
+      } else {
+        this.reservePrice.set(formatEther(globalReserve));
       }
     } catch (err) {
       console.error('Failed to load auction:', err);
@@ -261,14 +262,17 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       this.auction.set(auctionData);
       this.auctionEnded.set(true);
 
-      // Fetch reserve price for this item
-      const [globalReserve, itemReserve] = await Promise.all([
+      // Fetch reserve, ethscription, and bids in parallel
+      const [globalReserve, itemReserve, eth, bidHistory] = await Promise.all([
         this.auctionSvc.getReservePrice(),
         this.auctionSvc.getItemReservePrice(created.hashId),
+        this.auctionSvc.getEthscriptionByHashId(created.hashId),
+        this.auctionSvc.getBidHistory(auctionId),
       ]);
-      this.reservePrice.set(formatEther(itemReserve > 0n ? itemReserve : globalReserve));
 
-      const eth = await this.auctionSvc.getEthscriptionByHashId(created.hashId);
+      this.reservePrice.set(formatEther(itemReserve > 0n ? itemReserve : globalReserve));
+      this.bids.set(bidHistory);
+
       if (eth) {
         this.phunkImage.set(`${this.staticUrl}/static/images/${eth.sha}`);
         this.phunkTokenId.set(eth.tokenId);
@@ -278,9 +282,6 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         const name = await this.auctionSvc.getCollectionName(eth.slug);
         this.collectionName.set(name);
       }
-
-      const bidHistory = await this.auctionSvc.getBidHistory(auctionId);
-      this.bids.set(bidHistory);
     } catch (err) {
       console.error('Failed to load historical auction:', err);
     }
