@@ -122,15 +122,27 @@ export class BreadcrumbsComponent {
     return decodedData?.data;
   }
 
-  downloadCanvas(): void {
+  async downloadCanvas(): Promise<void> {
     if (!this.phunk()) return;
 
-    const name = this.phunk()!.collection?.singleName?.replace(' ', '-') + '#' + this.phunk()!.tokenId;
+    const phunk = this.phunk()!;
+    const name = phunk.collection?.singleName?.replace(' ', '-') + '#' + phunk.tokenId;
     const link = document.createElement('a');
-    if (window.innerWidth > 800) link.download = name + '.png';
 
-    link.target = '_blank';
-    link.href = this.pfp.nativeElement.toDataURL('image/png;base64');
+    // Check if the original image is animated (GIF) — canvas loses animation
+    const decodedData = await this.getPunkImage(phunk);
+    const isGif = decodedData?.startsWith('data:image/gif');
+
+    if (isGif && decodedData) {
+      if (window.innerWidth > 800) link.download = name + '.gif';
+      link.target = '_blank';
+      link.href = decodedData;
+    } else {
+      if (window.innerWidth > 800) link.download = name + '.png';
+      link.target = '_blank';
+      link.href = this.pfp.nativeElement.toDataURL('image/png;base64');
+    }
+
     link.click();
     this.pfpOptionsActive.set(false);
   }

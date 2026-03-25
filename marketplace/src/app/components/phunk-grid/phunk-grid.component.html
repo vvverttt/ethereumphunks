@@ -49,7 +49,7 @@
       "
       [class.in-escrow]="
         (marketType === 'owned' && (viewType === 'market' || viewType === 'owned')) &&
-        phunk.owner === escrowAddress && !phunk.listing
+        phunk.isEscrowed && !phunk.listing
       "
       [class.listing]="
         (
