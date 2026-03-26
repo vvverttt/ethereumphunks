@@ -47,6 +47,7 @@ export class NotificationPipe implements PipeTransform {
       ticDelete: 'Deleting Comment',
       evolvePhunk: 'Evolve %singleName%',
       devolvePhunk: 'Devolve %singleName%',
+      freeClaim: 'Claim Free EthsRock',
       batch: {
         sendToEscrow: 'Send <span class="highlight">%length%</span> items to Escrow',
         phunkNoLongerForSale: 'Delist <span class="highlight">%length%</span> items',
@@ -98,6 +99,7 @@ export class NotificationPipe implements PipeTransform {
       ticDelete: 'tic',
       evolvePhunk: 'evolve',
       devolvePhunk: 'devolve',
+      freeClaim: 'free-claim',
     },
   }
 

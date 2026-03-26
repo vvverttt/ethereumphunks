@@ -122,7 +122,8 @@ export type TxFunction =
   | 'tic'
   | 'ticDelete'
   | 'evolvePhunk'
-  | 'devolvePhunk';
+  | 'devolvePhunk'
+  | 'freeClaim';
 
 export interface TraitFilter {
   [key: string]: string | null;

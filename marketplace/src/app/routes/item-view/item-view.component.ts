@@ -28,6 +28,7 @@ import { DataService } from '@/services/data.service';
 import { Web3Service } from '@/services/web3.service';
 import { ThemeService } from '@/services/theme.service';
 import { UtilService } from '@/services/util.service';
+import { EthsRocksService } from '@/services/ethsrocks.service';
 
 import { Phunk } from '@/models/db';
 import { GlobalState, Notification } from '@/models/global-state';
@@ -134,6 +135,10 @@ export class ItemViewComponent {
           })
           .catch(() => this.isRegisteredPair.set(false));
       }
+      this.freeClaims.set(0);
+      if (phunk?.slug && this.web3Svc.isOgEvolveSlug(phunk.slug)) {
+        this.loadFreeClaims();
+      }
     }),
     shareReplay(1),
   );
@@ -179,6 +184,7 @@ export class ItemViewComponent {
 
   isRegisteredPair = signal<boolean>(false);
   evolveCost = signal<string | null>(null);
+  freeClaims = signal<number>(0);
 
   expanded = false;
 
@@ -191,6 +197,7 @@ export class ItemViewComponent {
     public web3Svc: Web3Service,
     public themeSvc: ThemeService,
     private utilSvc: UtilService,
+    private ethsrocksSvc: EthsRocksService,
   ) {}
 
   sellPhunk(): void {
@@ -847,6 +854,45 @@ export class ItemViewComponent {
 
   expand(): void {
     this.expanded = !this.expanded;
+  }
+
+  async loadFreeClaims(): Promise<void> {
+    const address = this.web3Svc.getCurrentAddress();
+    if (!address) return;
+    try {
+      const claims = await this.ethsrocksSvc.getFreeClaims(address);
+      this.freeClaims.set(Number(claims));
+    } catch {}
+  }
+
+  async submitFreeClaim(): Promise<void> {
+    let notification: Notification = {
+      id: 'freeClaim-' + Date.now(),
+      timestamp: Date.now(),
+      type: 'pending',
+      function: 'freeClaim',
+      hashId: '',
+    };
+
+    try {
+      this.store.dispatch(upsertNotification({ notification }));
+      const hash = await this.ethsrocksSvc.freeClaim();
+      notification = { ...notification, hash: hash || '' };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+      notification = {
+        ...notification,
+        type: 'complete',
+        hash: receipt.transactionHash,
+      };
+      this.freeClaims.update(v => Math.max(0, v - 1));
+    } catch (err) {
+      console.log(err);
+      notification = { ...notification, type: 'error', detail: err };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
+    }
   }
 
   async setChat() {
