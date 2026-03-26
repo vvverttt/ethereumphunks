@@ -10,139 +10,43 @@
       <div class="stats">
         <div class="stat">
           <span class="label">Price</span>
-          <span class="value">{{ currentPrice() }} ETH</span>
+          <span class="value">FREE</span>
         </div>
         <div class="stat">
-          <span class="label">Sold</span>
-          <span class="value">{{ totalSold() }} / {{ totalSupply() }}</span>
+          <span class="label">Claimed</span>
+          <span class="value">{{ totalFreeClaimed() }}</span>
         </div>
         <div class="stat">
           <span class="label">Available</span>
           <span class="value">{{ remaining() }}</span>
         </div>
-        <div class="stat">
-          <span class="label">Per Sale</span>
-          <span class="value">+{{ priceIncrementEth() }}</span>
-        </div>
       </div>
-
-      <!-- Price Bar Chart -->
-      @if (totalSupply() > 0) {
-        <div class="price-chart">
-          <h2>Price Per Sale</h2>
-          <div class="chart-scroll">
-            <svg [attr.viewBox]="chartViewBox()">
-              <!-- Y axis -->
-              <line x1="0" y1="0" x2="0" y2="300" class="chart-axis" />
-              <line x1="0" y1="300" [attr.x2]="chartTotalWidth()" y2="300" class="chart-axis" />
-              <line x1="0" y1="150" [attr.x2]="chartTotalWidth()" y2="150" class="chart-grid" />
-              <line x1="0" y1="0" [attr.x2]="chartTotalWidth()" y2="0" class="chart-grid" />
-
-              <!-- Y-axis labels -->
-              <text x="-10" y="6" class="chart-label-y" text-anchor="end">{{ chartMaxEth() }}</text>
-              <text x="-10" y="156" class="chart-label-y" text-anchor="end">{{ chartMidEth() }}</text>
-              <text x="-10" y="306" class="chart-label-y" text-anchor="end">0</text>
-
-              <!-- Bars -->
-              @for (bar of chartBars(); track bar.sale) {
-                <rect
-                  [attr.x]="bar.x"
-                  [attr.y]="bar.y"
-                  [attr.width]="barWidth"
-                  [attr.height]="bar.height"
-                  [class.bar-sold]="bar.state === 'sold'"
-                  [class.bar-next]="bar.state === 'next'"
-                  [class.bar-future]="bar.state === 'future'"
-                  class="chart-bar" />
-
-                <!-- Sale number below each bar -->
-                <text
-                  [attr.x]="bar.x + barWidth / 2"
-                  y="316"
-                  class="chart-sale-num"
-                  [class.num-sold]="bar.state === 'sold'"
-                  [class.num-next]="bar.state === 'next'"
-                  text-anchor="middle">
-                  {{ bar.sale }}
-                </text>
-
-                <!-- Price labels above bar — every 10th, #1, last, and next -->
-                @if (bar.sale === 1 || bar.sale === totalSupply() || bar.sale % 10 === 0 || bar.state === 'next') {
-                  <text
-                    [attr.x]="bar.x + barWidth / 2"
-                    [attr.y]="bar.y - 6"
-                    class="chart-price-label"
-                    [class.label-next]="bar.state === 'next'"
-                    text-anchor="middle">
-                    {{ bar.eth }}
-                  </text>
-                }
-              }
-            </svg>
-          </div>
-          <div class="chart-legend">
-            <span class="legend-sold">Sold: {{ totalSold() }}</span>
-            <span class="legend-remaining">Remaining: {{ remaining() }}</span>
-            <span class="legend-next">Next: {{ currentPriceEth() }}</span>
-            <span class="legend-increment">+{{ priceIncrementEth() }} per sale</span>
-          </div>
-        </div>
-      }
 
       <div class="actions">
         @if (isPaused()) {
-          <button class="btn disabled" disabled>Sale Paused</button>
-        } @else if (remaining() <= 0) {
-          <button class="btn disabled" disabled>Sold Out</button>
-        } @else if (hasCommitment()) {
-          @if (isExpired()) {
-            <p class="reveal-wait">Reveal window expired. Cancel to get your ETH back.</p>
-            <button class="btn cancel" (click)="onCancel()" [disabled]="txPending()">
-              @if (txPending()) { Pending... } @else { Cancel & Refund }
-            </button>
-          } @else {
-            @if (!canReveal()) {
-              <p class="reveal-wait">Waiting for reveal window... {{ blocksUntilReveal() }} block(s) remaining</p>
-            }
-            <button class="btn reveal" (click)="onReveal()" [disabled]="txPending() || !canReveal()">
-              @if (txPending()) { Pending... } @else if (!canReveal()) { Wait {{ blocksUntilReveal() }} Block(s) } @else { Reveal Your Rock }
-            </button>
-          }
+          <button class="btn disabled" disabled>Paused</button>
         } @else if (connected$ | async) {
           @if (walletChecked()) {
-            <button class="btn commit" (click)="onCommit()" [disabled]="txPending()">
-              @if (txPending()) {
-                Pending...
+            @if (freeClaims() > 0) {
+              @if (remaining() > 0) {
+                <button class="btn free-claim" (click)="onFreeClaim()" [disabled]="txPending()">
+                  @if (txPending()) {
+                    Pending...
+                  } @else {
+                    Claim Free Rock ({{ freeClaims() }} remaining)
+                  }
+                </button>
               } @else {
-                Commit ({{ currentPrice() }} ETH)
+                <p class="status">You have {{ freeClaims() }} free claim(s) — rocks not yet deposited</p>
               }
-            </button>
+            } @else {
+              <p class="status">No free claims for this wallet</p>
+            }
           } @else {
             <p class="status">Checking wallet...</p>
           }
         } @else {
-          <p class="connect-msg">Connect wallet to purchase</p>
-        }
-      </div>
-
-      <div class="history-section">
-        <h2>Purchase History</h2>
-        @if (historyLoading()) {
-          <p class="status">Loading history...</p>
-        } @else if (purchaseHistory().length === 0) {
-          <p class="status">No purchases yet</p>
-        } @else {
-          <div class="history-list">
-            @for (p of purchaseHistory(); track p.blockNumber) {
-              <div class="history-item">
-                <div class="history-header">
-                  <span class="history-buyer">{{ p.buyer.slice(0, 6) }}...{{ p.buyer.slice(-4) }}</span>
-                  <span class="history-price">{{ p.price }} ETH</span>
-                  <span class="history-sale">#{{ p.saleNumber }}</span>
-                </div>
-              </div>
-            }
-          </div>
+          <p class="connect-msg">Connect wallet to claim</p>
         }
       </div>
 
@@ -160,6 +64,11 @@
           <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank">View on Etherscan</a>
         </div>
       }
+
+      <div class="contract-info">
+        <a [href]="explorerUrl + '/address/' + contractAddress" target="_blank">{{ contractAddress }}</a>
+        <button class="btn-reset" (click)="loadState()">Reset</button>
+      </div>
     }
   </div>
 </div>

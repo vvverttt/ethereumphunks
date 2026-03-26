@@ -103,6 +103,23 @@ export class EthsRocksService {
     });
   }
 
+  async getTotalFreeClaimed(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'totalFreeClaimed',
+    });
+  }
+
+  async getFreeClaims(address: `0x${string}`): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'freeClaims',
+      args: [address],
+    });
+  }
+
   async getCommitment(address: `0x${string}`): Promise<Commitment> {
     const result = await this.web3Svc.l1Client.readContract({
       address: ethsrocksAddress,
@@ -117,12 +134,13 @@ export class EthsRocksService {
   async getContractState() {
     if (!this.hasAddress) return null;
     try {
-      const [price, pool, sold, pending, paused] = await Promise.all([
+      const [price, pool, sold, pending, paused, freeClaimed] = await Promise.all([
         this.getCurrentPrice(),
         this.getPoolSize(),
         this.getTotalRevealed(),
         this.getPendingReveals(),
         this.isPaused(),
+        this.getTotalFreeClaimed(),
       ]);
       return {
         price,
@@ -132,6 +150,7 @@ export class EthsRocksService {
         pendingReveals: Number(pending),
         paused,
         remaining: Number(pool) - Number(pending),
+        totalFreeClaimed: Number(freeClaimed),
       };
     } catch {
       return null;
@@ -215,6 +234,19 @@ export class EthsRocksService {
       to: ethsrocksAddress,
       data,
       gas: 150_000n,
+    });
+  }
+
+  async freeClaim() {
+    const walletClient = await this.getWallet();
+    const data = encodeFunctionData({
+      abi: EthsRocksABI,
+      functionName: 'freeClaim',
+    });
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data,
+      gas: 300_000n,
     });
   }
 

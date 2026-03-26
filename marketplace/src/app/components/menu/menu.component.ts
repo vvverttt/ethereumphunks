@@ -226,6 +226,10 @@ export class MenuComponent {
     this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
   }
 
+  goToEthsRocks(): void {
+    this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
+  }
+
   goToAuction(): void {
     this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
   }

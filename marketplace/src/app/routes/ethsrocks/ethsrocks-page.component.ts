@@ -35,6 +35,10 @@ export class EthsRocksPageComponent implements OnInit {
   isPaused = signal<boolean>(true);
   hasContract = signal<boolean>(false);
 
+  // Free claims
+  freeClaims = signal<number>(0);
+  totalFreeClaimed = signal<number>(0);
+
   // Commitment state
   hasCommitment = signal<boolean>(false);
   commitBlock = signal<number>(0);
@@ -113,6 +117,7 @@ export class EthsRocksPageComponent implements OnInit {
   });
 
   explorerUrl = (environment as any).explorerUrl || 'https://etherscan.io';
+  contractAddress = (environment as any).ethsrocksAddress || '';
 
   constructor(
     private store: Store<GlobalState>,
@@ -146,11 +151,17 @@ export class EthsRocksPageComponent implements OnInit {
       this.remaining.set(state.remaining);
       this.isPaused.set(state.paused);
       this.totalSupply.set(state.poolSize + state.totalSold);
+      this.totalFreeClaimed.set(state.totalFreeClaimed);
     }
 
-    // Check if connected user has a commitment
+    // Check if connected user has a commitment or free claims
     const address = this.web3Svc.getCurrentAddress();
     if (address) {
+      try {
+        const claims = await this.ethsrocksSvc.getFreeClaims(address);
+        this.freeClaims.set(Number(claims));
+      } catch {}
+
       try {
         const commitment = await this.ethsrocksSvc.getCommitment(address);
         if (commitment.commitBlock > 0n) {
@@ -182,6 +193,30 @@ export class EthsRocksPageComponent implements OnInit {
     } catch {
     } finally {
       this.historyLoading.set(false);
+    }
+  }
+
+  async onFreeClaim() {
+    const connected = await firstValueFrom(this.connected$);
+    if (!connected) { this.web3Svc.connect(); return; }
+
+    this.errorMessage.set('');
+    this.txPending.set(true);
+    this.txHash.set('');
+
+    try {
+      const hash = await this.ethsrocksSvc.freeClaim();
+      if (hash) {
+        this.txHash.set(hash);
+        await this.web3Svc.pollReceipt(hash);
+        this.txHash.set('');
+        await this.loadState();
+        this.loadPurchaseHistory();
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Free claim failed');
+    } finally {
+      this.txPending.set(false);
     }
   }
 

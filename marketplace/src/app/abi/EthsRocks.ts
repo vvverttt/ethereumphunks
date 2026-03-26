@@ -366,6 +366,29 @@ export const EthsRocksABI = [
     type: 'function',
   },
 
+  // ─── Free Claims ────────────────────────────────────────────
+  {
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'freeClaims',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'totalFreeClaimed',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'freeClaim',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+
   // ─── Events ───────────────────────────────────────────────
   {
     anonymous: false,
@@ -394,6 +417,16 @@ export const EthsRocksABI = [
       { indexed: true, internalType: 'address', name: 'buyer', type: 'address' },
     ],
     name: 'CommitmentCancelled',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'hashId', type: 'bytes32' },
+      { indexed: true, internalType: 'address', name: 'claimer', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'claimNumber', type: 'uint256' },
+    ],
+    name: 'RockFreeClaimed',
     type: 'event',
   },
 ] as const;

@@ -1,0 +1,150 @@
+import hre, { upgrades } from 'hardhat';
+
+const proxyAddress = '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8';
+
+// OG Missing Phunks diamond hands (55 wallets) — 1 free claim each
+const OG_MISSING_DIAMOND_HANDS = [
+  '0x25f1125417aa9d9366630a62db3c75581dd657dd',
+  '0xe3a24ae91bcc72c6161b8f0ddf6e81694a2eec0b',
+  '0x37814f5ecf3d60f7cbb769bcd3b6b31ceb8ae106',
+  '0x121e9da048d70e70caa07bf7c7548bcce906835a',
+  '0x0564a06312f55b5b3dfde6129eaab29d3bec7e62',
+  '0x42a18a259a7071ca0fd144b9503a93f038263e3e',
+  '0x07eb6ac2b3760a3496508932167a26d7f6bcf764',
+  '0x0e3282f3eaafcd808d03e5d246e2fb19a8bf101a',
+  '0x2b8454f668669c9c888c8346416e10be86bb7620',
+  '0x6466c91c32a6ee95c7d0660659cdfbcd2eee475d',
+  '0x921a30fee34e217c17d695b4d2a1b5025374c983',
+  '0xc911d23a5735a327884d684e32a8e46ccc7b0091',
+  '0xee54d24f450b000eceb12ef1514c9256da9f9235',
+  '0xfd0056ec2791c4665f35be37193e61753bc26808',
+  '0x0f9be6c42301cc9329fac7ea08f42449dcc2f00f',
+  '0x119f079871594e9ffc22d9453785c9e9364f2bce',
+  '0x11c2254143310e834640f0fdafd6e44516340e40',
+  '0x15719d37d81a0a490af6b143ffb3c84613d77a7b',
+  '0x1b43e6b432315a8573ce8c0f2687639eddd641dd',
+  '0x1bf32181e831dbc781eeb850d58f801495c4c93d',
+  '0x1d5590436811f11e3b89ee74cb096abb4ecd0a2b',
+  '0x296446a719f6e72d54920c246fc66365b291c259',
+  '0x2eb53af17ae7604cf833e0931e12d999b4f2676b',
+  '0x3860e090239d0dba44f2b8cb37adc81b0528a96f',
+  '0x38879c41f18c751d64079c4bdce7b3e092e873b9',
+  '0x3e3e7d1c8cff97c3fa31e0630cb7421d4d0b5f76',
+  '0x4212d149f77308a87ce9928f1095eddb894f4d68',
+  '0x4267fae6ccef4cceadcc45f92f07d3c35da4711d',
+  '0x43ec5640e18f7384761d8817aa55d38c9a03d855',
+  '0x47cf60bdd877203264921d05ce26f81f6d36aa3e',
+  '0x4ef490ba82157466b823d26cf1f8022d485387fa',
+  '0x562f0daeaa5aa30d8954c5c31dd1ee3c6f17d978',
+  '0x679b527c5c82f1d2a16268492850ce4be7f78bc6',
+  '0x685d5f86d4f4d8cc1797d666052573a477567277',
+  '0x725d0e834e161fb51ca07a49c1a6f562a60edd86',
+  '0x7329b00e6e9c40507f99ad6eb56d69bc0a8f3a02',
+  '0x784f65ceb819372c35248b40787f12b165cc9acc',
+  '0x7d69254b25717382fe04ac82a416fdbc1c4ee410',
+  '0x8020e5f53be994503fcae9a143aa36a0d2f36083',
+  '0x87ff49f274c71db1c4b0b027c704c9a9088e1ac4',
+  '0x8e066f69ce11aeae7b796a399ccedee14291d0b2',
+  '0x916565201113cae2fb59ae84a597108ed0454443',
+  '0x952d60d87b3428b49d3b6660be3712b22379c497',
+  '0x9b1f5542c1a2557b12ca6bac1f369143edd08951',
+  '0xa2b1db1d846d368489b7211831bedb50b94ae83d',
+  '0xa83747b5c92d9c3cc55b447c15769cfcaac76385',
+  '0xb1dad57e6472b80419f3baa66905df690dd61b9d',
+  '0xb6e78700d808c0ac539a23088bc067095005c336',
+  '0xc8b26c065806cf745e1bfc6f1777cbcd07a6ea8e',
+  '0xcecce5a3da042e8ad4d1e2019b1551d4c898dd6e',
+  '0xd729a94d6366a4feac4a6869c8b3573cee4701a9',
+  '0xe12aceb9f6142f8f19f5188f2c76f7d02b4138d5',
+  '0xebfd774c1c2008e56ce40e0a4504ebecc81b1921',
+  '0xf15fe868b185fc82ddaffc805ebc37380c778c52',
+  '0xf8ac72f1422b680a4b5bb69e472601f9b8be7a53',
+];
+
+// OG DystoPhunks diamond hands (21 wallets) — 1 free claim each
+const OG_DYSTO_DIAMOND_HANDS = [
+  '0x474642b7f4f61c0b375c54ab2fdbb8da6c02920f',
+  '0x0e3282f3eaafcd808d03e5d246e2fb19a8bf101a',
+  '0x9fd878f59e78a4da2bb2b971bcdb3cd6f75178ab',
+  '0xe3a24ae91bcc72c6161b8f0ddf6e81694a2eec0b',
+  '0x0564a06312f55b5b3dfde6129eaab29d3bec7e62',
+  '0x097ffef932d06582cd63a28d70f0f6ec9a2260f2',
+  '0x2b8454f668669c9c888c8346416e10be86bb7620',
+  '0x67159a44a0ebef5af3efd2502d6a96ddaf73fe97',
+  '0x6744d79392eb4d47c49a92f03bce87885fa0f3c7',
+  '0x89c7dbca26efbebda7d438d3639a2d58844cd661',
+  '0x921a30fee34e217c17d695b4d2a1b5025374c983',
+  '0xae97a8bfa58d9573aaba7b7d4339f9e027936bb7',
+  '0xba0c18277a5b2fc5526365c44b1ffa16023dd09d',
+  '0xba7e1ad6ef62841b057fcc4694847bb0f79a991c',
+  '0xbcbe71192007b4ade74867a7f22d148a170731eb',
+  '0xbfa1beefa79f73e44b91ba4412f0d6945dbe30a8',
+  '0xe10c71796a367dc7355ff2f2910bcb8205245f9c',
+  '0xe4fdbbb89a3ce8e96b721fd56883926035aa4cee',
+  '0xebfd774c1c2008e56ce40e0a4504ebecc81b1921',
+  '0xee54d24f450b000eceb12ef1514c9256da9f9235',
+  '0xfe6c5867739da4e1d28681cab7edcb0a4e06b5cc',
+];
+
+async function main() {
+  const [signer] = await hre.ethers.getSigners();
+
+  console.log('\n=====================================================================');
+  console.log('Upgrading EthsRocks — Add free claims for diamond hands');
+  console.log(`  Signer:  ${signer.address}`);
+  console.log(`  Proxy:   ${proxyAddress}`);
+  console.log(`  OG Missing diamond hands: ${OG_MISSING_DIAMOND_HANDS.length}`);
+  console.log(`  OG Dysto diamond hands:   ${OG_DYSTO_DIAMOND_HANDS.length}`);
+  console.log('=====================================================================');
+
+  // Step 1: Upgrade contract
+  console.log('\n1. Upgrading implementation...');
+  const ContractFactory = await hre.ethers.getContractFactory('EthsRocksV2');
+  const upgraded = await upgrades.upgradeProxy(proxyAddress, ContractFactory, {
+    unsafeSkipStorageCheck: true,
+  });
+  await upgraded.waitForDeployment();
+
+  const implAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
+  console.log(`   New implementation: ${implAddress}`);
+
+  const contract = await hre.ethers.getContractAt('EthsRocksV2', proxyAddress);
+
+  // Step 2: Set free claims for OG Missing diamond hands (1 each)
+  console.log('\n2. Setting free claims for OG Missing Phunks diamond hands...');
+  const tx1 = await contract.addFreeClaimsBatch(OG_MISSING_DIAMOND_HANDS, 1);
+  await tx1.wait();
+  console.log(`   Set 1 free claim for ${OG_MISSING_DIAMOND_HANDS.length} wallets`);
+
+  // Step 3: Set free claims for OG Dysto diamond hands (1 each, additive)
+  // Wallets on both lists will get 2 total
+  console.log('\n3. Setting free claims for OG DystoPhunks diamond hands...');
+  const tx2 = await contract.addFreeClaimsBatch(OG_DYSTO_DIAMOND_HANDS, 1);
+  await tx2.wait();
+  console.log(`   Added 1 free claim for ${OG_DYSTO_DIAMOND_HANDS.length} wallets`);
+
+  // Verify overlapping wallets got 2
+  const overlap = OG_MISSING_DIAMOND_HANDS.filter(w => OG_DYSTO_DIAMOND_HANDS.includes(w));
+  console.log(`\n   Overlap (get 2 claims): ${overlap.length} wallets`);
+  for (const w of overlap) {
+    const claims = await contract.freeClaims(w);
+    console.log(`   ${w}: ${claims} claims`);
+  }
+
+  // Summary
+  const poolSize = await contract.poolSize();
+  const totalFree = OG_MISSING_DIAMOND_HANDS.length + OG_DYSTO_DIAMOND_HANDS.length;
+  console.log(`\n=====================================================================`);
+  console.log(`SUMMARY:`);
+  console.log(`  Proxy (unchanged):     ${proxyAddress}`);
+  console.log(`  New Implementation:    ${implAddress}`);
+  console.log(`  Pool size:             ${poolSize}`);
+  console.log(`  Total free claims set: ${totalFree} (${overlap.length} wallets get 2)`);
+  console.log(`=====================================================================`);
+  console.log(`\nVerify: npx hardhat verify --network mainnet ${implAddress}`);
+}
+
+main().then(() => process.exit(0)).catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
