@@ -113,24 +113,14 @@ export class EthsRocksPageComponent implements OnInit {
       return;
     }
 
-    this.loadPendingDeposit();
     await this.loadState();
     this.loading.set(false);
 
     this.address$.subscribe(async (addr) => {
       if (addr) {
-        // Verify pending deposit is still valid on-chain
-        const pending = this.pendingDeposit();
-        if (pending?.hashId) {
-          try {
-            const stillDeposited = await this.ethsrocksSvc.isDepositedBy(addr as `0x${string}`, pending.hashId as `0x${string}`);
-            if (!stillDeposited) this.savePendingDeposit(null);
-          } catch {
-            // CORS or RPC error — keep the pending deposit, user can try to complete or cancel
-          }
-        }
         this.loadState();
         this.loadUserItems();
+        this.detectPendingDeposits(addr);
       }
     });
   }
@@ -301,19 +291,57 @@ export class EthsRocksPageComponent implements OnInit {
 
   // ─── Swap actions ─────────────────────────────────────
 
+  async detectPendingDeposits(address: string) {
+    try {
+      // Check OG ethscriptions owned by contract with prevOwner = address (our Supabase)
+      const ogRes = await fetch(
+        `https://hzpwkpjxhtpcygrwtwku.supabase.co/rest/v1/ethscriptions?select=hashId,tokenId,slug&owner=eq.${this.contractAddress.toLowerCase()}&prevOwner=eq.${address.toLowerCase()}&slug=in.(og-missing-phunks,og-dysto-phunks)&limit=5`,
+        { headers: { apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY' } }
+      );
+      const ogItems = await ogRes.json();
+      if (Array.isArray(ogItems) && ogItems.length > 0) {
+        // Single OG deposit
+        const item = ogItems[0];
+        this.savePendingDeposit({
+          type: 'ethscription',
+          hashId: item.hashId,
+          slug: item.slug,
+          label: `${item.slug === 'og-missing-phunks' ? 'OG Missing' : 'OG Dysto'} #${item.tokenId}`,
+          selected: false,
+        });
+        return;
+      }
+
+      // Check EtherPhunks owned by contract with prevOwner = address (etherphunks Supabase)
+      const epRes = await fetch(
+        `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId,tokenId&slug=eq.ethereum-phunks&owner=eq.${this.contractAddress.toLowerCase()}&prevOwner=eq.${address.toLowerCase()}&limit=10`,
+        { headers: { apikey: ETHERPHUNKS_SUPABASE_KEY, Authorization: `Bearer ${ETHERPHUNKS_SUPABASE_KEY}` } }
+      );
+      const epItems = await epRes.json();
+      if (Array.isArray(epItems) && epItems.length > 0) {
+        const hashIds = epItems.map((i: any) => i.hashId).join(',');
+        this.savePendingDeposit({
+          type: 'ethscription',
+          hashId: hashIds,
+          slug: 'ethereum-phunks',
+          label: `${epItems.length} EtherPhunks`,
+          selected: false,
+        });
+        return;
+      }
+
+      // No pending deposits found — check localStorage and clear if stale
+      const stored = localStorage.getItem('ethsrocks_pending_deposit');
+      if (stored) this.savePendingDeposit(null);
+    } catch {}
+  }
+
   private savePendingDeposit(item: SwapItem | null) {
     this.pendingDeposit.set(item);
     if (item) {
       localStorage.setItem('ethsrocks_pending_deposit', JSON.stringify(item));
     } else {
       localStorage.removeItem('ethsrocks_pending_deposit');
-    }
-  }
-
-  private loadPendingDeposit() {
-    const stored = localStorage.getItem('ethsrocks_pending_deposit');
-    if (stored) {
-      try { this.pendingDeposit.set(JSON.parse(stored)); } catch {}
     }
   }
 
@@ -636,7 +664,7 @@ export class EthsRocksPageComponent implements OnInit {
       const hash = await walletClient.sendTransaction({
         to: this.contractAddress as `0x${string}`,
         data,
-        gas: 600_000n,
+        gas: 1_000_000n,
       });
 
       if (hash) {

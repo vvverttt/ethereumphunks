@@ -297,6 +297,37 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
         _transferEthscription(msg.sender, msg.sender, ethscriptionHashId);
     }
 
+    /// @notice Cancel multiple pending deposits in one tx
+    function cancelSwapDepositBatch(bytes32[] calldata hashIds) external nonReentrant {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            require(
+                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][hashIds[i]] > 0,
+                "No deposit found"
+            );
+            _transferEthscription(msg.sender, msg.sender, hashIds[i]);
+        }
+    }
+
+    /// @notice Owner can return deposits to their original depositor
+    function returnDeposit(address depositor, bytes32 hashId) external onlyOwner nonReentrant {
+        require(
+            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[depositor][hashId] > 0,
+            "No deposit found"
+        );
+        _transferEthscription(depositor, depositor, hashId);
+    }
+
+    /// @notice Owner can return multiple deposits to their original depositor
+    function returnDepositBatch(address depositor, bytes32[] calldata hashIds) external onlyOwner nonReentrant {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            require(
+                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[depositor][hashIds[i]] > 0,
+                "No deposit found"
+            );
+            _transferEthscription(depositor, depositor, hashIds[i]);
+        }
+    }
+
     /// @notice Swap multiple ethscriptions for 1 random EthsRock (e.g. 5 EtherPhunks)
     /// @param hashIds The ethscription hashIds to swap
     /// @param proofs Merkle proofs for each hashId (one proof per hashId)
