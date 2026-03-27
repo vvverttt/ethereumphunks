@@ -111,7 +111,9 @@ export class EthsRocksPageComponent implements OnInit {
           try {
             const stillDeposited = await this.ethsrocksSvc.isDepositedBy(addr as `0x${string}`, pending.hashId as `0x${string}`);
             if (!stillDeposited) this.savePendingDeposit(null);
-          } catch { this.savePendingDeposit(null); }
+          } catch {
+            // CORS or RPC error — keep the pending deposit, user can try to complete or cancel
+          }
         }
         this.loadState();
         this.loadUserItems();
