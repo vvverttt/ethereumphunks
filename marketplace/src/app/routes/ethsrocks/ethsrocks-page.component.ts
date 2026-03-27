@@ -99,11 +99,20 @@ export class EthsRocksPageComponent implements OnInit {
       return;
     }
 
+    this.loadPendingDeposit();
     await this.loadState();
     this.loading.set(false);
 
-    this.address$.subscribe(addr => {
+    this.address$.subscribe(async (addr) => {
       if (addr) {
+        // Verify pending deposit is still valid on-chain
+        const pending = this.pendingDeposit();
+        if (pending?.hashId) {
+          try {
+            const stillDeposited = await this.ethsrocksSvc.isDepositedBy(addr as `0x${string}`, pending.hashId as `0x${string}`);
+            if (!stillDeposited) this.savePendingDeposit(null);
+          } catch { this.savePendingDeposit(null); }
+        }
         this.loadState();
         this.loadUserItems();
       }
@@ -209,20 +218,6 @@ export class EthsRocksPageComponent implements OnInit {
         this.philipItems.set(philipList);
       } catch { this.philipItems.set([]); }
 
-      // Check for any pending deposit (from a previous session)
-      if (!this.pendingDeposit()) {
-        for (const item of ogList) {
-          if (!item.hashId) continue;
-          try {
-            const deposited = await this.ethsrocksSvc.isDepositedBy(address, item.hashId as `0x${string}`);
-            if (deposited) {
-              this.pendingDeposit.set(item);
-              break;
-            }
-          } catch {}
-        }
-      }
-
     } catch (err) {
       console.error('Failed to load user items', err);
     } finally {
@@ -264,6 +259,22 @@ export class EthsRocksPageComponent implements OnInit {
 
   // ─── Swap actions ─────────────────────────────────────
 
+  private savePendingDeposit(item: SwapItem | null) {
+    this.pendingDeposit.set(item);
+    if (item) {
+      localStorage.setItem('ethsrocks_pending_deposit', JSON.stringify(item));
+    } else {
+      localStorage.removeItem('ethsrocks_pending_deposit');
+    }
+  }
+
+  private loadPendingDeposit() {
+    const stored = localStorage.getItem('ethsrocks_pending_deposit');
+    if (stored) {
+      try { this.pendingDeposit.set(JSON.parse(stored)); } catch {}
+    }
+  }
+
   // Step 1: Send ethscription to contract
   async onDepositEthscription() {
     const item = this.selectedEthscription();
@@ -280,7 +291,7 @@ export class EthsRocksPageComponent implements OnInit {
         this.txHash.set(hash);
         await this.web3Svc.pollReceipt(hash);
         this.txHash.set('');
-        this.pendingDeposit.set(item);
+        this.savePendingDeposit(item);
         this.selectedEthscription.set(null);
         this.successMessage.set('Phunk deposited! Wait ~1 min then click "Get Rock"');
       }
@@ -307,7 +318,7 @@ export class EthsRocksPageComponent implements OnInit {
         this.txHash.set(hash);
         await this.web3Svc.pollReceipt(hash);
         this.txHash.set('');
-        this.pendingDeposit.set(null);
+        this.savePendingDeposit(null);
         this.successMessage.set('Rock received!');
         await this.loadState();
         await this.loadUserItems();
@@ -350,7 +361,7 @@ export class EthsRocksPageComponent implements OnInit {
         this.txHash.set(hash);
         await this.web3Svc.pollReceipt(hash);
         this.txHash.set('');
-        this.pendingDeposit.set(null);
+        this.savePendingDeposit(null);
         this.successMessage.set('Phunk returned to your wallet');
         await this.loadUserItems();
       }
