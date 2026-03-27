@@ -452,6 +452,30 @@ export const EthsRocksABI = [
     type: 'function',
   },
   {
+    inputs: [
+      { internalType: 'bytes32[]', name: 'hashIds', type: 'bytes32[]' },
+      { internalType: 'bytes32[][]', name: 'proofs', type: 'bytes32[][]' },
+    ],
+    name: 'swapEthscriptionBatch',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    name: 'eligibleEthscriptionBatch',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'ethscriptionBatchRequired',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'cryptoPhunksV2Required',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],

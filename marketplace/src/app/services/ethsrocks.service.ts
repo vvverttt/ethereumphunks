@@ -300,6 +300,23 @@ export class EthsRocksService {
     });
   }
 
+  async getEthscriptionBatchRequired(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'ethscriptionBatchRequired',
+    });
+  }
+
+  async isEligibleEthscriptionBatch(hashId: `0x${string}`): Promise<boolean> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'eligibleEthscriptionBatch',
+      args: [hashId],
+    });
+  }
+
   async getPhilipInternRequired(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
       address: ethsrocksAddress,
@@ -358,6 +375,31 @@ export class EthsRocksService {
       to: ethsrocksAddress,
       data: hashId as `0x${string}`,
       gas: 100_000n,
+    });
+  }
+
+  async depositEthscriptionBatchForSwap(hashIds: `0x${string}`[]) {
+    const walletClient = await this.getWallet();
+    // Concatenate all hashIds as calldata (32 bytes each, no 0x prefix after first)
+    const data = ('0x' + hashIds.map(h => h.slice(2)).join('')) as `0x${string}`;
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data,
+      gas: BigInt(60_000 + hashIds.length * 30_000),
+    });
+  }
+
+  async swapEthscriptionBatch(hashIds: `0x${string}`[], proofs: `0x${string}`[][]) {
+    const walletClient = await this.getWallet();
+    const data = encodeFunctionData({
+      abi: EthsRocksABI,
+      functionName: 'swapEthscriptionBatch',
+      args: [hashIds, proofs],
+    });
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data,
+      gas: 600_000n,
     });
   }
 

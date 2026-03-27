@@ -113,6 +113,9 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
     mapping(bytes32 => bool) public eligibleEthscription; // valid OG hashIds for swap
     uint256 public cryptoPhunksV2Required;  // default 1
     uint256 public philipInternRequired;    // default 3
+    bytes32 public batchSwapMerkleRoot; // Merkle root for batch-eligible hashIds (e.g. EtherPhunks)
+    uint256 public ethscriptionBatchRequired; // how many needed for batch swap (default 5)
+    mapping(bytes32 => bool) public usedBatchEthscription; // prevent reuse
 
     // ─── Events ────────────────────────────────────────────────
 
@@ -180,15 +183,16 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
                 emit PoolDeposited(hashId);
             }
         } else {
-            // User deposit for swap — just track receipt, 1 ethscription only
-            require(msg.data.length == 32, "Swap accepts 1 ethscription");
-            bytes32 hashId;
-            assembly { hashId := calldataload(0) }
-            require(hashId != bytes32(0), "Invalid hashId");
+            // User deposit for swap — track receipt for each ethscription
+            for (uint256 i = 0; i < msg.data.length / 32; i++) {
+                bytes32 hashId;
+                assembly { hashId := calldataload(mul(i, 32)) }
+                require(hashId != bytes32(0), "Invalid hashId");
 
-            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
-                msg.sender
-            ][hashId] = block.number;
+                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
+                    msg.sender
+                ][hashId] = block.number;
+            }
         }
     }
 
@@ -291,6 +295,47 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
 
         // Return ethscription to sender
         _transferEthscription(msg.sender, msg.sender, ethscriptionHashId);
+    }
+
+    /// @notice Swap multiple ethscriptions for 1 random EthsRock (e.g. 5 EtherPhunks)
+    /// @param hashIds The ethscription hashIds to swap
+    /// @param proofs Merkle proofs for each hashId (one proof per hashId)
+    function swapEthscriptionBatch(
+        bytes32[] calldata hashIds,
+        bytes32[][] calldata proofs
+    ) external nonReentrant whenNotPaused {
+        require(swapEnabled, "Swaps disabled");
+        require(_pool.length > pendingReveals, "Sold out");
+        require(batchSwapMerkleRoot != bytes32(0), "Merkle root not set");
+        uint256 required = ethscriptionBatchRequired > 0 ? ethscriptionBatchRequired : 5;
+        require(hashIds.length == required, "Wrong amount");
+        require(proofs.length == required, "Wrong proof count");
+
+        for (uint256 i = 0; i < required; i++) {
+            require(!usedBatchEthscription[hashIds[i]], "Already used");
+            require(_verifyMerkle(proofs[i], batchSwapMerkleRoot, hashIds[i]), "Invalid proof");
+            require(
+                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][hashIds[i]] > 0,
+                "Ethscription not deposited"
+            );
+
+            usedBatchEthscription[hashIds[i]] = true;
+            _transferEthscription(msg.sender, treasuryAddress, hashIds[i]);
+        }
+
+        _giveRandomRockEthscription(msg.sender, hashIds[0]);
+    }
+
+    function _verifyMerkle(bytes32[] calldata proof, bytes32 root, bytes32 leaf) private pure returns (bool) {
+        bytes32 hash = leaf;
+        for (uint256 i = 0; i < proof.length; i++) {
+            if (hash < proof[i]) {
+                hash = keccak256(abi.encodePacked(hash, proof[i]));
+            } else {
+                hash = keccak256(abi.encodePacked(proof[i], hash));
+            }
+        }
+        return hash == root;
     }
 
     function _giveRandomRockEthscription(address recipient, bytes32 ethscriptionHashId) private {
@@ -563,11 +608,19 @@ function setBlocked(address wallet, bool isBlocked) external onlyOwner {
         }
     }
 
+    function setBatchSwapMerkleRoot(bytes32 _root) external onlyOwner {
+        batchSwapMerkleRoot = _root;
+    }
+
+    function setEthscriptionBatchRequired(uint256 _amount) external onlyOwner {
+        ethscriptionBatchRequired = _amount;
+    }
+
     function renounceOwnership() public pure override {
         revert("Cannot renounce ownership");
     }
 
-    // ─── Storage gap (48 − 13 new slots = 35) ─────────────────
+    // ─── Storage gap (48 − 16 new slots = 32) ─────────────────
 
-    uint256[35] private __gap;
+    uint256[32] private __gap;
 }

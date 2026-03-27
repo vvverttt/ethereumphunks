@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
+import { keccak256, encodePacked } from 'viem';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
@@ -14,6 +15,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 const CRYPTO_PHUNKS_V2 = '0xf07468ead8cf26c752c676e43c814fee9c8cf402';
 const PHILIP_INTERN = '0xa82f3a61f002f83eba7d184c50bb2a8b359ca1ce';
+const ETHERPHUNKS_JSON_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/v1/object/public/data/ethereum-phunks_merkle.json';
 
 // Minimal ERC-721 ABI for reading user's tokens
 const ERC721_ABI = [
@@ -59,19 +61,27 @@ export class EthsRocksPageComponent implements OnInit {
   cryptoPhunksV2Required = signal<number>(1);
   philipInternRequired = signal<number>(3);
 
+  ethscriptionBatchRequired = signal<number>(5);
+
   // Swap tab
-  activeTab = signal<'ethscription' | 'cryptophunksv2' | 'philipintern'>('ethscription');
+  activeTab = signal<'ethscription' | 'cryptophunksv2' | 'philipintern' | 'etherphunks'>('ethscription');
 
   // User's eligible items
   ogItems = signal<SwapItem[]>([]);
   v2Items = signal<SwapItem[]>([]);
   philipItems = signal<SwapItem[]>([]);
+  etherphunkItems = signal<SwapItem[]>([]);
   loadingItems = signal<boolean>(false);
 
   // Selected items
   selectedEthscription = signal<SwapItem | null>(null);
   selectedV2 = signal<SwapItem[]>([]);
   selectedPhilip = signal<SwapItem[]>([]);
+  selectedEtherphunks = signal<SwapItem[]>([]);
+
+  // Merkle tree for EtherPhunks
+  private merkleTree: string[][] = [];
+  private merkleLeaves: string[] = [];
 
   // Pending ethscription deposit (step 1 done, waiting for step 2)
   pendingDeposit = signal<SwapItem | null>(null);
@@ -131,6 +141,10 @@ export class EthsRocksPageComponent implements OnInit {
       this.totalSwapped.set(state.totalSwapped);
       this.cryptoPhunksV2Required.set(state.cryptoPhunksV2Required);
       this.philipInternRequired.set(state.philipInternRequired);
+      try {
+        const batchReq = await this.ethsrocksSvc.getEthscriptionBatchRequired();
+        this.ethscriptionBatchRequired.set(Number(batchReq) || 5);
+      } catch {}
     }
   }
 
@@ -220,6 +234,24 @@ export class EthsRocksPageComponent implements OnInit {
         }
         this.philipItems.set(philipList);
       } catch { this.philipItems.set([]); }
+
+      // Load EtherPhunks (ethscriptions)
+      try {
+        const epItems = await firstValueFrom(this.dataSvc.fetchOwned(address, 'ethereum-phunks'));
+        const epList: SwapItem[] = [];
+        for (const item of epItems) {
+          if (!item.hashId || item.isEscrowed) continue;
+          epList.push({
+            type: 'ethscription',
+            hashId: item.hashId,
+            sha: item.sha,
+            slug: 'ethereum-phunks',
+            label: `EtherPhunk #${item.tokenId}`,
+            selected: false,
+          });
+        }
+        this.etherphunkItems.set(epList);
+      } catch { this.etherphunkItems.set([]); }
 
     } catch (err) {
       console.error('Failed to load user items', err);
@@ -446,6 +478,159 @@ export class EthsRocksPageComponent implements OnInit {
     return '';
   }
 
+  toggleEtherphunk(item: SwapItem) {
+    const selected = this.selectedEtherphunks();
+    const max = this.ethscriptionBatchRequired();
+    const idx = selected.findIndex(s => s.hashId === item.hashId);
+
+    if (idx >= 0) {
+      this.selectedEtherphunks.set(selected.filter((_, i) => i !== idx));
+    } else if (selected.length < max) {
+      this.selectedEtherphunks.set([...selected, item]);
+    }
+  }
+
+  isEtherphunkSelected(item: SwapItem): boolean {
+    return this.selectedEtherphunks().some(s => s.hashId === item.hashId);
+  }
+
+  // Merkle proof generation
+  private buildMerkleTree(leaves: string[]): void {
+    let layer = leaves.map(l => l.toLowerCase()).sort();
+    this.merkleLeaves = layer;
+    this.merkleTree = [layer];
+
+    while (layer.length > 1) {
+      const next: string[] = [];
+      for (let i = 0; i < layer.length; i += 2) {
+        if (i + 1 < layer.length) {
+          const [a, b] = layer[i] < layer[i + 1] ? [layer[i], layer[i + 1]] : [layer[i + 1], layer[i]];
+          next.push(keccak256(encodePacked(['bytes32', 'bytes32'], [a as `0x${string}`, b as `0x${string}`])));
+        } else {
+          next.push(layer[i]);
+        }
+      }
+      layer = next;
+      this.merkleTree.push(layer);
+    }
+  }
+
+  private getMerkleProof(leaf: string): string[] {
+    leaf = leaf.toLowerCase();
+    const proof: string[] = [];
+    let index = this.merkleTree[0].indexOf(leaf);
+    if (index === -1) return [];
+
+    for (let i = 0; i < this.merkleTree.length - 1; i++) {
+      const layer = this.merkleTree[i];
+      const siblingIndex = index % 2 === 1 ? index - 1 : index + 1;
+      if (siblingIndex < layer.length) proof.push(layer[siblingIndex]);
+      index = Math.floor(index / 2);
+    }
+    return proof;
+  }
+
+  private async ensureMerkleTree(): Promise<void> {
+    if (this.merkleTree.length > 0) return;
+    // Fetch all EtherPhunks hashIds from Supabase
+    const res = await fetch(
+      `https://hzpwkpjxhtpcygrwtwku.supabase.co/rest/v1/ethscriptions?select=hashId&slug=eq.ethereum-phunks&limit=10001`,
+      { headers: { apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY' } }
+    );
+    const items = await res.json();
+    const hashIds = items.map((i: any) => i.hashId);
+    this.buildMerkleTree(hashIds);
+  }
+
+  async onSwapEtherphunks() {
+    const selected = this.selectedEtherphunks();
+    const required = this.ethscriptionBatchRequired();
+    if (selected.length !== required) return;
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.txPending.set(true);
+    this.txHash.set('');
+
+    try {
+      // Step 1: Deposit all ethscriptions in one tx
+      const hashIds = selected.map(s => s.hashId as `0x${string}`);
+      const depositHash = await this.ethsrocksSvc.depositEthscriptionBatchForSwap(hashIds);
+      if (depositHash) {
+        this.txHash.set(depositHash);
+        await this.web3Svc.pollReceipt(depositHash);
+        this.txHash.set('');
+      }
+
+      // Save pending batch deposit
+      this.savePendingDeposit({
+        type: 'ethscription',
+        label: `${required} EtherPhunks`,
+        hashId: hashIds.join(','), // store all hashIds comma-separated
+        selected: false,
+      });
+      this.selectedEtherphunks.set([]);
+      this.successMessage.set(`${required} EtherPhunks sent! Wait ~1 min then click "Get Rock"`);
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Deposit failed');
+    } finally {
+      this.txPending.set(false);
+    }
+  }
+
+  async onCompleteBatchSwap() {
+    const pending = this.pendingDeposit();
+    if (!pending?.hashId?.includes(',')) return;
+
+    const hashIds = pending.hashId.split(',') as `0x${string}`[];
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.txPending.set(true);
+    this.txHash.set('');
+
+    try {
+      // Build Merkle proofs
+      await this.ensureMerkleTree();
+      const proofs = hashIds.map(h => this.getMerkleProof(h) as `0x${string}`[]);
+
+      // Check proofs are valid
+      for (let i = 0; i < proofs.length; i++) {
+        if (proofs[i].length === 0) throw new Error(`Invalid proof for ${hashIds[i].slice(0, 10)}...`);
+      }
+
+      const walletClient = await (this.ethsrocksSvc as any).getWallet();
+      const { encodeFunctionData } = await import('viem');
+      const data = encodeFunctionData({
+        abi: (await import('@/abi/EthsRocks')).EthsRocksABI,
+        functionName: 'swapEthscriptionBatch',
+        args: [hashIds, proofs],
+      });
+      const hash = await walletClient.sendTransaction({
+        to: this.contractAddress as `0x${string}`,
+        data,
+        gas: 600_000n,
+      });
+
+      if (hash) {
+        this.txHash.set(hash);
+        await this.web3Svc.pollReceipt(hash);
+        this.txHash.set('');
+        this.savePendingDeposit(null);
+        this.swapComplete.set(true);
+        await this.loadState();
+      }
+    } catch (err: any) {
+      if (err?.message?.includes('AdditionalCooldownRequired') || err?.shortMessage?.includes('cooldown')) {
+        this.errorMessage.set('Still waiting for block confirmations. Try again in ~1 minute.');
+      } else {
+        this.errorMessage.set(err?.shortMessage || err?.message || 'Swap failed');
+      }
+    } finally {
+      this.txPending.set(false);
+    }
+  }
+
   async resetAfterSwap() {
     this.swapComplete.set(false);
     this.successMessage.set('');
@@ -453,11 +638,12 @@ export class EthsRocksPageComponent implements OnInit {
     this.selectedEthscription.set(null);
     this.selectedV2.set([]);
     this.selectedPhilip.set([]);
+    this.selectedEtherphunks.set([]);
     await this.loadState();
     await this.loadUserItems();
   }
 
-  setTab(tab: 'ethscription' | 'cryptophunksv2' | 'philipintern') {
+  setTab(tab: 'ethscription' | 'cryptophunksv2' | 'philipintern' | 'etherphunks') {
     this.activeTab.set(tab);
     this.errorMessage.set('');
     this.successMessage.set('');

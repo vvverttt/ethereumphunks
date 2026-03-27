@@ -37,7 +37,7 @@
             <div class="pending-actions">
               <button
                 class="btn swap-btn"
-                (click)="onCompleteSwap()"
+                (click)="pendingDeposit()!.hashId!.includes(',') ? onCompleteBatchSwap() : onCompleteSwap()"
                 [disabled]="txPending() || remaining() <= 0">
                 @if (txPending()) { Processing... } @else { Get Rock }
               </button>
@@ -70,6 +70,11 @@
             [class.active]="activeTab() === 'cryptophunksv2'"
             (click)="setTab('cryptophunksv2')">
             V2 Phunks
+          </button>
+          <button
+            [class.active]="activeTab() === 'etherphunks'"
+            (click)="setTab('etherphunks')">
+            EtherPhunks
           </button>
           <button
             [class.active]="activeTab() === 'philipintern'"
@@ -150,6 +155,40 @@
                     (click)="onSwapErc721('v2')"
                     [disabled]="txPending()">
                     @if (txPending()) { Swapping... } @else { Swap for Rock }
+                  </button>
+                }
+              }
+            </div>
+          }
+
+          <!-- EtherPhunks Batch Swap -->
+          @if (activeTab() === 'etherphunks') {
+            <div class="swap-section">
+              <p class="swap-desc">Trade {{ ethscriptionBatchRequired() }} EtherPhunks for a random EthsRock</p>
+              @if (etherphunkItems().length === 0) {
+                <p class="status">No EtherPhunks in your wallet</p>
+              } @else {
+                <div class="item-grid">
+                  @for (item of etherphunkItems(); track item.hashId) {
+                    <button
+                      class="item-card"
+                      [class.selected]="isEtherphunkSelected(item)"
+                      (click)="toggleEtherphunk(item)"
+                      [disabled]="txPending()">
+                      @if (getImageUrl(item)) {
+                        <img [src]="getImageUrl(item)" [alt]="item.label" />
+                      }
+                      <span>{{ item.label }}</span>
+                    </button>
+                  }
+                </div>
+                <p class="selection-count">Selected: {{ selectedEtherphunks().length }} / {{ ethscriptionBatchRequired() }}</p>
+                @if (selectedEtherphunks().length === ethscriptionBatchRequired()) {
+                  <button
+                    class="btn swap-btn"
+                    (click)="onSwapEtherphunks()"
+                    [disabled]="txPending()">
+                    @if (txPending()) { Sending... } @else { Send {{ ethscriptionBatchRequired() }} EtherPhunks }
                   </button>
                 }
               }
