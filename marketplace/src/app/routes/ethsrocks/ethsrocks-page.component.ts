@@ -660,6 +660,7 @@ export class EthsRocksPageComponent implements OnInit {
 
   async resetAfterSwap() {
     this.swapComplete.set(false);
+    this.savePendingDeposit(null);
     this.successMessage.set('');
     this.errorMessage.set('');
     this.selectedEthscription.set(null);
