@@ -321,22 +321,33 @@ export class EthsRocksPageComponent implements OnInit {
         return;
       }
 
-      // Check EtherPhunks owned by contract with prevOwner = address (etherphunks Supabase)
+      // Check EtherPhunks: find items owned by contract from this wallet
+      // Check etherphunks Supabase for items with owner = contract
       const epRes = await fetch(
-        `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId,tokenId&slug=eq.ethereum-phunks&owner=eq.${this.contractAddress.toLowerCase()}&prevOwner=eq.${address.toLowerCase()}&limit=10`,
+        `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId,tokenId&slug=eq.ethereum-phunks&owner=eq.${this.contractAddress.toLowerCase()}&limit=50`,
         { headers: { apikey: ETHERPHUNKS_SUPABASE_KEY, Authorization: `Bearer ${ETHERPHUNKS_SUPABASE_KEY}` } }
       );
       const epItems = await epRes.json();
       if (Array.isArray(epItems) && epItems.length > 0) {
-        const hashIds = epItems.map((i: any) => i.hashId).join(',');
-        this.savePendingDeposit({
-          type: 'ethscription',
-          hashId: hashIds,
-          slug: 'ethereum-phunks',
-          label: `${epItems.length} EtherPhunks`,
-          selected: false,
-        });
-        return;
+        // Verify on-chain which ones are deposited by this wallet
+        const deposited: any[] = [];
+        for (const item of epItems) {
+          try {
+            const isDeposited = await this.ethsrocksSvc.isDepositedBy(address as `0x${string}`, item.hashId as `0x${string}`);
+            if (isDeposited) deposited.push(item);
+          } catch {}
+        }
+        if (deposited.length > 0) {
+          const hashIds = deposited.map((i: any) => i.hashId).join(',');
+          this.savePendingDeposit({
+            type: 'ethscription',
+            hashId: hashIds,
+            slug: 'ethereum-phunks',
+            label: `${deposited.length} EtherPhunks`,
+            selected: false,
+          });
+          return;
+        }
       }
 
       // No pending deposits found — check localStorage and clear if stale
