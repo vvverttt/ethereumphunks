@@ -304,8 +304,8 @@ export class EthsRocksPageComponent implements OnInit {
     try {
       // Check OG ethscriptions owned by contract with prevOwner = address (our Supabase)
       const ogRes = await fetch(
-        `https://hzpwkpjxhtpcygrwtwku.supabase.co/rest/v1/ethscriptions?select=hashId,tokenId,slug&owner=eq.${this.contractAddress.toLowerCase()}&prevOwner=eq.${address.toLowerCase()}&slug=in.(og-missing-phunks,og-dysto-phunks)&limit=5`,
-        { headers: { apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY' } }
+        `https://kfnprbhoodmgfhqojmqp.supabase.co/rest/v1/ethscriptions?select=hashId,tokenId,slug&owner=eq.${this.contractAddress.toLowerCase()}&prevOwner=eq.${address.toLowerCase()}&slug=in.(og-missing-phunks,og-dysto-phunks)&limit=5`,
+        { headers: { apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbnByYmhvb2RtZ2ZocW9qbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTM1NTYsImV4cCI6MjA4OTQ4OTU1Nn0.jum-NTWlLJnxmbxe9foylgrEMhGrhn34IPxd4aiyTSE' } }
       );
       const ogItems = await ogRes.json();
       if (Array.isArray(ogItems) && ogItems.length > 0) {
