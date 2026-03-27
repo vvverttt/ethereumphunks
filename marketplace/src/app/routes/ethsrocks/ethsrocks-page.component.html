@@ -18,7 +18,28 @@
         </div>
       </div>
 
-      @if (isPaused()) {
+      <!-- Always show pending deposit if there is one -->
+      @if (pendingDeposit()) {
+        <div class="swap-section">
+          <div class="pending-deposit">
+            <p class="pending-label">Pending: {{ pendingDeposit()!.label }}</p>
+            <div class="pending-actions">
+              <button
+                class="btn swap-btn"
+                (click)="onCompleteSwap()"
+                [disabled]="txPending() || remaining() <= 0">
+                @if (txPending()) { Processing... } @else { Get Rock }
+              </button>
+              <button
+                class="btn cancel-btn"
+                (click)="onCancelDeposit()"
+                [disabled]="txPending()">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      } @else if (isPaused()) {
         <p class="status">Paused</p>
       } @else if (!swapEnabled()) {
         <p class="status">Swaps not enabled yet</p>
@@ -54,26 +75,7 @@
             <div class="swap-section">
               <p class="swap-desc">Swap 1 OG Missing Phunk or OG DystoPhunk for a random EthsRock</p>
 
-              <!-- Pending deposit — show step 2 -->
-              @if (pendingDeposit()) {
-                <div class="pending-deposit">
-                  <p class="pending-label">Pending: {{ pendingDeposit()!.label }}</p>
-                  <div class="pending-actions">
-                    <button
-                      class="btn swap-btn"
-                      (click)="onCompleteSwap()"
-                      [disabled]="txPending()">
-                      @if (txPending()) { Processing... } @else { Get Rock }
-                    </button>
-                    <button
-                      class="btn cancel-btn"
-                      (click)="onCancelDeposit()"
-                      [disabled]="txPending()">
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              } @else if (ogItems().length === 0) {
+              @if (ogItems().length === 0) {
                 <p class="status">No eligible OG items in your wallet</p>
               } @else {
                 <!-- Step 1: Select and deposit -->
