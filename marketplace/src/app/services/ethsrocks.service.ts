@@ -274,6 +274,15 @@ export class EthsRocksService {
     });
   }
 
+  async isDepositedBy(address: `0x${string}`, hashId: `0x${string}`): Promise<boolean> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'userEthscriptionPossiblyStored',
+      args: [address, hashId],
+    });
+  }
+
   async isEligibleEthscription(hashId: `0x${string}`): Promise<boolean> {
     return await this.web3Svc.l1Client.readContract({
       address: ethsrocksAddress,

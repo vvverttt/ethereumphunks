@@ -389,6 +389,18 @@ export const EthsRocksABI = [
     type: 'function',
   },
 
+  // ─── Ethscription deposit check ─────────────────────────────
+  {
+    inputs: [
+      { internalType: 'address', name: 'owner', type: 'address' },
+      { internalType: 'bytes32', name: 'ethscriptionId', type: 'bytes32' },
+    ],
+    name: 'userEthscriptionPossiblyStored',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+
   // ─── Swap functions ─────────────────────────────────────────
   {
     inputs: [{ internalType: 'uint256[]', name: 'tokenIds', type: 'uint256[]' }],

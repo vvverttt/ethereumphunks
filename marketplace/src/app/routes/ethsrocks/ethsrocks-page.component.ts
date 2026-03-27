@@ -73,6 +73,9 @@ export class EthsRocksPageComponent implements OnInit {
   selectedV2 = signal<SwapItem[]>([]);
   selectedPhilip = signal<SwapItem[]>([]);
 
+  // Pending ethscription deposit (step 1 done, waiting for step 2)
+  pendingDeposit = signal<SwapItem | null>(null);
+
   // TX state
   errorMessage = signal<string>('');
   txPending = signal<boolean>(false);
@@ -206,6 +209,20 @@ export class EthsRocksPageComponent implements OnInit {
         this.philipItems.set(philipList);
       } catch { this.philipItems.set([]); }
 
+      // Check for any pending deposit (from a previous session)
+      if (!this.pendingDeposit()) {
+        for (const item of ogList) {
+          if (!item.hashId) continue;
+          try {
+            const deposited = await this.ethsrocksSvc.isDepositedBy(address, item.hashId as `0x${string}`);
+            if (deposited) {
+              this.pendingDeposit.set(item);
+              break;
+            }
+          } catch {}
+        }
+      }
+
     } catch (err) {
       console.error('Failed to load user items', err);
     } finally {
@@ -247,7 +264,8 @@ export class EthsRocksPageComponent implements OnInit {
 
   // ─── Swap actions ─────────────────────────────────────
 
-  async onSwapEthscription() {
+  // Step 1: Send ethscription to contract
+  async onDepositEthscription() {
     const item = this.selectedEthscription();
     if (!item?.hashId) return;
 
@@ -257,47 +275,87 @@ export class EthsRocksPageComponent implements OnInit {
     this.txHash.set('');
 
     try {
-      // Step 1: Deposit ethscription to contract
-      const depositHash = await this.ethsrocksSvc.depositEthscriptionForSwap(item.hashId as `0x${string}`);
-      if (depositHash) {
-        this.txHash.set(depositHash);
-        await this.web3Svc.pollReceipt(depositHash);
-      }
-
-      // Step 2: Wait and swap (need 5 block cooldown)
-      this.txHash.set('');
-      this.errorMessage.set('Waiting for block confirmations...');
-
-      // Poll until we can swap
-      let ready = false;
-      for (let i = 0; i < 20; i++) {
-        await new Promise(r => setTimeout(r, 15000));
-        try {
-          const swapHash = await this.ethsrocksSvc.swapEthscription(item.hashId as `0x${string}`);
-          if (swapHash) {
-            this.errorMessage.set('');
-            this.txHash.set(swapHash);
-            await this.web3Svc.pollReceipt(swapHash);
-            ready = true;
-            break;
-          }
-        } catch (err: any) {
-          if (err?.message?.includes('AdditionalCooldownRequired') || err?.shortMessage?.includes('cooldown')) {
-            continue;
-          }
-          throw err;
-        }
-      }
-
-      if (ready) {
+      const hash = await this.ethsrocksSvc.depositEthscriptionForSwap(item.hashId as `0x${string}`);
+      if (hash) {
+        this.txHash.set(hash);
+        await this.web3Svc.pollReceipt(hash);
         this.txHash.set('');
-        this.successMessage.set('Rock received!');
+        this.pendingDeposit.set(item);
         this.selectedEthscription.set(null);
+        this.successMessage.set('Phunk deposited! Wait ~1 min then click "Get Rock"');
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Deposit failed');
+    } finally {
+      this.txPending.set(false);
+    }
+  }
+
+  // Step 2: Complete the swap — get a rock
+  async onCompleteSwap() {
+    const item = this.pendingDeposit();
+    if (!item?.hashId) return;
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.txPending.set(true);
+    this.txHash.set('');
+
+    try {
+      const hash = await this.ethsrocksSvc.swapEthscription(item.hashId as `0x${string}`);
+      if (hash) {
+        this.txHash.set(hash);
+        await this.web3Svc.pollReceipt(hash);
+        this.txHash.set('');
+        this.pendingDeposit.set(null);
+        this.successMessage.set('Rock received!');
         await this.loadState();
         await this.loadUserItems();
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Swap failed');
+      if (err?.message?.includes('AdditionalCooldownRequired') || err?.shortMessage?.includes('cooldown')) {
+        this.errorMessage.set('Still waiting for block confirmations. Try again in ~1 minute.');
+      } else {
+        this.errorMessage.set(err?.shortMessage || err?.message || 'Swap failed');
+      }
+    } finally {
+      this.txPending.set(false);
+    }
+  }
+
+  // Cancel: get ethscription back
+  async onCancelDeposit() {
+    const item = this.pendingDeposit();
+    if (!item?.hashId) return;
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.txPending.set(true);
+    this.txHash.set('');
+
+    try {
+      const walletClient = await (this.ethsrocksSvc as any).getWallet();
+      const { encodeFunctionData } = await import('viem');
+      const data = encodeFunctionData({
+        abi: (await import('@/abi/EthsRocks')).EthsRocksABI,
+        functionName: 'cancelSwapDeposit',
+        args: [item.hashId as `0x${string}`],
+      });
+      const hash = await walletClient.sendTransaction({
+        to: this.contractAddress as `0x${string}`,
+        data,
+        gas: 100_000n,
+      });
+      if (hash) {
+        this.txHash.set(hash);
+        await this.web3Svc.pollReceipt(hash);
+        this.txHash.set('');
+        this.pendingDeposit.set(null);
+        this.successMessage.set('Phunk returned to your wallet');
+        await this.loadUserItems();
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Cancel failed');
     } finally {
       this.txPending.set(false);
     }
