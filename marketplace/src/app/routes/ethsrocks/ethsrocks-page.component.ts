@@ -15,7 +15,10 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 const CRYPTO_PHUNKS_V2 = '0xf07468ead8cf26c752c676e43c814fee9c8cf402';
 const PHILIP_INTERN = '0xa82f3a61f002f83eba7d184c50bb2a8b359ca1ce';
-const ETHERPHUNKS_JSON_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co/storage/v1/object/public/data/ethereum-phunks_merkle.json';
+// EtherPhunks live on a different Supabase instance
+const ETHERPHUNKS_SUPABASE_URL = 'https://kcbuycbhynlmsrvoegzp.supabase.co';
+const ETHERPHUNKS_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjYnV5Y2JoeW5sbXNydm9lZ3pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODkyMTMzNTQsImV4cCI6MjAwNDc4OTM1NH0.jUvNzW6jrBPfKg9SvDhW5auqF8y_DKo4tmAmXCwgHAY';
+const ETHERPHUNKS_STATIC_URL = 'https://kcbuycbhynlmsrvoegzp.supabase.co/storage/v1/object/public';
 
 // Minimal ERC-721 ABI for reading user's tokens
 const ERC721_ABI = [
@@ -235,12 +238,16 @@ export class EthsRocksPageComponent implements OnInit {
         this.philipItems.set(philipList);
       } catch { this.philipItems.set([]); }
 
-      // Load EtherPhunks (ethscriptions)
+      // Load EtherPhunks from etherphunks Supabase (different database)
       try {
-        const epItems = await firstValueFrom(this.dataSvc.fetchOwned(address, 'ethereum-phunks'));
+        const epRes = await fetch(
+          `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId,tokenId,sha,owner&slug=eq.ethereum-phunks&owner=eq.${address.toLowerCase()}&limit=100`,
+          { headers: { apikey: ETHERPHUNKS_SUPABASE_KEY, Authorization: `Bearer ${ETHERPHUNKS_SUPABASE_KEY}` } }
+        );
+        const epData = await epRes.json();
         const epList: SwapItem[] = [];
-        for (const item of epItems) {
-          if (!item.hashId || item.isEscrowed) continue;
+        for (const item of (Array.isArray(epData) ? epData : [])) {
+          if (!item.hashId) continue;
           epList.push({
             type: 'ethscription',
             hashId: item.hashId,
@@ -474,8 +481,9 @@ export class EthsRocksPageComponent implements OnInit {
   }
 
   getImageUrl(item: SwapItem): string {
-    if (item.sha) return `${staticUrl}/static/images/${item.sha}`;
-    return '';
+    if (!item.sha) return '';
+    if (item.slug === 'ethereum-phunks') return `${ETHERPHUNKS_STATIC_URL}/static/images/${item.sha}`;
+    return `${staticUrl}/static/images/${item.sha}`;
   }
 
   toggleEtherphunk(item: SwapItem) {
@@ -532,13 +540,13 @@ export class EthsRocksPageComponent implements OnInit {
 
   private async ensureMerkleTree(): Promise<void> {
     if (this.merkleTree.length > 0) return;
-    // Fetch all EtherPhunks hashIds from Supabase
+    // Fetch all EtherPhunks hashIds from etherphunks Supabase
     const res = await fetch(
-      `https://hzpwkpjxhtpcygrwtwku.supabase.co/rest/v1/ethscriptions?select=hashId&slug=eq.ethereum-phunks&limit=10001`,
-      { headers: { apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY' } }
+      `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId&slug=eq.ethereum-phunks&limit=10001`,
+      { headers: { apikey: ETHERPHUNKS_SUPABASE_KEY, Authorization: `Bearer ${ETHERPHUNKS_SUPABASE_KEY}` } }
     );
     const items = await res.json();
-    const hashIds = items.map((i: any) => i.hashId);
+    const hashIds = (Array.isArray(items) ? items : []).map((i: any) => i.hashId);
     this.buildMerkleTree(hashIds);
   }
 
