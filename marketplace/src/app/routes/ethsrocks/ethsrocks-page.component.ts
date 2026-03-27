@@ -30,9 +30,12 @@ interface SwapItem {
   hashId?: string;
   tokenId?: number;
   slug?: string;
+  sha?: string;
   label: string;
   selected: boolean;
 }
+
+const staticUrl = (environment as any).staticUrl || '';
 
 @Component({
   selector: 'app-ethsrocks-page',
@@ -139,6 +142,7 @@ export class EthsRocksPageComponent implements OnInit {
             ogList.push({
               type: 'ethscription',
               hashId: item.hashId,
+              sha: item.sha,
               slug: item.slug,
               label: `${item.slug === 'og-missing-phunks' ? 'OG Missing' : 'OG Dysto'} #${item.tokenId}`,
               selected: false,
@@ -365,6 +369,11 @@ export class EthsRocksPageComponent implements OnInit {
     } finally {
       this.txPending.set(false);
     }
+  }
+
+  getImageUrl(item: SwapItem): string {
+    if (item.sha) return `${staticUrl}/static/images/${item.sha}`;
+    return '';
   }
 
   setTab(tab: 'ethscription' | 'cryptophunksv2' | 'philipintern') {

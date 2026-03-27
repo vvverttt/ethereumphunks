@@ -326,18 +326,29 @@ $rocks-muted: rgba(255, 255, 255, .5);
     }
 
     .item-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .4rem;
       font-family: var(--secondary-font-stack);
-      font-size: .9rem;
-      padding: .6rem 1rem;
-      border: 1px solid $rocks-muted;
-      background: none;
+      font-size: .8rem;
+      padding: .5rem;
+      border: 2px solid transparent;
+      background: rgba(255, 255, 255, .05);
       color: $rocks-text;
       cursor: pointer;
+      width: 8rem;
+
+      img {
+        width: 6rem;
+        height: 6rem;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
 
       &.selected {
-        background-color: $rocks-accent;
-        color: $rocks-bg;
         border-color: $rocks-accent;
+        background: rgba(195, 255, 0, .15);
       }
 
       &:disabled {

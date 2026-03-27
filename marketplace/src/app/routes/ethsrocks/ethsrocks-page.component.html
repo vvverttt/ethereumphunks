@@ -63,7 +63,10 @@
                       [class.selected]="selectedEthscription()?.hashId === item.hashId"
                       (click)="selectEthscription(item)"
                       [disabled]="txPending()">
-                      {{ item.label }}
+                      @if (getImageUrl(item)) {
+                        <img [src]="getImageUrl(item)" [alt]="item.label" />
+                      }
+                      <span>{{ item.label }}</span>
                     </button>
                   }
                 </div>
@@ -93,7 +96,7 @@
                       [class.selected]="isSelected(item, 'v2')"
                       (click)="toggleErc721(item, 'v2')"
                       [disabled]="txPending()">
-                      {{ item.label }}
+                      <span>{{ item.label }}</span>
                     </button>
                   }
                 </div>
@@ -124,7 +127,7 @@
                       [class.selected]="isSelected(item, 'philip')"
                       (click)="toggleErc721(item, 'philip')"
                       [disabled]="txPending()">
-                      {{ item.label }}
+                      <span>{{ item.label }}</span>
                     </button>
                   }
                 </div>
@@ -169,7 +172,6 @@
       }
 
       <div class="contract-info">
-        <a [href]="explorerUrl + '/address/' + contractAddress" target="_blank">{{ contractAddress }}</a>
         <button class="btn-reset" (click)="loadState(); loadUserItems()">Reset</button>
       </div>
     }
