@@ -215,18 +215,6 @@
                         </button>
                       }
 
-                      <!-- Free EthsRock claim (OG items only) -->
-                      @if (
-                        web3Svc.isOgEvolveSlug(phunk.slug) &&
-                        freeClaims() > 0 &&
-                        (owner | lowercase) === (address | lowercase)
-                      ) {
-                        <button class="free-claim" (click)="submitFreeClaim()">
-                          <span>Claim EthsRock ({{ freeClaims() }} free)</span>
-                          <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'freeClaim' }" />
-                        </button>
-                      }
-
                       <!-- Devolve button (Quantum items) -->
                       @if (
                         web3Svc.isEvolveSlug(phunk.slug) &&

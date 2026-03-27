@@ -279,6 +279,42 @@ $rocks-muted: rgba(255, 255, 255, .5);
       margin-bottom: .5rem;
     }
 
+    .swap-info {
+      text-align: center;
+      margin-bottom: 2rem;
+
+      h2 {
+        font-family: var(--secondary-font-stack);
+        font-size: 1.6rem;
+        color: $rocks-accent;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        font-family: var(--secondary-font-stack);
+        font-size: 1.1rem;
+        color: $rocks-muted;
+        margin-bottom: 1rem;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+
+        li {
+          font-family: var(--secondary-font-stack);
+          font-size: 1.2rem;
+          color: $rocks-text;
+          padding: .4rem 0;
+
+          &::before {
+            content: '> ';
+            color: $rocks-accent;
+          }
+        }
+      }
+    }
+
     // ─── Action buttons ───────────────────────
     .actions {
       display: flex;

@@ -29,6 +29,11 @@ pragma solidity 0.8.20;
 import "./EthscriptionsEscrower.sol";
 import "./interfaces/IPoints.sol";
 
+interface IERC721 {
+    function transferFrom(address from, address to, uint256 tokenId) external;
+    function ownerOf(uint256 tokenId) external view returns (address);
+}
+
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
@@ -100,9 +105,14 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
     mapping(address => bool) public allowed; // Wallets allowed to purchase (OG holders)
     bool public allowlistEnabled;            // Toggle allowlist check
 
-    // ─── V3 additions (free claim) ─────────────────────────────
+    // ─── V3 additions (free claim + swap) ──────────────────────
     mapping(address => uint256) public freeClaims; // Number of free claims remaining per wallet
     uint256 public totalFreeClaimed;
+    uint256 public totalSwapped;
+    bool public swapEnabled;
+    mapping(bytes32 => bool) public eligibleEthscription; // valid OG hashIds for swap
+    uint256 public cryptoPhunksV2Required;  // default 1
+    uint256 public philipInternRequired;    // default 3
 
     // ─── Events ────────────────────────────────────────────────
 
@@ -142,123 +152,55 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
         ));
     }
 
-    // ─── Fallback: Owner deposits ethscriptions into pool ──────
+    // ─── Fallback: receives ethscriptions ──────────────────────
+    //  Owner: deposits into pool
+    //  Anyone else: holds for swap (must call swapEthscription after)
 
     fallback() external {
-        require(msg.sender == owner(), "Only owner can deposit");
         require(msg.data.length > 0 && msg.data.length % 32 == 0, "Invalid length");
 
-        for (uint256 i = 0; i < msg.data.length / 32; i++) {
-            bytes32 hashId;
-            assembly {
-                hashId := calldataload(mul(i, 32))
-            }
+        if (msg.sender == owner()) {
+            // Owner deposit into pool
+            for (uint256 i = 0; i < msg.data.length / 32; i++) {
+                bytes32 hashId;
+                assembly { hashId := calldataload(mul(i, 32)) }
 
+                require(hashId != bytes32(0), "Invalid hashId");
+                require(!inPool[hashId], "Already in pool");
+
+                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
+                    msg.sender
+                ][hashId] = 1;
+
+                _poolIndex[hashId] = _pool.length;
+                _pool.push(hashId);
+                inPool[hashId] = true;
+                depositor[hashId] = msg.sender;
+
+                emit PoolDeposited(hashId);
+            }
+        } else {
+            // User deposit for swap — just track receipt, 1 ethscription only
+            require(msg.data.length == 32, "Swap accepts 1 ethscription");
+            bytes32 hashId;
+            assembly { hashId := calldataload(0) }
             require(hashId != bytes32(0), "Invalid hashId");
-            require(!inPool[hashId], "Already in pool");
 
             EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
                 msg.sender
-            ][hashId] = 1;
-
-            _poolIndex[hashId] = _pool.length;
-            _pool.push(hashId);
-            inPool[hashId] = true;
-            depositor[hashId] = msg.sender;
-
-            emit PoolDeposited(hashId);
+            ][hashId] = block.number;
         }
     }
 
-    // ─── Step 1: Commit (V2 — open, no gating) ─────────────────
+    // ─── Commit/Reveal (DISABLED — swap only now) ──────────────
 
-    function commit(
-        uint256 maxPrice
-    ) external payable nonReentrant whenNotPaused {
-        require(commitments[msg.sender].commitBlock == 0, "Already committed");
-        require(_pool.length > pendingReveals, "Sold out");
-
-        // Price check
-        uint256 price = currentPrice();
-        require(msg.value >= price, "Insufficient payment");
-        require(price <= maxPrice, "Price exceeded max");
-
-        // Effects
-        pendingReveals++;
-        totalCommittedETH += price;
-        commitments[msg.sender] = Commitment({
-            commitBlock: block.number,
-            priceLocked: price,
-            missingPhunkHash: bytes32(0),
-            quantumDystoHash: bytes32(0),
-            quantumPhunkHash: bytes32(0),
-            nftContract: address(0),
-            philipOrWrappedId: 0,
-            cryptoPhunksV2Id: 0
-        });
-
-        // Refund overpayment immediately
-        if (msg.value > price) {
-            (bool refundSent, ) = payable(msg.sender).call{value: msg.value - price}("");
-            if (!refundSent) { pendingReturns[msg.sender] += msg.value - price; }
-        }
-
-        emit RockCommitted(msg.sender, price, block.number);
+    function commit(uint256) external payable {
+        revert("Disabled");
     }
 
-    // ─── Step 2: Reveal ────────────────────────────────────────
-
-    function reveal() external nonReentrant whenNotPaused {
-        Commitment memory c = commitments[msg.sender];
-        require(c.commitBlock > 0, "No commitment");
-        require(block.number > c.commitBlock + REVEAL_DELAY, "Too early");
-        require(block.number <= c.commitBlock + REVEAL_EXPIRY, "Expired");
-
-        delete commitments[msg.sender];
-        pendingReveals--;
-        totalRevealed++;
-        totalCommittedETH -= c.priceLocked;
-
-        // Random seed uses future blockhash unknown at commit time
-        bytes32 futureBlockhash = blockhash(c.commitBlock + REVEAL_DELAY);
-        require(futureBlockhash != bytes32(0), "Blockhash unavailable");
-
-        bytes32 randomHash = keccak256(abi.encodePacked(
-            _lastRandomHash,
-            futureBlockhash,
-            msg.sender,
-            totalRevealed
-        ));
-        _lastRandomHash = randomHash;
-
-        uint256 idx = uint256(randomHash) % _pool.length;
-        bytes32 hashId = _pool[idx];
-
-        // Swap-and-pop removal
-        bytes32 lastHash = _pool[_pool.length - 1];
-        _pool[idx] = lastHash;
-        _poolIndex[lastHash] = idx;
-        _pool.pop();
-        delete _poolIndex[hashId];
-        inPool[hashId] = false;
-
-        // Transfer ethscription to buyer
-        _transferEthscription(depositor[hashId], msg.sender, hashId);
-        delete depositor[hashId];
-
-        // Send funds to treasury (hybrid push/pull)
-        (bool sent, ) = treasuryAddress.call{value: c.priceLocked}("");
-        if (!sent) { pendingReturns[treasuryAddress] += c.priceLocked; }
-
-        // Award 67 points
-        if (pointsAddress != address(0)) {
-            try IPoints(pointsAddress).addPoints(msg.sender, 67) {} catch {}
-        }
-
-        emit RockPurchased(hashId, msg.sender, c.priceLocked, totalRevealed);
+    function reveal() external {
+        revert("Disabled");
     }
-
-    // ─── Cancel expired commitment ─────────────────────────────
 
     function cancelCommitment() external nonReentrant {
         Commitment memory c = commitments[msg.sender];
@@ -279,27 +221,89 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
 
     event RockFreeClaimed(bytes32 indexed hashId, address indexed claimer, uint256 claimNumber);
 
-    function freeClaim() external nonReentrant whenNotPaused {
-        require(freeClaims[msg.sender] > 0, "No free claims");
+    function freeClaim() external {
+        revert("Disabled");
+    }
+
+    // ─── Swap: ERC-721 for Rock ────────────────────────────────
+
+    event RockSwapped(bytes32 indexed hashId, address indexed swapper, address nftContract, uint256[] tokenIds, uint256 swapNumber);
+    event RockSwappedEthscription(bytes32 indexed rockHashId, address indexed swapper, bytes32 ethscriptionHashId, uint256 swapNumber);
+
+    /// @notice Swap CryptoPhunksV2 for 1 random EthsRock (amount configurable)
+    function swapCryptoPhunksV2(uint256[] calldata tokenIds) external nonReentrant whenNotPaused {
+        require(swapEnabled, "Swaps disabled");
+        require(cryptoPhunksV2Address != address(0), "CryptoPhunksV2 not set");
+        uint256 required = cryptoPhunksV2Required > 0 ? cryptoPhunksV2Required : 1;
+        require(tokenIds.length == required, "Wrong amount");
         require(_pool.length > pendingReveals, "Sold out");
 
-        freeClaims[msg.sender]--;
-        totalFreeClaimed++;
+        for (uint256 i = 0; i < required; i++) {
+            IERC721(cryptoPhunksV2Address).transferFrom(msg.sender, treasuryAddress, tokenIds[i]);
+        }
 
-        // Random selection from pool
+        _giveRandomRock(msg.sender, cryptoPhunksV2Address, tokenIds);
+    }
+
+    /// @notice Swap PhilipInternProject for 1 random EthsRock (amount configurable)
+    function swapPhilipIntern(uint256[] calldata tokenIds) external nonReentrant whenNotPaused {
+        require(swapEnabled, "Swaps disabled");
+        require(philipInternAddress != address(0), "PhilipIntern not set");
+        uint256 required = philipInternRequired > 0 ? philipInternRequired : 3;
+        require(tokenIds.length == required, "Wrong amount");
+        require(_pool.length > pendingReveals, "Sold out");
+
+        for (uint256 i = 0; i < required; i++) {
+            IERC721(philipInternAddress).transferFrom(msg.sender, treasuryAddress, tokenIds[i]);
+        }
+
+        _giveRandomRock(msg.sender, philipInternAddress, tokenIds);
+    }
+
+    /// @notice Swap 1 OG ethscription for 1 random EthsRock (user sends ethscription via fallback first)
+    function swapEthscription(bytes32 ethscriptionHashId) external nonReentrant whenNotPaused {
+        require(swapEnabled, "Swaps disabled");
+        require(_pool.length > pendingReveals, "Sold out");
+        require(eligibleEthscription[ethscriptionHashId], "Not eligible");
+
+        // Verify the ethscription was deposited by this sender
+        require(
+            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][ethscriptionHashId] > 0,
+            "Ethscription not deposited"
+        );
+
+        // Mark as used so it can't be swapped again
+        eligibleEthscription[ethscriptionHashId] = false;
+
+        // Transfer the deposited ethscription to treasury
+        _transferEthscription(msg.sender, treasuryAddress, ethscriptionHashId);
+
+        // Give random rock
+        _giveRandomRockEthscription(msg.sender, ethscriptionHashId);
+    }
+
+    /// @notice Cancel a pending ethscription swap deposit and get it back
+    function cancelSwapDeposit(bytes32 ethscriptionHashId) external nonReentrant {
+        require(
+            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][ethscriptionHashId] > 0,
+            "No deposit found"
+        );
+
+        // Return ethscription to sender
+        _transferEthscription(msg.sender, msg.sender, ethscriptionHashId);
+    }
+
+    function _giveRandomRockEthscription(address recipient, bytes32 ethscriptionHashId) private {
+        totalSwapped++;
+
         bytes32 randomHash = keccak256(abi.encodePacked(
-            _lastRandomHash,
-            block.prevrandao,
-            block.timestamp,
-            msg.sender,
-            totalFreeClaimed
+            _lastRandomHash, block.prevrandao, block.timestamp, recipient, totalSwapped
         ));
         _lastRandomHash = randomHash;
 
         uint256 idx = uint256(randomHash) % _pool.length;
         bytes32 hashId = _pool[idx];
 
-        // Swap-and-pop removal
         bytes32 lastHash = _pool[_pool.length - 1];
         _pool[idx] = lastHash;
         _poolIndex[lastHash] = idx;
@@ -307,16 +311,49 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
         delete _poolIndex[hashId];
         inPool[hashId] = false;
 
-        // Transfer ethscription to claimer
-        _transferEthscription(depositor[hashId], msg.sender, hashId);
+        _transferEthscription(depositor[hashId], recipient, hashId);
+        delete depositor[hashId];
+
+        if (pointsAddress != address(0)) {
+            try IPoints(pointsAddress).addPoints(recipient, 67) {} catch {}
+        }
+
+        emit RockSwappedEthscription(hashId, recipient, ethscriptionHashId, totalSwapped);
+    }
+
+    function _giveRandomRock(address recipient, address nftContract, uint256[] calldata tokenIds) private {
+        totalSwapped++;
+
+        bytes32 randomHash = keccak256(abi.encodePacked(
+            _lastRandomHash,
+            block.prevrandao,
+            block.timestamp,
+            recipient,
+            totalSwapped
+        ));
+        _lastRandomHash = randomHash;
+
+        uint256 idx = uint256(randomHash) % _pool.length;
+        bytes32 hashId = _pool[idx];
+
+        // Swap-and-pop
+        bytes32 lastHash = _pool[_pool.length - 1];
+        _pool[idx] = lastHash;
+        _poolIndex[lastHash] = idx;
+        _pool.pop();
+        delete _poolIndex[hashId];
+        inPool[hashId] = false;
+
+        // Transfer rock to recipient
+        _transferEthscription(depositor[hashId], recipient, hashId);
         delete depositor[hashId];
 
         // Award 67 points
         if (pointsAddress != address(0)) {
-            try IPoints(pointsAddress).addPoints(msg.sender, 67) {} catch {}
+            try IPoints(pointsAddress).addPoints(recipient, 67) {} catch {}
         }
 
-        emit RockFreeClaimed(hashId, msg.sender, totalFreeClaimed);
+        emit RockSwapped(hashId, recipient, nftContract, tokenIds, totalSwapped);
     }
 
     // ─── View functions ────────────────────────────────────────
@@ -500,11 +537,37 @@ function setBlocked(address wallet, bool isBlocked) external onlyOwner {
         }
     }
 
+    function setSwapEnabled(bool _enabled) external onlyOwner {
+        swapEnabled = _enabled;
+    }
+
+    function setPhilipInternAddress(address _addr) external onlyOwner {
+        philipInternAddress = _addr;
+    }
+
+    function setCryptoPhunksV2Address(address _addr) external onlyOwner {
+        cryptoPhunksV2Address = _addr;
+    }
+
+    function setCryptoPhunksV2Required(uint256 _amount) external onlyOwner {
+        cryptoPhunksV2Required = _amount;
+    }
+
+    function setPhilipInternRequired(uint256 _amount) external onlyOwner {
+        philipInternRequired = _amount;
+    }
+
+    function setEligibleEthscriptionsBatch(bytes32[] calldata hashIds, bool eligible) external onlyOwner {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            eligibleEthscription[hashIds[i]] = eligible;
+        }
+    }
+
     function renounceOwnership() public pure override {
         revert("Cannot renounce ownership");
     }
 
-    // ─── Storage gap (48 − 8 new slots = 40) ──────────────────
+    // ─── Storage gap (48 − 13 new slots = 35) ─────────────────
 
-    uint256[40] private __gap;
+    uint256[35] private __gap;
 }

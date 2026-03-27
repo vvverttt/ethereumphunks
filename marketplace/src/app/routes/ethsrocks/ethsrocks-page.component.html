@@ -9,44 +9,35 @@
     } @else {
       <div class="stats">
         <div class="stat">
-          <span class="label">Price</span>
-          <span class="value">FREE</span>
-        </div>
-        <div class="stat">
-          <span class="label">Claimed</span>
-          <span class="value">{{ totalFreeClaimed() }}</span>
-        </div>
-        <div class="stat">
           <span class="label">Available</span>
           <span class="value">{{ remaining() }}</span>
         </div>
+        <div class="stat">
+          <span class="label">Deployed</span>
+          <span class="value">{{ totalFreeClaimed() }}</span>
+        </div>
+      </div>
+
+      <div class="swap-info">
+        <h2>Swap for an EthsRock</h2>
+        <p>Trade one of the following for a random EthsRock:</p>
+        <ul>
+          <li>1 OG Missing Phunk</li>
+          <li>1 OG DystoPhunk</li>
+          <li>1 CryptoPhunks V2</li>
+          <li>3 PhilipInternProject</li>
+        </ul>
       </div>
 
       <div class="actions">
         @if (isPaused()) {
           <button class="btn disabled" disabled>Paused</button>
+        } @else if (remaining() <= 0) {
+          <button class="btn disabled" disabled>No Rocks Available</button>
         } @else if (connected$ | async) {
-          @if (walletChecked()) {
-            @if (freeClaims() > 0) {
-              @if (remaining() > 0) {
-                <button class="btn free-claim" (click)="onFreeClaim()" [disabled]="txPending()">
-                  @if (txPending()) {
-                    Pending...
-                  } @else {
-                    Claim Free Rock ({{ freeClaims() }} remaining)
-                  }
-                </button>
-              } @else {
-                <p class="status">You have {{ freeClaims() }} free claim(s) — rocks not yet deposited</p>
-              }
-            } @else {
-              <p class="status">No free claims for this wallet</p>
-            }
-          } @else {
-            <p class="status">Checking wallet...</p>
-          }
+          <p class="status">Select an eligible item from your collection to swap</p>
         } @else {
-          <p class="connect-msg">Connect wallet to claim</p>
+          <p class="connect-msg">Connect wallet to swap</p>
         }
       </div>
 
