@@ -375,7 +375,7 @@ export class EthsRocksPageComponent implements OnInit {
     }
   }
 
-  // Cancel: get ethscription back
+  // Cancel: get ethscription(s) back
   async onCancelDeposit() {
     const item = this.pendingDeposit();
     if (!item?.hashId) return;
@@ -388,24 +388,34 @@ export class EthsRocksPageComponent implements OnInit {
     try {
       const walletClient = await (this.ethsrocksSvc as any).getWallet();
       const { encodeFunctionData } = await import('viem');
-      const data = encodeFunctionData({
-        abi: (await import('@/abi/EthsRocks')).EthsRocksABI,
-        functionName: 'cancelSwapDeposit',
-        args: [item.hashId as `0x${string}`],
-      });
-      const hash = await walletClient.sendTransaction({
-        to: this.contractAddress as `0x${string}`,
-        data,
-        gas: 100_000n,
-      });
-      if (hash) {
-        this.txHash.set(hash);
-        await this.web3Svc.pollReceipt(hash);
-        this.txHash.set('');
-        this.savePendingDeposit(null);
-        this.successMessage.set('Phunk returned to your wallet');
-        await this.loadUserItems();
+      const abi = (await import('@/abi/EthsRocks')).EthsRocksABI;
+
+      // Handle batch (comma-separated) or single hashId
+      const hashIds = item.hashId.includes(',')
+        ? item.hashId.split(',')
+        : [item.hashId];
+
+      for (const hashId of hashIds) {
+        const data = encodeFunctionData({
+          abi,
+          functionName: 'cancelSwapDeposit',
+          args: [hashId as `0x${string}`],
+        });
+        const hash = await walletClient.sendTransaction({
+          to: this.contractAddress as `0x${string}`,
+          data,
+          gas: 100_000n,
+        });
+        if (hash) {
+          this.txHash.set(hash);
+          await this.web3Svc.pollReceipt(hash);
+          this.txHash.set('');
+        }
       }
+
+      this.savePendingDeposit(null);
+      this.successMessage.set('Returned to your wallet');
+      await this.loadUserItems();
     } catch (err: any) {
       this.errorMessage.set(err?.shortMessage || err?.message || 'Cancel failed');
     } finally {
@@ -540,13 +550,22 @@ export class EthsRocksPageComponent implements OnInit {
 
   private async ensureMerkleTree(): Promise<void> {
     if (this.merkleTree.length > 0) return;
-    // Fetch all EtherPhunks hashIds from etherphunks Supabase
-    const res = await fetch(
-      `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId&slug=eq.ethereum-phunks&limit=10001`,
-      { headers: { apikey: ETHERPHUNKS_SUPABASE_KEY, Authorization: `Bearer ${ETHERPHUNKS_SUPABASE_KEY}` } }
-    );
-    const items = await res.json();
-    const hashIds = (Array.isArray(items) ? items : []).map((i: any) => i.hashId);
+    // Fetch all EtherPhunks hashIds from etherphunks Supabase (paginate past 1000 limit)
+    const allHashIds: string[] = [];
+    let offset = 0;
+    const pageSize = 1000;
+    while (true) {
+      const res = await fetch(
+        `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId&slug=eq.ethereum-phunks&limit=${pageSize}&offset=${offset}&order=tokenId`,
+        { headers: { apikey: ETHERPHUNKS_SUPABASE_KEY, Authorization: `Bearer ${ETHERPHUNKS_SUPABASE_KEY}` } }
+      );
+      const items = await res.json();
+      if (!Array.isArray(items) || items.length === 0) break;
+      allHashIds.push(...items.map((i: any) => i.hashId));
+      if (items.length < pageSize) break;
+      offset += pageSize;
+    }
+    const hashIds = allHashIds;
     this.buildMerkleTree(hashIds);
   }
 
