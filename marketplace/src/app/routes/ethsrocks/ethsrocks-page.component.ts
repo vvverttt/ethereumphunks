@@ -113,6 +113,12 @@ export class EthsRocksPageComponent implements OnInit {
       return;
     }
 
+    // Load from localStorage first (immediate)
+    const stored = localStorage.getItem('ethsrocks_pending_deposit');
+    if (stored) {
+      try { this.pendingDeposit.set(JSON.parse(stored)); } catch {}
+    }
+
     await this.loadState();
     this.loading.set(false);
 
@@ -120,7 +126,10 @@ export class EthsRocksPageComponent implements OnInit {
       if (addr) {
         this.loadState();
         this.loadUserItems();
-        this.detectPendingDeposits(addr);
+        // Only detect from Supabase if no localStorage pending
+        if (!this.pendingDeposit()) {
+          this.detectPendingDeposits(addr);
+        }
       }
     });
   }
