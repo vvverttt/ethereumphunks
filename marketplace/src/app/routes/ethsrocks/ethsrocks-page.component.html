@@ -13,33 +13,145 @@
           <span class="value">{{ remaining() }}</span>
         </div>
         <div class="stat">
-          <span class="label">Deployed</span>
-          <span class="value">{{ totalFreeClaimed() }}</span>
+          <span class="label">Swapped</span>
+          <span class="value">{{ totalSwapped() }}</span>
         </div>
       </div>
 
-      <div class="swap-info">
-        <h2>Swap for an EthsRock</h2>
-        <p>Trade one of the following for a random EthsRock:</p>
-        <ul>
-          <li>1 OG Missing Phunk</li>
-          <li>1 OG DystoPhunk</li>
-          <li>1 CryptoPhunks V2</li>
-          <li>3 PhilipInternProject</li>
-        </ul>
-      </div>
+      @if (isPaused()) {
+        <p class="status">Paused</p>
+      } @else if (!swapEnabled()) {
+        <p class="status">Swaps not enabled yet</p>
+      } @else if (remaining() <= 0) {
+        <p class="status">No rocks available</p>
+      } @else if (connected$ | async) {
 
-      <div class="actions">
-        @if (isPaused()) {
-          <button class="btn disabled" disabled>Paused</button>
-        } @else if (remaining() <= 0) {
-          <button class="btn disabled" disabled>No Rocks Available</button>
-        } @else if (connected$ | async) {
-          <p class="status">Select an eligible item from your collection to swap</p>
+        <!-- Tabs -->
+        <div class="tabs">
+          <button
+            [class.active]="activeTab() === 'ethscription'"
+            (click)="setTab('ethscription')">
+            OG Phunks
+          </button>
+          <button
+            [class.active]="activeTab() === 'cryptophunksv2'"
+            (click)="setTab('cryptophunksv2')">
+            V2 Phunks
+          </button>
+          <button
+            [class.active]="activeTab() === 'philipintern'"
+            (click)="setTab('philipintern')">
+            PhilipIntern
+          </button>
+        </div>
+
+        @if (loadingItems()) {
+          <p class="status">Loading your items...</p>
         } @else {
-          <p class="connect-msg">Connect wallet to swap</p>
+
+          <!-- OG Ethscription Swap -->
+          @if (activeTab() === 'ethscription') {
+            <div class="swap-section">
+              <p class="swap-desc">Swap 1 OG Missing Phunk or OG DystoPhunk for a random EthsRock</p>
+              @if (ogItems().length === 0) {
+                <p class="status">No eligible OG items in your wallet</p>
+              } @else {
+                <div class="item-grid">
+                  @for (item of ogItems(); track item.hashId) {
+                    <button
+                      class="item-card"
+                      [class.selected]="selectedEthscription()?.hashId === item.hashId"
+                      (click)="selectEthscription(item)"
+                      [disabled]="txPending()">
+                      {{ item.label }}
+                    </button>
+                  }
+                </div>
+                @if (selectedEthscription()) {
+                  <button
+                    class="btn swap-btn"
+                    (click)="onSwapEthscription()"
+                    [disabled]="txPending()">
+                    @if (txPending()) { Swapping... } @else { Swap {{ selectedEthscription()!.label }} for Rock }
+                  </button>
+                }
+              }
+            </div>
+          }
+
+          <!-- CryptoPhunksV2 Swap -->
+          @if (activeTab() === 'cryptophunksv2') {
+            <div class="swap-section">
+              <p class="swap-desc">Swap {{ cryptoPhunksV2Required() }} CryptoPhunks V2 for a random EthsRock</p>
+              @if (v2Items().length === 0) {
+                <p class="status">No CryptoPhunks V2 in your wallet</p>
+              } @else {
+                <div class="item-grid">
+                  @for (item of v2Items(); track item.tokenId) {
+                    <button
+                      class="item-card"
+                      [class.selected]="isSelected(item, 'v2')"
+                      (click)="toggleErc721(item, 'v2')"
+                      [disabled]="txPending()">
+                      {{ item.label }}
+                    </button>
+                  }
+                </div>
+                <p class="selection-count">Selected: {{ selectedV2().length }} / {{ cryptoPhunksV2Required() }}</p>
+                @if (selectedV2().length === cryptoPhunksV2Required()) {
+                  <button
+                    class="btn swap-btn"
+                    (click)="onSwapErc721('v2')"
+                    [disabled]="txPending()">
+                    @if (txPending()) { Swapping... } @else { Swap for Rock }
+                  </button>
+                }
+              }
+            </div>
+          }
+
+          <!-- PhilipIntern Swap -->
+          @if (activeTab() === 'philipintern') {
+            <div class="swap-section">
+              <p class="swap-desc">Swap {{ philipInternRequired() }} PhilipInternProject for a random EthsRock</p>
+              @if (philipItems().length === 0) {
+                <p class="status">No PhilipInternProject in your wallet</p>
+              } @else {
+                <div class="item-grid">
+                  @for (item of philipItems(); track item.tokenId) {
+                    <button
+                      class="item-card"
+                      [class.selected]="isSelected(item, 'philip')"
+                      (click)="toggleErc721(item, 'philip')"
+                      [disabled]="txPending()">
+                      {{ item.label }}
+                    </button>
+                  }
+                </div>
+                <p class="selection-count">Selected: {{ selectedPhilip().length }} / {{ philipInternRequired() }}</p>
+                @if (selectedPhilip().length === philipInternRequired()) {
+                  <button
+                    class="btn swap-btn"
+                    (click)="onSwapErc721('philip')"
+                    [disabled]="txPending()">
+                    @if (txPending()) { Swapping... } @else { Swap for Rock }
+                  </button>
+                }
+              }
+            </div>
+          }
         }
-      </div>
+
+      } @else {
+        <p class="connect-msg">Connect wallet to swap</p>
+      }
+
+      @if (successMessage()) {
+        <div class="success">
+          <button class="close-btn" (click)="successMessage.set('')">x</button>
+          {{ successMessage() }}
+        </div>
+      }
 
       @if (errorMessage()) {
         <div class="error">
@@ -51,14 +163,14 @@
       @if (txHash()) {
         <div class="transaction">
           <button class="tx-close" (click)="txHash.set('')">x</button>
-          Your transaction is pending.
+          Transaction pending.
           <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank">View on Etherscan</a>
         </div>
       }
 
       <div class="contract-info">
         <a [href]="explorerUrl + '/address/' + contractAddress" target="_blank">{{ contractAddress }}</a>
-        <button class="btn-reset" (click)="loadState()">Reset</button>
+        <button class="btn-reset" (click)="loadState(); loadUserItems()">Reset</button>
       </div>
     }
   </div>

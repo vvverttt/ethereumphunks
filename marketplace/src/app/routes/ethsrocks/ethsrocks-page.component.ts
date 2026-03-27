@@ -1,24 +1,43 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
-import { EthsRocksService, RockPurchase } from '@/services/ethsrocks.service';
+import { DataService } from '@/services/data.service';
+import { EthsRocksService } from '@/services/ethsrocks.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
-// Fixed ETH increment per sale (matches contract BASE_PRICE)
-const BASE_PRICE_ETH = 0.001;
+const CRYPTO_PHUNKS_V2 = '0xf07468ead8cf26c752c676e43c814fee9c8cf402';
+const PHILIP_INTERN = '0xa82f3a61f002f83eba7d184c50bb2a8b359ca1ce';
+
+// Minimal ERC-721 ABI for reading user's tokens
+const ERC721_ABI = [
+  { inputs: [{ name: 'owner', type: 'address' }], name: 'balanceOf', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
+  { inputs: [{ name: 'owner', type: 'address' }, { name: 'index', type: 'uint256' }], name: 'tokenOfOwnerByIndex', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
+  { inputs: [{ name: 'to', type: 'address' }, { name: 'tokenId', type: 'uint256' }], name: 'approve', outputs: [], stateMutability: 'nonpayable', type: 'function' },
+  { inputs: [{ name: 'tokenId', type: 'uint256' }], name: 'getApproved', outputs: [{ type: 'address' }], stateMutability: 'view', type: 'function' },
+  { inputs: [{ name: 'owner', type: 'address' }, { name: 'operator', type: 'address' }], name: 'isApprovedForAll', outputs: [{ type: 'bool' }], stateMutability: 'view', type: 'function' },
+  { inputs: [{ name: 'operator', type: 'address' }, { name: 'approved', type: 'bool' }], name: 'setApprovalForAll', outputs: [], stateMutability: 'nonpayable', type: 'function' },
+] as const;
+
+interface SwapItem {
+  type: 'ethscription' | 'erc721';
+  hashId?: string;
+  tokenId?: number;
+  slug?: string;
+  label: string;
+  selected: boolean;
+}
 
 @Component({
   selector: 'app-ethsrocks-page',
   standalone: true,
-  imports: [
-    CommonModule,
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './ethsrocks-page.component.html',
   styleUrls: ['./ethsrocks-page.component.scss'],
 })
@@ -28,93 +47,34 @@ export class EthsRocksPageComponent implements OnInit {
   address$ = this.store.select(appStateSelectors.selectWalletAddress);
 
   // Contract state
-  currentPrice = signal<string>('--');
-  poolSize = signal<number>(0);
-  totalSold = signal<number>(0);
   remaining = signal<number>(0);
+  totalSwapped = signal<number>(0);
   isPaused = signal<boolean>(true);
+  swapEnabled = signal<boolean>(false);
   hasContract = signal<boolean>(false);
-
-  // Free claims
-  freeClaims = signal<number>(0);
-  totalFreeClaimed = signal<number>(0);
-
-  // Commitment state
-  hasCommitment = signal<boolean>(false);
-  commitBlock = signal<number>(0);
-  currentBlock = signal<number>(0);
-  canReveal = signal<boolean>(false);
-  isExpired = signal<boolean>(false);
-  blocksUntilReveal = signal<number>(0);
   loading = signal<boolean>(true);
-  walletChecked = signal<boolean>(false);
+  cryptoPhunksV2Required = signal<number>(1);
+  philipInternRequired = signal<number>(3);
+
+  // Swap tab
+  activeTab = signal<'ethscription' | 'cryptophunksv2' | 'philipintern'>('ethscription');
+
+  // User's eligible items
+  ogItems = signal<SwapItem[]>([]);
+  v2Items = signal<SwapItem[]>([]);
+  philipItems = signal<SwapItem[]>([]);
+  loadingItems = signal<boolean>(false);
+
+  // Selected items
+  selectedEthscription = signal<SwapItem | null>(null);
+  selectedV2 = signal<SwapItem[]>([]);
+  selectedPhilip = signal<SwapItem[]>([]);
 
   // TX state
   errorMessage = signal<string>('');
   txPending = signal<boolean>(false);
   txHash = signal<string>('');
-
-  // Purchase history
-  purchaseHistory = signal<RockPurchase[]>([]);
-  historyLoading = signal<boolean>(false);
-
-  // Price curve chart
-  totalSupply = signal<number>(0);
-
-  // Bar chart — one bar per sale
-  barWidth = 12;
-  barGap = 4;
-  chartH = 300;
-
-  chartBars = computed(() => {
-    const supply = this.totalSupply();
-    if (supply <= 0) return [];
-    const sold = this.totalSold();
-    const maxEth = BASE_PRICE_ETH * supply;
-    const h = this.chartH;
-
-    const bars: { x: number; y: number; height: number; sale: number; eth: string; state: 'sold' | 'next' | 'future' }[] = [];
-    for (let i = 1; i <= supply; i++) {
-      const ethPrice = BASE_PRICE_ETH * i;
-      const barH = (ethPrice / maxEth) * h;
-      const x = (i - 1) * (this.barWidth + this.barGap);
-      bars.push({
-        x,
-        y: h - barH,
-        height: barH,
-        sale: i,
-        eth: ethPrice.toFixed(4) + ' ETH',
-        state: i <= sold ? 'sold' : i === sold + 1 ? 'next' : 'future',
-      });
-    }
-    return bars;
-  });
-
-  chartTotalWidth = computed(() => {
-    const supply = this.totalSupply();
-    return supply * (this.barWidth + this.barGap);
-  });
-
-  chartViewBox = computed(() => {
-    const w = this.chartTotalWidth();
-    return `-80 -35 ${w + 100} ${this.chartH + 75}`;
-  });
-
-  chartMaxEth = computed(() => {
-    const supply = this.totalSupply();
-    return supply > 0 ? (BASE_PRICE_ETH * supply).toFixed(4) + ' ETH' : '';
-  });
-  chartMidEth = computed(() => {
-    const supply = this.totalSupply();
-    return supply > 0 ? (BASE_PRICE_ETH * supply / 2).toFixed(4) + ' ETH' : '';
-  });
-  currentPriceEth = computed(() => {
-    const sold = this.totalSold();
-    return (BASE_PRICE_ETH * (sold + 1)).toFixed(4) + ' ETH';
-  });
-  priceIncrementEth = computed(() => {
-    return BASE_PRICE_ETH.toFixed(4) + ' ETH';
-  });
+  successMessage = signal<string>('');
 
   explorerUrl = (environment as any).explorerUrl || 'https://etherscan.io';
   contractAddress = (environment as any).ethsrocksAddress || '';
@@ -122,6 +82,7 @@ export class EthsRocksPageComponent implements OnInit {
   constructor(
     private store: Store<GlobalState>,
     private web3Svc: Web3Service,
+    private dataSvc: DataService,
     private ethsrocksSvc: EthsRocksService,
   ) {}
 
@@ -134,167 +95,281 @@ export class EthsRocksPageComponent implements OnInit {
 
     await this.loadState();
     this.loading.set(false);
-    this.loadPurchaseHistory();
 
-    // Re-check commitment when wallet address becomes available after page load
     this.address$.subscribe(addr => {
-      if (addr) this.loadState();
+      if (addr) {
+        this.loadState();
+        this.loadUserItems();
+      }
     });
   }
 
   async loadState() {
     const state = await this.ethsrocksSvc.getContractState();
     if (state) {
-      this.currentPrice.set(state.priceFormatted);
-      this.poolSize.set(state.poolSize);
-      this.totalSold.set(state.totalSold);
       this.remaining.set(state.remaining);
       this.isPaused.set(state.paused);
-      this.totalSupply.set(state.poolSize + state.totalSold);
-      this.totalFreeClaimed.set(state.totalFreeClaimed);
+      this.swapEnabled.set(state.swapEnabled);
+      this.totalSwapped.set(state.totalSwapped);
+      this.cryptoPhunksV2Required.set(state.cryptoPhunksV2Required);
+      this.philipInternRequired.set(state.philipInternRequired);
     }
+  }
 
-    // Check if connected user has a commitment or free claims
+  async loadUserItems() {
     const address = this.web3Svc.getCurrentAddress();
-    if (address) {
-      try {
-        const claims = await this.ethsrocksSvc.getFreeClaims(address);
-        this.freeClaims.set(Number(claims));
-      } catch {}
+    if (!address) return;
 
-      try {
-        const commitment = await this.ethsrocksSvc.getCommitment(address);
-        if (commitment.commitBlock > 0n) {
-          this.hasCommitment.set(true);
-          this.commitBlock.set(Number(commitment.commitBlock));
-
-          const blockNum = await this.web3Svc.l1Client.getBlockNumber();
-          const current = Number(blockNum);
-          this.currentBlock.set(current);
-          const revealBlock = Number(commitment.commitBlock) + 2;
-          const expiryBlock = Number(commitment.commitBlock) + 256;
-          const blocksLeft = revealBlock - current;
-          this.canReveal.set(blocksLeft <= 0 && current <= expiryBlock);
-          this.isExpired.set(current > expiryBlock);
-          this.blocksUntilReveal.set(Math.max(0, blocksLeft));
-        } else {
-          this.hasCommitment.set(false);
-        }
-      } catch {}
-      this.walletChecked.set(true);
-    }
-  }
-
-  async loadPurchaseHistory() {
-    this.historyLoading.set(true);
-    try {
-      const history = await this.ethsrocksSvc.getPurchaseHistory();
-      this.purchaseHistory.set(history);
-    } catch {
-    } finally {
-      this.historyLoading.set(false);
-    }
-  }
-
-  async onFreeClaim() {
-    const connected = await firstValueFrom(this.connected$);
-    if (!connected) { this.web3Svc.connect(); return; }
-
-    this.errorMessage.set('');
-    this.txPending.set(true);
-    this.txHash.set('');
+    this.loadingItems.set(true);
 
     try {
-      const hash = await this.ethsrocksSvc.freeClaim();
-      if (hash) {
-        this.txHash.set(hash);
-        await this.web3Svc.pollReceipt(hash);
-        this.txHash.set('');
-        await this.loadState();
-        this.loadPurchaseHistory();
+      // Load OG ethscriptions from Supabase
+      const [missing, dysto] = await Promise.all([
+        firstValueFrom(this.dataSvc.fetchOwned(address, 'og-missing-phunks')),
+        firstValueFrom(this.dataSvc.fetchOwned(address, 'og-dysto-phunks')),
+      ]);
+
+      const ogList: SwapItem[] = [];
+      for (const item of [...missing, ...dysto]) {
+        if (!item.hashId || item.isEscrowed) continue;
+        // Check if eligible on-chain
+        try {
+          const eligible = await this.ethsrocksSvc.isEligibleEthscription(item.hashId as `0x${string}`);
+          if (eligible) {
+            ogList.push({
+              type: 'ethscription',
+              hashId: item.hashId,
+              slug: item.slug,
+              label: `${item.slug === 'og-missing-phunks' ? 'OG Missing' : 'OG Dysto'} #${item.tokenId}`,
+              selected: false,
+            });
+          }
+        } catch {}
       }
-    } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Free claim failed');
+      this.ogItems.set(ogList);
+
+      // Load CryptoPhunksV2 tokens
+      try {
+        const v2Balance = await this.web3Svc.l1Client.readContract({
+          address: CRYPTO_PHUNKS_V2 as `0x${string}`,
+          abi: ERC721_ABI,
+          functionName: 'balanceOf',
+          args: [address],
+        });
+        const v2List: SwapItem[] = [];
+        const count = Math.min(Number(v2Balance), 50);
+        for (let i = 0; i < count; i++) {
+          const tokenId = await this.web3Svc.l1Client.readContract({
+            address: CRYPTO_PHUNKS_V2 as `0x${string}`,
+            abi: ERC721_ABI,
+            functionName: 'tokenOfOwnerByIndex',
+            args: [address, BigInt(i)],
+          });
+          v2List.push({
+            type: 'erc721',
+            tokenId: Number(tokenId),
+            label: `CryptoPhunks V2 #${Number(tokenId)}`,
+            selected: false,
+          });
+        }
+        this.v2Items.set(v2List);
+      } catch { this.v2Items.set([]); }
+
+      // Load PhilipInternProject tokens
+      try {
+        const philipBalance = await this.web3Svc.l1Client.readContract({
+          address: PHILIP_INTERN as `0x${string}`,
+          abi: ERC721_ABI,
+          functionName: 'balanceOf',
+          args: [address],
+        });
+        const philipList: SwapItem[] = [];
+        const count = Math.min(Number(philipBalance), 50);
+        for (let i = 0; i < count; i++) {
+          const tokenId = await this.web3Svc.l1Client.readContract({
+            address: PHILIP_INTERN as `0x${string}`,
+            abi: ERC721_ABI,
+            functionName: 'tokenOfOwnerByIndex',
+            args: [address, BigInt(i)],
+          });
+          philipList.push({
+            type: 'erc721',
+            tokenId: Number(tokenId),
+            label: `PhilipIntern #${Number(tokenId)}`,
+            selected: false,
+          });
+        }
+        this.philipItems.set(philipList);
+      } catch { this.philipItems.set([]); }
+
+    } catch (err) {
+      console.error('Failed to load user items', err);
     } finally {
-      this.txPending.set(false);
+      this.loadingItems.set(false);
     }
   }
 
-  async onCommit() {
-    const connected = await firstValueFrom(this.connected$);
-    if (!connected) {
-      this.web3Svc.connect();
+  selectEthscription(item: SwapItem) {
+    const current = this.selectedEthscription();
+    if (current?.hashId === item.hashId) {
+      this.selectedEthscription.set(null);
+    } else {
+      this.selectedEthscription.set(item);
+    }
+  }
+
+  toggleErc721(item: SwapItem, list: 'v2' | 'philip') {
+    const selected = list === 'v2' ? this.selectedV2() : this.selectedPhilip();
+    const max = list === 'v2' ? this.cryptoPhunksV2Required() : this.philipInternRequired();
+    const idx = selected.findIndex(s => s.tokenId === item.tokenId);
+
+    let updated: SwapItem[];
+    if (idx >= 0) {
+      updated = selected.filter((_, i) => i !== idx);
+    } else if (selected.length < max) {
+      updated = [...selected, item];
+    } else {
       return;
     }
 
+    if (list === 'v2') this.selectedV2.set(updated);
+    else this.selectedPhilip.set(updated);
+  }
+
+  isSelected(item: SwapItem, list: 'v2' | 'philip'): boolean {
+    const selected = list === 'v2' ? this.selectedV2() : this.selectedPhilip();
+    return selected.some(s => s.tokenId === item.tokenId);
+  }
+
+  // ─── Swap actions ─────────────────────────────────────
+
+  async onSwapEthscription() {
+    const item = this.selectedEthscription();
+    if (!item?.hashId) return;
+
     this.errorMessage.set('');
+    this.successMessage.set('');
     this.txPending.set(true);
     this.txHash.set('');
 
     try {
-      const price = await this.ethsrocksSvc.getCurrentPrice();
-      const hash = await this.ethsrocksSvc.commit(price, price);
+      // Step 1: Deposit ethscription to contract
+      const depositHash = await this.ethsrocksSvc.depositEthscriptionForSwap(item.hashId as `0x${string}`);
+      if (depositHash) {
+        this.txHash.set(depositHash);
+        await this.web3Svc.pollReceipt(depositHash);
+      }
 
-      if (hash) {
-        this.txHash.set(hash);
-        await this.web3Svc.pollReceipt(hash);
+      // Step 2: Wait and swap (need 5 block cooldown)
+      this.txHash.set('');
+      this.errorMessage.set('Waiting for block confirmations...');
+
+      // Poll until we can swap
+      let ready = false;
+      for (let i = 0; i < 20; i++) {
+        await new Promise(r => setTimeout(r, 15000));
+        try {
+          const swapHash = await this.ethsrocksSvc.swapEthscription(item.hashId as `0x${string}`);
+          if (swapHash) {
+            this.errorMessage.set('');
+            this.txHash.set(swapHash);
+            await this.web3Svc.pollReceipt(swapHash);
+            ready = true;
+            break;
+          }
+        } catch (err: any) {
+          if (err?.message?.includes('AdditionalCooldownRequired') || err?.shortMessage?.includes('cooldown')) {
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (ready) {
         this.txHash.set('');
-        this.hasCommitment.set(true);
+        this.successMessage.set('Rock received!');
+        this.selectedEthscription.set(null);
         await this.loadState();
+        await this.loadUserItems();
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Commit failed');
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Swap failed');
     } finally {
       this.txPending.set(false);
     }
   }
 
-  async onReveal() {
-    const connected = await firstValueFrom(this.connected$);
-    if (!connected) { this.web3Svc.connect(); return; }
+  async onSwapErc721(type: 'v2' | 'philip') {
+    const selected = type === 'v2' ? this.selectedV2() : this.selectedPhilip();
+    const required = type === 'v2' ? this.cryptoPhunksV2Required() : this.philipInternRequired();
+    if (selected.length !== required) return;
+
+    const nftAddress = type === 'v2' ? CRYPTO_PHUNKS_V2 : PHILIP_INTERN;
 
     this.errorMessage.set('');
+    this.successMessage.set('');
     this.txPending.set(true);
     this.txHash.set('');
 
     try {
-      const hash = await this.ethsrocksSvc.reveal();
-      if (hash) {
-        this.txHash.set(hash);
-        await this.web3Svc.pollReceipt(hash);
+      const walletClient = await (this.ethsrocksSvc as any).getWallet();
+      const address = this.web3Svc.getCurrentAddress()!;
+
+      // Check if approved for all
+      const approved = await this.web3Svc.l1Client.readContract({
+        address: nftAddress as `0x${string}`,
+        abi: ERC721_ABI,
+        functionName: 'isApprovedForAll',
+        args: [address, this.contractAddress as `0x${string}`],
+      });
+
+      if (!approved) {
+        // Approve all
+        const { encodeFunctionData } = await import('viem');
+        const approveData = encodeFunctionData({
+          abi: ERC721_ABI,
+          functionName: 'setApprovalForAll',
+          args: [this.contractAddress as `0x${string}`, true],
+        });
+        const approveHash = await walletClient.sendTransaction({
+          to: nftAddress as `0x${string}`,
+          data: approveData,
+          gas: 100_000n,
+        });
+        this.txHash.set(approveHash);
+        await this.web3Svc.pollReceipt(approveHash);
         this.txHash.set('');
-        this.hasCommitment.set(false);
+      }
+
+      // Swap
+      const tokenIds = selected.map(s => BigInt(s.tokenId!));
+      let swapHash: string;
+      if (type === 'v2') {
+        swapHash = await this.ethsrocksSvc.swapCryptoPhunksV2(tokenIds);
+      } else {
+        swapHash = await this.ethsrocksSvc.swapPhilipIntern(tokenIds);
+      }
+
+      if (swapHash) {
+        this.txHash.set(swapHash);
+        await this.web3Svc.pollReceipt(swapHash);
+        this.txHash.set('');
+        this.successMessage.set('Rock received!');
+        if (type === 'v2') this.selectedV2.set([]);
+        else this.selectedPhilip.set([]);
         await this.loadState();
-        this.loadPurchaseHistory();
+        await this.loadUserItems();
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Reveal failed');
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Swap failed');
     } finally {
       this.txPending.set(false);
     }
   }
 
-  async onCancel() {
-    const connected = await firstValueFrom(this.connected$);
-    if (!connected) { this.web3Svc.connect(); return; }
-
+  setTab(tab: 'ethscription' | 'cryptophunksv2' | 'philipintern') {
+    this.activeTab.set(tab);
     this.errorMessage.set('');
-    this.txPending.set(true);
-    this.txHash.set('');
-
-    try {
-      const hash = await this.ethsrocksSvc.cancelCommitment();
-      if (hash) {
-        this.txHash.set(hash);
-        await this.web3Svc.pollReceipt(hash);
-        this.txHash.set('');
-        this.hasCommitment.set(false);
-        await this.loadState();
-      }
-    } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Cancel failed');
-    } finally {
-      this.txPending.set(false);
-    }
+    this.successMessage.set('');
   }
 }

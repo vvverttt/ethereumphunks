@@ -389,6 +389,71 @@ export const EthsRocksABI = [
     type: 'function',
   },
 
+  // ─── Swap functions ─────────────────────────────────────────
+  {
+    inputs: [{ internalType: 'uint256[]', name: 'tokenIds', type: 'uint256[]' }],
+    name: 'swapCryptoPhunksV2',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256[]', name: 'tokenIds', type: 'uint256[]' }],
+    name: 'swapPhilipIntern',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32', name: 'ethscriptionHashId', type: 'bytes32' }],
+    name: 'swapEthscription',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32', name: 'ethscriptionHashId', type: 'bytes32' }],
+    name: 'cancelSwapDeposit',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'swapEnabled',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'totalSwapped',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    name: 'eligibleEthscription',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'cryptoPhunksV2Required',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'philipInternRequired',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+
   // ─── Events ───────────────────────────────────────────────
   {
     anonymous: false,

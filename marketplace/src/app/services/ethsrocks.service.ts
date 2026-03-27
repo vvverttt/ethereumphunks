@@ -134,13 +134,17 @@ export class EthsRocksService {
   async getContractState() {
     if (!this.hasAddress) return null;
     try {
-      const [price, pool, sold, pending, paused, freeClaimed] = await Promise.all([
+      const [price, pool, sold, pending, paused, freeClaimed, swapEnabled, totalSwapped, v2Required, philipRequired] = await Promise.all([
         this.getCurrentPrice(),
         this.getPoolSize(),
         this.getTotalRevealed(),
         this.getPendingReveals(),
         this.isPaused(),
         this.getTotalFreeClaimed(),
+        this.getSwapEnabled(),
+        this.getTotalSwapped(),
+        this.getCryptoPhunksV2Required(),
+        this.getPhilipInternRequired(),
       ]);
       return {
         price,
@@ -151,6 +155,10 @@ export class EthsRocksService {
         paused,
         remaining: Number(pool) - Number(pending),
         totalFreeClaimed: Number(freeClaimed),
+        swapEnabled,
+        totalSwapped: Number(totalSwapped),
+        cryptoPhunksV2Required: Number(v2Required) || 1,
+        philipInternRequired: Number(philipRequired) || 3,
       };
     } catch {
       return null;
@@ -247,6 +255,100 @@ export class EthsRocksService {
       to: ethsrocksAddress,
       data,
       gas: 300_000n,
+    });
+  }
+
+  async getSwapEnabled(): Promise<boolean> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'swapEnabled',
+    });
+  }
+
+  async getTotalSwapped(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'totalSwapped',
+    });
+  }
+
+  async isEligibleEthscription(hashId: `0x${string}`): Promise<boolean> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'eligibleEthscription',
+      args: [hashId],
+    });
+  }
+
+  async getCryptoPhunksV2Required(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'cryptoPhunksV2Required',
+    });
+  }
+
+  async getPhilipInternRequired(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress,
+      abi: EthsRocksABI,
+      functionName: 'philipInternRequired',
+    });
+  }
+
+  // ─── Swap Writes ─────────────────────────────────────
+
+  async swapCryptoPhunksV2(tokenIds: bigint[]) {
+    const walletClient = await this.getWallet();
+    const data = encodeFunctionData({
+      abi: EthsRocksABI,
+      functionName: 'swapCryptoPhunksV2',
+      args: [tokenIds],
+    });
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data,
+      gas: 400_000n,
+    });
+  }
+
+  async swapPhilipIntern(tokenIds: bigint[]) {
+    const walletClient = await this.getWallet();
+    const data = encodeFunctionData({
+      abi: EthsRocksABI,
+      functionName: 'swapPhilipIntern',
+      args: [tokenIds],
+    });
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data,
+      gas: 500_000n,
+    });
+  }
+
+  async swapEthscription(hashId: `0x${string}`) {
+    const walletClient = await this.getWallet();
+    const data = encodeFunctionData({
+      abi: EthsRocksABI,
+      functionName: 'swapEthscription',
+      args: [hashId],
+    });
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data,
+      gas: 400_000n,
+    });
+  }
+
+  async depositEthscriptionForSwap(hashId: `0x${string}`) {
+    const walletClient = await this.getWallet();
+    return await walletClient.sendTransaction({
+      to: ethsrocksAddress,
+      data: hashId as `0x${string}`,
+      gas: 100_000n,
     });
   }
 
