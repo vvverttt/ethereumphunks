@@ -75,6 +75,7 @@ export class EthsRocksPageComponent implements OnInit {
 
   // Pending ethscription deposit (step 1 done, waiting for step 2)
   pendingDeposit = signal<SwapItem | null>(null);
+  swapComplete = signal<boolean>(false);
 
   // TX state
   errorMessage = signal<string>('');
@@ -321,9 +322,8 @@ export class EthsRocksPageComponent implements OnInit {
         await this.web3Svc.pollReceipt(hash);
         this.txHash.set('');
         this.savePendingDeposit(null);
-        this.successMessage.set('Rock received!');
+        this.swapComplete.set(true);
         await this.loadState();
-        await this.loadUserItems();
       }
     } catch (err: any) {
       if (err?.message?.includes('AdditionalCooldownRequired') || err?.shortMessage?.includes('cooldown')) {
@@ -429,11 +429,10 @@ export class EthsRocksPageComponent implements OnInit {
         this.txHash.set(swapHash);
         await this.web3Svc.pollReceipt(swapHash);
         this.txHash.set('');
-        this.successMessage.set('Rock received!');
         if (type === 'v2') this.selectedV2.set([]);
         else this.selectedPhilip.set([]);
+        this.swapComplete.set(true);
         await this.loadState();
-        await this.loadUserItems();
       }
     } catch (err: any) {
       this.errorMessage.set(err?.shortMessage || err?.message || 'Swap failed');
@@ -445,6 +444,17 @@ export class EthsRocksPageComponent implements OnInit {
   getImageUrl(item: SwapItem): string {
     if (item.sha) return `${staticUrl}/static/images/${item.sha}`;
     return '';
+  }
+
+  async resetAfterSwap() {
+    this.swapComplete.set(false);
+    this.successMessage.set('');
+    this.errorMessage.set('');
+    this.selectedEthscription.set(null);
+    this.selectedV2.set([]);
+    this.selectedPhilip.set([]);
+    await this.loadState();
+    await this.loadUserItems();
   }
 
   setTab(tab: 'ethscription' | 'cryptophunksv2' | 'philipintern') {

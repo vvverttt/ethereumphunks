@@ -279,6 +279,25 @@ $rocks-muted: rgba(255, 255, 255, .5);
       margin-bottom: .5rem;
     }
 
+    .swap-complete {
+      text-align: center;
+      padding: 3rem 0;
+
+      h2 {
+        font-family: var(--secondary-font-stack);
+        font-size: 2rem;
+        color: $rocks-accent;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        font-family: var(--secondary-font-stack);
+        font-size: 1.2rem;
+        color: $rocks-text;
+        margin-bottom: 2rem;
+      }
+    }
+
     .tabs {
       display: flex;
       gap: .5rem;
@@ -378,13 +397,27 @@ $rocks-muted: rgba(255, 255, 255, .5);
 
     .pending-deposit {
       text-align: center;
-      margin-bottom: 1.5rem;
+      padding: 2rem 0;
+
+      h2 {
+        font-family: var(--secondary-font-stack);
+        font-size: 1.6rem;
+        color: $rocks-accent;
+        margin-bottom: 1rem;
+      }
 
       .pending-label {
         font-family: var(--secondary-font-stack);
         font-size: 1.2rem;
-        color: $rocks-accent;
-        margin-bottom: 1rem;
+        color: $rocks-text;
+        margin-bottom: .5rem;
+      }
+
+      .pending-hint {
+        font-family: var(--secondary-font-stack);
+        font-size: .95rem;
+        color: $rocks-muted;
+        margin-bottom: 1.5rem;
       }
 
       .pending-actions {

@@ -13,16 +13,27 @@
           <span class="value">{{ remaining() }}</span>
         </div>
         <div class="stat">
-          <span class="label">Swapped</span>
+          <span class="label">Deployed</span>
           <span class="value">{{ totalSwapped() }}</span>
         </div>
       </div>
 
-      <!-- Always show pending deposit if there is one -->
-      @if (pendingDeposit()) {
+      <!-- Success state after swap -->
+      @if (swapComplete()) {
+        <div class="swap-complete">
+          <h2>Rock Deployed!</h2>
+          <p>Your EthsRock has been sent to your wallet.</p>
+          <button class="btn swap-btn" (click)="resetAfterSwap()">Swap Another</button>
+        </div>
+      }
+
+      <!-- Pending deposit — step 2 -->
+      @else if (pendingDeposit()) {
         <div class="swap-section">
           <div class="pending-deposit">
-            <p class="pending-label">Pending: {{ pendingDeposit()!.label }}</p>
+            <h2>Step 2: Claim Your Rock</h2>
+            <p class="pending-label">{{ pendingDeposit()!.label }} sent to contract</p>
+            <p class="pending-hint">Wait ~1 minute for confirmations, then claim.</p>
             <div class="pending-actions">
               <button
                 class="btn swap-btn"
@@ -34,11 +45,12 @@
                 class="btn cancel-btn"
                 (click)="onCancelDeposit()"
                 [disabled]="txPending()">
-                Cancel
+                Get Phunk Back
               </button>
             </div>
           </div>
         </div>
+
       } @else if (isPaused()) {
         <p class="status">Paused</p>
       } @else if (!swapEnabled()) {
@@ -73,12 +85,11 @@
           <!-- OG Ethscription Swap -->
           @if (activeTab() === 'ethscription') {
             <div class="swap-section">
-              <p class="swap-desc">Swap 1 OG Missing Phunk or OG DystoPhunk for a random EthsRock</p>
+              <p class="swap-desc">Trade 1 OG Missing Phunk or OG DystoPhunk for a random EthsRock</p>
 
               @if (ogItems().length === 0) {
                 <p class="status">No eligible OG items in your wallet</p>
               } @else {
-                <!-- Step 1: Select and deposit -->
                 <div class="item-grid">
                   @for (item of ogItems(); track item.hashId) {
                     <button
@@ -106,11 +117,10 @@
               <div class="how-it-works">
                 <h3>How it works</h3>
                 <ol>
-                  <li>Select an eligible OG Phunk and click Send</li>
+                  <li>Select your OG Phunk and click Send</li>
                   <li>Wait ~1 minute for block confirmations</li>
                   <li>Click Get Rock to receive your random EthsRock</li>
                 </ol>
-                <p>You can cancel anytime before step 3 to get your phunk back.</p>
               </div>
             </div>
           }
@@ -118,7 +128,7 @@
           <!-- CryptoPhunksV2 Swap -->
           @if (activeTab() === 'cryptophunksv2') {
             <div class="swap-section">
-              <p class="swap-desc">Swap {{ cryptoPhunksV2Required() }} CryptoPhunks V2 for a random EthsRock</p>
+              <p class="swap-desc">Trade {{ cryptoPhunksV2Required() }} CryptoPhunks V2 for a random EthsRock</p>
               @if (v2Items().length === 0) {
                 <p class="status">No CryptoPhunks V2 in your wallet</p>
               } @else {
@@ -149,7 +159,7 @@
           <!-- PhilipIntern Swap -->
           @if (activeTab() === 'philipintern') {
             <div class="swap-section">
-              <p class="swap-desc">Swap {{ philipInternRequired() }} PhilipInternProject for a random EthsRock</p>
+              <p class="swap-desc">Trade {{ philipInternRequired() }} PhilipInternProject for a random EthsRock</p>
               @if (philipItems().length === 0) {
                 <p class="status">No PhilipInternProject in your wallet</p>
               } @else {
@@ -182,13 +192,6 @@
         <p class="connect-msg">Connect wallet to swap</p>
       }
 
-      @if (successMessage()) {
-        <div class="success">
-          <button class="close-btn" (click)="successMessage.set('')">x</button>
-          {{ successMessage() }}
-        </div>
-      }
-
       @if (errorMessage()) {
         <div class="error">
           <button class="error-close" (click)="errorMessage.set('')">x</button>
@@ -198,14 +201,13 @@
 
       @if (txHash()) {
         <div class="transaction">
-          <button class="tx-close" (click)="txHash.set('')">x</button>
           Transaction pending.
           <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank">View on Etherscan</a>
         </div>
       }
 
       <div class="contract-info">
-        <button class="btn-reset" (click)="loadState(); loadUserItems()">Reset</button>
+        <button class="btn-reset" (click)="resetAfterSwap()">Reset</button>
       </div>
     }
   </div>
