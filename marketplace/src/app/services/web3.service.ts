@@ -89,7 +89,6 @@ export class Web3Service {
       transport: fallback([
         http(environment.rpcHttpProvider),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO'),
         http('https://1rpc.io/eth'),
       ], { rank: false }),
     });
@@ -98,7 +97,6 @@ export class Web3Service {
       chain: this.chains[0],
       transport: fallback([
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO'),
         http('https://1rpc.io/eth'),
       ], { rank: false }),
     });
