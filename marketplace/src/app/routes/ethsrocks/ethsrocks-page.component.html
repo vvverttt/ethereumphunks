@@ -67,19 +67,9 @@
             OG Phunks
           </button>
           <button
-            [class.active]="activeTab() === 'cryptophunksv2'"
-            (click)="setTab('cryptophunksv2')">
-            V2 Phunks
-          </button>
-          <button
             [class.active]="activeTab() === 'etherphunks'"
             (click)="setTab('etherphunks')">
             EtherPhunks
-          </button>
-          <button
-            [class.active]="activeTab() === 'philipintern'"
-            (click)="setTab('philipintern')">
-            PhilipIntern
           </button>
         </div>
 
@@ -130,37 +120,6 @@
             </div>
           }
 
-          <!-- CryptoPhunksV2 Swap -->
-          @if (activeTab() === 'cryptophunksv2') {
-            <div class="swap-section">
-              <p class="swap-desc">Trade {{ cryptoPhunksV2Required() }} CryptoPhunks V2 for a random EthsRock</p>
-              @if (v2Items().length === 0) {
-                <p class="status">No CryptoPhunks V2 in your wallet</p>
-              } @else {
-                <div class="item-grid">
-                  @for (item of v2Items(); track item.tokenId) {
-                    <button
-                      class="item-card"
-                      [class.selected]="isSelected(item, 'v2')"
-                      (click)="toggleErc721(item, 'v2')"
-                      [disabled]="txPending()">
-                      <span>{{ item.label }}</span>
-                    </button>
-                  }
-                </div>
-                <p class="selection-count">Selected: {{ selectedV2().length }} / {{ cryptoPhunksV2Required() }}</p>
-                @if (selectedV2().length === cryptoPhunksV2Required()) {
-                  <button
-                    class="btn swap-btn"
-                    (click)="onSwapErc721('v2')"
-                    [disabled]="txPending()">
-                    @if (txPending()) { Swapping... } @else { Swap for Rock }
-                  </button>
-                }
-              }
-            </div>
-          }
-
           <!-- EtherPhunks Batch Swap -->
           @if (activeTab() === 'etherphunks') {
             <div class="swap-section">
@@ -195,36 +154,6 @@
             </div>
           }
 
-          <!-- PhilipIntern Swap -->
-          @if (activeTab() === 'philipintern') {
-            <div class="swap-section">
-              <p class="swap-desc">Trade {{ philipInternRequired() }} PhilipInternProject for a random EthsRock</p>
-              @if (philipItems().length === 0) {
-                <p class="status">No PhilipInternProject in your wallet</p>
-              } @else {
-                <div class="item-grid">
-                  @for (item of philipItems(); track item.tokenId) {
-                    <button
-                      class="item-card"
-                      [class.selected]="isSelected(item, 'philip')"
-                      (click)="toggleErc721(item, 'philip')"
-                      [disabled]="txPending()">
-                      <span>{{ item.label }}</span>
-                    </button>
-                  }
-                </div>
-                <p class="selection-count">Selected: {{ selectedPhilip().length }} / {{ philipInternRequired() }}</p>
-                @if (selectedPhilip().length === philipInternRequired()) {
-                  <button
-                    class="btn swap-btn"
-                    (click)="onSwapErc721('philip')"
-                    [disabled]="txPending()">
-                    @if (txPending()) { Swapping... } @else { Swap for Rock }
-                  </button>
-                }
-              }
-            </div>
-          }
         }
 
       } @else {

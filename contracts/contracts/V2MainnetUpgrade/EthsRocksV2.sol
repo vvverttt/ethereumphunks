@@ -343,14 +343,12 @@ contract EthsRocksV2 is Initializable, EthscriptionsEscrower, OwnableUpgradeable
         require(proofs.length == required, "Wrong proof count");
 
         for (uint256 i = 0; i < required; i++) {
-            require(!usedBatchEthscription[hashIds[i]], "Already used");
             require(_verifyMerkle(proofs[i], batchSwapMerkleRoot, hashIds[i]), "Invalid proof");
             require(
                 EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][hashIds[i]] > 0,
                 "Ethscription not deposited"
             );
 
-            usedBatchEthscription[hashIds[i]] = true;
             _transferEthscription(msg.sender, treasuryAddress, hashIds[i]);
         }
 
@@ -645,6 +643,16 @@ function setBlocked(address wallet, bool isBlocked) external onlyOwner {
 
     function setEthscriptionBatchRequired(uint256 _amount) external onlyOwner {
         ethscriptionBatchRequired = _amount;
+    }
+
+    function resetTotalSwapped(uint256 _totalSwapped) external onlyOwner {
+        totalSwapped = _totalSwapped;
+    }
+
+    function resetUsedBatchEthscriptions(bytes32[] calldata hashIds) external onlyOwner {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            usedBatchEthscription[hashIds[i]] = false;
+        }
     }
 
     function renounceOwnership() public pure override {
