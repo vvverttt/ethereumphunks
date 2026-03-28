@@ -67,10 +67,12 @@ export class EthsRocksPageComponent implements OnInit {
   ethscriptionBatchRequired = signal<number>(5);
 
   // Swap tab
-  activeTab = signal<'ethscription' | 'cryptophunksv2' | 'philipintern' | 'etherphunks'>('ethscription');
+  activeTab = signal<'etherphunks' | 'missing' | 'dysto'>('etherphunks');
 
   // User's eligible items
   ogItems = signal<SwapItem[]>([]);
+  missingItems = signal<SwapItem[]>([]);
+  dystoItems = signal<SwapItem[]>([]);
   v2Items = signal<SwapItem[]>([]);
   philipItems = signal<SwapItem[]>([]);
   etherphunkItems = signal<SwapItem[]>([]);
@@ -182,6 +184,8 @@ export class EthsRocksPageComponent implements OnInit {
         } catch {}
       }
       this.ogItems.set(ogList);
+      this.missingItems.set(ogList.filter(i => i.slug === 'og-missing-phunks'));
+      this.dystoItems.set(ogList.filter(i => i.slug === 'og-dysto-phunks'));
 
       // Load CryptoPhunksV2 tokens
       try {
@@ -719,7 +723,7 @@ export class EthsRocksPageComponent implements OnInit {
     await this.loadUserItems();
   }
 
-  setTab(tab: 'ethscription' | 'cryptophunksv2' | 'philipintern' | 'etherphunks') {
+  setTab(tab: 'etherphunks' | 'missing' | 'dysto') {
     this.activeTab.set(tab);
     this.errorMessage.set('');
     this.successMessage.set('');

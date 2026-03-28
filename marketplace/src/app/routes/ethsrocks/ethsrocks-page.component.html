@@ -62,14 +62,19 @@
         <!-- Tabs -->
         <div class="tabs">
           <button
-            [class.active]="activeTab() === 'ethscription'"
-            (click)="setTab('ethscription')">
-            OG Phunks
-          </button>
-          <button
             [class.active]="activeTab() === 'etherphunks'"
             (click)="setTab('etherphunks')">
             EtherPhunks
+          </button>
+          <button
+            [class.active]="activeTab() === 'missing'"
+            (click)="setTab('missing')">
+            Missing Phunks
+          </button>
+          <button
+            [class.active]="activeTab() === 'dysto'"
+            (click)="setTab('dysto')">
+            DystoPhunks
           </button>
         </div>
 
@@ -77,16 +82,16 @@
           <p class="status">Loading your items...</p>
         } @else {
 
-          <!-- OG Ethscription Swap -->
-          @if (activeTab() === 'ethscription') {
+          <!-- Missing Phunks Swap -->
+          @if (activeTab() === 'missing') {
             <div class="swap-section">
-              <p class="swap-desc">Trade 1 OG Missing Phunk or OG DystoPhunk for a random EthsRock</p>
+              <p class="swap-desc">Trade 1 OG Missing Phunk for a random EthsRock</p>
 
-              @if (ogItems().length === 0) {
-                <p class="status">No eligible OG items in your wallet</p>
+              @if (missingItems().length === 0) {
+                <p class="status">No eligible Missing Phunks in your wallet</p>
               } @else {
                 <div class="item-grid">
-                  @for (item of ogItems(); track item.hashId) {
+                  @for (item of missingItems(); track item.hashId) {
                     <button
                       class="item-card"
                       [class.selected]="selectedEthscription()?.hashId === item.hashId"
@@ -108,15 +113,40 @@
                   </button>
                 }
               }
+            </div>
+          }
 
-              <div class="how-it-works">
-                <h3>How it works</h3>
-                <ol>
-                  <li>Select your OG Phunk and click Send</li>
-                  <li>Wait ~1 minute for block confirmations</li>
-                  <li>Click Get Rock to receive your random EthsRock</li>
-                </ol>
-              </div>
+          <!-- DystoPhunks Swap -->
+          @if (activeTab() === 'dysto') {
+            <div class="swap-section">
+              <p class="swap-desc">Trade 1 OG DystoPhunk for a random EthsRock</p>
+
+              @if (dystoItems().length === 0) {
+                <p class="status">No eligible DystoPhunks in your wallet</p>
+              } @else {
+                <div class="item-grid">
+                  @for (item of dystoItems(); track item.hashId) {
+                    <button
+                      class="item-card"
+                      [class.selected]="selectedEthscription()?.hashId === item.hashId"
+                      (click)="selectEthscription(item)"
+                      [disabled]="txPending()">
+                      @if (getImageUrl(item)) {
+                        <img [src]="getImageUrl(item)" [alt]="item.label" />
+                      }
+                      <span>{{ item.label }}</span>
+                    </button>
+                  }
+                </div>
+                @if (selectedEthscription()) {
+                  <button
+                    class="btn swap-btn"
+                    (click)="onDepositEthscription()"
+                    [disabled]="txPending()">
+                    @if (txPending()) { Sending... } @else { Send {{ selectedEthscription()!.label }} }
+                  </button>
+                }
+              }
             </div>
           }
 
@@ -154,6 +184,14 @@
             </div>
           }
 
+          <div class="how-it-works">
+            <h3>How it works</h3>
+            <ol>
+              <li>Select your item(s) and click Send</li>
+              <li>Wait ~1 minute for block confirmations</li>
+              <li>Click Get Rock to receive your random EthsRock</li>
+            </ol>
+          </div>
         }
 
       } @else {
