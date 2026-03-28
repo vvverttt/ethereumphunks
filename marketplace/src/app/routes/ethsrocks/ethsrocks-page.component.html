@@ -33,13 +33,15 @@
           <div class="pending-deposit">
             <h2>Step 2: Claim Your Rock</h2>
             <p class="pending-label">{{ pendingDeposit()!.label }} sent to contract</p>
-            <p class="pending-hint">Wait ~1 minute for confirmations, then claim.</p>
+            @if (!cooldownReady()) {
+              <p class="pending-hint">Waiting for block confirmations... ({{ blocksRemaining() }} blocks)</p>
+            }
             <div class="pending-actions">
               <button
                 class="btn swap-btn"
                 (click)="pendingDeposit()!.hashId!.includes(',') ? onCompleteBatchSwap() : onCompleteSwap()"
-                [disabled]="txPending() || remaining() <= 0">
-                @if (txPending()) { Processing... } @else { Get Rock }
+                [disabled]="txPending() || remaining() <= 0 || !cooldownReady()">
+                @if (txPending()) { Processing... } @else if (!cooldownReady()) { Waiting... } @else { Get Rock }
               </button>
               <button
                 class="btn cancel-btn"

@@ -91,6 +91,9 @@ export class EthsRocksPageComponent implements OnInit {
   // Pending ethscription deposit (step 1 done, waiting for step 2)
   pendingDeposit = signal<SwapItem | null>(null);
   swapComplete = signal<boolean>(false);
+  cooldownReady = signal<boolean>(false);
+  blocksRemaining = signal<number>(5);
+  private cooldownInterval: any;
 
   // TX state
   errorMessage = signal<string>('');
@@ -118,7 +121,10 @@ export class EthsRocksPageComponent implements OnInit {
     // Load from localStorage first (immediate)
     const stored = localStorage.getItem('ethsrocks_pending_deposit');
     if (stored) {
-      try { this.pendingDeposit.set(JSON.parse(stored)); } catch {}
+      try {
+        this.pendingDeposit.set(JSON.parse(stored));
+        this.startCooldownPolling();
+      } catch {}
     }
 
     await this.loadState();
@@ -360,12 +366,80 @@ export class EthsRocksPageComponent implements OnInit {
     } catch {}
   }
 
+  private async checkCooldown() {
+    const pending = this.pendingDeposit();
+    if (!pending?.hashId) {
+      this.cooldownReady.set(false);
+      return;
+    }
+
+    try {
+      const address = this.web3Svc.getCurrentAddress();
+      if (!address) return;
+
+      // Get the first hashId (for batch, check the first one)
+      const hashId = pending.hashId.includes(',') ? pending.hashId.split(',')[0] : pending.hashId;
+
+      const depositBlock = await this.web3Svc.l1Client.readContract({
+        address: this.contractAddress as `0x${string}`,
+        abi: (await import('@/abi/EthsRocks')).EthsRocksABI,
+        functionName: 'userEthscriptionPossiblyStored',
+        args: [address as `0x${string}`, hashId as `0x${string}`],
+      });
+
+      if (!depositBlock) {
+        this.cooldownReady.set(false);
+        return;
+      }
+
+      // Try to check blocks remaining via contract
+      try {
+        const remaining = await this.web3Svc.l1Client.readContract({
+          address: this.contractAddress as `0x${string}`,
+          abi: [{
+            inputs: [{ name: 'previousOwner', type: 'address' }, { name: 'ethscriptionId', type: 'bytes32' }],
+            name: 'blocksRemainingUntilValidTransfer',
+            outputs: [{ type: 'uint256' }],
+            stateMutability: 'view',
+            type: 'function',
+          }] as const,
+          functionName: 'blocksRemainingUntilValidTransfer',
+          args: [address as `0x${string}`, hashId as `0x${string}`],
+        });
+        const left = Number(remaining);
+        this.blocksRemaining.set(left);
+        this.cooldownReady.set(left === 0);
+      } catch {
+        // If it reverts, deposit might not exist
+        this.cooldownReady.set(false);
+      }
+    } catch {
+      this.cooldownReady.set(false);
+    }
+  }
+
+  private startCooldownPolling() {
+    this.stopCooldownPolling();
+    this.checkCooldown();
+    this.cooldownInterval = setInterval(() => this.checkCooldown(), 12000); // every ~1 block
+  }
+
+  private stopCooldownPolling() {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+      this.cooldownInterval = null;
+    }
+  }
+
   private savePendingDeposit(item: SwapItem | null) {
     this.pendingDeposit.set(item);
     if (item) {
       localStorage.setItem('ethsrocks_pending_deposit', JSON.stringify(item));
+      this.startCooldownPolling();
     } else {
       localStorage.removeItem('ethsrocks_pending_deposit');
+      this.cooldownReady.set(false);
+      this.stopCooldownPolling();
     }
   }
 
