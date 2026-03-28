@@ -471,6 +471,9 @@
           <button class="pause-toggle" [class.paused]="maintenanceMode()" (click)="toggleVisibility('maintenance', maintenanceMode())" [disabled]="txPending()">
             Maintenance Mode: {{ maintenanceMode() ? 'ON (site hidden)' : 'OFF (site live)' }}
           </button>
+          <button class="pause-toggle" [class.paused]="!adminPreview()" (click)="toggleAdminPreview()">
+            Admin Preview: {{ adminPreview() ? 'ON (see everything)' : 'OFF (see what users see)' }}
+          </button>
         </div>
 
         <div class="action-group">

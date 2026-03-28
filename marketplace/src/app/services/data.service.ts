@@ -85,6 +85,17 @@ export class DataService {
         if (config.showLottery === undefined) config.showLottery = true;
         if (config.showAuction === undefined) config.showAuction = true;
         if (!config.hiddenSlugs) config.hiddenSlugs = [];
+
+        // Admin preview — override all visibility to show everything
+        if (localStorage.getItem('admin_preview') === 'true') {
+          config.maintenance = false;
+          config.showMutate = true;
+          config.showDevolve = true;
+          config.showLottery = true;
+          config.showAuction = true;
+          config.hiddenSlugs = [];
+        }
+
         return config;
       }),
     );

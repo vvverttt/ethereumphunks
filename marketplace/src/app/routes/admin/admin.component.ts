@@ -148,6 +148,7 @@ export class AdminComponent implements OnInit {
 
   // Visibility state
   maintenanceMode = signal(false);
+  adminPreview = signal(false);
   showMutate = signal(true);
   showDevolve = signal(true);
   showLottery = signal(true);
@@ -504,6 +505,7 @@ export class AdminComponent implements OnInit {
       const { data } = await supabase.from('_global_config').select('*').eq('network', environment.chainId).limit(1);
       const config = data?.[0];
       if (config) {
+        this.adminPreview.set(localStorage.getItem('admin_preview') === 'true');
         this.maintenanceMode.set(config.maintenance ?? false);
         this.showMutate.set(config.showMutate ?? true);
         this.showDevolve.set(config.showDevolve ?? true);
@@ -526,6 +528,14 @@ export class AdminComponent implements OnInit {
     } finally {
       this.txPending.set(false);
     }
+  }
+
+  toggleAdminPreview() {
+    const current = this.adminPreview();
+    this.adminPreview.set(!current);
+    localStorage.setItem('admin_preview', (!current).toString());
+    // Reload page to apply
+    window.location.reload();
   }
 
   isSlugHidden(slug: string): boolean {
