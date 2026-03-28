@@ -9,9 +9,8 @@ import { DataService } from '@/services/data.service';
 
 import { PhunkGridComponent } from '../phunk-grid/phunk-grid.component';
 import { selectCollections } from '@/state/selectors/data-state.selectors';
-import { filter, map } from 'rxjs';
-
-const HIDDEN_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
+import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+import { combineLatest, filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-collections',
@@ -28,18 +27,20 @@ const HIDDEN_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
 })
 export class CollectionsComponent {
 
-  collections$ = this.store.select(selectCollections).pipe(
-    filter(collections => !!collections),
-    map(collections => {
-      return collections.slice(1).filter(c => !HIDDEN_SLUGS.has(c.slug));
+  collections$ = combineLatest([
+    this.store.select(selectCollections),
+    this.store.select(appStateSelectors.selectConfig),
+  ]).pipe(
+    filter(([collections]) => !!collections),
+    map(([collections, config]) => {
+      const hiddenSlugs = new Set(config?.hiddenSlugs || []);
+      return collections.slice(1).filter(c => !hiddenSlugs.has(c.slug));
     })
   )
 
   constructor(
     private dataSvc: DataService,
     private store: Store<GlobalState>
-  ) {
-
-  }
+  ) {}
 
 }

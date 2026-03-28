@@ -43,7 +43,12 @@ export const initialState: AppState = {
     chat: false,
     comments: false,
     network: null,
-    defaultCollection: null
+    defaultCollection: null,
+    showMutate: true,
+    showDevolve: true,
+    showLottery: true,
+    showAuction: true,
+    hiddenSlugs: [],
   },
 
   linkedAccounts: []

@@ -63,6 +63,7 @@
       <button [class.active]="activeTab() === 'lottery'" (click)="activeTab.set('lottery')">Lottery</button>
       <button [class.active]="activeTab() === 'evolve'" (click)="activeTab.set('evolve')">Evolve</button>
       <button [class.active]="activeTab() === 'ethsrocks'" (click)="activeTab.set('ethsrocks')">EthsRocks</button>
+      <button [class.active]="activeTab() === 'visibility'" (click)="activeTab.set('visibility')">Visibility</button>
       <button [class.active]="activeTab() === 'transfer-all'" (click)="activeTab.set('transfer-all')">Transfer All</button>
     </div>
 
@@ -456,6 +457,42 @@
             <input type="text" [(ngModel)]="rTransferOwnership" placeholder="0x..." />
             <button (click)="transferEthsRocksOwnership()" [disabled]="txPending()">Transfer</button>
           </div>
+        </div>
+      </div>
+    }
+
+    <!-- ==================== VISIBILITY ==================== -->
+    @if (activeTab() === 'visibility') {
+      <div class="tab-content">
+        <h2>UI Visibility</h2>
+
+        <div class="action-group">
+          <h3>Buttons</h3>
+          <button class="pause-toggle" [class.paused]="!showMutate()" (click)="toggleVisibility('showMutate', showMutate())" [disabled]="txPending()">
+            Mutate Button: {{ showMutate() ? 'VISIBLE' : 'HIDDEN' }}
+          </button>
+          <button class="pause-toggle" [class.paused]="!showDevolve()" (click)="toggleVisibility('showDevolve', showDevolve())" [disabled]="txPending()">
+            Devolve Button: {{ showDevolve() ? 'VISIBLE' : 'HIDDEN' }}
+          </button>
+        </div>
+
+        <div class="action-group">
+          <h3>Menu Items</h3>
+          <button class="pause-toggle" [class.paused]="!showLottery()" (click)="toggleVisibility('showLottery', showLottery())" [disabled]="txPending()">
+            Lottery: {{ showLottery() ? 'VISIBLE' : 'HIDDEN' }}
+          </button>
+          <button class="pause-toggle" [class.paused]="!showAuction()" (click)="toggleVisibility('showAuction', showAuction())" [disabled]="txPending()">
+            Auction House: {{ showAuction() ? 'VISIBLE' : 'HIDDEN' }}
+          </button>
+        </div>
+
+        <div class="action-group">
+          <h3>Hidden Collections (comma-separated slugs)</h3>
+          <div class="input-row">
+            <input [(ngModel)]="visHiddenSlugsInput" placeholder="og-missing-phunks, og-dysto-phunks, quantummissingphunksv67, quantumdystophunkzv67" />
+            <button (click)="saveHiddenSlugs()" [disabled]="txPending()">Save</button>
+          </div>
+          <p class="hint">Current: {{ hiddenSlugs().join(', ') || 'none' }}</p>
         </div>
       </div>
     }

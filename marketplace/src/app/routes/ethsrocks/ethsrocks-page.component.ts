@@ -244,7 +244,7 @@ export class EthsRocksPageComponent implements OnInit {
       // Load EtherPhunks from etherphunks Supabase (different database)
       try {
         const epRes = await fetch(
-          `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId,tokenId,sha,owner&slug=eq.ethereum-phunks&owner=eq.${address.toLowerCase()}&limit=100`,
+          `${ETHERPHUNKS_SUPABASE_URL}/rest/v1/ethscriptions?select=hashId,tokenId,sha,owner&slug=eq.ethereum-phunks&owner=eq.${address.toLowerCase()}&limit=200&order=tokenId`,
           { headers: { apikey: ETHERPHUNKS_SUPABASE_KEY, Authorization: `Bearer ${ETHERPHUNKS_SUPABASE_KEY}` } }
         );
         const epData = await epRes.json();

@@ -204,6 +204,7 @@
 
                       <!-- Evolve button (OG items) -->
                       @if (
+                        (globalConfig$ | async)?.showMutate !== false &&
                         web3Svc.isOgEvolveSlug(phunk.slug) &&
                         isRegisteredPair() &&
                         !phunk.isEscrowed &&
@@ -217,6 +218,7 @@
 
                       <!-- Devolve button (Quantum items) -->
                       @if (
+                        (globalConfig$ | async)?.showDevolve !== false &&
                         web3Svc.isEvolveSlug(phunk.slug) &&
                         !web3Svc.isOgEvolveSlug(phunk.slug) &&
                         isRegisteredPair() &&

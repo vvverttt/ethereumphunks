@@ -9,8 +9,9 @@ import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { AdminService } from '@/services/admin.service';
 import { environment } from 'src/environments/environment';
+import { supabase } from '@/services/supabase';
 
-type Tab = 'market' | 'auction' | 'points' | 'lottery' | 'evolve' | 'ethsrocks' | 'transfer-all';
+type Tab = 'market' | 'auction' | 'points' | 'lottery' | 'evolve' | 'ethsrocks' | 'visibility' | 'transfer-all';
 
 interface TransferStep {
   label: string;
@@ -145,6 +146,14 @@ export class AdminComponent implements OnInit {
   rTransferOwnership = '';
   rResetTotalRevealed = '';
 
+  // Visibility state
+  showMutate = signal(true);
+  showDevolve = signal(true);
+  showLottery = signal(true);
+  showAuction = signal(true);
+  hiddenSlugs = signal<string[]>([]);
+  visHiddenSlugsInput = '';
+
   // Batch operations (pause/unpause all, transfer all)
   batchRunning = signal(false);
   batchSteps = signal<TransferStep[]>([]);
@@ -186,6 +195,7 @@ export class AdminComponent implements OnInit {
       this.loadLotteryState(),
       this.loadEvolveState(),
       this.loadEthsRocksState(),
+      this.loadVisibility(),
     ]);
   }
 
@@ -486,6 +496,49 @@ export class AdminComponent implements OnInit {
   }
   resetEthsRocksTotalRevealed() { this.exec(() => this.adminSvc.ethsrocksResetTotalRevealed(BigInt(this.rResetTotalRevealed)), () => this.loadEthsRocksState()); }
   transferEthsRocksOwnership() { this.exec(() => this.adminSvc.ethsrocksTransferOwnership(this.rTransferOwnership)); }
+
+  // Visibility actions
+  async loadVisibility() {
+    try {
+      const { data } = await supabase.from('_global_config').select('*').eq('network', environment.chainId).limit(1);
+      const config = data?.[0];
+      if (config) {
+        this.showMutate.set(config.showMutate ?? true);
+        this.showDevolve.set(config.showDevolve ?? true);
+        this.showLottery.set(config.showLottery ?? true);
+        this.showAuction.set(config.showAuction ?? true);
+        this.hiddenSlugs.set(config.hiddenSlugs ?? []);
+        this.visHiddenSlugsInput = (config.hiddenSlugs ?? []).join(', ');
+      }
+    } catch (e) { console.error('Visibility load error:', e); }
+  }
+
+  async toggleVisibility(field: string, current: boolean) {
+    this.txPending.set(true);
+    this.txError.set('');
+    try {
+      await supabase.from('_global_config').update({ [field]: !current }).eq('network', environment.chainId);
+      await this.loadVisibility();
+    } catch (e: any) {
+      this.txError.set(e?.message || 'Failed');
+    } finally {
+      this.txPending.set(false);
+    }
+  }
+
+  async saveHiddenSlugs() {
+    this.txPending.set(true);
+    this.txError.set('');
+    try {
+      const slugs = this.visHiddenSlugsInput.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      await supabase.from('_global_config').update({ hiddenSlugs: slugs }).eq('network', environment.chainId);
+      await this.loadVisibility();
+    } catch (e: any) {
+      this.txError.set(e?.message || 'Failed');
+    } finally {
+      this.txPending.set(false);
+    }
+  }
 
   // Pause All (Market, Auction, Lottery, Evolve, EthsRocks)
   async pauseAll() {

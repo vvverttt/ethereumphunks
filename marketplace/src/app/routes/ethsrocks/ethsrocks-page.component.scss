@@ -307,6 +307,9 @@ $rocks-muted: rgba(255, 255, 255, .5);
 
       button {
         flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-family: var(--secondary-font-stack);
         font-size: 1rem;
         padding: .8rem .5rem;
@@ -314,6 +317,8 @@ $rocks-muted: rgba(255, 255, 255, .5);
         background: none;
         color: $rocks-muted;
         cursor: pointer;
+        text-align: center;
+        white-space: nowrap;
 
         &.active {
           background-color: $rocks-accent;

@@ -101,6 +101,7 @@ export class MenuComponent {
 
   isStandaloneMarket = environment.standalone;
   isOwner = signal(false);
+  config$ = this.store.select(appStateSelectors.selectConfig);
 
   constructor(
     private store: Store<GlobalState>,

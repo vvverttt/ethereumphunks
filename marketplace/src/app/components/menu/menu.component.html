@@ -56,17 +56,19 @@
       </div>
     </a>
 
-    <a
-      class="lottery-button"
-      routerLink="/lottery"
-      (click)="goToLottery()">
+    @if ((config$ | async)?.showLottery !== false) {
+      <a
+        class="lottery-button"
+        routerLink="/lottery"
+        (click)="goToLottery()">
 
-      <span>Philip Lottery V67</span>
+        <span>Philip Lottery V67</span>
 
-      <div class="arrow">
-        <ng-template [ngTemplateOutlet]="arrowIcon" />
-      </div>
-    </a>
+        <div class="arrow">
+          <ng-template [ngTemplateOutlet]="arrowIcon" />
+        </div>
+      </a>
+    }
 
     <a
       class="ethsrocks-button"
@@ -80,18 +82,19 @@
       </div>
     </a>
 
-    <a
-      class="auction-button"
-      routerLink="/auction"
-      (click)="goToAuction()">
+    @if ((config$ | async)?.showAuction !== false) {
+      <a
+        class="auction-button"
+        routerLink="/auction"
+        (click)="goToAuction()">
 
-      <span>Auction House</span>
+        <span>Auction House</span>
 
-      <div class="arrow">
-        <ng-template [ngTemplateOutlet]="arrowIcon" />
-      </div>
-    </a>
-
+        <div class="arrow">
+          <ng-template [ngTemplateOutlet]="arrowIcon" />
+        </div>
+      </a>
+    }
 
     @if (!isStandaloneMarket) {
       <div

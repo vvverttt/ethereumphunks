@@ -79,6 +79,12 @@ export class DataService {
         if (environment.standalone) {
           config.defaultCollection = environment.defaultCollection;
         }
+        // Defaults for visibility toggles (backward compatible)
+        if (config.showMutate === undefined) config.showMutate = true;
+        if (config.showDevolve === undefined) config.showDevolve = true;
+        if (config.showLottery === undefined) config.showLottery = true;
+        if (config.showAuction === undefined) config.showAuction = true;
+        if (!config.hiddenSlugs) config.hiddenSlugs = [];
         return config;
       }),
     );

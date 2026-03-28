@@ -59,6 +59,11 @@ export interface GlobalConfig {
   chat: boolean;
   comments: boolean;
   defaultCollection: string | null;
+  showMutate: boolean;
+  showDevolve: boolean;
+  showLottery: boolean;
+  showAuction: boolean;
+  hiddenSlugs: string[];
 };
 
 export interface ChatState {
