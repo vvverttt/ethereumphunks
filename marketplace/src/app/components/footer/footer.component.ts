@@ -17,6 +17,7 @@ import { environment } from 'src/environments/environment';
 export class FooterComponent {
 
   theme$ = this.store.select(appStateSelectors.selectTheme);
+  config$ = this.store.select(appStateSelectors.selectConfig);
 
   explorerUrl = environment.explorerUrl;
 

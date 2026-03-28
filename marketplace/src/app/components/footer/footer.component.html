@@ -20,10 +20,16 @@
     Version: {{ version }}<br />
     Marketplace: <a [href]="explorerUrl + '/address/' + marketAddress" target="_blank"><app-address [address]="marketAddress" /></a><br />
     Points: <a [href]="explorerUrl + '/address/' + points" target="_blank"><app-address [address]="points" /></a><br />
-    Lottery: <a [href]="explorerUrl + '/address/' + lottery" target="_blank"><app-address [address]="lottery" /></a><br />
-    Lottery 2: <a [href]="explorerUrl + '/address/' + lottery2" target="_blank"><app-address [address]="lottery2" /></a><br />
-    Auction: <a [href]="explorerUrl + '/address/' + auction" target="_blank"><app-address [address]="auction" /></a><br />
-    Mutation: <a [href]="explorerUrl + '/address/' + mutation" target="_blank"><app-address [address]="mutation" /></a><br />
+    @if ((config$ | async)?.showLottery !== false) {
+      Lottery: <a [href]="explorerUrl + '/address/' + lottery" target="_blank"><app-address [address]="lottery" /></a><br />
+      Lottery 2: <a [href]="explorerUrl + '/address/' + lottery2" target="_blank"><app-address [address]="lottery2" /></a><br />
+    }
+    @if ((config$ | async)?.showAuction !== false) {
+      Auction: <a [href]="explorerUrl + '/address/' + auction" target="_blank"><app-address [address]="auction" /></a><br />
+    }
+    @if ((config$ | async)?.showMutate !== false || (config$ | async)?.showDevolve !== false) {
+      Mutation: <a [href]="explorerUrl + '/address/' + mutation" target="_blank"><app-address [address]="mutation" /></a><br />
+    }
     EthsRocks: <a [href]="explorerUrl + '/address/' + ethsrocks" target="_blank"><app-address [address]="ethsrocks" /></a>
   </p>
 

@@ -487,12 +487,19 @@
         </div>
 
         <div class="action-group">
-          <h3>Hidden Collections (comma-separated slugs)</h3>
-          <div class="input-row">
-            <input [(ngModel)]="visHiddenSlugsInput" placeholder="og-missing-phunks, og-dysto-phunks, quantummissingphunksv67, quantumdystophunkzv67" />
-            <button (click)="saveHiddenSlugs()" [disabled]="txPending()">Save</button>
-          </div>
-          <p class="hint">Current: {{ hiddenSlugs().join(', ') || 'none' }}</p>
+          <h3>Collections</h3>
+          <button class="pause-toggle" [class.paused]="isSlugHidden('og-missing-phunks')" (click)="toggleSlug('og-missing-phunks')" [disabled]="txPending()">
+            OG Missing Phunks: {{ isSlugHidden('og-missing-phunks') ? 'HIDDEN' : 'VISIBLE' }}
+          </button>
+          <button class="pause-toggle" [class.paused]="isSlugHidden('og-dysto-phunks')" (click)="toggleSlug('og-dysto-phunks')" [disabled]="txPending()">
+            OG DystoPhunks: {{ isSlugHidden('og-dysto-phunks') ? 'HIDDEN' : 'VISIBLE' }}
+          </button>
+          <button class="pause-toggle" [class.paused]="isSlugHidden('quantummissingphunksv67')" (click)="toggleSlug('quantummissingphunksv67')" [disabled]="txPending()">
+            Quantum Missing: {{ isSlugHidden('quantummissingphunksv67') ? 'HIDDEN' : 'VISIBLE' }}
+          </button>
+          <button class="pause-toggle" [class.paused]="isSlugHidden('quantumdystophunkzv67')" (click)="toggleSlug('quantumdystophunkzv67')" [disabled]="txPending()">
+            Quantum Dysto: {{ isSlugHidden('quantumdystophunkzv67') ? 'HIDDEN' : 'VISIBLE' }}
+          </button>
         </div>
       </div>
     }

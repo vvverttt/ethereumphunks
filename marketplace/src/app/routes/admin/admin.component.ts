@@ -526,12 +526,19 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  async saveHiddenSlugs() {
+  isSlugHidden(slug: string): boolean {
+    return this.hiddenSlugs().includes(slug);
+  }
+
+  async toggleSlug(slug: string) {
     this.txPending.set(true);
     this.txError.set('');
     try {
-      const slugs = this.visHiddenSlugsInput.split(',').map(s => s.trim()).filter(s => s.length > 0);
-      await supabase.from('_global_config').update({ hiddenSlugs: slugs }).eq('network', environment.chainId);
+      const current = [...this.hiddenSlugs()];
+      const idx = current.indexOf(slug);
+      if (idx >= 0) current.splice(idx, 1);
+      else current.push(slug);
+      await supabase.from('_global_config').update({ hiddenSlugs: current }).eq('network', environment.chainId);
       await this.loadVisibility();
     } catch (e: any) {
       this.txError.set(e?.message || 'Failed');
