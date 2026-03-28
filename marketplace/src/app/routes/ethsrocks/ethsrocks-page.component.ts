@@ -186,20 +186,14 @@ export class EthsRocksPageComponent implements OnInit {
       const ogList: SwapItem[] = [];
       for (const item of [...missing, ...dysto]) {
         if (!item.hashId || item.isEscrowed) continue;
-        // Check if eligible on-chain
-        try {
-          const eligible = await this.ethsrocksSvc.isEligibleEthscription(item.hashId as `0x${string}`);
-          if (eligible) {
-            ogList.push({
-              type: 'ethscription',
-              hashId: item.hashId,
-              sha: item.sha,
-              slug: item.slug,
-              label: `${item.slug === 'og-missing-phunks' ? 'OG Missing' : 'OG Dysto'} #${item.tokenId}`,
-              selected: false,
-            });
-          }
-        } catch {}
+        ogList.push({
+          type: 'ethscription',
+          hashId: item.hashId,
+          sha: item.sha,
+          slug: item.slug,
+          label: `${item.slug === 'og-missing-phunks' ? 'OG Missing' : 'OG Dysto'} #${item.tokenId}`,
+          selected: false,
+        });
       }
       this.ogItems.set(ogList);
       this.missingItems.set(ogList.filter(i => i.slug === 'og-missing-phunks'));
