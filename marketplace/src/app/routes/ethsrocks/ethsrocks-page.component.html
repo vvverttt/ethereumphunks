@@ -34,7 +34,10 @@
             <h2>Step 2: Claim Your Rock</h2>
             <p class="pending-label">{{ pendingDeposit()!.label }} sent to contract</p>
             @if (!cooldownReady()) {
-              <p class="pending-hint">Waiting for block confirmations... ({{ blocksRemaining() }} blocks)</p>
+              <p class="pending-hint">{{ cooldownMessage() }}</p>
+              <p class="pending-timer">{{ blocksRemaining() }} blocks remaining &middot; {{ cooldownSeconds() }}s</p>
+            } @else {
+              <p class="pending-hint">Ready to claim!</p>
             }
             <div class="pending-actions">
               <button

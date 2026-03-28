@@ -93,7 +93,19 @@ export class EthsRocksPageComponent implements OnInit {
   swapComplete = signal<boolean>(false);
   cooldownReady = signal<boolean>(false);
   blocksRemaining = signal<number>(5);
+  cooldownSeconds = signal<number>(0);
+  cooldownMessage = signal<string>('Confirming on Ethereum...');
   private cooldownInterval: any;
+  private countdownInterval: any;
+  private messageInterval: any;
+  private readonly cooldownMessages = [
+    'Confirming on Ethereum...',
+    'Waiting for block confirmations...',
+    'Securing your transaction...',
+    'Almost there...',
+    'Validating on-chain...',
+    'Processing your deposit...',
+  ];
 
   // TX state
   errorMessage = signal<string>('');
@@ -420,15 +432,28 @@ export class EthsRocksPageComponent implements OnInit {
 
   private startCooldownPolling() {
     this.stopCooldownPolling();
+    this.cooldownSeconds.set(0);
+    this.cooldownMessage.set(this.cooldownMessages[0]);
     this.checkCooldown();
-    this.cooldownInterval = setInterval(() => this.checkCooldown(), 12000); // every ~1 block
+    this.cooldownInterval = setInterval(() => this.checkCooldown(), 12000);
+
+    // Countdown timer
+    this.countdownInterval = setInterval(() => {
+      this.cooldownSeconds.update(s => s + 1);
+    }, 1000);
+
+    // Rotate messages
+    let msgIdx = 0;
+    this.messageInterval = setInterval(() => {
+      msgIdx = (msgIdx + 1) % this.cooldownMessages.length;
+      this.cooldownMessage.set(this.cooldownMessages[msgIdx]);
+    }, 8000);
   }
 
   private stopCooldownPolling() {
-    if (this.cooldownInterval) {
-      clearInterval(this.cooldownInterval);
-      this.cooldownInterval = null;
-    }
+    if (this.cooldownInterval) { clearInterval(this.cooldownInterval); this.cooldownInterval = null; }
+    if (this.countdownInterval) { clearInterval(this.countdownInterval); this.countdownInterval = null; }
+    if (this.messageInterval) { clearInterval(this.messageInterval); this.messageInterval = null; }
   }
 
   private savePendingDeposit(item: SwapItem | null) {

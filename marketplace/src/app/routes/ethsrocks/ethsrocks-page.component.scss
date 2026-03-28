@@ -422,7 +422,15 @@ $rocks-muted: rgba(255, 255, 255, .5);
         font-family: var(--secondary-font-stack);
         font-size: .95rem;
         color: $rocks-muted;
+        margin-bottom: .5rem;
+      }
+
+      .pending-timer {
+        font-family: var(--primary-font-stack);
+        font-size: .85rem;
+        color: $rocks-accent;
         margin-bottom: 1.5rem;
+        font-variant-numeric: tabular-nums;
       }
 
       .pending-actions {
