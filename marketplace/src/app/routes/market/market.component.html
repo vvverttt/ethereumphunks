@@ -10,6 +10,11 @@
     @if ((activeMarketRouteData$ | async); as phunkData) {
 
       @if ((activeCollection$ | async); as collection) {
+        @if ((globalConfig$ | async)?.hiddenSlugs?.includes(collection.slug)) {
+          <div class="hidden-collection">
+            <img src="/assets/loader-phunk.gif" alt="Coming soon" />
+          </div>
+        } @else {
         <div class="header-wrapper">
 
           <a class="button" [routerLink]="['/', 'curated', collection.slug]">
@@ -184,6 +189,7 @@
           </div>
         }
       </div>
+      }
     }
   </div>
 }

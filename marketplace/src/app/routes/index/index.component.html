@@ -1,4 +1,9 @@
 @if ((activeCollection$ | async); as activeCollection) {
+  @if ((config$ | async)?.hiddenSlugs?.includes(activeCollection.slug)) {
+    <div class="hidden-collection">
+      <img src="/assets/loader-phunk.gif" alt="Coming soon" />
+    </div>
+  } @else {
   <app-splash
     [collection]="activeCollection"
     [mintImage]="activeCollection.mintEnabled ? mintImage() : null"
@@ -146,4 +151,5 @@
       }
     </div>
   </main>
+  }
 }
