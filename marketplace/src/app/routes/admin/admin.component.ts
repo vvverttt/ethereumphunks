@@ -147,6 +147,7 @@ export class AdminComponent implements OnInit {
   rResetTotalRevealed = '';
 
   // Visibility state
+  maintenanceMode = signal(false);
   showMutate = signal(true);
   showDevolve = signal(true);
   showLottery = signal(true);
@@ -503,6 +504,7 @@ export class AdminComponent implements OnInit {
       const { data } = await supabase.from('_global_config').select('*').eq('network', environment.chainId).limit(1);
       const config = data?.[0];
       if (config) {
+        this.maintenanceMode.set(config.maintenance ?? false);
         this.showMutate.set(config.showMutate ?? true);
         this.showDevolve.set(config.showDevolve ?? true);
         this.showLottery.set(config.showLottery ?? true);

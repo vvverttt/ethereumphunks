@@ -467,6 +467,13 @@
         <h2>UI Visibility</h2>
 
         <div class="action-group">
+          <h3>Site</h3>
+          <button class="pause-toggle" [class.paused]="maintenanceMode()" (click)="toggleVisibility('maintenance', maintenanceMode())" [disabled]="txPending()">
+            Maintenance Mode: {{ maintenanceMode() ? 'ON (site hidden)' : 'OFF (site live)' }}
+          </button>
+        </div>
+
+        <div class="action-group">
           <h3>Buttons</h3>
           <button class="pause-toggle" [class.paused]="!showMutate()" (click)="toggleVisibility('showMutate', showMutate())" [disabled]="txPending()">
             Mutate Button: {{ showMutate() ? 'VISIBLE' : 'HIDDEN' }}
