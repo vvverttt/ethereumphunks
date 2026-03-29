@@ -476,6 +476,13 @@ export const EthsRocksABI = [
     type: 'function',
   },
   {
+    inputs: [{ internalType: 'uint256', name: '_amount', type: 'uint256' }],
+    name: 'setEthscriptionBatchRequired',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'cryptoPhunksV2Required',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],

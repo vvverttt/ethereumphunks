@@ -586,6 +586,13 @@ export class AdminService {
     });
   }
 
+  async getEthsRocksBatchRequired(): Promise<number> {
+    const val = await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'ethscriptionBatchRequired',
+    });
+    return Number(val) || 5;
+  }
+
   // =========================================================
   // EthsRocks Writes
   // =========================================================
@@ -593,6 +600,9 @@ export class AdminService {
   ethsrocksPause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'pause'); }
   ethsrocksUnpause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'unpause'); }
 
+  ethsrocksSetBatchRequired(amount: number) {
+    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setEthscriptionBatchRequired', [amount]);
+  }
   ethsrocksSetTreasuryAddress(addr: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setTreasuryAddress', [addr]);
   }

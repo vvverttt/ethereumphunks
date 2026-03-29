@@ -132,11 +132,26 @@ export class BreadcrumbsComponent {
     // Check if the original image is animated (GIF or APNG) — canvas loses animation
     const decodedData = await this.getPunkImage(phunk);
     const isGif = decodedData?.startsWith('data:image/gif');
-    const isAnimated = isGif || this.isApng(decodedData);
+    const isAnimatedPng = this.isApng(decodedData);
 
-    if (isAnimated && decodedData) {
-      const ext = isGif ? '.gif' : '.png';
-      if (window.innerWidth > 800) link.download = name + ext;
+    if (isAnimatedPng && decodedData) {
+      // Upscale APNG with background to match normal download size
+      const { upscaleApng } = await import('@/utils/apng');
+      const base64 = decodedData.split(',')[1];
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+      const transparent = this.transparentCheck.value;
+      const theme = localStorage.getItem('EtherPhunks_theme');
+      const bgColor = transparent ? null : (theme === 'light' ? '#FFDF00' : '#C3FF00');
+
+      const blobUrl = await upscaleApng(bytes.buffer, this.width, this.height, bgColor);
+      if (window.innerWidth > 800) link.download = name + '.png';
+      link.target = '_blank';
+      link.href = blobUrl;
+    } else if (isGif && decodedData) {
+      if (window.innerWidth > 800) link.download = name + '.gif';
       link.target = '_blank';
       link.href = decodedData;
     } else {

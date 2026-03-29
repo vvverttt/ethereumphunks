@@ -409,9 +409,15 @@
           <div class="state-item"><span>Pending Reveals</span><span>{{ ethsrocksPendingReveals() }}</span></div>
           <div class="state-item"><span>Treasury Address</span><span class="mono">{{ ethsrocksTreasuryAddress() }}</span></div>
           <div class="state-item"><span>Points Address</span><span class="mono">{{ ethsrocksPointsAddress() }}</span></div>
+          <div class="state-item"><span>Batch Required</span><span>{{ ethsrocksBatchRequired() }}</span></div>
         </div>
 
         <div class="actions">
+          <div class="action">
+            <label>Set Batch Required (EtherPhunks per rock)</label>
+            <input type="number" [(ngModel)]="rBatchRequired" placeholder="e.g. 7" />
+            <button (click)="setEthsRocksBatchRequired()" [disabled]="txPending()">Execute</button>
+          </div>
           <div class="action">
             <label>Set Treasury Address</label>
             <input type="text" [(ngModel)]="rSetTreasuryAddress" placeholder="0x..." />

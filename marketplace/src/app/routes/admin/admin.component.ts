@@ -135,7 +135,9 @@ export class AdminComponent implements OnInit {
   ethsrocksPendingReveals = signal('0');
   ethsrocksTreasuryAddress = signal('');
   ethsrocksPointsAddress = signal('');
+  ethsrocksBatchRequired = signal('5');
   // EthsRocks inputs
+  rBatchRequired = '';
   rSetTreasuryAddress = '';
   rSetPointsAddress = '';
   rWithdrawAmount = '';
@@ -290,7 +292,7 @@ export class AdminComponent implements OnInit {
 
   async loadEthsRocksState() {
     try {
-      const [paused, poolSize, balance, price, revealed, pending, treasury, pts] = await Promise.all([
+      const [paused, poolSize, balance, price, revealed, pending, treasury, pts, batchReq] = await Promise.all([
         this.adminSvc.getEthsRocksPaused(),
         this.adminSvc.getEthsRocksPoolSize(),
         this.adminSvc.getEthsRocksBalance(),
@@ -299,6 +301,7 @@ export class AdminComponent implements OnInit {
         this.adminSvc.getEthsRocksPendingReveals(),
         this.adminSvc.getEthsRocksTreasuryAddress(),
         this.adminSvc.getEthsRocksPointsAddress(),
+        this.adminSvc.getEthsRocksBatchRequired(),
       ]);
       this.ethsrocksPaused.set(paused);
       this.ethsrocksPoolSize.set(poolSize.toString());
@@ -308,6 +311,7 @@ export class AdminComponent implements OnInit {
       this.ethsrocksPendingReveals.set(pending.toString());
       this.ethsrocksTreasuryAddress.set(treasury);
       this.ethsrocksPointsAddress.set(pts);
+      this.ethsrocksBatchRequired.set(batchReq.toString());
     } catch (e) { console.error('EthsRocks state error:', e); }
   }
 
@@ -479,6 +483,7 @@ export class AdminComponent implements OnInit {
     );
   }
   setEthsRocksTreasuryAddress() { this.exec(() => this.adminSvc.ethsrocksSetTreasuryAddress(this.rSetTreasuryAddress), () => this.loadEthsRocksState()); }
+  setEthsRocksBatchRequired() { this.exec(() => this.adminSvc.ethsrocksSetBatchRequired(Number(this.rBatchRequired)), () => this.loadEthsRocksState()); }
   setEthsRocksPointsAddress() { this.exec(() => this.adminSvc.ethsrocksSetPointsAddress(this.rSetPointsAddress), () => this.loadEthsRocksState()); }
   async ethsrocksWithdrawAllETH() {
     const address = await firstValueFrom(this.address$);
