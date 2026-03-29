@@ -35,7 +35,8 @@
       image-rendering: pixelated;
     }
 
-    &.photo img {
+    &.photo img,
+    &.gif img {
       image-rendering: auto;
       object-fit: contain;
     }

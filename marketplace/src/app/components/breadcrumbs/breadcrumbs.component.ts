@@ -129,12 +129,14 @@ export class BreadcrumbsComponent {
     const name = phunk.collection?.singleName?.replace(' ', '-') + '#' + phunk.tokenId;
     const link = document.createElement('a');
 
-    // Check if the original image is animated (GIF) — canvas loses animation
+    // Check if the original image is animated (GIF or APNG) — canvas loses animation
     const decodedData = await this.getPunkImage(phunk);
     const isGif = decodedData?.startsWith('data:image/gif');
+    const isAnimated = isGif || this.isApng(decodedData);
 
-    if (isGif && decodedData) {
-      if (window.innerWidth > 800) link.download = name + '.gif';
+    if (isAnimated && decodedData) {
+      const ext = isGif ? '.gif' : '.png';
+      if (window.innerWidth > 800) link.download = name + ext;
       link.target = '_blank';
       link.href = decodedData;
     } else {
@@ -145,6 +147,20 @@ export class BreadcrumbsComponent {
 
     link.click();
     this.pfpOptionsActive.set(false);
+  }
+
+  /** Detect APNG by looking for the acTL chunk in the PNG data */
+  private isApng(dataUri: string | null | undefined): boolean {
+    if (!dataUri?.startsWith('data:image/png;base64,')) return false;
+    const base64 = dataUri.split(',')[1];
+    const binary = atob(base64);
+    // Search for 'acTL' chunk marker (APNG animation control)
+    for (let i = 0; i < binary.length - 4; i++) {
+      if (binary[i] === 'a' && binary[i+1] === 'c' && binary[i+2] === 'T' && binary[i+3] === 'L') {
+        return true;
+      }
+    }
+    return false;
   }
 
   togglePfpOptions(): void {

@@ -148,8 +148,20 @@ export class SplashComponent {
           const header = new Uint8Array(image.slice(0, 6));
           const isGif = header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46; // "GIF"
 
-          if (isGif) {
-            // Animated GIF — use direct URL, keep pixelated rendering
+          // Detect APNG by looking for acTL chunk
+          const bytes = new Uint8Array(image);
+          let isApng = false;
+          if (header[0] === 0x89 && header[1] === 0x50) { // PNG
+            for (let j = 0; j < bytes.length - 4; j++) {
+              if (bytes[j] === 0x61 && bytes[j+1] === 0x63 && bytes[j+2] === 0x54 && bytes[j+3] === 0x4C) { // "acTL"
+                isApng = true;
+                break;
+              }
+            }
+          }
+
+          if (isGif || isApng) {
+            // Animated image — use direct URL
             return {
               src: `${environment.staticUrl}/static/images/${sha}`,
               type: 'gif' as const
