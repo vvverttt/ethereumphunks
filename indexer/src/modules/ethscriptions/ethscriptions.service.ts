@@ -662,7 +662,11 @@ export class EthscriptionsService {
       // We do this here because this event is emitted after
       // transfer of ownership. If the listing was NOT created
       // by the previous owner, we should ignore it.
-      if (phunk.prevOwner && (phunk.prevOwner !== txn.from)) {
+      // Note: for the OG market (DystoLabz), the transfer event fires before
+      // PhunkOffered in the same tx, so prevOwner becomes the market contract.
+      // Accept the listing if prevOwner is the market contract (item was just escrowed).
+      const isEscrowedInMarket = marketAddressesL1.has(phunk.prevOwner?.toLowerCase());
+      if (phunk.prevOwner && (phunk.prevOwner !== txn.from) && !isEscrowedInMarket) {
 
         // Write the failed listing to a file
         try { await mkdir('./failed'); } catch (error) {}
