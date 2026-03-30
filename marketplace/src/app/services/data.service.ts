@@ -84,6 +84,7 @@ export class DataService {
         if (config.showDevolve === undefined) config.showDevolve = true;
         if (config.showLottery === undefined) config.showLottery = true;
         if (config.showAuction === undefined) config.showAuction = true;
+        if (config.showEthsRocksDeployer === undefined) config.showEthsRocksDeployer = true;
         if (!config.hiddenSlugs) config.hiddenSlugs = [];
 
         // Admin preview — override all visibility to show everything
@@ -93,6 +94,7 @@ export class DataService {
           config.showDevolve = true;
           config.showLottery = true;
           config.showAuction = true;
+          config.showEthsRocksDeployer = true;
           config.hiddenSlugs = [];
         }
 

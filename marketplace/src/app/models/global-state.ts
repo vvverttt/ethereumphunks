@@ -63,6 +63,7 @@ export interface GlobalConfig {
   showDevolve: boolean;
   showLottery: boolean;
   showAuction: boolean;
+  showEthsRocksDeployer: boolean;
   hiddenSlugs: string[];
 };
 

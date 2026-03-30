@@ -70,17 +70,19 @@
       </a>
     }
 
-    <a
-      class="ethsrocks-button"
-      routerLink="/ethsrocks/deployer"
-      (click)="goToEthsRocks()">
+    @if ((config$ | async)?.showEthsRocksDeployer !== false) {
+      <a
+        class="ethsrocks-button"
+        routerLink="/ethsrocks/deployer"
+        (click)="goToEthsRocks()">
 
-      <span>EthsRocks Deployer</span>
+        <span>EthsRocks Deployer</span>
 
-      <div class="arrow">
-        <ng-template [ngTemplateOutlet]="arrowIcon" />
-      </div>
-    </a>
+        <div class="arrow">
+          <ng-template [ngTemplateOutlet]="arrowIcon" />
+        </div>
+      </a>
+    }
 
     @if ((config$ | async)?.showAuction !== false) {
       <a
