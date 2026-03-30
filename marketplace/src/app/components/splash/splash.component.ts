@@ -161,11 +161,8 @@ export class SplashComponent {
           }
 
           if (isGif || isApng) {
-            // Animated image — use direct URL
-            return {
-              src: `${environment.staticUrl}/static/images/${sha}`,
-              type: 'gif' as const
-            };
+            // Skip animated — fill with non-animated instead
+            return null;
           }
 
           if (image.byteLength > this.MAX_IMAGE_SIZE) {
@@ -256,11 +253,14 @@ export class SplashComponent {
     for (let i = 0; i < t2Count; i++) picked.push(tier2[i]);
     for (let i = 0; i < t3Count && i < tier3.length; i++) picked.push(tier3[i]);
 
+    // Overpick to account for animated items that get skipped in splash
+    const overPick = this.IMAGE_LIMIT * 4;
+
     // If we still don't have enough, fill from whatever's left
     const used = new Set(picked);
     for (const pool of [tier1, tier2, tier3]) {
       for (const sha of pool) {
-        if (picked.length >= this.IMAGE_LIMIT) break;
+        if (picked.length >= overPick) break;
         if (!used.has(sha)) { picked.push(sha); used.add(sha); }
       }
     }
