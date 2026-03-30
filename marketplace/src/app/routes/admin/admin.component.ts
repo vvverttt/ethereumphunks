@@ -495,6 +495,24 @@ export class AdminComponent implements OnInit {
   }
   ethsrocksWithdrawETH() { this.exec(() => this.adminSvc.ethsrocksWithdrawETH(parseEther(this.rWithdrawAmount), this.rWithdrawTo), () => this.loadEthsRocksState()); }
   ethsrocksWithdrawFromPool() { this.exec(() => this.adminSvc.ethsrocksWithdrawFromPool(this.rWithdrawPoolHashId), () => this.loadEthsRocksState()); }
+  async ethsrocksWithdrawAll() {
+    const poolSize = parseInt(this.ethsrocksPoolSize());
+    if (!poolSize) return;
+    this.exec(async () => {
+      // Fetch all pool items then withdraw in batches
+      const allHashIds: string[] = [];
+      const batchSize = 100;
+      for (let offset = 0; offset < poolSize; offset += batchSize) {
+        const items = await this.adminSvc.getEthsRocksPoolItems(offset, batchSize);
+        allHashIds.push(...items);
+      }
+      // Withdraw in batches of 50 (gas limit)
+      for (let i = 0; i < allHashIds.length; i += 50) {
+        const batch = allHashIds.slice(i, i + 50);
+        await this.adminSvc.ethsrocksWithdrawFromPoolBatch(batch);
+      }
+    }, () => this.loadEthsRocksState());
+  }
   ethsrocksEmergencyWithdraw() { this.exec(() => this.adminSvc.ethsrocksEmergencyWithdrawEthscription(this.rEmergencyHashId)); }
   ethsrocksDepositEthscriptions() {
     const hashIds = this.rDepositHashIds.split(/[\n,]+/).map(s => s.trim()).filter(s => s.startsWith('0x'));

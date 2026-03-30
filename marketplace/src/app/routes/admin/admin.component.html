@@ -443,6 +443,10 @@
             <input type="text" [(ngModel)]="rWithdrawPoolHashId" placeholder="0x..." />
             <button (click)="ethsrocksWithdrawFromPool()" [disabled]="txPending()">Withdraw</button>
           </div>
+          <div class="action danger">
+            <label>Withdraw ALL From Pool ({{ ethsrocksPoolSize() }} items)</label>
+            <button (click)="ethsrocksWithdrawAll()" [disabled]="txPending()">Withdraw All</button>
+          </div>
           <div class="action">
             <label>Deposit Ethscriptions to Pool</label>
             <textarea [(ngModel)]="rDepositHashIds" placeholder="One hashId per line, or comma-separated" rows="4"></textarea>

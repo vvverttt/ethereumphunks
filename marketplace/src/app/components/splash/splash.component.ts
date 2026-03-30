@@ -254,7 +254,7 @@ export class SplashComponent {
     for (let i = 0; i < t3Count && i < tier3.length; i++) picked.push(tier3[i]);
 
     // Overpick to account for animated items that get skipped in splash
-    const overPick = this.IMAGE_LIMIT * 4;
+    const overPick = this.IMAGE_LIMIT * 2;
 
     // If we still don't have enough, fill from whatever's left
     const used = new Set(picked);

@@ -612,6 +612,13 @@ export class AdminService {
   ethsrocksWithdrawETH(amount: bigint, to: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawETH', [amount, to]);
   }
+  async getEthsRocksPoolItems(offset: number, limit: number): Promise<string[]> {
+    const items = await this.web3Svc.l1Client.readContract({
+      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'getPoolItems', args: [BigInt(offset), BigInt(limit)],
+    });
+    return items as string[];
+  }
+
   ethsrocksWithdrawFromPool(hashId: string) {
     return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawFromPool', [hashId]);
   }
