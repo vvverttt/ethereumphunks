@@ -459,9 +459,9 @@
             <button (click)="ethsrocksEmergencyWithdraw()" [disabled]="txPending()">Emergency Withdraw</button>
           </div>
           <div class="action danger">
-            <label>Transfer Ownership</label>
+            <label>Transfer Ownership + Proxy Admin</label>
             <input type="text" [(ngModel)]="rTransferOwnership" placeholder="0x..." />
-            <button (click)="transferEthsRocksOwnership()" [disabled]="txPending()">Transfer</button>
+            <button (click)="transferEthsRocksAll()" [disabled]="txPending()">Transfer Both</button>
           </div>
         </div>
       </div>

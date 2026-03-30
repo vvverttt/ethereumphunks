@@ -503,6 +503,14 @@ export class AdminComponent implements OnInit {
   }
   resetEthsRocksTotalRevealed() { this.exec(() => this.adminSvc.ethsrocksResetTotalRevealed(BigInt(this.rResetTotalRevealed)), () => this.loadEthsRocksState()); }
   transferEthsRocksOwnership() { this.exec(() => this.adminSvc.ethsrocksTransferOwnership(this.rTransferOwnership)); }
+  async transferEthsRocksAll() {
+    const addr = this.rTransferOwnership.trim();
+    if (!addr || !addr.startsWith('0x')) return;
+    this.exec(async () => {
+      await this.adminSvc.ethsrocksTransferOwnership(addr);
+      await this.adminSvc.ethsrocksProxyAdminTransfer(addr);
+    });
+  }
 
   // Visibility actions
   async loadVisibility() {
