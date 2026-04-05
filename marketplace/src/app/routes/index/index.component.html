@@ -148,6 +148,29 @@
             }
           </div>
         </section>
+
+        <!-- <section class="mosaic-section">
+          <app-mosaic [slug]="activeCollection.slug" />
+        </section> -->
+
+        <section class="faq">
+          <div class="inner">
+            <h3>Q&A</h3>
+            <div class="faq-list">
+              @for (item of faqItems; track item.q) {
+                <div class="faq-item" (click)="toggleFaq(item.q)">
+                  <div class="faq-question">
+                    <span>{{ item.q }}</span>
+                    <span class="faq-toggle">{{ openFaq() === item.q ? '−' : '+' }}</span>
+                  </div>
+                  @if (openFaq() === item.q) {
+                    <div class="faq-answer">{{ item.a }}</div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </section>
       }
     </div>
   </main>

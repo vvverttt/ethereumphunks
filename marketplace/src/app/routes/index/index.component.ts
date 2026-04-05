@@ -13,6 +13,7 @@ import { SplashComponent } from '@/components/splash/splash.component';
 import { BrbComponent } from '@/components/brb/brb.component';
 import { MintComponent } from '@/components/mint/mint.component';
 import { CalcPipe } from '@/pipes/calculate.pipe';
+import { MosaicComponent } from '@/components/mosaic/mosaic.component';
 
 import { DataService } from '@/services/data.service';
 import { ThemeService } from '@/services/theme.service';
@@ -46,6 +47,7 @@ const LINKED_SLUG_MAP: Record<string, string> = {
     RecentActivityComponent,
     BrbComponent,
     MintComponent,
+    MosaicComponent,
     CalcPipe,
   ],
   selector: 'app-index',
@@ -82,6 +84,21 @@ export class IndexComponent {
   );
 
   mintImage = signal<string | null>(null);
+  openFaq = signal<string | null>(null);
+
+  faqItems = [
+    { q: 'What is a QuantumPhunk?', a: 'QuantumPhunks is a collection of 10,386 unique collectible characters stored fully on-chain as Ethscriptions on the Ethereum blockchain. The initial release features 4,037 turtle characters with more to follow.' },
+    { q: 'What exactly is going on here?', a: 'This is the home of DystoLabz collections. A marketplace for buying, selling, and exploring QuantumPhunks and related collections. All transactions happen on-chain through smart contracts originally forked from Chopperdad\'s EtherPhunks Market and Phunks Auction House, built upon and evolved by DystoLabz.' },
+    { q: 'How do I get one?', a: 'You can buy one from the marketplace listings, win one through the lottery, or through our auction house.' },
+    { q: 'Where are the images stored?', a: 'All images are stored fully on-chain as Ethscriptions, encoded directly into the calldata of Ethereum transactions by us. No IPFS, no servers, no external hosting.' },
+    { q: 'Where does the market data on this site come from?', a: 'The prices and sales you see on this site are loaded from the marketplace contracts on the Ethereum blockchain.' },
+    { q: 'Are they an ERC-721 token?', a: 'No. They are Ethscriptions, not ERC-721 tokens. Ownership is managed on-chain through our smart contracts and Ethereum transfer history.' },
+    { q: 'Do you charge any fees for transactions?', a: 'No. There are zero fees and zero royalties on all marketplace transactions.' },
+  ];
+
+  toggleFaq(q: string) {
+    this.openFaq.set(this.openFaq() === q ? null : q);
+  }
 
   constructor(
     private store: Store<GlobalState>,

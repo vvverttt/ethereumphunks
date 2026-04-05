@@ -235,6 +235,10 @@ export class MenuComponent {
     this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
   }
 
+  goToVault(): void {
+    this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
+  }
+
   goToAdmin(): void {
     this.store.dispatch(appStateActions.setMenuActive({ menuActive: false }));
   }

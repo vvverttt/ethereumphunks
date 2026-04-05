@@ -374,8 +374,9 @@ contract PhilipLotteryV67 is
     function withdrawPrize(bytes32 hashId) external onlyOwner nonReentrant {
         require(inPool[hashId], "Not in pool");
         require(_prizePool.length > pendingReveals, "Reserved for pending reveals");
+        address dep = depositor[hashId];
         _removeFromPool(hashId);
-        _transferEthscription(owner(), owner(), hashId);
+        _transferEthscription(dep, owner(), hashId);
         emit PrizeWithdrawn(hashId);
     }
 
@@ -384,8 +385,9 @@ contract PhilipLotteryV67 is
             bytes32 hashId = hashIds[i];
             require(inPool[hashId], "Not in pool");
             require(_prizePool.length > pendingReveals, "Reserved for pending reveals");
+            address dep = depositor[hashId];
             _removeFromPool(hashId);
-            _transferEthscription(owner(), owner(), hashId);
+            _transferEthscription(dep, owner(), hashId);
             emit PrizeWithdrawn(hashId);
         }
     }

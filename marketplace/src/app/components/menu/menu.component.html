@@ -98,6 +98,18 @@
       </a>
     }
 
+    <a
+      class="vault-button"
+      routerLink="/vault"
+      (click)="goToVault()">
+
+      <span>Phunk Swap</span>
+
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </a>
+
     @if (!isStandaloneMarket) {
       <div
         class="curated-button"

@@ -1,6 +1,14 @@
 @use 'abstracts/variables' as *;
 @use 'abstracts/mixins' as *;
 
+@font-face {
+  font-family: '04B_30';
+  src: url('/assets/fonts/04B_30__.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 .hidden-collection {
   display: flex;
   justify-content: center;
@@ -130,6 +138,53 @@ section {
         left: 3rem;
         width: calc(100% - 6rem);
         border-bottom: .2rem solid rgba(var(--text-color), .1);
+      }
+    }
+  }
+
+  &.mosaic-section {
+    padding: 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+  }
+
+  &.faq {
+    font-family: var(--secondary-font-stack);
+
+    .inner {
+    }
+
+    h3 {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.8rem;
+    }
+
+    .faq-list {
+      border-top: 1px solid rgba(var(--text-color), .15);
+    }
+
+    .faq-item {
+      border-bottom: 1px solid rgba(var(--text-color), .15);
+      cursor: pointer;
+
+      .faq-question {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.2rem 0;
+        font-size: 1.1rem;
+
+        .faq-toggle {
+          font-size: 1.5rem;
+          padding-left: 1rem;
+        }
+      }
+
+      .faq-answer {
+        padding: 0 0 1.2rem;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: rgba(var(--text-color), .7);
       }
     }
   }
