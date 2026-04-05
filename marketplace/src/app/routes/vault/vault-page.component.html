@@ -117,8 +117,8 @@
           <h3>All</h3>
           <div class="section-stats-wrapper">
             <p>
-              <a class="highlight" (click)="showAllVault.set(true)">
-                View all {{ vaultItems().length }} in vault.
+              <a class="highlight view-all-link" routerLink="/vault/all">
+                View all {{ vaultItems().length }} QuantumPhunks.
               </a>
             </p>
           </div>
@@ -126,7 +126,7 @@
           <app-phunk-grid
             [phunkData]="$any(vaultItems())"
             [viewType]="'compact'"
-            [limit]="showAllVault() ? vaultItems().length : 110"
+            [limit]="110"
             [marketType]="'all'"
             [activeSort]="'id'"
           />

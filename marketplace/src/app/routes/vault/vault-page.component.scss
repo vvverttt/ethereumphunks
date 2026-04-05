@@ -33,9 +33,24 @@ section {
   padding: 0 0 5rem;
 
   h3 {
-    font-family: var(--secondary-font-stack);
     font-size: 2.4rem;
     padding-bottom: 2rem;
+  }
+
+  p {
+    padding: 0;
+    margin: 0;
+    padding-bottom: .75rem;
+    font-size: 1.5rem;
+
+    &:last-child {
+      margin-bottom: 1rem;
+    }
+
+    .view-all-link {
+      cursor: pointer;
+      text-decoration: none;
+    }
   }
 }
 
@@ -289,13 +304,6 @@ h1 {
   &:hover { background: rgba(255, 255, 255, .2) !important; }
 }
 
-.highlight {
-  font-size: 1.4rem;
-  color: $vault-accent;
-  cursor: pointer;
-  margin-left: 1rem;
-  &:hover { text-decoration: underline; }
-}
 
 .vault-item {
   display: flex;

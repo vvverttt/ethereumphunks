@@ -66,7 +66,7 @@ export class VaultPageComponent implements OnInit {
 
   // Fake collection object for splash — uses vault pool items as previews
   vaultCollection: any = {
-    slug: 'cryptophunksv67',
+    slug: 'vault',
     name: 'Phunk Swap',
     previews: [],
   };

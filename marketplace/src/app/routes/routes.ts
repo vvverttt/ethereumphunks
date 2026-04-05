@@ -44,6 +44,10 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/vault/vault-page.component').then(mod => mod.VaultPageComponent)
   },
   {
+    path: 'vault/all',
+    loadComponent: () => import('@/routes/vault/vault-all.component').then(mod => mod.VaultAllComponent)
+  },
+  {
     path: 'admin',
     loadComponent: () => import('@/routes/admin/admin.component').then(mod => mod.AdminComponent)
   },
