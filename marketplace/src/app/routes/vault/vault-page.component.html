@@ -43,7 +43,7 @@
               </div>
               <p class="hint">{{ cooldownMessage() }}</p>
 
-              @if (pickedItem() && cooldownReady()) {
+              @if (pickedItem()) {
                 <div class="swap-preview">
                   <span>You get:</span>
                   <div class="pending-item">
@@ -117,19 +117,28 @@
           <h3>All</h3>
           <div class="section-stats-wrapper">
             <p>
-              <a class="highlight view-all-link" routerLink="/vault/all">
-                View all {{ vaultItems().length }} QuantumPhunks.
-              </a>
+              @if (pendingDeposit()) {
+                Select a QuantumPhunk from the vault to swap for yours.
+              } @else {
+                <a class="highlight view-all-link" routerLink="/vault/all">
+                  View all {{ vaultItems().length }} QuantumPhunks.
+                </a>
+              }
             </p>
           </div>
 
-          <app-phunk-grid
-            [phunkData]="$any(vaultItems())"
-            [viewType]="'compact'"
-            [limit]="110"
-            [marketType]="'all'"
-            [activeSort]="'id'"
-          />
+          <div class="vault-grid">
+            @for (item of vaultItems(); track item.hashId) {
+              <div
+                class="vault-item"
+                [class.pickable]="pendingDeposit()"
+                [class.selected]="pickedItem()?.hashId === item.hashId"
+                (click)="onVaultItemClick(item)">
+                <img [src]="getImageUrl(item)" loading="lazy" />
+                <span>#{{ item.tokenId }}</span>
+              </div>
+            }
+          </div>
         </div>
       </section>
     }

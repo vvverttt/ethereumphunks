@@ -190,8 +190,8 @@ export class VaultPageComponent implements OnInit {
   }
 
   onVaultItemClick(item: OwnedItem) {
-    // If in step 2 (deposited, cooldown ready), clicking vault item picks it
-    if (this.pendingDeposit() && this.cooldownReady()) {
+    // If in step 2 (deposited), clicking vault item picks it
+    if (this.pendingDeposit()) {
       this.pickItem(item);
     }
   }
