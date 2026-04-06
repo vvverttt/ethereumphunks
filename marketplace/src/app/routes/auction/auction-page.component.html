@@ -61,6 +61,65 @@
       />
     </section>
 
+    <!-- ========== POOL & SWAP (Auction 2 only) ========== -->
+    @if (isAuction2 && poolItems().length) {
+      <section class="pool-section">
+        <div class="inner">
+          <h3>Items in Pool ({{ poolItems().length }})</h3>
+          <p class="hint">Swap your CryptoPhunksV67 for one in the pool. Free, 1:1.</p>
+
+          <div class="pool-grid">
+            @for (item of poolItems(); track item.hashId) {
+              <div
+                class="pool-item"
+                [class.pickable]="pendingSwapDeposit()"
+                [class.selected]="pickedSwapItem()?.hashId === item.hashId"
+                (click)="onPoolItemClick(item)">
+                <img [src]="getImageUrl(item)" loading="lazy" />
+                <span>#{{ item.tokenId }}</span>
+              </div>
+            }
+          </div>
+
+          @if (pendingSwapDeposit()) {
+            <div class="swap-pending">
+              <h4>Step 2: Pick from Pool</h4>
+              <p>{{ swapCooldownMessage() }}</p>
+              @if (pickedSwapItem()) {
+                <button class="btn" (click)="onCompleteAuctionSwap()" [disabled]="swapTxPending() || !swapCooldownReady()">
+                  @if (swapTxPending()) { Processing... } @else if (!swapCooldownReady()) { Waiting... } @else { Swap for #{{ pickedSwapItem()!.tokenId }} }
+                </button>
+              }
+              <button class="btn cancel-btn" (click)="onCancelSwap()" [disabled]="swapTxPending()">Cancel</button>
+            </div>
+          } @else {
+            <div class="swap-step1">
+              <h4>Your CryptoPhunksV67</h4>
+              @if (ownedV67Items().length) {
+                <div class="owned-grid">
+                  @for (item of ownedV67Items(); track item.hashId) {
+                    <div
+                      class="owned-item"
+                      [class.selected]="selectedV67?.hashId === item.hashId"
+                      (click)="selectV67(item)">
+                      <img [src]="getImageUrl(item)" />
+                      <span>#{{ item.tokenId }}</span>
+                    </div>
+                  }
+                </div>
+                @if (selectedV67) {
+                  <button class="btn" (click)="onDepositForSwap()" [disabled]="swapTxPending()">
+                    @if (swapTxPending()) { Sending... } @else { Send to Swap }
+                  </button>
+                }
+              } @else {
+                <p class="hint">Connect wallet to see your CryptoPhunksV67.</p>
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
 
   }
 </div>

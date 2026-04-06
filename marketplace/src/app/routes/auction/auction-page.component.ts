@@ -3,12 +3,25 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
-import { formatEther } from 'viem';
+import { formatEther, encodePacked, keccak256, createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
+import { createClient } from '@supabase/supabase-js';
+import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
 import { AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
+
+const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+
+const AUCTION_SWAP_ABI = [
+  { inputs: [{ name: 'sendHashId', type: 'bytes32' }, { name: 'receiveHashId', type: 'bytes32' }, { name: 'proof', type: 'bytes32[]' }], name: 'swap', outputs: [], stateMutability: 'payable', type: 'function' },
+  { inputs: [{ name: 'hashId', type: 'bytes32' }], name: 'cancelSwapDeposit', outputs: [], stateMutability: 'nonpayable', type: 'function' },
+  { inputs: [{ name: '', type: 'address' }, { name: '', type: 'bytes32' }], name: 'userEthscriptionPossiblyStored', outputs: [{ type: 'bool' }], stateMutability: 'view', type: 'function' },
+  { inputs: [{ name: '', type: 'address' }, { name: '', type: 'bytes32' }], name: 'blocksRemainingUntilValidTransfer', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
+  { inputs: [], name: 'swapFee', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
+] as const;
 import { PhunkInfoComponent } from '@/components/auction/phunk-info/phunk-info.component';
 import { BidPanelComponent } from '@/components/auction/bid-panel/bid-panel.component';
 import { AuctionSliderComponent } from '@/components/auction/auction-slider/auction-slider.component';
@@ -84,6 +97,239 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   staticUrl = environment.staticUrl;
   explorerUrl = environment.explorerUrl;
 
+  // Auction 2 swap state
+  isAuction2 = false;
+  auction2Address = '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630' as `0x${string}`;
+  poolItems = signal<any[]>([]);
+  ownedV67Items = signal<any[]>([]);
+  selectedV67: any = null;
+  pendingSwapDeposit = signal<any>(null);
+  pickedSwapItem = signal<any>(null);
+  swapTxPending = signal(false);
+  swapCooldownReady = signal(false);
+  swapCooldownMessage = signal('Waiting for confirmation...');
+  private merkleTree: string[][] = [];
+  private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO') });
+
+  getImageUrl(item: { sha: string }): string {
+    return environment.staticUrl + '/static/images/' + item.sha;
+  }
+
+  selectV67(item: any) {
+    this.selectedV67 = this.selectedV67?.hashId === item.hashId ? null : item;
+  }
+
+  onPoolItemClick(item: any) {
+    if (this.pendingSwapDeposit()) {
+      this.pickedSwapItem.set(this.pickedSwapItem()?.hashId === item.hashId ? null : item);
+    }
+  }
+
+  async loadAuction2Pool() {
+    // Pool items = items owned by the auction 2 contract
+    const { data } = await supabase
+      .from('ethscriptions')
+      .select('hashId,sha,tokenId')
+      .eq('slug', 'cryptophunksv67')
+      .eq('owner', this.auction2Address.toLowerCase())
+      .order('tokenId')
+      .limit(500);
+    this.poolItems.set(data || []);
+
+    // Load user's owned v67 items
+    const address = await firstValueFrom(this.store.select(appStateSelectors.selectWalletAddress));
+    if (address) {
+      const { data: owned } = await supabase
+        .from('ethscriptions')
+        .select('hashId,sha,tokenId')
+        .eq('slug', 'cryptophunksv67')
+        .eq('owner', address.toLowerCase())
+        .order('tokenId')
+        .limit(200);
+      this.ownedV67Items.set(owned || []);
+    }
+
+    // Restore pending deposit
+    const saved = localStorage.getItem('auction2_pending_swap');
+    if (saved) {
+      try {
+        const item = JSON.parse(saved);
+        this.pendingSwapDeposit.set(item);
+        this.pollSwapCooldown(item);
+      } catch {}
+    }
+  }
+
+  private async getWallet() {
+    try {
+      const chainId = getChainId(this.web3Svc.config);
+      return await getWalletClient(this.web3Svc.config, { chainId });
+    } catch {
+      await reconnect(this.web3Svc.config);
+      const chainId = getChainId(this.web3Svc.config);
+      return await getWalletClient(this.web3Svc.config, { chainId });
+    }
+  }
+
+  async onDepositForSwap() {
+    const item = this.selectedV67;
+    if (!item || this.swapTxPending()) return;
+    this.swapTxPending.set(true);
+    try {
+      const walletClient = await this.getWallet();
+      await walletClient.sendTransaction({
+        to: this.auction2Address,
+        data: item.hashId as `0x${string}`,
+        chain: walletClient.chain,
+      });
+      this.pendingSwapDeposit.set(item);
+      localStorage.setItem('auction2_pending_swap', JSON.stringify(item));
+      this.pollSwapCooldown(item);
+    } catch (e) {
+      console.error('Deposit failed:', e);
+    } finally {
+      this.swapTxPending.set(false);
+    }
+  }
+
+  async pollSwapCooldown(item: any) {
+    const address = await firstValueFrom(this.store.select(appStateSelectors.selectWalletAddress));
+    if (!address) return;
+    const poll = setInterval(async () => {
+      try {
+        const stored = await this.rpcClient.readContract({
+          address: this.auction2Address, abi: AUCTION_SWAP_ABI,
+          functionName: 'userEthscriptionPossiblyStored',
+          args: [address as `0x${string}`, item.hashId as `0x${string}`],
+        });
+        if (!stored) {
+          this.swapCooldownMessage.set('Deposit not yet confirmed...');
+          return;
+        }
+        const blocks = await this.rpcClient.readContract({
+          address: this.auction2Address, abi: AUCTION_SWAP_ABI,
+          functionName: 'blocksRemainingUntilValidTransfer',
+          args: [address as `0x${string}`, item.hashId as `0x${string}`],
+        });
+        if (Number(blocks) === 0) {
+          this.swapCooldownReady.set(true);
+          this.swapCooldownMessage.set('Ready to swap!');
+          clearInterval(poll);
+        } else {
+          this.swapCooldownMessage.set(`${Number(blocks)} blocks remaining...`);
+        }
+      } catch {}
+    }, 12000);
+  }
+
+  async onCompleteAuctionSwap() {
+    const item = this.pendingSwapDeposit();
+    const picked = this.pickedSwapItem();
+    if (!item || !picked || this.swapTxPending()) return;
+    this.swapTxPending.set(true);
+    try {
+      await this.ensureMerkleTree();
+      const proof = this.getMerkleProof(item.hashId);
+      const swapFee = await this.rpcClient.readContract({
+        address: this.auction2Address, abi: AUCTION_SWAP_ABI, functionName: 'swapFee',
+      });
+      const walletClient = await this.getWallet();
+      const hash = await walletClient.writeContract({
+        address: this.auction2Address,
+        abi: AUCTION_SWAP_ABI,
+        functionName: 'swap',
+        args: [item.hashId as `0x${string}`, picked.hashId as `0x${string}`, proof as `0x${string}`[]],
+        value: swapFee as bigint,
+        chain: walletClient.chain,
+      });
+      await this.rpcClient.waitForTransactionReceipt({ hash });
+      this.pendingSwapDeposit.set(null);
+      this.pickedSwapItem.set(null);
+      this.selectedV67 = null;
+      this.swapCooldownReady.set(false);
+      localStorage.removeItem('auction2_pending_swap');
+      await this.loadAuction2Pool();
+    } catch (e) {
+      console.error('Swap failed:', e);
+    } finally {
+      this.swapTxPending.set(false);
+    }
+  }
+
+  async onCancelSwap() {
+    const item = this.pendingSwapDeposit();
+    if (!item) {
+      this.pickedSwapItem.set(null);
+      return;
+    }
+    this.swapTxPending.set(true);
+    try {
+      const walletClient = await this.getWallet();
+      const hash = await walletClient.writeContract({
+        address: this.auction2Address,
+        abi: AUCTION_SWAP_ABI,
+        functionName: 'cancelSwapDeposit',
+        args: [item.hashId as `0x${string}`],
+        chain: walletClient.chain,
+      });
+      await this.rpcClient.waitForTransactionReceipt({ hash });
+      this.pendingSwapDeposit.set(null);
+      this.pickedSwapItem.set(null);
+      this.swapCooldownReady.set(false);
+      localStorage.removeItem('auction2_pending_swap');
+    } catch (e) {
+      console.error('Cancel failed:', e);
+    } finally {
+      this.swapTxPending.set(false);
+    }
+  }
+
+  private async ensureMerkleTree() {
+    if (this.merkleTree.length) return;
+    const hashIds: string[] = [];
+    let offset = 0;
+    while (true) {
+      const { data } = await supabase
+        .from('ethscriptions')
+        .select('hashId')
+        .eq('slug', 'cryptophunksv67')
+        .order('tokenId')
+        .range(offset, offset + 999);
+      if (!data?.length) break;
+      hashIds.push(...data.map((d: any) => d.hashId.toLowerCase()));
+      if (data.length < 1000) break;
+      offset += 1000;
+    }
+    let layer = [...hashIds].sort();
+    this.merkleTree = [layer];
+    while (layer.length > 1) {
+      const next: string[] = [];
+      for (let i = 0; i < layer.length; i += 2) {
+        if (i + 1 < layer.length) {
+          const [a, b] = layer[i] < layer[i + 1] ? [layer[i], layer[i + 1]] : [layer[i + 1], layer[i]];
+          next.push(keccak256(encodePacked(['bytes32', 'bytes32'], [a as `0x${string}`, b as `0x${string}`])));
+        } else {
+          next.push(layer[i]);
+        }
+      }
+      this.merkleTree.push(next);
+      layer = next;
+    }
+  }
+
+  private getMerkleProof(hashId: string): string[] {
+    const leaf = hashId.toLowerCase();
+    let idx = this.merkleTree[0].indexOf(leaf);
+    if (idx === -1) return [];
+    const proof: string[] = [];
+    for (let level = 0; level < this.merkleTree.length - 1; level++) {
+      const siblingIdx = idx % 2 === 0 ? idx + 1 : idx - 1;
+      if (siblingIdx < this.merkleTree[level].length) proof.push(this.merkleTree[level][siblingIdx]);
+      idx = Math.floor(idx / 2);
+    }
+    return proof;
+  }
+
   private pollInterval: any;
 
   constructor(
@@ -96,6 +342,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     const overrideAddress = this.route.snapshot.data['auctionAddress'];
     if (overrideAddress) {
       this.auctionSvc.setAddress(overrideAddress);
+      this.isAuction2 = true;
+      this.loadAuction2Pool();
     } else {
       this.auctionSvc.setAddress('');
     }
