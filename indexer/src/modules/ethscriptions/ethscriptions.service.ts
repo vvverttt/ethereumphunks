@@ -881,6 +881,9 @@ export class EthscriptionsService {
       const { args } = decoded as any;
       if (!eventName || !args) continue;
 
+      // Use the address of the contract that emitted this log (supports multiple auction contracts)
+      const auctionAddr = log.address?.toLowerCase();
+
       if (eventName === 'PoolDeposited') {
         const { hashId } = args;
 
@@ -888,7 +891,7 @@ export class EthscriptionsService {
         await this.storageSvc.updateEthscriptionOwner(
           hashId.toLowerCase(),
           transaction.from.toLowerCase(),
-          auctionAddressL1
+          auctionAddr
         );
 
         // Transfer event so deposit shows in activity
@@ -897,7 +900,7 @@ export class EthscriptionsService {
           type: 'transfer',
           hashId: hashId.toLowerCase(),
           from: transaction.from.toLowerCase(),
-          to: auctionAddressL1,
+          to: auctionAddr,
           blockHash: transaction.blockHash,
           txIndex: transaction.transactionIndex,
           txHash: transaction.hash,
@@ -913,7 +916,7 @@ export class EthscriptionsService {
         // Update ownership back to the depositor (tx sender = contract owner)
         await this.storageSvc.updateEthscriptionOwner(
           hashId.toLowerCase(),
-          auctionAddressL1,
+          auctionAddr,
           transaction.from.toLowerCase()
         );
 
@@ -922,7 +925,7 @@ export class EthscriptionsService {
           txId: transaction.hash + '-pool-withdrawn-' + log.logIndex,
           type: 'transfer',
           hashId: hashId.toLowerCase(),
-          from: auctionAddressL1,
+          from: auctionAddr,
           to: transaction.from.toLowerCase(),
           blockHash: transaction.blockHash,
           txIndex: transaction.transactionIndex,
@@ -945,7 +948,7 @@ export class EthscriptionsService {
           txId: transaction.hash + '-auction-created-' + log.logIndex,
           type: 'AuctionCreated',
           hashId: hashId.toLowerCase(),
-          from: auctionAddressL1,
+          from: auctionAddr,
           to: zeroAddress,
           blockHash: transaction.blockHash,
           txIndex: transaction.transactionIndex,
@@ -970,7 +973,7 @@ export class EthscriptionsService {
           type: 'AuctionBid',
           hashId: hashId.toLowerCase(),
           from: sender.toLowerCase(),
-          to: auctionAddressL1,
+          to: auctionAddr,
           blockHash: transaction.blockHash,
           txIndex: transaction.transactionIndex,
           txHash: transaction.hash,
@@ -1002,7 +1005,7 @@ export class EthscriptionsService {
           // Update ownership so the winner's wallet shows the phunk
           await this.storageSvc.updateEthscriptionOwner(
             hashId.toLowerCase(),
-            auctionAddressL1,
+            auctionAddr,
             winner.toLowerCase()
           );
 
@@ -1011,7 +1014,7 @@ export class EthscriptionsService {
             txId: transaction.hash + '-auction-transfer-' + log.logIndex,
             type: 'transfer',
             hashId: hashId.toLowerCase(),
-            from: auctionAddressL1,
+            from: auctionAddr,
             to: winner.toLowerCase(),
             blockHash: transaction.blockHash,
             txIndex: transaction.transactionIndex,
@@ -1026,7 +1029,7 @@ export class EthscriptionsService {
           txId: transaction.hash + '-auction-settled-' + log.logIndex,
           type: 'AuctionSettled',
           hashId: hashId.toLowerCase(),
-          from: auctionAddressL1,
+          from: auctionAddr,
           to: winner.toLowerCase(),
           blockHash: transaction.blockHash,
           txIndex: transaction.transactionIndex,
