@@ -90,7 +90,26 @@ export class VaultPageComponent implements OnInit {
     await this.loadContractState();
     await this.loadVaultItems();
     this.loadOwnedItems();
+    this.restorePendingDeposit();
     this.loading.set(false);
+  }
+
+  private restorePendingDeposit() {
+    try {
+      const saved = localStorage.getItem('vault_pending_deposit');
+      if (!saved) return;
+      const item = JSON.parse(saved) as OwnedItem;
+      this.pendingDeposit.set(item);
+      this.pollCooldown(item);
+    } catch {}
+  }
+
+  private savePendingDeposit(item: OwnedItem | null) {
+    if (item) {
+      localStorage.setItem('vault_pending_deposit', JSON.stringify(item));
+    } else {
+      localStorage.removeItem('vault_pending_deposit');
+    }
   }
 
   async loadContractState() {
@@ -215,6 +234,7 @@ export class VaultPageComponent implements OnInit {
       });
 
       this.pendingDeposit.set(item);
+      this.savePendingDeposit(item);
       this.pollCooldown(item);
     } catch (e) {
       console.error('Deposit failed:', e);
@@ -284,6 +304,7 @@ export class VaultPageComponent implements OnInit {
 
       this.swapComplete.set(true);
       this.pendingDeposit.set(null);
+      this.savePendingDeposit(null);
       this.selectedItem.set(null);
       await this.loadContractState();
       await this.loadVaultItems();
@@ -314,6 +335,7 @@ export class VaultPageComponent implements OnInit {
       await this.rpcClient.waitForTransactionReceipt({ hash });
 
       this.pendingDeposit.set(null);
+      this.savePendingDeposit(null);
       this.cooldownReady.set(false);
     } catch (e) {
       console.error('Cancel failed:', e);
