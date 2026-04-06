@@ -155,11 +155,22 @@ export class LotteryComponent implements OnInit, OnDestroy {
   ) {
     const overrideAddress = this.route.snapshot.data['lotteryAddress'];
     if (overrideAddress) {
-      this.lotterySvc.setAddress(overrideAddress);
+      this.lotterySvc.setAddress(overrideAddress as `0x${string}`);
+    } else {
+      // Reset to standard address when navigating back from Pro
+      this.lotterySvc.setAddress(this.lotterySvc.standardAddress);
     }
   }
 
   async ngOnInit() {
+    // Re-set address on init (handles navigation between standard/pro)
+    const overrideAddress = this.route.snapshot.data['lotteryAddress'];
+    if (overrideAddress) {
+      this.lotterySvc.setAddress(overrideAddress as `0x${string}`);
+    } else {
+      this.lotterySvc.setAddress(this.lotterySvc.standardAddress);
+    }
+
     // Fetch token #10298 (Philip) image for grid placeholders
     try {
       const philip = await this.lotterySvc.getEthscriptionByTokenId(10298);

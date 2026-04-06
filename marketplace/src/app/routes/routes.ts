@@ -30,7 +30,8 @@ export const routes: Routes = [
   {
     path: 'lottery-pro',
     loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent),
-    data: { lotteryAddress: '0x298771ECc338DE242ADa11e49E2B8224c33bf620'.toLowerCase() }
+    data: { lotteryAddress: '0x298771ECc338DE242ADa11e49E2B8224c33bf620'.toLowerCase() },
+    runGuardsAndResolvers: 'always',
   },
   {
     path: 'lottery/wins',

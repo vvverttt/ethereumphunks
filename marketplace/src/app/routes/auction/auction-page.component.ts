@@ -96,6 +96,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     const overrideAddress = this.route.snapshot.data['auctionAddress'];
     if (overrideAddress) {
       this.auctionSvc.setAddress(overrideAddress);
+    } else {
+      this.auctionSvc.setAddress('');
     }
   }
 
