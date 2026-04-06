@@ -31,7 +31,7 @@ export class VaultAllComponent implements OnInit {
   filtersVisible = false;
   traitFilters: any = null;
 
-  private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://ethereum-rpc.publicnode.com') });
+  private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO') });
 
   async ngOnInit() {
     const poolSize = await this.rpcClient.readContract({

@@ -79,7 +79,7 @@ export class VaultPageComponent implements OnInit {
 
   private merkleTree: string[][] = [];
   private allV67HashIds: string[] = [];
-  private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://ethereum-rpc.publicnode.com') });
+  private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO') });
 
   constructor(
     private store: Store<GlobalState>,
