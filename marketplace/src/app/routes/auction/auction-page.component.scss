@@ -133,3 +133,126 @@
   padding-top: 0;
 }
 
+// ─── Pool & Swap Section (Auction 2) ──────────────────────
+
+$swap-accent: #7c4dff;
+$swap-muted: rgba(255, 255, 255, .5);
+
+.pool-section {
+  width: 100%;
+  padding: 4rem 0 5rem;
+  clear: both;
+  position: relative;
+  z-index: 10;
+  background: rgba(var(--background), 1);
+  margin-top: 15rem;
+
+  .inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  h3 {
+    font-family: var(--secondary-font-stack);
+    font-size: 2.4rem;
+    color: $swap-accent;
+    margin-bottom: 1rem;
+  }
+
+  h4 {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.6rem;
+    color: $swap-accent;
+    margin: 2rem 0 1rem;
+  }
+
+  .hint {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.2rem;
+    color: $swap-muted;
+    margin-bottom: 2rem;
+  }
+}
+
+.pool-grid,
+.owned-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.pool-item,
+.owned-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: .5rem;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, .05);
+
+  &.pickable,
+  & {
+    cursor: pointer;
+  }
+
+  &.selected {
+    border-color: $swap-accent;
+    background: rgba($swap-accent, .15);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, .1);
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 1;
+    image-rendering: pixelated;
+  }
+
+  span {
+    font-family: var(--secondary-font-stack);
+    font-size: 1rem;
+    color: $swap-muted;
+    margin-top: .3rem;
+  }
+}
+
+.swap-pending,
+.swap-step1 {
+  margin-top: 2rem;
+
+  .btn {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.3rem;
+    padding: 1rem 2.5rem;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    background: $swap-accent;
+    margin-right: 1rem;
+
+    &:hover:not(:disabled) { opacity: .85; }
+
+    &.cancel-btn {
+      background: rgba(255, 255, 255, .15);
+      &:hover:not(:disabled) { background: rgba(255, 255, 255, .25); }
+    }
+
+    &:disabled {
+      opacity: .4;
+      cursor: default;
+    }
+  }
+}
+
+@media (max-width: $mobile) {
+  .pool-grid,
+  .owned-grid {
+    grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  }
+}
+

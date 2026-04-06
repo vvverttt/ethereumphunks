@@ -75,6 +75,24 @@ export class AuctionService {
     reservePrice: bigint;
     minBidIncrement: number;
   }> {
+    // Try cache first (10s TTL)
+    try {
+      const cacheKey = `auction_initial_${this.address}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < 10000) {
+          // Revive bigints from string
+          return {
+            auction: { ...data.auction, amount: BigInt(data.auction.amount) },
+            poolSize: BigInt(data.poolSize),
+            reservePrice: BigInt(data.reservePrice),
+            minBidIncrement: data.minBidIncrement,
+          };
+        }
+      }
+    } catch {}
+
     const results = await this.web3Svc.l1Client.multicall({
       contracts: [
         { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'auction' },
@@ -99,12 +117,28 @@ export class AuctionService {
     this.cachedReservePrice = reservePrice;
     this.cachedMinBidIncrement = minBidIncrement;
 
-    return {
+    const result = {
       auction,
       poolSize: (results[1].result as bigint) || 0n,
       reservePrice,
       minBidIncrement,
     };
+
+    // Save to cache
+    try {
+      const cacheKey = `auction_initial_${this.address}`;
+      localStorage.setItem(cacheKey, JSON.stringify({
+        data: {
+          auction: { ...auction, amount: auction.amount.toString() },
+          poolSize: result.poolSize.toString(),
+          reservePrice: reservePrice.toString(),
+          minBidIncrement,
+        },
+        ts: Date.now(),
+      }));
+    } catch {}
+
+    return result;
   }
 
   // =========================================================
