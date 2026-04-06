@@ -54,9 +54,55 @@ export interface SettledAuction {
 })
 export class AuctionService {
 
+  // Cache for values that rarely change
+  private cachedReservePrice: bigint | null = null;
+  private cachedMinBidIncrement: number | null = null;
+
   constructor(
     private web3Svc: Web3Service,
   ) {}
+
+  // =========================================================
+  // Batch read — single multicall for all initial data
+  // =========================================================
+
+  async getInitialData(): Promise<{
+    auction: AuctionData;
+    poolSize: bigint;
+    reservePrice: bigint;
+    minBidIncrement: number;
+  }> {
+    const results = await this.web3Svc.l1Client.multicall({
+      contracts: [
+        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'auction' },
+        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'poolSize' },
+        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'reservePrice' },
+        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'minBidIncrementPercentage' },
+      ],
+    });
+
+    const [hashId, amount, startTime, endTime, bidder, settled, auctionId] = results[0].result as any;
+    const auction: AuctionData = {
+      hashId, amount,
+      startTime: Number(startTime),
+      endTime: Number(endTime),
+      bidder, settled,
+      auctionId: Number(auctionId),
+    };
+
+    const reservePrice = (results[2].result as bigint) || 0n;
+    const minBidIncrement = Number(results[3].result || 10);
+
+    this.cachedReservePrice = reservePrice;
+    this.cachedMinBidIncrement = minBidIncrement;
+
+    return {
+      auction,
+      poolSize: (results[1].result as bigint) || 0n,
+      reservePrice,
+      minBidIncrement,
+    };
+  }
 
   // =========================================================
   // Contract Reads

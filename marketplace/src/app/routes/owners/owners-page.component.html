@@ -1,0 +1,42 @@
+<div class="inner">
+  <div class="header-wrapper">
+    <h1>All QuantumPhunk Owners</h1>
+  </div>
+
+  @if (loading()) {
+    <p class="status">Loading...</p>
+  } @else {
+    @for (collection of collections(); track collection.slug) {
+      <div class="collection-section">
+        <h2>{{ collection.name }} <span class="owner-count">({{ collection.owners.length }} owners)</span></h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th class="rank">#</th>
+                <th class="account">Account</th>
+                <th class="contract">Contract</th>
+                <th class="count">Number Owned</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (owner of collection.owners; track owner.address; let i = $index) {
+                <tr>
+                  <td class="rank">{{ i + 1 }}</td>
+                  <td class="account">
+                    <a [href]="explorerUrl + '/address/' + owner.address" target="_blank">
+                      <app-address [address]="owner.address" />
+                    </a>
+                  </td>
+                  <td class="contract">{{ getContractName(owner.address) }}</td>
+                  <td class="count">{{ owner.count }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>

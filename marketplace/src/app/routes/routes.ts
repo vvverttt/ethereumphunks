@@ -40,6 +40,10 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/ethsrocks/ethsrocks-page.component').then(mod => mod.EthsRocksPageComponent)
   },
   {
+    path: 'owners',
+    loadComponent: () => import('@/routes/owners/owners-page.component').then(mod => mod.OwnersPageComponent)
+  },
+  {
     path: 'vault',
     loadComponent: () => import('@/routes/vault/vault-page.component').then(mod => mod.VaultPageComponent)
   },

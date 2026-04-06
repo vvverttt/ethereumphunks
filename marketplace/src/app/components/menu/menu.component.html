@@ -99,6 +99,18 @@
     }
 
     <a
+      class="owners-button"
+      routerLink="/owners"
+      (click)="goToVault()">
+
+      <span>All Owners</span>
+
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </a>
+
+    <a
       class="vault-button"
       routerLink="/vault"
       (click)="goToVault()">

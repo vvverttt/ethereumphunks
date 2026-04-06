@@ -29,6 +29,7 @@ export class FooterComponent {
   auction = (environment as any).auctionAddress;
   mutation = (environment as any).evolveAddress;
   ethsrocks = (environment as any).ethsrocksAddress;
+  vault = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218';
 
   constructor(private store: Store<GlobalState>) {}
 }

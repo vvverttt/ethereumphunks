@@ -132,32 +132,23 @@ export class VaultPageComponent implements OnInit {
 
   async loadVaultItems() {
     try {
-      const size = this.poolSize();
-      if (size === 0) return;
-
-      // Get pool hashIds from contract
-      const hashIds: string[] = [];
-      for (let i = 0; i < size; i += 100) {
-        const items = await this.rpcClient.readContract({
-          address: VAULT_ADDRESS, abi: VAULT_ABI,
-          functionName: 'getPoolItems',
-          args: [BigInt(i), 100n],
-        });
-        hashIds.push(...(items as string[]));
-      }
-
-      // Look up sha and tokenId from Supabase
+      // Query Supabase for items owned by the vault contract
       const results: OwnedItem[] = [];
-      for (let i = 0; i < hashIds.length; i += 50) {
-        const batch = hashIds.slice(i, i + 50);
+      let offset = 0;
+      while (true) {
         const { data } = await supabase
           .from('ethscriptions')
           .select('hashId,sha,tokenId')
-          .in('hashId', batch);
-        if (data) results.push(...data as OwnedItem[]);
+          .eq('slug', 'cryptophunksv67')
+          .eq('owner', VAULT_ADDRESS.toLowerCase())
+          .order('tokenId')
+          .range(offset, offset + 999);
+        if (!data?.length) break;
+        results.push(...data as OwnedItem[]);
+        if (data.length < 1000) break;
+        offset += 1000;
       }
 
-      results.sort((a, b) => a.tokenId - b.tokenId);
       this.vaultItems.set(results);
 
       // Set splash previews from vault items

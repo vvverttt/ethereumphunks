@@ -162,7 +162,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
     this.pollInterval = setInterval(() => {
       if (!this.isHistorical()) this.loadAuction();
-    }, 12000);
+    }, 30000);
   }
 
   ngOnDestroy() {
@@ -171,12 +171,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
   async loadAuction() {
     try {
-      const [auctionData, poolSizeRaw, globalReserve, minBidInc] = await Promise.all([
-        this.auctionSvc.getAuction(),
-        this.auctionSvc.getPoolSize(),
-        this.auctionSvc.getReservePrice(),
-        this.auctionSvc.getMinBidIncrementPercentage(),
-      ]);
+      const { auction: auctionData, poolSize: poolSizeRaw, reservePrice: globalReserve, minBidIncrement: minBidInc } = await this.auctionSvc.getInitialData();
 
       this.auction.set(auctionData);
       this.poolSize.set(Number(poolSizeRaw));

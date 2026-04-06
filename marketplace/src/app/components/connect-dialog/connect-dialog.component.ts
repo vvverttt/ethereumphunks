@@ -45,13 +45,6 @@ export class ConnectDialogComponent {
       opts.push({ id: 'injected-phantom', name: 'Phantom', detected: true });
     }
 
-    // Magic Eden
-    const magicEden = typeof window !== 'undefined' ? (window as any).magicEden?.ethereum : null;
-    const hasMagicEden = this.web3.hasEip6963Provider('io.magiceden')
-      || !!magicEden || eth?.isMagicEden
-      || eth?.providers?.some((p: any) => p.isMagicEden);
-    opts.push({ id: 'injected-magiceden', name: 'Magic Eden', detected: !!hasMagicEden });
-
     opts.push({ id: 'walletConnect', name: 'WalletConnect', detected: false });
 
     return opts;
