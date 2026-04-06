@@ -72,6 +72,7 @@ export class AdminComponent implements OnInit {
   aWithdrawTo = '';
   aWithdrawPoolHashId = '';
   aEmergencyHashId = '';
+  aEmergencyBatch = '';
   aDepositHashIds = '';
   aTransferOwnership = '';
   aSetItemReserveHashIds = '';
@@ -375,6 +376,24 @@ export class AdminComponent implements OnInit {
   auctionWithdrawETH() { this.exec(() => this.adminSvc.auctionWithdrawETH(parseEther(this.aWithdrawAmount), this.aWithdrawTo), () => this.loadAuctionState()); }
   auctionWithdrawFromPool() { this.exec(() => this.adminSvc.auctionWithdrawFromPool(this.aWithdrawPoolHashId), () => this.loadAuctionState()); }
   auctionEmergencyWithdraw() { this.exec(() => this.adminSvc.auctionEmergencyWithdrawEthscription(this.aEmergencyHashId)); }
+  async auctionEmergencyWithdrawBatch() {
+    const hashIds = this.aEmergencyBatch.split(/[\n,]+/).map(s => s.trim()).filter(s => s.startsWith('0x'));
+    if (!hashIds.length) return;
+    if (!confirm(`Emergency withdraw ${hashIds.length} items? This sends ${hashIds.length} separate transactions.`)) return;
+    this.txPending.set(true);
+    let success = 0;
+    for (const hashId of hashIds) {
+      try {
+        await this.adminSvc.auctionEmergencyWithdrawEthscription(hashId);
+        success++;
+        console.log(`[${success}/${hashIds.length}] withdrawn ${hashId}`);
+      } catch (e) {
+        console.error('Failed:', hashId, e);
+      }
+    }
+    this.txPending.set(false);
+    alert(`Done. ${success}/${hashIds.length} withdrawn.`);
+  }
   auctionDepositEthscriptions() {
     const hashIds = this.aDepositHashIds.split(/[\n,]+/).map(s => s.trim()).filter(s => s.startsWith('0x'));
     if (!hashIds.length) return;

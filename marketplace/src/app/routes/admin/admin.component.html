@@ -188,6 +188,11 @@
             <button (click)="auctionEmergencyWithdraw()" [disabled]="txPending()">Emergency Withdraw</button>
           </div>
           <div class="action danger">
+            <label>Emergency Withdraw Batch (comma separated hashIds)</label>
+            <textarea [(ngModel)]="aEmergencyBatch" placeholder="0x..., 0x..., 0x..." rows="3"></textarea>
+            <button (click)="auctionEmergencyWithdrawBatch()" [disabled]="txPending()">Withdraw All</button>
+          </div>
+          <div class="action danger">
             <label>Transfer Ownership</label>
             <input type="text" [(ngModel)]="aTransferOwnership" placeholder="0x..." />
             <button (click)="transferAuctionOwnership()" [disabled]="txPending()">Transfer</button>
