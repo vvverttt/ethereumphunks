@@ -40,6 +40,7 @@ export class OwnersPageComponent implements OnInit {
     '0x29b0d38112e8e743b63eb463f3351ab0f1e15977': 'Lottery',
     '0x298771ecc338de242ada11e49e2b8224c33bf620': 'Lottery 2',
     '0xc1fa86b53e8e101c93c570f276bc5177832bd031': 'Auction House',
+    '0x2132622ff3178ef2574af25d8efdf94d6b7cc630': 'Auction House 2',
     '0x6a85c501b16e8c7be34eea409dab590a5b037cb8': 'EthsRocks',
   };
 
