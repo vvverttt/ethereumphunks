@@ -28,12 +28,22 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent)
   },
   {
+    path: 'lottery-pro',
+    loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent),
+    data: { lotteryAddress: '0x298771ECc338DE242ADa11e49E2B8224c33bf620'.toLowerCase() }
+  },
+  {
     path: 'lottery/wins',
     loadComponent: () => import('@/routes/lottery/lottery-wins.component').then(mod => mod.LotteryWinsComponent)
   },
   {
     path: 'auction',
     loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent)
+  },
+  {
+    path: 'auction2',
+    loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent),
+    data: { auctionAddress: '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630'.toLowerCase() }
   },
   {
     path: 'ethsrocks/deployer',

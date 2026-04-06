@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
 import { formatEther } from 'viem';
@@ -23,6 +24,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
     BidPanelComponent,
     AuctionSliderComponent,
   ],
+  providers: [AuctionService],
   templateUrl: './auction-page.component.html',
   styleUrls: ['./auction-page.component.scss'],
 })
@@ -88,7 +90,14 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     private store: Store<GlobalState>,
     private auctionSvc: AuctionService,
     public web3Svc: Web3Service,
-  ) {}
+    private route: ActivatedRoute,
+  ) {
+    // Check for address override from route data (auction house 2)
+    const overrideAddress = this.route.snapshot.data['auctionAddress'];
+    if (overrideAddress) {
+      this.auctionSvc.setAddress(overrideAddress);
+    }
+  }
 
   onMainImageLoad(event: Event) {
     const img = event.target as HTMLImageElement;

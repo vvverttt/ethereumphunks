@@ -20,22 +20,7 @@
   </div>
 
   <!-- Tier Toggle -->
-  @if (hasSecondLottery) {
-    <div class="tier-toggle">
-      <button
-        class="tier-button"
-        [class.active]="activeTier() === 'standard'"
-        (click)="switchTier('standard')">
-        Standard
-      </button>
-      <button
-        class="tier-button"
-        [class.active]="activeTier() === 'premium'"
-        (click)="switchTier('premium')">
-        One of One
-      </button>
-    </div>
-  }
+  <!-- Tier toggle removed — separate pages for Standard and Pro -->
 
   <!-- Grid Container -->
   <div class="grid-container" [class.shown]="loadedIn()" [class.spinning]="spinPhase() !== 'idle'">

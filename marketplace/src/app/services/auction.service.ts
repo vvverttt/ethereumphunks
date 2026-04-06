@@ -49,14 +49,17 @@ export interface SettledAuction {
   settledTimestamp: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class AuctionService {
 
   // Cache for values that rarely change
   private cachedReservePrice: bigint | null = null;
   private cachedMinBidIncrement: number | null = null;
+
+  // Allow overriding the auction address (for auction house 2)
+  private _addressOverride: `0x${string}` | null = null;
+  get address(): `0x${string}` { return this._addressOverride || auctionAddress; }
+  setAddress(addr: string) { this._addressOverride = addr as `0x${string}`; }
 
   constructor(
     private web3Svc: Web3Service,
@@ -74,10 +77,10 @@ export class AuctionService {
   }> {
     const results = await this.web3Svc.l1Client.multicall({
       contracts: [
-        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'auction' },
-        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'poolSize' },
-        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'reservePrice' },
-        { address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'minBidIncrementPercentage' },
+        { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'auction' },
+        { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'poolSize' },
+        { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'reservePrice' },
+        { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'minBidIncrementPercentage' },
       ],
     });
 
@@ -110,7 +113,7 @@ export class AuctionService {
 
   async getAuction(): Promise<AuctionData> {
     const result = await this.web3Svc.l1Client.readContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'auction',
     });
@@ -128,7 +131,7 @@ export class AuctionService {
 
   async getReservePrice(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'reservePrice',
     });
@@ -136,7 +139,7 @@ export class AuctionService {
 
   async getItemReservePrice(hashId: string): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'itemReservePrice',
       args: [hashId as `0x${string}`],
@@ -145,7 +148,7 @@ export class AuctionService {
 
   async getPoolSize(): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'poolSize',
     });
@@ -153,7 +156,7 @@ export class AuctionService {
 
   async isPaused(): Promise<boolean> {
     return await this.web3Svc.l1Client.readContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'paused',
     });
@@ -161,7 +164,7 @@ export class AuctionService {
 
   async getMinBidIncrementPercentage(): Promise<number> {
     const result = await this.web3Svc.l1Client.readContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'minBidIncrementPercentage',
     });
@@ -170,7 +173,7 @@ export class AuctionService {
 
   async getPendingReturns(address: string): Promise<bigint> {
     return await this.web3Svc.l1Client.readContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'pendingReturns',
       args: [address as `0x${string}`],
@@ -197,7 +200,7 @@ export class AuctionService {
     const value = parseEther(String(valueEth));
 
     const hash = await walletClient.writeContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'createBid',
       value,
@@ -221,7 +224,7 @@ export class AuctionService {
     if (!walletClient) throw new Error('No wallet connected');
 
     const hash = await walletClient.writeContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'settleAndCreate',
       chain: walletClient.chain,
@@ -238,7 +241,7 @@ export class AuctionService {
     if (!walletClient) throw new Error('No wallet connected');
 
     const hash = await walletClient.writeContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'settleAuction',
       chain: walletClient.chain,
@@ -255,7 +258,7 @@ export class AuctionService {
     if (!walletClient) throw new Error('No wallet connected');
 
     const hash = await walletClient.writeContract({
-      address: auctionAddress,
+      address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'withdraw',
       chain: walletClient.chain,
@@ -275,7 +278,7 @@ export class AuctionService {
     for (let from = auctionDeployBlock; from <= latestBlock; from += MAX_BLOCK_RANGE) {
       const to = from + MAX_BLOCK_RANGE - 1n > latestBlock ? latestBlock : from + MAX_BLOCK_RANGE - 1n;
       const logs = await logsClient.getContractEvents({
-        address: auctionAddress,
+        address: this.address,
         abi: EtherPhunksAuctionHouseV2ABI,
         eventName,
         fromBlock: from,
@@ -342,6 +345,9 @@ export class AuctionService {
 
   async getSettledAuctions(): Promise<SettledAuction[]> {
     try {
+      // Auction 2 has no history yet — return empty
+      if (this._addressOverride) return [];
+
       // Read settled auctions from DB instead of scanning RPC logs
       const { data: auctions } = await supabase
         .from('auctions' + suffix)

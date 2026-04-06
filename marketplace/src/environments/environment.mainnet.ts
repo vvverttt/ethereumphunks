@@ -27,6 +27,7 @@ export const environment = {
   lotteryAddress: '0x29b0d38112e8e743b63EB463F3351ab0F1E15977'.toLowerCase(),
   lottery2Address: '0x298771ECc338DE242ADa11e49E2B8224c33bf620'.toLowerCase(),
   auctionAddress: '0xc1fA86b53e8e101c93c570f276bC5177832bd031'.toLowerCase(),
+  auction2Address: '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630'.toLowerCase(),
   auctionDeployBlock: 24650288n,
   ethsrocksAddress: '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8'.toLowerCase(),
   ethsrocksDeployBlock: 24551518n,

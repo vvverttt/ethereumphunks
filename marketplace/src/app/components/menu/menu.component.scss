@@ -237,6 +237,41 @@ section {
       }
     }
 
+    .lottery-group {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+
+      .lottery-button {
+        margin-bottom: 0;
+        flex: 1;
+      }
+
+      .lottery-pro-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: .8rem 1.2rem .6rem;
+
+        font-family: var(--secondary-font-stack);
+        color: rgba(var(--black), 1);
+        font-size: 1.1rem;
+        text-decoration: none;
+
+        background-color: #00a8cc;
+        cursor: pointer;
+
+        &:active {
+          transform: translate(0, 1px);
+        }
+
+        &:hover {
+          background-color: #00bfe8;
+        }
+      }
+    }
+
     .lottery-button {
       display: flex;
       align-items: center;
@@ -302,6 +337,41 @@ section {
 
       &:active {
         transform: translate(0, 1px);
+      }
+    }
+
+    .auction-group {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+
+      .auction-button {
+        margin-bottom: 0;
+        flex: 1;
+      }
+
+      .auction2-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: .8rem 1.2rem .6rem;
+
+        font-family: var(--secondary-font-stack);
+        color: rgba(var(--white), 1);
+        font-size: 1.1rem;
+        text-decoration: none;
+
+        background-color: rgba(var(--pink), .7);
+        cursor: pointer;
+
+        &:active {
+          transform: translate(0, 1px);
+        }
+
+        &:hover {
+          background-color: rgba(var(--pink), .9);
+        }
       }
     }
 

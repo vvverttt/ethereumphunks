@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Store } from '@ngrx/store';
 
@@ -151,7 +151,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
     private lotterySvc: LotteryService,
     private dataSvc: DataService,
     private ngZone: NgZone,
-  ) {}
+    private route: ActivatedRoute,
+  ) {
+    const overrideAddress = this.route.snapshot.data['lotteryAddress'];
+    if (overrideAddress) {
+      this.lotterySvc.setAddress(overrideAddress);
+    }
+  }
 
   async ngOnInit() {
     // Fetch token #10298 (Philip) image for grid placeholders
