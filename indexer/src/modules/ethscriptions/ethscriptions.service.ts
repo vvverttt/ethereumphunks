@@ -7,7 +7,7 @@ import { StorageService } from '@/modules/storage/storage.service';
 import { esip1Abi, esip2Abi } from '@/abi/EthscriptionsProtocol';
 import * as esips from '@/constants/esips';
 
-import { auctionAbiV2, auctionAddressL1, chain, evolveAddressL1, lotteryAddressesL1, marketAbiL1, marketAddressL1, marketAddressesL1, mutationAbi, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
+import { auctionAbiV2, auctionAddressL1, auctionAddressesL1, chain, evolveAddressL1, lotteryAddressesL1, marketAbiL1, marketAddressL1, marketAddressesL1, mutationAbi, oldMarketAddressL1, pointsAbiL1, pointsAddressL1 } from '@/constants/ethereum';
 
 import { AttributeItem, Ethscription, Event } from '@/modules/storage/models/db';
 
@@ -73,7 +73,7 @@ export class EthscriptionsService {
     // Lottery deposits are processed here; prize awards are handled by lottery event processor
     const possibleTransfer = this.utilitySvc.possibleTransfer(input);
     const toAddress = transaction.to?.toLowerCase();
-    if (possibleTransfer && toAddress !== auctionAddressL1) {
+    if (possibleTransfer && !auctionAddressesL1.has(toAddress)) {
       const event = await this.processTransferEvent(
         input,
         transaction as Transaction,
@@ -116,7 +116,7 @@ export class EthscriptionsService {
     // and for prize awards the lottery processor cleans up duplicates
     const esip2Transfers = receipt.logs.filter(
       (log: any) => log.topics[0] === esips.TransferEthscriptionForPreviousOwnerSignature
-        && log.address?.toLowerCase() !== auctionAddressL1
+        && !auctionAddressesL1.has(log.address?.toLowerCase())
     );
     if (esip2Transfers.length) {
       Logger.debug(
@@ -142,9 +142,9 @@ export class EthscriptionsService {
     }
 
     // Filter logs for Auction House V2 events
-    if (auctionAddressL1) {
+    if (auctionAddressesL1.size) {
       const auctionLogs = receipt.logs.filter(
-        (log: any) => log.address?.toLowerCase() === auctionAddressL1
+        (log: any) => auctionAddressesL1.has(log.address?.toLowerCase())
       );
       if (auctionLogs.length) {
         Logger.debug(`Processing Auction event (L1)`, transaction.hash);

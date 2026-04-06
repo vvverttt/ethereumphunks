@@ -478,7 +478,99 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         revert("Cannot renounce ownership");
     }
 
-    // ─── Storage gap for future upgrades (50 - 1 consumed = 49) ──
+    // ─── Swap: users swap their v67 for one in the pool ─────
 
-    uint256[49] private __gap;
+    bool public swapEnabled;
+    bytes32 public swapMerkleRoot;
+    uint256 public swapFee;
+    uint256 public totalSwapped;
+
+    event Swapped(bytes32 indexed sentHashId, bytes32 indexed receivedHashId, address indexed swapper, uint256 swapNumber);
+
+    function swap(bytes32 sendHashId, bytes32 receiveHashId, bytes32[] calldata proof) external payable nonReentrant whenNotPaused {
+        require(swapEnabled, "Swaps disabled");
+        require(_pool.length > 0, "Pool empty");
+        require(msg.value >= swapFee, "Insufficient fee");
+        require(swapMerkleRoot != bytes32(0), "Merkle root not set");
+        require(_verifySwapMerkle(proof, swapMerkleRoot, sendHashId), "Not a valid CryptoPhunksV67");
+        require(inPool[receiveHashId], "Not in pool");
+        require(receiveHashId != auction.hashId || auction.settled, "Cannot swap active auction item");
+        require(
+            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][sendHashId] > 0,
+            "Ethscription not deposited"
+        );
+
+        // Send fee to treasury
+        if (msg.value > 0 && treasuryAddress != address(0)) {
+            (bool sent, ) = treasuryAddress.call{value: msg.value}("");
+            require(sent, "Fee transfer failed");
+        }
+
+        totalSwapped++;
+        address dep = depositor[receiveHashId];
+
+        // Remove received item from pool (swap-and-pop)
+        uint256 idx = _poolIndex[receiveHashId];
+        bytes32 lastHash = _pool[_pool.length - 1];
+        _pool[idx] = lastHash;
+        _poolIndex[lastHash] = idx;
+        _pool.pop();
+        inPool[receiveHashId] = false;
+        delete _poolIndex[receiveHashId];
+        delete depositor[receiveHashId];
+
+        // Add sent item to pool
+        EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
+            owner()
+        ][sendHashId] = 1;
+        delete EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
+            msg.sender
+        ][sendHashId];
+        _poolIndex[sendHashId] = _pool.length;
+        _pool.push(sendHashId);
+        inPool[sendHashId] = true;
+        depositor[sendHashId] = owner();
+
+        // Send picked item to user
+        _transferEthscription(dep, msg.sender, receiveHashId);
+
+        emit Swapped(sendHashId, receiveHashId, msg.sender, totalSwapped);
+    }
+
+    function cancelSwapDeposit(bytes32 hashId) external nonReentrant {
+        require(
+            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][hashId] > 0,
+            "Not deposited"
+        );
+        require(!inPool[hashId], "In pool");
+        _transferEthscription(msg.sender, msg.sender, hashId);
+    }
+
+    function setSwapEnabled(bool _enabled) external onlyOwner {
+        swapEnabled = _enabled;
+    }
+
+    function setSwapMerkleRoot(bytes32 _root) external onlyOwner {
+        swapMerkleRoot = _root;
+    }
+
+    function setSwapFee(uint256 _fee) external onlyOwner {
+        swapFee = _fee;
+    }
+
+    function _verifySwapMerkle(bytes32[] calldata proof, bytes32 root, bytes32 leaf) private pure returns (bool) {
+        bytes32 hash = leaf;
+        for (uint256 i = 0; i < proof.length; i++) {
+            if (hash < proof[i]) {
+                hash = keccak256(abi.encodePacked(hash, proof[i]));
+            } else {
+                hash = keccak256(abi.encodePacked(proof[i], hash));
+            }
+        }
+        return hash == root;
+    }
+
+    // ─── Storage gap for future upgrades (49 - 4 swap slots = 45) ──
+
+    uint256[45] private __gap;
 }

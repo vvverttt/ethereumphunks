@@ -80,6 +80,15 @@ export const auctionAddressL1: string =
     ? process.env.AUCTION_ADDRESS_MAINNET
     : process.env.AUCTION_ADDRESS_SEPOLIA)?.toLowerCase();
 
+export const auction2AddressL1: string =
+  (chain === 'mainnet'
+    ? process.env.AUCTION2_ADDRESS_MAINNET
+    : '')?.toLowerCase() || '';
+
+export const auctionAddressesL1 = new Set(
+  [auctionAddressL1, auction2AddressL1].filter(Boolean)
+);
+
 const backupUrls = (l1RpcURL_BACKUP || '').split(',').filter(Boolean);
 
 export const l1Client = createPublicClient({
