@@ -76,7 +76,7 @@ export class PhunkquidityPageComponent implements OnInit {
     { name: 'V3 Phunks',        slug: keccakStr('v3-phunks'),         slugStr: 'v3-phunks',         isERC721: true,  contractAddress: '0xb7d405bee01c70a9577316c1b9c2505f146e8842', pointValue: 3,   poolSize: 0 },
     { name: 'Pepephunks',       slug: keccakStr('pepephunks'),        slugStr: 'pepephunks',        isERC721: true,  contractAddress: '0xc00ffeb7cf191c3432ede000478901f99fd53633', pointValue: 3,   poolSize: 0 },
     { name: 'Skelephunks',      slug: keccakStr('skelephunks'),       slugStr: 'skelephunks',       isERC721: true,  contractAddress: '0x7db8cd89308a295bb2d7f809b05db6389e9a6d88', pointValue: 3,   poolSize: 0 },
-    { name: 'Etherphunks',      slug: keccakStr('etherphunks'),       slugStr: 'ethereum-phunks',   isERC721: false, pointValue: 20,  poolSize: 0 },
+    { name: 'Etherphunks',      slug: keccakStr('etherphunks'),       slugStr: 'ethereumphunks',    isERC721: false, pointValue: 20,  poolSize: 0 },
     { name: 'Missing Phunks',   slug: keccakStr('og-missing-phunks'), slugStr: 'og-missing-phunks', isERC721: false, pointValue: 100, poolSize: 0 },
     { name: 'Dystophunks',      slug: keccakStr('og-dysto-phunks'),   slugStr: 'og-dysto-phunks',   isERC721: false, pointValue: 300, poolSize: 0 },
     { name: 'CryptoPhunksV67',  slug: keccakStr('cryptophunksv67'),   slugStr: 'cryptophunksv67',   isERC721: false, pointValue: 300, poolSize: 0 },
