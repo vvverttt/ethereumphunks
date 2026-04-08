@@ -11,7 +11,15 @@ import { AdminService } from '@/services/admin.service';
 import { environment } from 'src/environments/environment';
 import { supabase } from '@/services/supabase';
 
-type Tab = 'market' | 'auction' | 'points' | 'lottery' | 'evolve' | 'ethsrocks' | 'visibility' | 'transfer-all';
+type Tab = 'market' | 'auction' | 'points' | 'lottery' | 'evolve' | 'ethsrocks' | 'visibility' | 'phunkquidity' | 'transfer-all';
+
+interface PhunkquidityCollectionRow {
+  name: string;
+  slugStr: string;
+  pointValue: number;
+  enabled: boolean;
+  newPointValue: number;
+}
 
 interface TransferStep {
   label: string;
@@ -162,6 +170,22 @@ export class AdminComponent implements OnInit {
   hiddenSlugs = signal<string[]>([]);
   visHiddenSlugsInput = '';
 
+  // Phunkquidity admin
+  phunkquidityOwner = signal('');
+  phunkquidityCollections = signal<PhunkquidityCollectionRow[]>([
+    { name: 'Philip Intern',    slugStr: 'philip-intern',     pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'V1 Phunks',        slugStr: 'v1-phunks',         pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'V2 Phunks',        slugStr: 'v2-phunks',         pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'V3 Phunks',        slugStr: 'v3-phunks',         pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'Pepephunks',       slugStr: 'pepephunks',        pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'Skelephunks',      slugStr: 'skelephunks',       pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'Etherphunks',      slugStr: 'etherphunks',       pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'Missing Phunks',   slugStr: 'og-missing-phunks', pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'Dystophunks',      slugStr: 'og-dysto-phunks',   pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'CryptoPhunksV67',  slugStr: 'cryptophunksv67',   pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'EthsRocks',        slugStr: 'ethsrocks',         pointValue: 0, enabled: false, newPointValue: 0 },
+  ]);
+
   // Batch operations (pause/unpause all, transfer all)
   batchRunning = signal(false);
   batchSteps = signal<TransferStep[]>([]);
@@ -204,7 +228,57 @@ export class AdminComponent implements OnInit {
       this.loadEvolveState(),
       this.loadEthsRocksState(),
       this.loadVisibility(),
+      this.loadPhunkquidityState(),
     ]);
+  }
+
+  async loadPhunkquidityState() {
+    try {
+      this.phunkquidityOwner.set(await this.adminSvc.getPhunkquidityOwner());
+      const rows = [...this.phunkquidityCollections()];
+      await Promise.all(rows.map(async (row) => {
+        try {
+          const c = await this.adminSvc.getPhunkquidityCollection(row.slugStr);
+          row.pointValue = Number(c.pointValue);
+          row.enabled = c.enabled;
+          row.newPointValue = Number(c.pointValue);
+        } catch {}
+      }));
+      this.phunkquidityCollections.set(rows);
+    } catch (e) {
+      console.error('Failed to load Phunkquidity state:', e);
+    }
+  }
+
+  async savePhunkquidityCollection(row: PhunkquidityCollectionRow) {
+    if (row.newPointValue <= 0) { this.txError.set('Point value must be > 0'); return; }
+    this.txPending.set(true);
+    this.txError.set('');
+    this.txHash.set('');
+    try {
+      const hash = await this.adminSvc.updatePhunkquidityCollection(row.slugStr, row.newPointValue, row.enabled);
+      this.txHash.set(hash);
+      await this.loadPhunkquidityState();
+    } catch (e: any) {
+      this.txError.set(e?.shortMessage || e?.message || 'Failed');
+    } finally {
+      this.txPending.set(false);
+    }
+  }
+
+  async togglePhunkquidityEnabled(row: PhunkquidityCollectionRow) {
+    this.txPending.set(true);
+    this.txError.set('');
+    this.txHash.set('');
+    try {
+      const hash = await this.adminSvc.updatePhunkquidityCollection(row.slugStr, row.pointValue, !row.enabled);
+      this.txHash.set(hash);
+      await this.loadPhunkquidityState();
+    } catch (e: any) {
+      this.txError.set(e?.shortMessage || e?.message || 'Failed');
+    } finally {
+      this.txPending.set(false);
+    }
   }
 
   async loadMarketState() {

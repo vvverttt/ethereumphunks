@@ -1,6 +1,13 @@
 import { Injectable } from '@angular/core';
-import { formatEther, encodePacked } from 'viem';
+import { formatEther, encodePacked, parseAbi, keccak256, toBytes } from 'viem';
 import { getWalletClient, getChainId, getPublicClient } from '@wagmi/core';
+
+const PHUNKQUIDITY_ADDRESS = '0x7f5763D56c7E8c34eB125DbD19124945D77e5f1A' as `0x${string}`;
+const PHUNKQUIDITY_ABI = parseAbi([
+  'function collections(bytes32) view returns (uint8 collType, address contractAddress, bytes32 merkleRoot, uint256 pointValue, bool enabled, bool exists)',
+  'function updateCollection(bytes32 slug, uint256 pointValue, bool enabled)',
+  'function owner() view returns (address)',
+]);
 
 import { environment } from 'src/environments/environment';
 import { Web3Service } from './web3.service';
@@ -683,5 +690,37 @@ export class AdminService {
 
   pointsRevokeAdminRole(addr: string) {
     return this.writeContract(pointsAddress, PointsABI, 'revokeRole', [DEFAULT_ADMIN_ROLE, addr]);
+  }
+
+  // =========================================================
+  // Phunkquidity admin
+  // =========================================================
+
+  async getPhunkquidityCollection(slugStr: string): Promise<{ pointValue: bigint; enabled: boolean; exists: boolean }> {
+    const publicClient = getPublicClient(this.web3Svc.config);
+    if (!publicClient) throw new Error('No public client');
+    const slug = keccak256(toBytes(slugStr));
+    const result = await publicClient.readContract({
+      address: PHUNKQUIDITY_ADDRESS,
+      abi: PHUNKQUIDITY_ABI,
+      functionName: 'collections',
+      args: [slug],
+    }) as readonly [number, `0x${string}`, `0x${string}`, bigint, boolean, boolean];
+    return { pointValue: result[3], enabled: result[4], exists: result[5] };
+  }
+
+  async getPhunkquidityOwner(): Promise<string> {
+    const publicClient = getPublicClient(this.web3Svc.config);
+    if (!publicClient) throw new Error('No public client');
+    return await publicClient.readContract({
+      address: PHUNKQUIDITY_ADDRESS,
+      abi: PHUNKQUIDITY_ABI,
+      functionName: 'owner',
+    }) as string;
+  }
+
+  updatePhunkquidityCollection(slugStr: string, pointValue: number, enabled: boolean) {
+    const slug = keccak256(toBytes(slugStr));
+    return this.writeContract(PHUNKQUIDITY_ADDRESS, PHUNKQUIDITY_ABI, 'updateCollection', [slug, BigInt(pointValue), enabled]);
   }
 }

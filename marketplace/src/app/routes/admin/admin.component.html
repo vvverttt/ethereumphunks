@@ -64,8 +64,49 @@
       <button [class.active]="activeTab() === 'evolve'" (click)="activeTab.set('evolve')">Evolve</button>
       <button [class.active]="activeTab() === 'ethsrocks'" (click)="activeTab.set('ethsrocks')">EthsRocks</button>
       <button [class.active]="activeTab() === 'visibility'" (click)="activeTab.set('visibility')">Visibility</button>
+      <button [class.active]="activeTab() === 'phunkquidity'" (click)="activeTab.set('phunkquidity')">Phunkquidity</button>
       <button [class.active]="activeTab() === 'transfer-all'" (click)="activeTab.set('transfer-all')">Transfer All</button>
     </div>
+
+    <!-- ==================== PHUNKQUIDITY ==================== -->
+    @if (activeTab() === 'phunkquidity') {
+      <div class="tab-content">
+        <h3>Phunkquidity Collection Settings</h3>
+        <p style="font-size: 12px; opacity: 0.7;">Owner: {{ phunkquidityOwner() }}</p>
+        <p style="font-size: 12px; opacity: 0.7;">Edit point value (cost in pts) per item. V67 base = 300. Connected wallet must be the contract owner.</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+          <thead>
+            <tr style="text-align: left;">
+              <th style="padding: 6px;">Collection</th>
+              <th style="padding: 6px;">Current pts</th>
+              <th style="padding: 6px;">New pts</th>
+              <th style="padding: 6px;">Enabled</th>
+              <th style="padding: 6px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of phunkquidityCollections(); track row.slugStr) {
+              <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
+                <td style="padding: 6px;">{{ row.name }}</td>
+                <td style="padding: 6px;">{{ row.pointValue }}</td>
+                <td style="padding: 6px;">
+                  <input type="number" min="1" [(ngModel)]="row.newPointValue" style="width: 80px;" />
+                </td>
+                <td style="padding: 6px;">{{ row.enabled ? '✓' : '✗' }}</td>
+                <td style="padding: 6px;">
+                  <button (click)="savePhunkquidityCollection(row)" [disabled]="txPending() || row.newPointValue === row.pointValue">Save pts</button>
+                  <button (click)="togglePhunkquidityEnabled(row)" [disabled]="txPending()" style="margin-left: 4px;">{{ row.enabled ? 'Disable' : 'Enable' }}</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        @if (txHash()) { <p class="tx-success">Tx: <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank">{{ txHash() }}</a></p> }
+        @if (txError()) { <p class="tx-error">{{ txError() }}</p> }
+      </div>
+    }
 
     <!-- ==================== MARKET ==================== -->
     @if (activeTab() === 'market') {

@@ -422,6 +422,27 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         }
     }
 
+    function emergencyWithdrawEthscriptionBatch(bytes32[] calldata hashIds) external onlyOwner nonReentrant {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            bytes32 hashId = hashIds[i];
+            // Skip active auction logic in batch (can't easily refund inside loop)
+            if (inPool[hashId]) {
+                uint256 idx = _poolIndex[hashId];
+                bytes32 lastHash = _pool[_pool.length - 1];
+                _pool[idx] = lastHash;
+                _poolIndex[lastHash] = idx;
+                _pool.pop();
+                inPool[hashId] = false;
+                delete _poolIndex[hashId];
+                delete depositor[hashId];
+            }
+            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
+                owner()
+            ][hashId] = 1;
+            _transferEthscription(owner(), owner(), hashId);
+        }
+    }
+
     function emergencyWithdrawEthscription(bytes32 hashId) external onlyOwner nonReentrant {
         // If this is the active auction item, refund the current bidder and mark settled
         if (auction.hashId == hashId && auction.startTime != 0 && !auction.settled) {

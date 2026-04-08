@@ -232,7 +232,19 @@ contract PhilipLotteryV68 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
     }
 
     function withdrawPrize(bytes32 hashId) external onlyOwner {
+        _withdrawPrize(hashId);
+    }
+
+    function withdrawPrizeBatch(bytes32[] calldata hashIds) external onlyOwner {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            _withdrawPrize(hashIds[i]);
+        }
+    }
+
+    function _withdrawPrize(bytes32 hashId) internal {
         require(inPool[hashId], "Not in pool");
+
+        address dep = depositor[hashId];
 
         // O(1) remove via index lookup + swap-and-pop
         uint256 idx = _poolIndex[hashId];
@@ -245,8 +257,8 @@ contract PhilipLotteryV68 is EthscriptionsEscrower, Ownable, Pausable, Reentranc
         delete depositor[hashId];
         delete _poolIndex[hashId];
 
-        // Transfer back to owner
-        _transferEthscription(owner(), owner(), hashId);
+        // Transfer using the original depositor address
+        _transferEthscription(dep, owner(), hashId);
 
         emit PrizeWithdrawn(hashId);
     }

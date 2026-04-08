@@ -244,7 +244,7 @@ contract Phunkquidity is
                     "Ethscription not deposited"
                 );
                 EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
-                    owner()
+                    address(this)
                 ][inputs[i].hashId] = 1;
                 delete EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
                     msg.sender
@@ -252,7 +252,7 @@ contract Phunkquidity is
                 _ethscPool[inputs[i].slug].push(inputs[i].hashId);
                 _ethscPoolIndex[inputs[i].slug][inputs[i].hashId] = _ethscPool[inputs[i].slug].length;
                 ethscInPool[inputs[i].slug][inputs[i].hashId] = true;
-                ethscDepositor[inputs[i].slug][inputs[i].hashId] = owner();
+                ethscDepositor[inputs[i].slug][inputs[i].hashId] = address(this);
             }
         }
 
@@ -435,31 +435,24 @@ contract Phunkquidity is
     ) internal {
         uint256 ethscIdx = 0;
         for (uint256 i = 0; i < offering.length; i++) {
-            if (collections[offering[i].slug].collType == CollectionType.Ethscription) {
-                _depositOfferItem(offering[i], ethscProofs[ethscIdx]);
-                ethscIdx++;
+            Collection memory c = collections[offering[i].slug];
+            require(c.exists && c.enabled, "Collection disabled");
+
+            if (c.collType == CollectionType.ERC721) {
+                IERC721(c.contractAddress).transferFrom(msg.sender, address(this), offering[i].tokenId);
             } else {
-                _depositOfferItem(offering[i], ethscProofs.length > 0 ? ethscProofs[0] : ethscProofs[0]);
+                require(c.merkleRoot != bytes32(0), "Merkle root not set");
+                require(ethscIdx < ethscProofs.length, "Missing proof");
+                require(_verifyMerkle(ethscProofs[ethscIdx], c.merkleRoot, offering[i].hashId), "Invalid proof");
+                require(
+                    EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][offering[i].hashId] > 0,
+                    "Ethscription not deposited"
+                );
+                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[address(this)][offering[i].hashId] = 1;
+                delete EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][offering[i].hashId];
+                ethscIdx++;
             }
             offer.offering.push(offering[i]);
-        }
-    }
-
-    function _depositOfferItem(OfferItem calldata item, bytes32[] calldata proof) internal {
-        Collection memory c = collections[item.slug];
-        require(c.exists && c.enabled, "Collection disabled");
-
-        if (c.collType == CollectionType.ERC721) {
-            IERC721(c.contractAddress).transferFrom(msg.sender, address(this), item.tokenId);
-        } else {
-            require(c.merkleRoot != bytes32(0), "Merkle root not set");
-            require(_verifyMerkle(proof, c.merkleRoot, item.hashId), "Invalid proof");
-            require(
-                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][item.hashId] > 0,
-                "Ethscription not deposited"
-            );
-            EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[address(this)][item.hashId] = 1;
-            delete EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][item.hashId];
         }
     }
 
@@ -502,33 +495,27 @@ contract Phunkquidity is
         uint256 ethscIdx = 0;
 
         for (uint256 i = 0; i < offer.wanting.length; i++) {
-            if (collections[offer.wanting[i].slug].collType == CollectionType.Ethscription) {
-                _transferWantedItem(offer.wanting[i], creator, ethscProofs[ethscIdx]);
-                ethscIdx++;
+            OfferItem memory item = offer.wanting[i];
+            Collection memory c = collections[item.slug];
+            require(c.enabled, "Collection disabled");
+
+            if (c.collType == CollectionType.ERC721) {
+                IERC721(c.contractAddress).transferFrom(msg.sender, creator, item.tokenId);
             } else {
-                _transferWantedItem(offer.wanting[i], creator, ethscProofs.length > 0 ? ethscProofs[0] : ethscProofs[0]);
+                require(c.merkleRoot != bytes32(0), "Merkle root not set");
+                require(ethscIdx < ethscProofs.length, "Missing proof");
+                require(_verifyMerkle(ethscProofs[ethscIdx], c.merkleRoot, item.hashId), "Invalid proof");
+                require(
+                    EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][item.hashId] > 0,
+                    "Ethscription not deposited"
+                );
+                _transferEthscription(msg.sender, creator, item.hashId);
+                ethscIdx++;
             }
         }
 
         for (uint256 i = 0; i < offer.offering.length; i++) {
             _sendOfferedItem(offer.offering[i], msg.sender);
-        }
-    }
-
-    function _transferWantedItem(OfferItem memory item, address creator, bytes32[] calldata proof) internal {
-        Collection memory c = collections[item.slug];
-        require(c.enabled, "Collection disabled");
-
-        if (c.collType == CollectionType.ERC721) {
-            IERC721(c.contractAddress).transferFrom(msg.sender, creator, item.tokenId);
-        } else {
-            require(c.merkleRoot != bytes32(0), "Merkle root not set");
-            require(_verifyMerkle(proof, c.merkleRoot, item.hashId), "Invalid proof");
-            require(
-                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][item.hashId] > 0,
-                "Ethscription not deposited"
-            );
-            _transferEthscription(msg.sender, creator, item.hashId);
         }
     }
 

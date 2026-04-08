@@ -78,7 +78,7 @@ export class PhunkquidityPageComponent implements OnInit {
     { name: 'Skelephunks',      slug: keccakStr('skelephunks'),       slugStr: 'skelephunks',       isERC721: true,  contractAddress: '0x7db8cd89308a295bb2d7f809b05db6389e9a6d88', pointValue: 3,   poolSize: 0 },
     { name: 'Etherphunks',      slug: keccakStr('etherphunks'),       slugStr: 'ethereum-phunks',   isERC721: false, pointValue: 20,  poolSize: 0 },
     { name: 'Missing Phunks',   slug: keccakStr('og-missing-phunks'), slugStr: 'og-missing-phunks', isERC721: false, pointValue: 100, poolSize: 0 },
-    { name: 'DystoPhunkz',      slug: keccakStr('og-dysto-phunks'),   slugStr: 'og-dysto-phunks',   isERC721: false, pointValue: 300, poolSize: 0 },
+    { name: 'Dystophunks',      slug: keccakStr('og-dysto-phunks'),   slugStr: 'og-dysto-phunks',   isERC721: false, pointValue: 300, poolSize: 0 },
     { name: 'CryptoPhunksV67',  slug: keccakStr('cryptophunksv67'),   slugStr: 'cryptophunksv67',   isERC721: false, pointValue: 300, poolSize: 0 },
     { name: 'EthsRocks',        slug: keccakStr('ethsrocks'),         slugStr: 'ethsrocks',         isERC721: false, pointValue: 150, poolSize: 0 },
   ]);

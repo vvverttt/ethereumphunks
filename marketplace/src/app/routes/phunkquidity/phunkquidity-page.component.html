@@ -126,12 +126,16 @@
           <div class="swap-action">
             <div class="points-summary">
               Your value: <strong>{{ inputPoints() }}</strong> &nbsp;|&nbsp; Cost: <strong>{{ outputPoints() }}</strong>
-              @if (inputPoints() < outputPoints()) {
+              @if (outputBasket().length === 0) {
+                <span class="hint">Pick what you want from the pool →</span>
+              } @else if (inputBasket().length === 0) {
+                <span class="hint">← Pick items to give</span>
+              } @else if (inputPoints() < outputPoints()) {
                 <span class="error">You need {{ outputPoints() - inputPoints() }} more value</span>
               } @else if (inputPoints() === outputPoints()) {
                 <span class="ok">Even trade ✓</span>
               } @else {
-                <span class="ok">{{ inputPoints() - outputPoints() }} excess value</span>
+                <span class="warn">⚠ {{ inputPoints() - outputPoints() }} pts will be lost (no refund)</span>
               }
             </div>
             <button class="swap-btn" [disabled]="!canSwap() || txPending()" (click)="onSwap()">
