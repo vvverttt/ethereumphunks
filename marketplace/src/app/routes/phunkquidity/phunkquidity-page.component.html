@@ -23,6 +23,48 @@
         </div>
       </div>
 
+      <!-- Owner-only deposit panel -->
+      @if (isOwner()) {
+        <div class="section" style="border: 2px solid #ff00ff; padding: 12px; margin-bottom: 16px;">
+          <h2 style="color: #ff00ff;">Owner: Deposit to Pool</h2>
+          <p class="hint">Pick a collection and items from your wallet to deposit into the pool. All selected items go in one tx.</p>
+
+          <div class="collection-picker">
+            <label>Collection:</label>
+            <select [value]="ownerDepositSlug()" (change)="ownerDepositSlug.set($any($event.target).value); loadOwnerDepositItems()">
+              @for (c of collections(); track c.slugStr) {
+                @if (!c.isERC721) {
+                  <option [value]="c.slugStr">{{ c.name }}</option>
+                }
+              }
+            </select>
+            <button (click)="loadOwnerDepositItems()" style="margin-left: 8px;">Load my items</button>
+          </div>
+
+          @if (ownerDepositItems().length > 0) {
+            <div class="items-grid" style="margin-top: 12px;">
+              @for (item of ownerDepositItems(); track item.hashId) {
+                <div class="item" [class.selected]="isInOwnerDeposit(item)" (click)="toggleOwnerDeposit(item)">
+                  @if (item.sha) {
+                    <img [src]="getImageUrl(item)" />
+                  } @else {
+                    <div class="placeholder">#{{ item.tokenId }}</div>
+                  }
+                  <span>#{{ item.tokenId }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          <div class="swap-action">
+            <button class="swap-btn" [disabled]="ownerDepositSelected().length === 0 || txPending()" (click)="ownerDepositToPool()">
+              @if (txPending()) { Depositing... } @else { Deposit {{ ownerDepositSelected().length }} to pool }
+            </button>
+            @if (status()) { <p class="tx-status">{{ status() }}</p> }
+          </div>
+        </div>
+      }
+
       <!-- Tabs -->
       <div class="tabs">
         <button [class.active]="activeTab() === 'swap'" (click)="setTab('swap')">Pool Swap</button>

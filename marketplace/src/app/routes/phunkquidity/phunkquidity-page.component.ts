@@ -23,6 +23,7 @@ const ZERO_BYTES32 = '0x00000000000000000000000000000000000000000000000000000000
 const keccakStr = (s: string): `0x${string}` => keccak256(toBytes(s));
 
 const PHUNKQUIDITY_ABI = parseAbi([
+  'function owner() view returns (address)',
   'function swapEnabled() view returns (bool)',
   'function swapFee() view returns (uint256)',
   'function nextOfferId() view returns (uint256)',
@@ -104,6 +105,11 @@ export class PhunkquidityPageComponent implements OnInit {
   offerSelectedOfferingCollection = signal<CollectionConfig | null>(null);
   offerSelectedWantingCollection = signal<CollectionConfig | null>(null);
 
+  // Owner-only deposit panel
+  isOwner = signal(false);
+  ownerDepositSlug = signal<string>('cryptophunksv67');
+  ownerDepositHashIds = signal<string>('');
+
   inputPoints = computed(() => this.inputBasket().reduce((s, i) => s + i.collection.pointValue, 0));
   outputPoints = computed(() => this.outputBasket().reduce((s, i) => s + i.collection.pointValue, 0));
   v67ToV67Blocked = computed(() => {
@@ -123,12 +129,18 @@ export class PhunkquidityPageComponent implements OnInit {
 
   async ngOnInit() {
     try {
-      const [enabled, fee] = await Promise.all([
+      const [enabled, fee, ownerAddr] = await Promise.all([
         this.rpcClient.readContract({ address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI, functionName: 'swapEnabled' }),
         this.rpcClient.readContract({ address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI, functionName: 'swapFee' }),
+        this.rpcClient.readContract({ address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI, functionName: 'owner' }),
       ]);
       this.swapEnabled.set(enabled as boolean);
       this.swapFee.set(fee as bigint);
+
+      const wallet = await firstValueFrom(this.store.select(appStateSelectors.selectWalletAddress));
+      if (wallet && (ownerAddr as string).toLowerCase() === wallet.toLowerCase()) {
+        this.isOwner.set(true);
+      }
 
       const cols = this.collections();
       const updated = await Promise.all(cols.map(async c => {
@@ -596,6 +608,78 @@ export class PhunkquidityPageComponent implements OnInit {
 
   removeOfferOffering(idx: number) {
     this.offerOffering.set(this.offerOffering().filter((_, i) => i !== idx));
+  }
+
+  // Owner-only deposit (loads owned items from connected wallet for selected collection)
+  ownerDepositItems = signal<BasketItem[]>([]);
+  ownerDepositSelected = signal<BasketItem[]>([]);
+
+  async loadOwnerDepositItems() {
+    const slugStr = this.ownerDepositSlug();
+    const c = this.collections().find(x => x.slugStr === slugStr);
+    if (!c || c.isERC721) { this.ownerDepositItems.set([]); return; }
+
+    const address = await firstValueFrom(this.store.select(appStateSelectors.selectWalletAddress));
+    if (!address) return;
+
+    const { data } = await supabase
+      .from('ethscriptions')
+      .select('hashId,sha,tokenId')
+      .eq('slug', slugStr)
+      .eq('owner', address.toLowerCase())
+      .order('tokenId')
+      .limit(500);
+
+    this.ownerDepositItems.set((data || []).map((d: any) => ({
+      collection: c, hashId: d.hashId, sha: d.sha, tokenId: d.tokenId,
+    })));
+    this.ownerDepositSelected.set([]);
+  }
+
+  toggleOwnerDeposit(item: BasketItem) {
+    const sel = this.ownerDepositSelected();
+    const idx = sel.findIndex(x => x.hashId === item.hashId);
+    if (idx >= 0) this.ownerDepositSelected.set(sel.filter((_, i) => i !== idx));
+    else this.ownerDepositSelected.set([...sel, item]);
+  }
+
+  isInOwnerDeposit(item: BasketItem): boolean {
+    return this.ownerDepositSelected().some(x => x.hashId === item.hashId);
+  }
+
+  async ownerDepositToPool() {
+    const items = this.ownerDepositSelected();
+    if (items.length === 0 || this.txPending()) return;
+    const c = items[0].collection;
+
+    this.txPending.set(true);
+    this.status.set(`Depositing ${items.length} ${c.name}...`);
+
+    try {
+      const walletClient = await this.getWallet();
+      // Build calldata: [slug(32)][hashId(32)] per item, all in one tx
+      let data = '0x';
+      for (const item of items) {
+        data += c.slug.slice(2) + (item.hashId as string).slice(2);
+      }
+
+      const tx = await walletClient.sendTransaction({
+        to: PHUNKQUIDITY,
+        data: data as `0x${string}`,
+        chain: walletClient.chain,
+      });
+      await this.rpcClient.waitForTransactionReceipt({ hash: tx });
+
+      this.status.set(`Deposited ${items.length} item(s) to pool!`);
+      this.ownerDepositSelected.set([]);
+      await this.loadOwnerDepositItems();
+      await this.ngOnInit();
+    } catch (e: any) {
+      console.error('Owner deposit failed:', e);
+      this.status.set('Deposit failed: ' + (e?.shortMessage || e?.message?.slice(0, 100) || ''));
+    } finally {
+      this.txPending.set(false);
+    }
   }
   removeOfferWanting(idx: number) {
     this.offerWanting.set(this.offerWanting().filter((_, i) => i !== idx));
