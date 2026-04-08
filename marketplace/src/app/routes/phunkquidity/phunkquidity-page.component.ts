@@ -33,10 +33,10 @@ const PHUNKQUIDITY_ABI = parseAbi([
   'function getERC721PoolItems(bytes32 slug, uint256 offset, uint256 limit) view returns (uint256[])',
   'function getEthscPoolItems(bytes32 slug, uint256 offset, uint256 limit) view returns (bytes32[])',
   'function swap((bytes32 slug, uint256 tokenId, bytes32 hashId, bytes32[] proof)[] inputs, (bytes32 slug, uint256 tokenId, bytes32 hashId)[] outputs) payable',
-  'function createOffer((bytes32 slug, uint256 tokenId, bytes32 hashId)[] offering, (bytes32 slug, uint256 tokenId, bytes32 hashId)[] wanting, address targetUser, bytes32[][] ethscProofs) payable returns (uint256)',
+  'function createOffer((bytes32 slug, bytes32 idData)[] offering, (bytes32 slug, bytes32 idData)[] wanting, address targetUser, bytes32[][] ethscProofs) payable returns (uint256)',
   'function fulfillOffer(uint256 offerId, bytes32[][] ethscProofs) payable',
   'function cancelOffer(uint256 offerId)',
-  'function getOffer(uint256 offerId) view returns (address creator, address targetUser, (bytes32 slug, uint256 tokenId, bytes32 hashId)[] offering, (bytes32 slug, uint256 tokenId, bytes32 hashId)[] wanting, bool active)',
+  'function getOffer(uint256 offerId) view returns (address creator, address targetUser, (bytes32 slug, bytes32 idData)[] offering, (bytes32 slug, bytes32 idData)[] wanting, bool active)',
 ]);
 
 interface CollectionConfig {
@@ -633,14 +633,16 @@ export class PhunkquidityPageComponent implements OnInit {
 
       const offering = this.offerOffering().map(i => ({
         slug: i.collection.slug,
-        tokenId: BigInt(i.tokenId || 0),
-        hashId: (i.hashId || ZERO_BYTES32) as `0x${string}`,
+        idData: (i.collection.isERC721
+          ? ('0x' + BigInt(i.tokenId || 0).toString(16).padStart(64, '0'))
+          : (i.hashId || ZERO_BYTES32)) as `0x${string}`,
       }));
 
       const wanting = this.offerWanting().map(i => ({
         slug: i.collection.slug,
-        tokenId: BigInt(i.tokenId || 0),
-        hashId: (i.hashId || ZERO_BYTES32) as `0x${string}`,
+        idData: (i.collection.isERC721
+          ? ('0x' + BigInt(i.tokenId || 0).toString(16).padStart(64, '0'))
+          : (i.hashId || ZERO_BYTES32)) as `0x${string}`,
       }));
 
       const target = this.offerTargetUser() || '0x0000000000000000000000000000000000000000';
@@ -681,7 +683,7 @@ export class PhunkquidityPageComponent implements OnInit {
         const c = this.collections().find(x => x.slug.toLowerCase() === w.slug.toLowerCase());
         if (c && !c.isERC721) {
           const tree = await this.ensureMerkleTree(c.slugStr);
-          ethscProofs.push(this.getMerkleProof(tree, w.hashId));
+          ethscProofs.push(this.getMerkleProof(tree, w.idData));
         }
       }
 
@@ -696,7 +698,7 @@ export class PhunkquidityPageComponent implements OnInit {
           this.status.set('Depositing ethscription...');
           const tx = await walletClient.sendTransaction({
             to: PHUNKQUIDITY,
-            data: w.hashId as `0x${string}`,
+            data: w.idData as `0x${string}`,
             chain: walletClient.chain,
           });
           await this.rpcClient.waitForTransactionReceipt({ hash: tx });
@@ -754,6 +756,10 @@ export class PhunkquidityPageComponent implements OnInit {
   formatOfferItem(item: any): string {
     const c = this.getCollectionByBytes32Slug(item.slug);
     const name = c?.name || 'Unknown';
-    return `${name} ${item.tokenId > 0n ? '#' + item.tokenId.toString() : ''}`;
+    if (c?.isERC721) {
+      const tokenId = BigInt(item.idData).toString();
+      return `${name} #${tokenId}`;
+    }
+    return `${name} ${item.idData?.slice(0, 10)}...`;
   }
 }

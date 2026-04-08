@@ -427,18 +427,19 @@ contract Phunkquidity is
     // PHASE 2: Trade Offers
     // =========================================================
 
+    // Packed: slug (32B) + idData (32B = either tokenId or hashId, dispatched by collection type)
     struct OfferItem {
         bytes32 slug;
-        uint256 tokenId;       // For ERC-721
-        bytes32 hashId;        // For ethscription
+        bytes32 idData;
     }
 
+    // Packed: creator (20B) + active (1B) share slot 0, targetUser (20B) on slot 1
     struct TradeOffer {
         address creator;
+        bool active;
         address targetUser;    // address(0) = open to anyone, otherwise direct offer
         OfferItem[] offering;  // What creator deposited
         OfferItem[] wanting;   // What creator wants in return
-        bool active;
     }
 
     uint256 public nextOfferId;
@@ -459,17 +460,17 @@ contract Phunkquidity is
             require(c.exists && c.enabled, "Collection disabled");
 
             if (c.collType == CollectionType.ERC721) {
-                IERC721(c.contractAddress).transferFrom(msg.sender, address(this), offering[i].tokenId);
+                IERC721(c.contractAddress).transferFrom(msg.sender, address(this), uint256(offering[i].idData));
             } else {
                 require(c.merkleRoot != bytes32(0), "Merkle root not set");
                 require(ethscIdx < ethscProofs.length, "Missing proof");
-                require(_verifyMerkle(ethscProofs[ethscIdx], c.merkleRoot, offering[i].hashId), "Invalid proof");
+                require(_verifyMerkle(ethscProofs[ethscIdx], c.merkleRoot, offering[i].idData), "Invalid proof");
                 require(
-                    EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][offering[i].hashId] > 0,
+                    EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][offering[i].idData] > 0,
                     "Ethscription not deposited"
                 );
-                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[address(this)][offering[i].hashId] = 1;
-                delete EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][offering[i].hashId];
+                EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[address(this)][offering[i].idData] = 1;
+                delete EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][offering[i].idData];
                 ethscIdx++;
             }
             offer.offering.push(offering[i]);
@@ -520,16 +521,16 @@ contract Phunkquidity is
             require(c.enabled, "Collection disabled");
 
             if (c.collType == CollectionType.ERC721) {
-                IERC721(c.contractAddress).transferFrom(msg.sender, creator, item.tokenId);
+                IERC721(c.contractAddress).transferFrom(msg.sender, creator, uint256(item.idData));
             } else {
                 require(c.merkleRoot != bytes32(0), "Merkle root not set");
                 require(ethscIdx < ethscProofs.length, "Missing proof");
-                require(_verifyMerkle(ethscProofs[ethscIdx], c.merkleRoot, item.hashId), "Invalid proof");
+                require(_verifyMerkle(ethscProofs[ethscIdx], c.merkleRoot, item.idData), "Invalid proof");
                 require(
-                    EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][item.hashId] > 0,
+                    EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][item.idData] > 0,
                     "Ethscription not deposited"
                 );
-                _transferEthscription(msg.sender, creator, item.hashId);
+                _transferEthscription(msg.sender, creator, item.idData);
                 ethscIdx++;
             }
         }
@@ -542,9 +543,9 @@ contract Phunkquidity is
     function _sendOfferedItem(OfferItem memory item, address to) internal {
         Collection memory c = collections[item.slug];
         if (c.collType == CollectionType.ERC721) {
-            IERC721(c.contractAddress).transferFrom(address(this), to, item.tokenId);
+            IERC721(c.contractAddress).transferFrom(address(this), to, uint256(item.idData));
         } else {
-            _transferEthscription(address(this), to, item.hashId);
+            _transferEthscription(address(this), to, item.idData);
         }
     }
 
@@ -582,9 +583,9 @@ contract Phunkquidity is
         for (uint256 i = 0; i < offer.offering.length; i++) {
             Collection memory c = collections[offer.offering[i].slug];
             if (c.collType == CollectionType.ERC721) {
-                IERC721(c.contractAddress).transferFrom(address(this), offer.creator, offer.offering[i].tokenId);
+                IERC721(c.contractAddress).transferFrom(address(this), offer.creator, uint256(offer.offering[i].idData));
             } else {
-                _transferEthscription(address(this), offer.creator, offer.offering[i].hashId);
+                _transferEthscription(address(this), offer.creator, offer.offering[i].idData);
             }
         }
 
