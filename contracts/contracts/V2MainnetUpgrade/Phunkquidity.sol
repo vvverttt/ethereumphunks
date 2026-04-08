@@ -81,6 +81,9 @@ contract Phunkquidity is
     uint256 public totalSwaps;
     address payable public treasuryAddress;
 
+    // Collections that cannot be used as swap inputs (e.g. V67 = output only)
+    mapping(bytes32 => bool) public inputDisabled;
+
     // ─── Events ──────────────────────────────────────────────
     event CollectionAdded(bytes32 indexed slug, CollectionType collType, address contractAddress, uint256 pointValue);
     event CollectionUpdated(bytes32 indexed slug, uint256 pointValue, bool enabled);
@@ -209,6 +212,7 @@ contract Phunkquidity is
         for (uint256 i = 0; i < inputs.length; i++) {
             Collection memory c = collections[inputs[i].slug];
             require(c.enabled, "Input disabled");
+            require(!inputDisabled[inputs[i].slug], "Collection is output-only");
             inputPoints += c.pointValue;
         }
 
@@ -351,6 +355,10 @@ contract Phunkquidity is
 
     function setSwapEnabled(bool _enabled) external onlyOwner { swapEnabled = _enabled; }
     function setSwapFee(uint256 _fee) external onlyOwner { swapFee = _fee; }
+    function setInputDisabled(bytes32 slug, bool disabled) external onlyOwner {
+        require(collections[slug].exists, "Unknown collection");
+        inputDisabled[slug] = disabled;
+    }
     function setTreasuryAddress(address payable _addr) external onlyOwner {
         require(_addr != address(0), "Invalid");
         treasuryAddress = _addr;
@@ -583,5 +591,5 @@ contract Phunkquidity is
     }
 
     // ─── Storage gap ─────────────────────────────────────────
-    uint256[38] private __gap;
+    uint256[37] private __gap;
 }

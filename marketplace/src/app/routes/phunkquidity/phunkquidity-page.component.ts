@@ -26,6 +26,7 @@ const PHUNKQUIDITY_ABI = parseAbi([
   'function swapEnabled() view returns (bool)',
   'function swapFee() view returns (uint256)',
   'function nextOfferId() view returns (uint256)',
+  'function collections(bytes32) view returns (uint8 collType, address contractAddress, bytes32 merkleRoot, uint256 pointValue, bool enabled, bool exists)',
   'function erc721PoolSize(bytes32 slug) view returns (uint256)',
   'function ethscPoolSize(bytes32 slug) view returns (uint256)',
   'function getERC721PoolItems(bytes32 slug, uint256 offset, uint256 limit) view returns (uint256[])',
@@ -130,12 +131,19 @@ export class PhunkquidityPageComponent implements OnInit {
       const cols = this.collections();
       const updated = await Promise.all(cols.map(async c => {
         try {
-          const size = await this.rpcClient.readContract({
-            address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI,
-            functionName: c.isERC721 ? 'erc721PoolSize' : 'ethscPoolSize',
-            args: [c.slug],
-          });
-          return { ...c, poolSize: Number(size) };
+          const [size, collInfo] = await Promise.all([
+            this.rpcClient.readContract({
+              address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI,
+              functionName: c.isERC721 ? 'erc721PoolSize' : 'ethscPoolSize',
+              args: [c.slug],
+            }),
+            this.rpcClient.readContract({
+              address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI,
+              functionName: 'collections',
+              args: [c.slug],
+            }) as Promise<readonly [number, `0x${string}`, `0x${string}`, bigint, boolean, boolean]>,
+          ]);
+          return { ...c, poolSize: Number(size), pointValue: Number(collInfo[3]) || c.pointValue };
         } catch {
           return c;
         }
