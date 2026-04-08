@@ -64,6 +64,8 @@ export interface GlobalConfig {
   showLottery: boolean;
   showAuction: boolean;
   showEthsRocksDeployer: boolean;
+  showPhunkSwap: boolean;
+  showPhunkquidity: boolean;
   hiddenSlugs: string[];
 };
 

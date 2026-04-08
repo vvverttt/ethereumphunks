@@ -157,6 +157,8 @@ export class AdminComponent implements OnInit {
   showLottery = signal(true);
   showAuction = signal(true);
   showEthsRocksDeployer = signal(true);
+  showPhunkSwap = signal(true);
+  showPhunkquidity = signal(true);
   hiddenSlugs = signal<string[]>([]);
   visHiddenSlugsInput = '';
 
@@ -563,6 +565,8 @@ export class AdminComponent implements OnInit {
         this.showLottery.set(config.showLottery ?? true);
         this.showAuction.set(config.showAuction ?? true);
         this.showEthsRocksDeployer.set(config.showEthsRocksDeployer ?? true);
+        this.showPhunkSwap.set(config.showPhunkSwap ?? true);
+        this.showPhunkquidity.set(config.showPhunkquidity ?? true);
         this.hiddenSlugs.set(config.hiddenSlugs ?? []);
         this.visHiddenSlugsInput = (config.hiddenSlugs ?? []).join(', ');
       }

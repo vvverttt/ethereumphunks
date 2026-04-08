@@ -126,6 +126,21 @@
       </div>
     </a>
 
+    @if ((config$ | async)?.showPhunkquidity !== false) {
+      <a
+        class="phunkquidity-button"
+        routerLink="/phunkquidity"
+        (click)="goToVault()">
+
+        <span>Phunkquidity</span>
+
+        <div class="arrow">
+          <ng-template [ngTemplateOutlet]="arrowIcon" />
+        </div>
+      </a>
+    }
+
+    @if ((config$ | async)?.showPhunkSwap !== false) {
     <a
       class="vault-button"
       routerLink="/vault"
@@ -137,6 +152,7 @@
         <ng-template [ngTemplateOutlet]="arrowIcon" />
       </div>
     </a>
+    }
 
     @if (!isStandaloneMarket) {
       <div

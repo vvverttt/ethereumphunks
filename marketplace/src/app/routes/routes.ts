@@ -55,6 +55,10 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/owners/owners-page.component').then(mod => mod.OwnersPageComponent)
   },
   {
+    path: 'phunkquidity',
+    loadComponent: () => import('@/routes/phunkquidity/phunkquidity-page.component').then(mod => mod.PhunkquidityPageComponent)
+  },
+  {
     path: 'vault',
     loadComponent: () => import('@/routes/vault/vault-page.component').then(mod => mod.VaultPageComponent)
   },

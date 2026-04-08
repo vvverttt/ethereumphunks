@@ -512,6 +512,12 @@
           <button class="pause-toggle" [class.paused]="!showEthsRocksDeployer()" (click)="toggleVisibility('showEthsRocksDeployer', showEthsRocksDeployer())" [disabled]="txPending()">
             EthsRocks Deployer: {{ showEthsRocksDeployer() ? 'VISIBLE' : 'HIDDEN' }}
           </button>
+          <button class="pause-toggle" [class.paused]="!showPhunkSwap()" (click)="toggleVisibility('showPhunkSwap', showPhunkSwap())" [disabled]="txPending()">
+            Phunk Swap: {{ showPhunkSwap() ? 'VISIBLE' : 'HIDDEN' }}
+          </button>
+          <button class="pause-toggle" [class.paused]="!showPhunkquidity()" (click)="toggleVisibility('showPhunkquidity', showPhunkquidity())" [disabled]="txPending()">
+            Phunkquidity: {{ showPhunkquidity() ? 'VISIBLE' : 'HIDDEN' }}
+          </button>
         </div>
 
         <div class="action-group">
