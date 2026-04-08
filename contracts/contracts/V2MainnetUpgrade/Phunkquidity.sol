@@ -232,6 +232,18 @@ contract Phunkquidity is
 
         require(inputPoints >= outputPoints, "Insufficient input value");
 
+        // Block V67 -> V67 swaps specifically
+        bytes32 v67Slug = keccak256("cryptophunksv67");
+        bool v67In = false;
+        bool v67Out = false;
+        for (uint256 i = 0; i < inputs.length; i++) {
+            if (inputs[i].slug == v67Slug) { v67In = true; break; }
+        }
+        for (uint256 j = 0; j < outputs.length; j++) {
+            if (outputs[j].slug == v67Slug) { v67Out = true; break; }
+        }
+        require(!(v67In && v67Out), "V67 to V67 not allowed");
+
         // 3. Take inputs from user
         for (uint256 i = 0; i < inputs.length; i++) {
             Collection memory c = collections[inputs[i].slug];

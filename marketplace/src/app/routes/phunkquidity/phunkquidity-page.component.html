@@ -43,7 +43,7 @@
                 <select (change)="onInputSelectChange($event)">
                   <option [value]="''">-- Select --</option>
                   @for (c of collections(); track c.name; let i = $index) {
-                    @if (!c.inputDisabled) {
+                    @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67') {
                       <option [value]="i">{{ c.name }}</option>
                     }
                   }
