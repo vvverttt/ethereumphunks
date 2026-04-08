@@ -103,7 +103,12 @@ export class PhunkquidityPageComponent implements OnInit {
 
   inputPoints = computed(() => this.inputBasket().reduce((s, i) => s + i.collection.pointValue, 0));
   outputPoints = computed(() => this.outputBasket().reduce((s, i) => s + i.collection.pointValue, 0));
-  canSwap = computed(() => this.inputBasket().length > 0 && this.outputBasket().length > 0 && this.inputPoints() >= this.outputPoints());
+  v67ToV67Blocked = computed(() => {
+    const hasV67In = this.inputBasket().some(i => i.collection.slugStr === 'cryptophunksv67');
+    const hasV67Out = this.outputBasket().some(i => i.collection.slugStr === 'cryptophunksv67');
+    return hasV67In && hasV67Out;
+  });
+  canSwap = computed(() => this.inputBasket().length > 0 && this.outputBasket().length > 0 && this.inputPoints() >= this.outputPoints() && !this.v67ToV67Blocked());
 
   private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO') });
   private merkleTrees: Record<string, string[][]> = {};

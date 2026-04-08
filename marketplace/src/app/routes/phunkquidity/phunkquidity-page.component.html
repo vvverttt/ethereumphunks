@@ -126,7 +126,9 @@
           <div class="swap-action">
             <div class="points-summary">
               Your value: <strong>{{ inputPoints() }}</strong> &nbsp;|&nbsp; Cost: <strong>{{ outputPoints() }}</strong>
-              @if (outputBasket().length === 0) {
+              @if (v67ToV67Blocked()) {
+                <span class="error">V67 → V67 swaps are not allowed</span>
+              } @else if (outputBasket().length === 0) {
                 <span class="hint">Pick what you want from the pool →</span>
               } @else if (inputBasket().length === 0) {
                 <span class="hint">← Pick items to give</span>
@@ -293,9 +295,6 @@
         </div>
       }
 
-      <div class="contract-section">
-        <p>Contract: <a [href]="'https://etherscan.io/address/' + contractAddress" target="_blank">{{ contractAddress }}</a></p>
-      </div>
     }
   </div>
 </div>
