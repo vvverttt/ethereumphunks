@@ -43,7 +43,9 @@
                 <select (change)="onInputSelectChange($event)">
                   <option [value]="''">-- Select --</option>
                   @for (c of collections(); track c.name; let i = $index) {
-                    <option [value]="i">{{ c.name }}</option>
+                    @if (!c.inputDisabled) {
+                      <option [value]="i">{{ c.name }}</option>
+                    }
                   }
                 </select>
               </div>

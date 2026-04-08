@@ -82,6 +82,7 @@
               <th style="padding: 6px;">Current pts</th>
               <th style="padding: 6px;">New pts</th>
               <th style="padding: 6px;">Enabled</th>
+              <th style="padding: 6px;">Input?</th>
               <th style="padding: 6px;">Actions</th>
             </tr>
           </thead>
@@ -94,9 +95,11 @@
                   <input type="number" min="1" [(ngModel)]="row.newPointValue" style="width: 80px;" />
                 </td>
                 <td style="padding: 6px;">{{ row.enabled ? '✓' : '✗' }}</td>
+                <td style="padding: 6px;">{{ row.inputDisabled ? 'output-only' : '✓' }}</td>
                 <td style="padding: 6px;">
                   <button (click)="savePhunkquidityCollection(row)" [disabled]="txPending() || row.newPointValue === row.pointValue">Save pts</button>
                   <button (click)="togglePhunkquidityEnabled(row)" [disabled]="txPending()" style="margin-left: 4px;">{{ row.enabled ? 'Disable' : 'Enable' }}</button>
+                  <button (click)="togglePhunkquidityInputDisabled(row)" [disabled]="txPending()" style="margin-left: 4px;">{{ row.inputDisabled ? 'Allow input' : 'Make output-only' }}</button>
                 </td>
               </tr>
             }

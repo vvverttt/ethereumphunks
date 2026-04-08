@@ -18,6 +18,7 @@ interface PhunkquidityCollectionRow {
   slugStr: string;
   pointValue: number;
   enabled: boolean;
+  inputDisabled: boolean;
   newPointValue: number;
 }
 
@@ -173,17 +174,17 @@ export class AdminComponent implements OnInit {
   // Phunkquidity admin
   phunkquidityOwner = signal('');
   phunkquidityCollections = signal<PhunkquidityCollectionRow[]>([
-    { name: 'Philip Intern',    slugStr: 'philip-intern',     pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'V1 Phunks',        slugStr: 'v1-phunks',         pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'V2 Phunks',        slugStr: 'v2-phunks',         pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'V3 Phunks',        slugStr: 'v3-phunks',         pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'Pepephunks',       slugStr: 'pepephunks',        pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'Skelephunks',      slugStr: 'skelephunks',       pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'Etherphunks',      slugStr: 'etherphunks',       pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'Missing Phunks',   slugStr: 'og-missing-phunks', pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'Dystophunks',      slugStr: 'og-dysto-phunks',   pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'CryptoPhunksV67',  slugStr: 'cryptophunksv67',   pointValue: 0, enabled: false, newPointValue: 0 },
-    { name: 'EthsRocks',        slugStr: 'ethsrocks',         pointValue: 0, enabled: false, newPointValue: 0 },
+    { name: 'Philip Intern',    slugStr: 'philip-intern',     pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'V1 Phunks',        slugStr: 'v1-phunks',         pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'V2 Phunks',        slugStr: 'v2-phunks',         pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'V3 Phunks',        slugStr: 'v3-phunks',         pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'Pepephunks',       slugStr: 'pepephunks',        pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'Skelephunks',      slugStr: 'skelephunks',       pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'Etherphunks',      slugStr: 'etherphunks',       pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'Missing Phunks',   slugStr: 'og-missing-phunks', pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'Dystophunks',      slugStr: 'og-dysto-phunks',   pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'CryptoPhunksV67',  slugStr: 'cryptophunksv67',   pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
+    { name: 'EthsRocks',        slugStr: 'ethsrocks',         pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
   ]);
 
   // Batch operations (pause/unpause all, transfer all)
@@ -242,11 +243,27 @@ export class AdminComponent implements OnInit {
           row.pointValue = Number(c.pointValue);
           row.enabled = c.enabled;
           row.newPointValue = Number(c.pointValue);
+          row.inputDisabled = await this.adminSvc.getPhunkquidityInputDisabled(row.slugStr);
         } catch {}
       }));
       this.phunkquidityCollections.set(rows);
     } catch (e) {
       console.error('Failed to load Phunkquidity state:', e);
+    }
+  }
+
+  async togglePhunkquidityInputDisabled(row: PhunkquidityCollectionRow) {
+    this.txPending.set(true);
+    this.txError.set('');
+    this.txHash.set('');
+    try {
+      const hash = await this.adminSvc.setPhunkquidityInputDisabled(row.slugStr, !row.inputDisabled);
+      this.txHash.set(hash);
+      await this.loadPhunkquidityState();
+    } catch (e: any) {
+      this.txError.set(e?.shortMessage || e?.message || 'Failed');
+    } finally {
+      this.txPending.set(false);
     }
   }
 

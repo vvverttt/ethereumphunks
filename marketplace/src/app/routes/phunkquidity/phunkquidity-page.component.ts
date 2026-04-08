@@ -27,6 +27,7 @@ const PHUNKQUIDITY_ABI = parseAbi([
   'function swapFee() view returns (uint256)',
   'function nextOfferId() view returns (uint256)',
   'function collections(bytes32) view returns (uint8 collType, address contractAddress, bytes32 merkleRoot, uint256 pointValue, bool enabled, bool exists)',
+  'function inputDisabled(bytes32) view returns (bool)',
   'function erc721PoolSize(bytes32 slug) view returns (uint256)',
   'function ethscPoolSize(bytes32 slug) view returns (uint256)',
   'function getERC721PoolItems(bytes32 slug, uint256 offset, uint256 limit) view returns (uint256[])',
@@ -46,6 +47,7 @@ interface CollectionConfig {
   contractAddress?: string;
   pointValue: number;
   poolSize: number;
+  inputDisabled?: boolean;
 }
 
 interface BasketItem {
@@ -131,7 +133,7 @@ export class PhunkquidityPageComponent implements OnInit {
       const cols = this.collections();
       const updated = await Promise.all(cols.map(async c => {
         try {
-          const [size, collInfo] = await Promise.all([
+          const [size, collInfo, inputDis] = await Promise.all([
             this.rpcClient.readContract({
               address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI,
               functionName: c.isERC721 ? 'erc721PoolSize' : 'ethscPoolSize',
@@ -142,8 +144,13 @@ export class PhunkquidityPageComponent implements OnInit {
               functionName: 'collections',
               args: [c.slug],
             }) as Promise<readonly [number, `0x${string}`, `0x${string}`, bigint, boolean, boolean]>,
+            this.rpcClient.readContract({
+              address: PHUNKQUIDITY, abi: PHUNKQUIDITY_ABI,
+              functionName: 'inputDisabled',
+              args: [c.slug],
+            }).catch(() => false) as Promise<boolean>,
           ]);
-          return { ...c, poolSize: Number(size), pointValue: Number(collInfo[3]) || c.pointValue };
+          return { ...c, poolSize: Number(size), pointValue: Number(collInfo[3]) || c.pointValue, inputDisabled: inputDis };
         } catch {
           return c;
         }

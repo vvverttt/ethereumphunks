@@ -6,6 +6,8 @@ const PHUNKQUIDITY_ADDRESS = '0x7f5763D56c7E8c34eB125DbD19124945D77e5f1A' as `0x
 const PHUNKQUIDITY_ABI = parseAbi([
   'function collections(bytes32) view returns (uint8 collType, address contractAddress, bytes32 merkleRoot, uint256 pointValue, bool enabled, bool exists)',
   'function updateCollection(bytes32 slug, uint256 pointValue, bool enabled)',
+  'function inputDisabled(bytes32) view returns (bool)',
+  'function setInputDisabled(bytes32 slug, bool disabled)',
   'function owner() view returns (address)',
 ]);
 
@@ -722,5 +724,26 @@ export class AdminService {
   updatePhunkquidityCollection(slugStr: string, pointValue: number, enabled: boolean) {
     const slug = keccak256(toBytes(slugStr));
     return this.writeContract(PHUNKQUIDITY_ADDRESS, PHUNKQUIDITY_ABI, 'updateCollection', [slug, BigInt(pointValue), enabled]);
+  }
+
+  async getPhunkquidityInputDisabled(slugStr: string): Promise<boolean> {
+    const publicClient = getPublicClient(this.web3Svc.config);
+    if (!publicClient) throw new Error('No public client');
+    const slug = keccak256(toBytes(slugStr));
+    try {
+      return await publicClient.readContract({
+        address: PHUNKQUIDITY_ADDRESS,
+        abi: PHUNKQUIDITY_ABI,
+        functionName: 'inputDisabled',
+        args: [slug],
+      }) as boolean;
+    } catch {
+      return false;
+    }
+  }
+
+  setPhunkquidityInputDisabled(slugStr: string, disabled: boolean) {
+    const slug = keccak256(toBytes(slugStr));
+    return this.writeContract(PHUNKQUIDITY_ADDRESS, PHUNKQUIDITY_ABI, 'setInputDisabled', [slug, disabled]);
   }
 }
