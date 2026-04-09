@@ -12,13 +12,15 @@
         <h2>Swap Rates (per 1 CryptoPhunksV67)</h2>
         <div class="collections-grid">
           @for (c of collections(); track c.name) {
-            <div class="collection-card">
-              <div class="name">{{ c.name }}</div>
-              <div class="meta">
-                <span>{{ (300 / c.pointValue) | number:'1.0-2' }} = 1 V67</span>
-                <span>{{ c.poolSize }} in pool</span>
+            @if (!c.inputDisabled) {
+              <div class="collection-card">
+                <div class="name">{{ c.name }}</div>
+                <div class="meta">
+                  <span>{{ (300 / c.pointValue) | number:'1.0-2' }} = 1 V67</span>
+                  <span>{{ c.poolSize }} in pool</span>
+                </div>
               </div>
-            </div>
+            }
           }
         </div>
       </div>
@@ -33,7 +35,7 @@
             <label>Collection:</label>
             <select [value]="ownerDepositSlug()" (change)="ownerDepositSlug.set($any($event.target).value); loadOwnerDepositItems()">
               @for (c of collections(); track c.slugStr) {
-                @if (!c.isERC721) {
+                @if (!c.isERC721 && c.slugStr !== 'ethereumphunks') {
                   <option [value]="c.slugStr">{{ c.name }}</option>
                 }
               }
@@ -85,7 +87,7 @@
                 <select (change)="onInputSelectChange($event)">
                   <option [value]="''">-- Select --</option>
                   @for (c of collections(); track c.name; let i = $index) {
-                    @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67') {
+                    @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67' && c.slugStr !== 'v3-phunks' && c.slugStr !== 'pepephunks' && c.slugStr !== 'skelephunks' && c.slugStr !== 'ethereumphunks') {
                       <option [value]="i">{{ c.name }}</option>
                     }
                   }
