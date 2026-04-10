@@ -12,7 +12,7 @@
         <h2>Swap Rates (per 1 CryptoPhunksV67)</h2>
         <div class="collections-grid">
           @for (c of collections(); track c.name) {
-            @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67') {
+            @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67' && c.slugStr !== 'ethereumphunks') {
               <div class="collection-card">
                 <div class="name">{{ c.name }}</div>
                 <div class="meta">
@@ -85,7 +85,7 @@
                 <select (change)="onInputSelectChange($event)">
                   <option [value]="''">-- Select --</option>
                   @for (c of collections(); track c.name; let i = $index) {
-                    @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67' && c.slugStr !== 'v3-phunks' && c.slugStr !== 'pepephunks' && c.slugStr !== 'skelephunks') {
+                    @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67' && c.slugStr !== 'v3-phunks' && c.slugStr !== 'pepephunks' && c.slugStr !== 'skelephunks' && c.slugStr !== 'ethereumphunks') {
                       <option [value]="i">{{ c.name }}</option>
                     }
                   }

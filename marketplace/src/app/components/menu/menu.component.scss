@@ -409,40 +409,6 @@ section {
       }
     }
 
-    .ethsrocks-button {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      padding: 1.2rem 1.5rem 1rem;
-      margin-bottom: 1.5rem;
-
-      font-family: var(--secondary-font-stack);
-      color: rgba(var(--black), 1);
-      font-size: 1.4rem;
-      text-decoration: none;
-
-      background-color: #b48eff;
-      box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
-
-      cursor: pointer;
-
-      .arrow {
-        svg {
-          width: 1rem;
-          height: 2rem;
-
-          path {
-            fill: rgba(var(--black), 1);
-          }
-        }
-      }
-
-      &:active {
-        transform: translate(0, 1px);
-      }
-    }
-
     .owners-button {
       display: flex;
       align-items: center;
@@ -452,11 +418,11 @@ section {
       margin-bottom: 1.5rem;
 
       font-family: var(--secondary-font-stack);
-      color: rgba(var(--black), 1);
+      color: rgba(var(--white), 1);
       font-size: 1.4rem;
       text-decoration: none;
 
-      background-color: #00e5ff;
+      background-color: #2979ff;
       box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
 
       cursor: pointer;
@@ -467,7 +433,7 @@ section {
           height: 2rem;
 
           path {
-            fill: rgba(var(--black), 1);
+            fill: rgba(var(--white), 1);
           }
         }
       }
@@ -486,11 +452,11 @@ section {
       margin-bottom: 1.5rem;
 
       font-family: var(--secondary-font-stack);
-      color: rgba(var(--white), 1);
+      color: rgba(var(--black), 1);
       font-size: 1.4rem;
       text-decoration: none;
 
-      background-color: #ff1493;
+      background-color: #00c853;
       box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
 
       cursor: pointer;
@@ -501,7 +467,7 @@ section {
           height: 2rem;
 
           path {
-            fill: rgba(var(--white), 1);
+            fill: rgba(var(--black), 1);
           }
         }
       }
@@ -557,7 +523,7 @@ section {
       color: rgba(var(--black), 1);
       font-size: 1.6rem;
 
-      background-color: rgba(var(--transferred-color), 1);
+      background-color: rgba(var(--auction-color), 1);
       box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
 
       cursor: pointer;

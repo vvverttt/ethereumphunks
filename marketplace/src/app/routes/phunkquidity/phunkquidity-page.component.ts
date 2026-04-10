@@ -76,15 +76,15 @@ export class PhunkquidityPageComponent implements OnInit {
   collections = signal<CollectionConfig[]>([
     { name: 'Philip Intern',    slug: keccakStr('philip-intern'),     slugStr: 'philip-intern',     isERC721: true,  contractAddress: '0xa82f3a61f002f83eba7d184c50bb2a8b359ca1ce', pointValue: 30,  poolSize: 0 },
     { name: 'V1 Phunks',        slug: keccakStr('v1-phunks'),         slugStr: 'v1-phunks',         isERC721: true,  contractAddress: '0x235d49774139c218034c0571ba8f717773edd923', pointValue: 30,  poolSize: 0 },
-    { name: 'V2 Phunks',        slug: keccakStr('v2-phunks'),         slugStr: 'v2-phunks',         isERC721: true,  contractAddress: '0xf07468ead8cf26c752c676e43c814fee9c8cf402', pointValue: 100, poolSize: 0 },
-    { name: 'V3 Phunks',        slug: keccakStr('v3-phunks'),         slugStr: 'v3-phunks',         isERC721: true,  contractAddress: '0xb7d405bee01c70a9577316c1b9c2505f146e8842', pointValue: 3,   poolSize: 0 },
-    { name: 'Pepephunks',       slug: keccakStr('pepephunks'),        slugStr: 'pepephunks',        isERC721: true,  contractAddress: '0xc00ffeb7cf191c3432ede000478901f99fd53633', pointValue: 3,   poolSize: 0 },
-    { name: 'Skelephunks',      slug: keccakStr('skelephunks'),       slugStr: 'skelephunks',       isERC721: true,  contractAddress: '0x7db8cd89308a295bb2d7f809b05db6389e9a6d88', pointValue: 3,   poolSize: 0 },
-    { name: 'Etherphunks',      slug: keccakStr('etherphunks'),       slugStr: 'ethereumphunks',    isERC721: false, pointValue: 20,  poolSize: 0 },
-    { name: 'Missing Phunks',   slug: keccakStr('og-missing-phunks'), slugStr: 'og-missing-phunks', isERC721: false, pointValue: 100, poolSize: 0 },
+    { name: 'CryptoPhunksV2',   slug: keccakStr('v2-phunks'),         slugStr: 'v2-phunks',         isERC721: true,  contractAddress: '0xf07468ead8cf26c752c676e43c814fee9c8cf402', pointValue: 100, poolSize: 0 },
+    { name: 'V3 Phunks',        slug: keccakStr('v3-phunks'),         slugStr: 'v3-phunks',         isERC721: true,  contractAddress: '0xb7d405bee01c70a9577316c1b9c2505f146e8842', pointValue: 3,   poolSize: 0, inputDisabled: true },
+    { name: 'Pepephunks',       slug: keccakStr('pepephunks'),        slugStr: 'pepephunks',        isERC721: true,  contractAddress: '0xc00ffeb7cf191c3432ede000478901f99fd53633', pointValue: 3,   poolSize: 0, inputDisabled: true },
+    { name: 'Skelephunks',      slug: keccakStr('skelephunks'),       slugStr: 'skelephunks',       isERC721: true,  contractAddress: '0x7db8cd89308a295bb2d7f809b05db6389e9a6d88', pointValue: 3,   poolSize: 0, inputDisabled: true },
+    { name: 'Etherphunks',      slug: keccakStr('etherphunks'),       slugStr: 'ethereumphunks',    isERC721: false, pointValue: 20,  poolSize: 0, inputDisabled: true },
+    { name: 'Missing Phunks',   slug: keccakStr('og-missing-phunks'), slugStr: 'og-missing-phunks', isERC721: false, pointValue: 60,  poolSize: 0 },
     { name: 'Dystophunks',      slug: keccakStr('og-dysto-phunks'),   slugStr: 'og-dysto-phunks',   isERC721: false, pointValue: 300, poolSize: 0 },
     { name: 'CryptoPhunksV67',  slug: keccakStr('cryptophunksv67'),   slugStr: 'cryptophunksv67',   isERC721: false, pointValue: 300, poolSize: 0 },
-    { name: 'EthsRocks',        slug: keccakStr('ethsrocks'),         slugStr: 'ethsrocks',         isERC721: false, pointValue: 150, poolSize: 0 },
+    { name: 'EthsRocks',        slug: keccakStr('ethsrocks'),         slugStr: 'ethsrocks',         isERC721: false, pointValue: 150, poolSize: 0, inputDisabled: true },
   ]);
 
   // UI state
