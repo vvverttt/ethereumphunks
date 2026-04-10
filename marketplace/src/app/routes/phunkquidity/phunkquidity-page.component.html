@@ -12,7 +12,7 @@
         <h2>Swap Rates (per 1 CryptoPhunksV67)</h2>
         <div class="collections-grid">
           @for (c of collections(); track c.name) {
-            @if (!c.inputDisabled) {
+            @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67') {
               <div class="collection-card">
                 <div class="name">{{ c.name }}</div>
                 <div class="meta">
@@ -70,8 +70,6 @@
       <!-- Tabs -->
       <div class="tabs">
         <button [class.active]="activeTab() === 'swap'" (click)="setTab('swap')">Pool Swap</button>
-        <button [class.active]="activeTab() === 'create'" (click)="setTab('create')">Create Offer</button>
-        <button [class.active]="activeTab() === 'offers'" (click)="setTab('offers')">Browse Offers</button>
       </div>
 
       <!-- POOL SWAP TAB -->
@@ -87,7 +85,7 @@
                 <select (change)="onInputSelectChange($event)">
                   <option [value]="''">-- Select --</option>
                   @for (c of collections(); track c.name; let i = $index) {
-                    @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67' && c.slugStr !== 'v3-phunks' && c.slugStr !== 'pepephunks' && c.slugStr !== 'skelephunks' && c.slugStr !== 'ethereumphunks') {
+                    @if (!c.inputDisabled && c.slugStr !== 'cryptophunksv67' && c.slugStr !== 'v3-phunks' && c.slugStr !== 'pepephunks' && c.slugStr !== 'skelephunks') {
                       <option [value]="i">{{ c.name }}</option>
                     }
                   }

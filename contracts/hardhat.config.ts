@@ -40,6 +40,13 @@ const config: HardhatUserConfig = {
       from: process.env.MAINNET_ADDRESS as string,
       accounts: [`0x${process.env.MAINNET_PK}`],
     },
+    ...(process.env.TREASURY_PK ? {
+      treasury: {
+        url: 'https://ethereum-rpc.publicnode.com',
+        chainId: 1,
+        accounts: [`0x${process.env.TREASURY_PK}`],
+      },
+    } : {}),
     // sepolia: {
     //   url: 'http://geth.sepolia-geth.dappnode:8545',
     //   chainId: 11155111,

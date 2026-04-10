@@ -706,9 +706,10 @@ export class PhunkquidityPageComponent implements OnInit {
         const walletClient = await this.getWallet();
         for (const item of ethscItems) {
           this.status.set('Depositing ' + item.collection.name + '...');
+          const data = ('0x' + item.collection.slug.slice(2) + (item.hashId as string).slice(2)) as `0x${string}`;
           const tx = await walletClient.sendTransaction({
             to: PHUNKQUIDITY,
-            data: item.hashId as `0x${string}`,
+            data,
             chain: walletClient.chain,
           });
           await this.rpcClient.waitForTransactionReceipt({ hash: tx });
