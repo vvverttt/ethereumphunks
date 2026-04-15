@@ -32,6 +32,11 @@ export const l1RpcURL: string =
     ? process.env.RPC_URL_MAINNET
     : process.env.RPC_URL_SEPOLIA;
 
+export const l1RpcURL_2: string =
+  chain === 'mainnet'
+    ? process.env.RPC_URL_MAINNET_2
+    : undefined;
+
 export const l1RpcURL_BACKUP: string =
   chain === 'mainnet'
     ? process.env.RPC_URL_MAINNET_BACKUP
@@ -90,12 +95,16 @@ export const auctionAddressesL1 = new Set(
 );
 
 const backupUrls = (l1RpcURL_BACKUP || '').split(',').filter(Boolean);
+// Order: Ankr primary → Ankr key 2 → Alchemy (first in backup list) → others
+const [alchemyUrl, ...restBackupUrls] = backupUrls;
 
 export const l1Client = createPublicClient({
   chain: chain === 'mainnet' ? mainnet : sepolia,
   transport: fallback([
     http(l1RpcURL, { timeout: 30_000 }),
-    ...backupUrls.map(url => http(url.trim(), { timeout: 30_000 })),
+    ...(l1RpcURL_2 ? [http(l1RpcURL_2, { timeout: 30_000 })] : []),
+    ...(alchemyUrl ? [http(alchemyUrl.trim(), { timeout: 30_000 })] : []),
+    ...restBackupUrls.map(url => http(url.trim(), { timeout: 30_000 })),
   ], {
     rank: false,
     retryCount: 0,

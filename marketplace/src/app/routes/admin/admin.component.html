@@ -66,6 +66,7 @@
       <button [class.active]="activeTab() === 'visibility'" (click)="activeTab.set('visibility')">Visibility</button>
       <button [class.active]="activeTab() === 'phunkquidity'" (click)="activeTab.set('phunkquidity')">Phunkquidity</button>
       <button [class.active]="activeTab() === 'transfer-all'" (click)="activeTab.set('transfer-all')">Transfer All</button>
+      <button [class.active]="activeTab() === 'health'" (click)="activeTab.set('health'); checkHealth()">Health</button>
     </div>
 
     <!-- ==================== PHUNKQUIDITY ==================== -->
@@ -633,6 +634,35 @@
         }
       </div>
     }
+  }
+
+    <!-- ==================== HEALTH ==================== -->
+    @if (activeTab() === 'health') {
+      <div class="tab-content">
+        <h3>API Health Check</h3>
+        <button (click)="checkHealth()" [disabled]="healthChecking()">
+          {{ healthChecking() ? 'Checking...' : 'Refresh' }}
+        </button>
+        <div class="health-results" style="margin-top: 1rem;">
+          @for (r of healthResults(); track r.name) {
+            <div class="health-row" style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <span style="width: 1rem; height: 1rem; border-radius: 50%; display: inline-block;"
+                [style.background]="r.status === 'ok' ? '#00e676' : r.status === 'error' ? '#ff1744' : '#ffab40'">
+              </span>
+              <span style="flex: 1; font-family: var(--secondary-font-stack); font-size: 1.2rem;">{{ r.name }}</span>
+              @if (r.status === 'ok') {
+                <span style="color: #00e676; font-size: 1.1rem;">Block #{{ r.blockNumber }} — {{ r.latency }}ms</span>
+              } @else if (r.status === 'error') {
+                <span style="color: #ff1744; font-size: 1.1rem;">{{ r.error }} ({{ r.latency }}ms)</span>
+              } @else {
+                <span style="color: #ffab40; font-size: 1.1rem;">Checking...</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
   }
 
 </div>

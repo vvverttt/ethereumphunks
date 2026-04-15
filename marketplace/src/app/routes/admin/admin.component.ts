@@ -11,7 +11,7 @@ import { AdminService } from '@/services/admin.service';
 import { environment } from 'src/environments/environment';
 import { supabase } from '@/services/supabase';
 
-type Tab = 'market' | 'auction' | 'points' | 'lottery' | 'evolve' | 'ethsrocks' | 'visibility' | 'phunkquidity' | 'transfer-all';
+type Tab = 'market' | 'auction' | 'points' | 'lottery' | 'evolve' | 'ethsrocks' | 'visibility' | 'phunkquidity' | 'transfer-all' | 'health';
 
 interface PhunkquidityCollectionRow {
   name: string;
@@ -186,6 +186,10 @@ export class AdminComponent implements OnInit {
     { name: 'CryptoPhunksV67',  slugStr: 'cryptophunksv67',   pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
     { name: 'EthsRocks',        slugStr: 'ethsrocks',         pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
   ]);
+
+  // Health check
+  healthChecking = signal(false);
+  healthResults = signal<{ name: string; url: string; status: 'ok' | 'error' | 'pending'; blockNumber?: string; latency?: number; error?: string; }[]>([]);
 
   // Batch operations (pause/unpause all, transfer all)
   batchRunning = signal(false);
@@ -857,5 +861,51 @@ export class AdminComponent implements OnInit {
     }
 
     this.transferAllRunning.set(false);
+  }
+
+  async checkHealth() {
+    const rpcs = [
+      { name: 'Ankr Primary (RPC_URL_MAINNET)', url: 'https://rpc.ankr.com/eth' },
+      { name: 'llamarpc', url: 'https://eth.llamarpc.com' },
+      { name: 'mevblocker', url: 'https://rpc.mevblocker.io' },
+      { name: '1rpc', url: 'https://1rpc.io/eth' },
+      { name: 'publicnode', url: 'https://ethereum-rpc.publicnode.com' },
+    ];
+
+    this.healthChecking.set(true);
+    this.healthResults.set(rpcs.map(r => ({ ...r, status: 'pending' as const })));
+
+    const results: { name: string; url: string; status: 'ok' | 'error' | 'pending'; blockNumber?: string; latency?: number; error?: string }[] = await Promise.all(rpcs.map(async (rpc) => {
+      const start = Date.now();
+      try {
+        const res = await fetch(rpc.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
+          signal: AbortSignal.timeout(5000),
+        });
+        const data = await res.json();
+        const latency = Date.now() - start;
+        if (data.result) {
+          return { ...rpc, status: 'ok' as const, blockNumber: parseInt(data.result, 16).toString(), latency };
+        }
+        return { ...rpc, status: 'error' as const, error: data.error?.message || 'No result', latency };
+      } catch (e: any) {
+        return { ...rpc, status: 'error' as const, error: e?.message || 'Timeout', latency: Date.now() - start };
+      }
+    }));
+
+    // Also check Supabase
+    try {
+      const start = Date.now();
+      const { error } = await supabase.from('_global_config').select('id').limit(1);
+      const latency = Date.now() - start;
+      results.push({ name: 'Supabase', url: environment.supabaseUrl, status: (error ? 'error' : 'ok') as 'ok' | 'error', latency, error: error?.message });
+    } catch (e: any) {
+      results.push({ name: 'Supabase', url: environment.supabaseUrl, status: 'error' as const, latency: 0, error: e?.message });
+    }
+
+    this.healthResults.set(results);
+    this.healthChecking.set(false);
   }
 }
