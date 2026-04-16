@@ -12,10 +12,11 @@ import { AttributeFilterPipe } from '@/pipes/attribute-filter';
 import { DataService } from '@/services/data.service';
 import { GlobalState, TraitFilter } from '@/models/global-state';
 
+import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as marketStateSelectors from '@/state/selectors/market-state.selectors';
 import * as marketStateActions from '@/state/actions/market-state.actions';
 
-import { Subscription, map } from 'rxjs';
+import { Subscription, combineLatest, map } from 'rxjs';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
@@ -76,13 +77,19 @@ export class VaultAllComponent implements OnInit, OnDestroy {
     Object.keys(queryParams).forEach(k => { initialFilters[k] = queryParams[k]; });
     this.store.dispatch(marketStateActions.setActiveTraitFilters({ traitFilters: initialFilters }));
 
-    // Subscribe to trait filter changes from store (updated by MarketFiltersComponent)
+    // Subscribe to trait filter changes + globalConfig preset, merge them
     this.sub.add(
-      this.store.select(marketStateSelectors.selectActiveTraitFilters).pipe(
-        map(filters => {
+      combineLatest([
+        this.store.select(marketStateSelectors.selectActiveTraitFilters),
+        this.store.select(appStateSelectors.selectConfig),
+      ]).pipe(
+        map(([filters, config]) => {
           const f: any = { ...filters };
           delete f['address'];
-          return Object.keys(f).length ? f as TraitFilter : null;
+          const userFilters = Object.keys(f).length ? f as TraitFilter : null;
+          const preset = config?.collectionTraitFilters?.['cryptophunksv67'] ?? {};
+          if (!Object.keys(preset).length) return userFilters;
+          return { ...preset, ...userFilters } as TraitFilter;
         })
       ).subscribe(filters => {
         this.traitFilters = filters;

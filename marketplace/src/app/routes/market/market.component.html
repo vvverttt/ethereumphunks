@@ -40,7 +40,7 @@
             }
           }
 
-          <h3>Showing <span class="highlight">{{ (marketType === 'all' ? phunkData.total : (phunkData.data | attributeFilter : (activeTraitFilters$ | async)).length) | number }}</span> of {{ collection.supply | number }}</h3>
+          <h3>Showing <span class="highlight">{{ (marketType === 'all' ? phunkData.total : (phunkData.data | attributeFilter : (effectiveTraitFilters$ | async)).length) | number }}</span> of {{ collection.supply | number }}</h3>
         </div>
       }
 
@@ -70,7 +70,7 @@
                   [class.active]="filtersVisible"
                   (click)="toggleFilters()">
 
-                  @if ((activeTraitFilters$ | async); as filters) {
+                  @if ((effectiveTraitFilters$ | async); as filters) {
                     @if (objectKeys(filters).length) {
                       <div class="count">{{ objectKeys(filters).length }}</div>
                     }
@@ -161,7 +161,7 @@
               [viewType]="marketType === 'owned' ? 'owned' : 'market'"
               [activeSort]="(activeSort$ | async).value"
               [limit]="250"
-              [traitFilters]="marketType === 'all' ? null : (activeTraitFilters$ | async)"
+              [traitFilters]="marketType === 'all' ? null : (effectiveTraitFilters$ | async)"
               [phunkData]="phunkData.data"
               [total]="phunkData.total"
               [selectAll]="selectAll"

@@ -274,13 +274,6 @@
           <a class="highlight" routerLink="/lottery/wins">View all won QuantumPhunks.</a>
         </p>
       </div>
-      <div class="wins-grid">
-        @for (win of recentWins(); track win.play_id) {
-          <a class="win-item" [routerLink]="['/details', win.hash_id]">
-            <img [src]="getWinImageUrl(win)" width="50" height="50" />
-          </a>
-        }
-      </div>
     </div>
   </section>
 

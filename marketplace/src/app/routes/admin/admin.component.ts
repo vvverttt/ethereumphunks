@@ -171,6 +171,11 @@ export class AdminComponent implements OnInit {
   hiddenSlugs = signal<string[]>([]);
   visHiddenSlugsInput = '';
 
+  // Collection Trait Filter presets (admin-controlled, applied globally per collection)
+  ctfInputV67 = '';
+  ctfInputMissing = '';
+  ctfInputDysto = '';
+
   // Phunkquidity admin
   phunkquidityOwner = signal('');
   phunkquidityCollections = signal<PhunkquidityCollectionRow[]>([
@@ -664,6 +669,10 @@ export class AdminComponent implements OnInit {
         this.showPhunkquidity.set(config.showPhunkquidity ?? true);
         this.hiddenSlugs.set(config.hiddenSlugs ?? []);
         this.visHiddenSlugsInput = (config.hiddenSlugs ?? []).join(', ');
+        const ctf = config.collectionTraitFilters ?? {};
+        this.ctfInputV67 = this.traitFilterToString(ctf['cryptophunksv67']);
+        this.ctfInputMissing = this.traitFilterToString(ctf['quantummissingphunksv67']);
+        this.ctfInputDysto = this.traitFilterToString(ctf['quantumdystophunkzv67']);
       }
     } catch (e) { console.error('Visibility load error:', e); }
   }
@@ -687,6 +696,45 @@ export class AdminComponent implements OnInit {
     localStorage.setItem('admin_preview', (!current).toString());
     // Reload page to apply
     window.location.reload();
+  }
+
+  traitFilterToString(filter: any): string {
+    if (!filter || !Object.keys(filter).length) return '';
+    return Object.entries(filter).map(([k, v]) => `${k}=${v}`).join(', ');
+  }
+
+  parseTraitFilterString(str: string): Record<string, string> {
+    if (!str.trim()) return {};
+    return Object.fromEntries(
+      str.split(',')
+        .map(s => s.trim())
+        .filter(s => s.includes('='))
+        .map(s => {
+          const idx = s.indexOf('=');
+          return [s.slice(0, idx).trim(), s.slice(idx + 1).trim()];
+        })
+    );
+  }
+
+  async saveCollectionTraitFilters() {
+    this.txPending.set(true);
+    this.txError.set('');
+    try {
+      const { data } = await supabase.from('_global_config').select('collectionTraitFilters').eq('network', environment.chainId).limit(1);
+      const current = data?.[0]?.collectionTraitFilters ?? {};
+      const updated = {
+        ...current,
+        'cryptophunksv67': this.parseTraitFilterString(this.ctfInputV67),
+        'quantummissingphunksv67': this.parseTraitFilterString(this.ctfInputMissing),
+        'quantumdystophunkzv67': this.parseTraitFilterString(this.ctfInputDysto),
+      };
+      await supabase.from('_global_config').update({ collectionTraitFilters: updated }).eq('network', environment.chainId);
+      await this.loadVisibility();
+    } catch (e: any) {
+      this.txError.set(e?.message || 'Failed to save collection filters');
+    } finally {
+      this.txPending.set(false);
+    }
   }
 
   isSlugHidden(slug: string): boolean {

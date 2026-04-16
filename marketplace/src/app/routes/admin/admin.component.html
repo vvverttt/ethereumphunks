@@ -586,6 +586,40 @@
             EthsRocks: {{ isSlugHidden('ethsrocks') ? 'HIDDEN' : 'VISIBLE' }}
           </button>
         </div>
+
+        <div class="action-group">
+          <h3>Collection Attribute Presets</h3>
+          <p style="font-size: 11px; opacity: 0.65; margin: 0 0 10px;">
+            Set attribute filters that always apply for a collection. Format: <code>Type=Male</code> or <code>Type=Male, Gender=Female</code>.
+            Leave blank to show all. Applies to Listings, Bids, Owned, and Vault views.
+          </p>
+
+          <label style="font-size: 12px; opacity: 0.8; display: block; margin-top: 8px;">CryptoPhunksV67</label>
+          <input
+            type="text"
+            [(ngModel)]="ctfInputV67"
+            placeholder="e.g. Type=Male"
+            style="width: 100%; box-sizing: border-box; margin-bottom: 8px;"
+          />
+
+          <label style="font-size: 12px; opacity: 0.8; display: block; margin-top: 4px;">Quantum Missing Phunks</label>
+          <input
+            type="text"
+            [(ngModel)]="ctfInputMissing"
+            placeholder="e.g. Type=Male"
+            style="width: 100%; box-sizing: border-box; margin-bottom: 8px;"
+          />
+
+          <label style="font-size: 12px; opacity: 0.8; display: block; margin-top: 4px;">Quantum DystoPhunkz</label>
+          <input
+            type="text"
+            [(ngModel)]="ctfInputDysto"
+            placeholder="e.g. Type=Male"
+            style="width: 100%; box-sizing: border-box; margin-bottom: 12px;"
+          />
+
+          <button (click)="saveCollectionTraitFilters()" [disabled]="txPending()">Save Presets</button>
+        </div>
       </div>
     }
 

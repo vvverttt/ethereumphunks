@@ -39,7 +39,7 @@ import { upsertNotification } from '@/state/actions/notification.actions';
 
 import { environment } from 'src/environments/environment';
 
-import { filter, map, tap } from 'rxjs';
+import { combineLatest, filter, map, tap } from 'rxjs';
 
 const defaultActionState = {
   canList: false,
@@ -153,6 +153,7 @@ export class MarketComponent {
     })
   );
 
+
   activeSort$ = this.store.select(marketStateSelectors.selectActiveSort).pipe(
     tap((sort: any) => this.activeSortModel = sort)
   );
@@ -167,6 +168,19 @@ export class MarketComponent {
 
   usd$ = this.store.select(dataStateSelectors.selectUsd);
   globalConfig$ = this.store.select(appStateSelectors.selectConfig);
+
+  // Admin preset merged with user's active filters
+  effectiveTraitFilters$ = combineLatest([
+    this.activeTraitFilters$,
+    this.globalConfig$,
+    this.activeCollection$,
+  ]).pipe(
+    map(([userFilters, config, collection]) => {
+      const preset = collection?.slug ? (config?.collectionTraitFilters?.[collection.slug] ?? {}) : {};
+      if (!Object.keys(preset).length) return userFilters;
+      return { ...preset, ...userFilters } as TraitFilter;
+    })
+  );
 
   chatActive = false;
 

@@ -126,7 +126,8 @@ export class BreadcrumbsComponent {
     if (!this.phunk()) return;
 
     const phunk = this.phunk()!;
-    const name = phunk.collection?.singleName?.replace(' ', '-') + '#' + phunk.tokenId;
+    const displayId = phunk.slug === 'ethsrocks' ? '-' + Math.abs(phunk.tokenId) : Math.abs(phunk.tokenId);
+    const name = phunk.collection?.singleName?.replace(' ', '-') + '#' + displayId;
     const link = document.createElement('a');
 
     // Check if the original image is animated (GIF or APNG) — canvas loses animation

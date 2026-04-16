@@ -34,7 +34,8 @@ export class CollectionsComponent {
     filter(([collections]) => !!collections),
     map(([collections, config]) => {
       const hiddenSlugs = new Set(config?.hiddenSlugs || []);
-      const filtered = collections.slice(1).filter(c => !hiddenSlugs.has(c.slug));
+      // Exclude cryptophunksv67 (the main default collection) by slug, not by position
+      const filtered = collections.filter(c => c.slug !== 'cryptophunksv67' && !hiddenSlugs.has(c.slug));
       const ethsRocks = filtered.filter(c => c.slug === 'ethsrocks');
       const rest = filtered.filter(c => c.slug !== 'ethsrocks');
       return [...ethsRocks, ...rest];

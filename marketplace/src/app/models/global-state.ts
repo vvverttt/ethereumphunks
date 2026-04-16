@@ -67,6 +67,7 @@ export interface GlobalConfig {
   showPhunkSwap: boolean;
   showPhunkquidity: boolean;
   hiddenSlugs: string[];
+  collectionTraitFilters?: { [slug: string]: TraitFilter };
 };
 
 export interface ChatState {

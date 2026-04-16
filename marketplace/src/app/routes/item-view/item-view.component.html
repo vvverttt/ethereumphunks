@@ -23,7 +23,7 @@
       <div class="details-wrapper">
         @if (phunk.owner) {
           <div class="title-wrapper">
-            <h1 i18n>{{ phunk.collection?.singleName }} {{ phunk.tokenId }}</h1>
+            <h1 i18n>{{ phunk.collection?.singleName }} {{ phunk.slug === 'ethsrocks' ? '-' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) : (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) }}</h1>
 
             <div class="hash-id">
               <span>Provenance Hash: </span>

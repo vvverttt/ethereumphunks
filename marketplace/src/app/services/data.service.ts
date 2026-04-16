@@ -88,6 +88,7 @@ export class DataService {
         if (config.showPhunkSwap === undefined) config.showPhunkSwap = true;
         if (config.showPhunkquidity === undefined) config.showPhunkquidity = true;
         if (!config.hiddenSlugs) config.hiddenSlugs = [];
+        if (!config.collectionTraitFilters) config.collectionTraitFilters = {};
 
         // Admin preview — override all visibility to show everything
         if (localStorage.getItem('admin_preview') === 'true') {

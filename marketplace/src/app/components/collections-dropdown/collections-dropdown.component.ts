@@ -6,7 +6,6 @@ import { Store } from '@ngrx/store';
 import { GlobalState } from '@/models/global-state';
 
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
-
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
 
@@ -28,8 +27,14 @@ const HIDDEN_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
 export class CollectionsDropdownComponent {
 
   collections$ = this.store.select(dataStateSelectors.selectCollections).pipe(
-    map(collections => collections?.filter(c => !HIDDEN_SLUGS.has(c.slug)) ?? [])
+    map((collections: any[]) => {
+      const filtered = (collections ?? []).filter((c: any) => !HIDDEN_SLUGS.has(c.slug));
+      const ethsRocks = filtered.filter((c: any) => c.slug === 'ethsrocks');
+      const rest = filtered.filter((c: any) => c.slug !== 'ethsrocks');
+      return [...ethsRocks, ...rest];
+    })
   );
+
   activeCollection$ = this.store.select(dataStateSelectors.selectActiveCollection);
   dropdownActive$ = this.store.select(appStateSelectors.selectCollectionsMenuActive);
 
