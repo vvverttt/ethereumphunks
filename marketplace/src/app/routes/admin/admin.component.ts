@@ -913,11 +913,11 @@ export class AdminComponent implements OnInit {
 
   async checkHealth() {
     const rpcs = [
-      { name: 'Ankr Primary (RPC_URL_MAINNET)', url: 'https://rpc.ankr.com/eth' },
-      { name: 'llamarpc', url: 'https://eth.llamarpc.com' },
+      { name: 'llamarpc (primary)', url: 'https://eth.llamarpc.com' },
       { name: 'mevblocker', url: 'https://rpc.mevblocker.io' },
       { name: '1rpc', url: 'https://1rpc.io/eth' },
       { name: 'publicnode', url: 'https://ethereum-rpc.publicnode.com' },
+      { name: 'cloudflare', url: 'https://cloudflare-eth.com' },
     ];
 
     this.healthChecking.set(true);
@@ -946,7 +946,7 @@ export class AdminComponent implements OnInit {
     // Also check Supabase
     try {
       const start = Date.now();
-      const { error } = await supabase.from('_global_config').select('id').limit(1);
+      const { error } = await supabase.from('_global_config').select('network').limit(1);
       const latency = Date.now() - start;
       results.push({ name: 'Supabase', url: environment.supabaseUrl, status: (error ? 'error' : 'ok') as 'ok' | 'error', latency, error: error?.message });
     } catch (e: any) {
