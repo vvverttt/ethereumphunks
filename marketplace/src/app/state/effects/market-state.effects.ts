@@ -186,17 +186,20 @@ export class MarketStateEffects {
       this.store.select(marketStateSelectors.selectMarketType),
       this.store.select(marketStateSelectors.selectActiveMarketRouteData),
       this.store.select(marketStateSelectors.selectActiveTraitFilters),
+      this.store.select(appStateSelectors.selectConfig),
     ),
     filter(([action, , marketType]) => {
       return marketType === 'all' && (this.defaultFetchLength + 1) <= action.pagination.toIndex;
     }),
     // tap((action) => console.log('paginateAll', action)),
-    switchMap(([action, marketSlug, marketType, routeData, traitFilters]) => {
+    switchMap(([action, marketSlug, marketType, routeData, traitFilters, config]) => {
+      const preset = marketSlug ? (config?.collectionTraitFilters?.[marketSlug] ?? {}) : {};
+      const effectiveFilters = Object.keys(preset).length ? { ...preset, ...traitFilters } : traitFilters;
       return this.dataSvc.fetchAllWithPagination(
         marketSlug,
         action.pagination.fromIndex,
         action.pagination.toIndex,
-        traitFilters
+        effectiveFilters
       ).pipe(
         map((data: MarketState['activeMarketRouteData']) => {
           const combinedData = [...routeData.data, ...data.data];
@@ -220,13 +223,16 @@ export class MarketStateEffects {
       this.store.select(marketStateSelectors.selectMarketType),
       this.store.select(marketStateSelectors.selectMarketSlug),
       this.store.select(marketStateSelectors.selectActiveTraitFilters),
+      this.store.select(appStateSelectors.selectConfig),
     ),
     filter(([action, marketType]) => marketType === 'all'),
-    switchMap(([action, marketType, slug, traitFilters]) => {
+    switchMap(([action, marketType, slug, traitFilters, config]) => {
       // RPC filters via attributes_new table; no client-side re-filtering needed
       const fetchLength = 10000;
+      const preset = slug ? (config?.collectionTraitFilters?.[slug] ?? {}) : {};
+      const effectiveFilters = Object.keys(preset).length ? { ...preset, ...traitFilters } : traitFilters;
 
-      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength, traitFilters).pipe(
+      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength, effectiveFilters).pipe(
         mergeMap((data: MarketState['activeMarketRouteData']) => [
           marketStateActions.setActiveMarketRouteData({ activeMarketRouteData: data })
         ]),
