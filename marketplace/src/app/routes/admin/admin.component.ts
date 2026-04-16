@@ -7,6 +7,7 @@ import { formatEther, parseEther } from 'viem';
 
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+import * as appStateActions from '@/state/actions/app-state.actions';
 import { AdminService } from '@/services/admin.service';
 import { DataService } from '@/services/data.service';
 import { environment } from 'src/environments/environment';
@@ -766,15 +767,17 @@ export class AdminComponent implements OnInit {
     this.txPending.set(true);
     this.txError.set('');
     try {
-      const { data } = await supabase.from('_global_config').select('collectionTraitFilters').eq('network', environment.chainId).limit(1);
-      const current = data?.[0]?.collectionTraitFilters ?? {};
       const sels = this.traitSelections();
-      const updated: any = { ...current };
+      const updated: any = {};
       for (const slug of this.ctfSlugs) {
         updated[slug] = sels[slug] ?? {};
       }
-      await supabase.from('_global_config').update({ collectionTraitFilters: updated }).eq('network', environment.chainId);
-      await this.loadVisibility();
+      const { error } = await supabase.from('_global_config').update({ collectionTraitFilters: updated }).eq('network', environment.chainId);
+      if (error) throw error;
+      // Update NgRx store immediately so market filters take effect without page refresh
+      const currentConfig = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
+      this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...currentConfig, collectionTraitFilters: updated } }));
+      // Don't call loadVisibility() — it races with Supabase and resets selections
     } catch (e: any) {
       this.txError.set(e?.message || 'Failed to save collection filters');
     } finally {
