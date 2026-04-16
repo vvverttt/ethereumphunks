@@ -13,7 +13,7 @@ export class SortPipe implements PipeTransform {
     const sort = args[0];
     const marketType = args[1];
 
-    if (marketType === 'all') return value;
+    if (marketType === 'all' && sort !== 'id') return value;
 
     let sorted = [...value];
 
@@ -51,7 +51,7 @@ export class SortPipe implements PipeTransform {
     // }
 
     if (sort === 'id') {
-      sorted = sorted.sort((a, b) => a.tokenId - b.tokenId);
+      sorted = sorted.sort((a, b) => Math.abs(a.tokenId) - Math.abs(b.tokenId));
     }
 
     return sorted;

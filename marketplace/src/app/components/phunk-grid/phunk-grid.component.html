@@ -96,7 +96,7 @@
 
         @if (showLabels && (viewType === 'market' || viewType === 'owned')) {
           <div class="labels-wrapper">
-            <div class="label">#{{ phunk.tokenId }}</div>
+            <div class="label">#{{ phunk.slug === 'ethsrocks' ? '-' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) : (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) }}</div>
 
             @if (
               marketType === 'listings' ||

@@ -34,7 +34,10 @@ export class CollectionsComponent {
     filter(([collections]) => !!collections),
     map(([collections, config]) => {
       const hiddenSlugs = new Set(config?.hiddenSlugs || []);
-      return collections.slice(1).filter(c => !hiddenSlugs.has(c.slug));
+      const filtered = collections.slice(1).filter(c => !hiddenSlugs.has(c.slug));
+      const ethsRocks = filtered.filter(c => c.slug === 'ethsrocks');
+      const rest = filtered.filter(c => c.slug !== 'ethsrocks');
+      return [...ethsRocks, ...rest];
     })
   )
 
