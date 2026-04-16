@@ -173,6 +173,7 @@ export class AdminComponent implements OnInit {
   visHiddenSlugsInput = '';
 
   // Collection Trait Filter presets (admin-controlled, applied globally per collection)
+  objectKeys = Object.keys;
   readonly ctfSlugs = ['cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67'] as const;
   readonly ctfSlugLabels: Record<string, string> = {
     'cryptophunksv67': 'CryptoPhunksV67',
