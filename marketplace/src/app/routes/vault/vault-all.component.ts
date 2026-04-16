@@ -53,7 +53,7 @@ export class VaultAllComponent implements OnInit, OnDestroy {
         .select('hashId,sha,tokenId')
         .eq('slug', 'cryptophunksv67')
         .eq('owner', VAULT_ADDRESS.toLowerCase())
-        .order('tokenId')
+        .order('tokenId', { ascending: false })
         .range(offset, offset + 999);
       if (!data?.length) break;
       results.push(...data);
