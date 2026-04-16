@@ -960,10 +960,11 @@ export class AdminComponent implements OnInit {
     const rpcs = [
       { name: 'llamarpc (primary)', url: 'https://eth.llamarpc.com' },
       { name: 'mevblocker', url: 'https://rpc.mevblocker.io' },
-      { name: 'alchemy (rpc)', url: environment.rpcHttpProvider },
-      { name: 'alchemy (receipt)', url: (environment as any).receiptRpcUrl || environment.rpcHttpProvider },
+      { name: '1rpc', url: 'https://1rpc.io/eth' },
+      { name: 'alchemy (key 1)', url: 'https://eth-mainnet.g.alchemy.com/v2/EfAq0ccQOUXyZnumZDmnJ' },
+      { name: 'alchemy (key 2)', url: 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO' },
       { name: 'ankr (key 1)', url: 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8' },
-      { name: 'ankr (key 2)', url: 'https://rpc.ankr.com/eth' },
+      { name: 'ankr (key 2)', url: 'https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f' },
       { name: 'publicnode', url: 'https://ethereum-rpc.publicnode.com' },
     ];
 
