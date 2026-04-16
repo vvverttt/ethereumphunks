@@ -8,6 +8,7 @@ import { formatEther, parseEther } from 'viem';
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { AdminService } from '@/services/admin.service';
+import { DataService } from '@/services/data.service';
 import { environment } from 'src/environments/environment';
 import { supabase } from '@/services/supabase';
 
@@ -172,9 +173,15 @@ export class AdminComponent implements OnInit {
   visHiddenSlugsInput = '';
 
   // Collection Trait Filter presets (admin-controlled, applied globally per collection)
-  ctfInputV67 = '';
-  ctfInputMissing = '';
-  ctfInputDysto = '';
+  readonly ctfSlugs = ['cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67'] as const;
+  readonly ctfSlugLabels: Record<string, string> = {
+    'cryptophunksv67': 'CryptoPhunksV67',
+    'quantummissingphunksv67': 'Quantum Missing Phunks',
+    'quantumdystophunkzv67': 'Quantum DystoPhunkz',
+  };
+  traitOptions = signal<{ [slug: string]: { [k: string]: string[] } }>({});
+  traitSelections = signal<{ [slug: string]: { [k: string]: string } }>({});
+  traitOptionsLoading = signal(false);
 
   // Phunkquidity admin
   phunkquidityOwner = signal('');
@@ -208,6 +215,7 @@ export class AdminComponent implements OnInit {
   constructor(
     private store: Store<GlobalState>,
     public adminSvc: AdminService,
+    private dataSvc: DataService,
   ) {}
 
   async ngOnInit() {
@@ -670,9 +678,14 @@ export class AdminComponent implements OnInit {
         this.hiddenSlugs.set(config.hiddenSlugs ?? []);
         this.visHiddenSlugsInput = (config.hiddenSlugs ?? []).join(', ');
         const ctf = config.collectionTraitFilters ?? {};
-        this.ctfInputV67 = this.traitFilterToString(ctf['cryptophunksv67']);
-        this.ctfInputMissing = this.traitFilterToString(ctf['quantummissingphunksv67']);
-        this.ctfInputDysto = this.traitFilterToString(ctf['quantumdystophunkzv67']);
+        const sel: { [slug: string]: { [k: string]: string } } = {};
+        for (const slug of this.ctfSlugs) {
+          sel[slug] = { ...(ctf[slug] ?? {}) };
+        }
+        this.traitSelections.set(sel);
+        if (!Object.keys(this.traitOptions()).length) {
+          this.loadTraitOptions();
+        }
       }
     } catch (e) { console.error('Visibility load error:', e); }
   }
@@ -698,22 +711,54 @@ export class AdminComponent implements OnInit {
     window.location.reload();
   }
 
-  traitFilterToString(filter: any): string {
-    if (!filter || !Object.keys(filter).length) return '';
-    return Object.entries(filter).map(([k, v]) => `${k}=${v}`).join(', ');
+  async loadTraitOptions() {
+    this.traitOptionsLoading.set(true);
+    const result: { [slug: string]: { [k: string]: string[] } } = {};
+    await Promise.all(this.ctfSlugs.map(async (slug) => {
+      try {
+        const attrItem = await firstValueFrom(this.dataSvc.getAttributes(slug));
+        if (!attrItem) return;
+        const allItems = Object.entries(attrItem);
+        const totalItems = allItems.length;
+        const traitMap = new Map<string, Set<string>>();
+        const traitCount = new Map<string, number>();
+        allItems.forEach(([, attrs]: [string, any[]]) => {
+          const seen = new Set<string>();
+          attrs.forEach((attr: any) => {
+            if (attr.k === 'Description' || attr.k === 'Name') return;
+            if (!traitMap.has(attr.k)) traitMap.set(attr.k, new Set());
+            const values = Array.isArray(attr.v) ? attr.v : [attr.v];
+            values.forEach((v: string) => traitMap.get(attr.k)!.add(v));
+            if (!seen.has(attr.k)) {
+              traitCount.set(attr.k, (traitCount.get(attr.k) || 0) + 1);
+              seen.add(attr.k);
+            }
+          });
+        });
+        result[slug] = {};
+        traitMap.forEach((vals, k) => {
+          const sorted = Array.from(vals).sort();
+          if ((traitCount.get(k) || 0) < totalItems) sorted.unshift('none');
+          result[slug][k] = sorted;
+        });
+      } catch (e) {
+        console.error(`Failed to load traits for ${slug}:`, e);
+      }
+    }));
+    this.traitOptions.set(result);
+    this.traitOptionsLoading.set(false);
   }
 
-  parseTraitFilterString(str: string): Record<string, string> {
-    if (!str.trim()) return {};
-    return Object.fromEntries(
-      str.split(',')
-        .map(s => s.trim())
-        .filter(s => s.includes('='))
-        .map(s => {
-          const idx = s.indexOf('=');
-          return [s.slice(0, idx).trim(), s.slice(idx + 1).trim()];
-        })
-    );
+  toggleTraitValue(slug: string, traitKey: string, value: string) {
+    const sel = { ...this.traitSelections() };
+    const slugSel = { ...(sel[slug] ?? {}) };
+    if (slugSel[traitKey] === value) {
+      delete slugSel[traitKey];
+    } else {
+      slugSel[traitKey] = value;
+    }
+    sel[slug] = slugSel;
+    this.traitSelections.set(sel);
   }
 
   async saveCollectionTraitFilters() {
@@ -722,12 +767,11 @@ export class AdminComponent implements OnInit {
     try {
       const { data } = await supabase.from('_global_config').select('collectionTraitFilters').eq('network', environment.chainId).limit(1);
       const current = data?.[0]?.collectionTraitFilters ?? {};
-      const updated = {
-        ...current,
-        'cryptophunksv67': this.parseTraitFilterString(this.ctfInputV67),
-        'quantummissingphunksv67': this.parseTraitFilterString(this.ctfInputMissing),
-        'quantumdystophunkzv67': this.parseTraitFilterString(this.ctfInputDysto),
-      };
+      const sels = this.traitSelections();
+      const updated: any = { ...current };
+      for (const slug of this.ctfSlugs) {
+        updated[slug] = sels[slug] ?? {};
+      }
       await supabase.from('_global_config').update({ collectionTraitFilters: updated }).eq('network', environment.chainId);
       await this.loadVisibility();
     } catch (e: any) {
@@ -915,9 +959,11 @@ export class AdminComponent implements OnInit {
     const rpcs = [
       { name: 'llamarpc (primary)', url: 'https://eth.llamarpc.com' },
       { name: 'mevblocker', url: 'https://rpc.mevblocker.io' },
-      { name: '1rpc', url: 'https://1rpc.io/eth' },
+      { name: 'alchemy (rpc)', url: environment.rpcHttpProvider },
+      { name: 'alchemy (receipt)', url: (environment as any).receiptRpcUrl || environment.rpcHttpProvider },
+      { name: 'ankr (key 1)', url: 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8' },
+      { name: 'ankr (key 2)', url: 'https://rpc.ankr.com/eth' },
       { name: 'publicnode', url: 'https://ethereum-rpc.publicnode.com' },
-      { name: 'cloudflare', url: 'https://cloudflare-eth.com' },
     ];
 
     this.healthChecking.set(true);
