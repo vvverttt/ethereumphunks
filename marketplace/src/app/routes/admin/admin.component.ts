@@ -696,8 +696,11 @@ export class AdminComponent implements OnInit {
     this.txPending.set(true);
     this.txError.set('');
     try {
-      await supabase.from('_global_config').update({ [field]: !current }).eq('network', environment.chainId);
+      const { error } = await supabase.from('_global_config').update({ [field]: !current }).eq('network', environment.chainId);
+      if (error) throw error;
       await this.loadVisibility();
+      const config = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
+      this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...config, [field]: !current } }));
     } catch (e: any) {
       this.txError.set(e?.message || 'Failed');
     } finally {
@@ -797,8 +800,11 @@ export class AdminComponent implements OnInit {
       const idx = current.indexOf(slug);
       if (idx >= 0) current.splice(idx, 1);
       else current.push(slug);
-      await supabase.from('_global_config').update({ hiddenSlugs: current }).eq('network', environment.chainId);
-      await this.loadVisibility();
+      const { error } = await supabase.from('_global_config').update({ hiddenSlugs: current }).eq('network', environment.chainId);
+      if (error) throw error;
+      this.hiddenSlugs.set(current);
+      const config = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
+      this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...config, hiddenSlugs: current } }));
     } catch (e: any) {
       this.txError.set(e?.message || 'Failed');
     } finally {

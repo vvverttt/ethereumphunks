@@ -587,47 +587,6 @@
           </button>
         </div>
 
-        <div class="action-group">
-          <h3>Collection Attribute Presets</h3>
-          <p style="font-size: 11px; opacity: 0.65; margin: 0 0 10px;">
-            Select trait values to filter each collection globally. One value per trait type can be active.
-            Click a selected value to deselect. Applies to Listings, Bids, Owned, and Vault views.
-          </p>
-
-          @if (traitOptionsLoading()) {
-            <p style="font-size: 11px; opacity: 0.5; margin: 8px 0;">Loading trait data...</p>
-          } @else {
-            @for (slug of ctfSlugs; track slug) {
-              <div style="margin-bottom: 20px;">
-                <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 8px; opacity: 0.9;">
-                  {{ ctfSlugLabels[slug] }}
-                </label>
-                @if (!traitOptions()[slug] || objectKeys(traitOptions()[slug] ?? {}).length === 0) {
-                  <p style="font-size: 11px; opacity: 0.4; margin: 0;">No trait data loaded</p>
-                } @else {
-                  @for (traitKey of objectKeys(traitOptions()[slug]); track traitKey) {
-                    <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
-                      <span style="font-size: 11px; opacity: 0.6; min-width: 100px; padding-top: 4px;">{{ traitKey }}</span>
-                      <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                        @for (val of traitOptions()[slug][traitKey]; track val) {
-                          <button
-                            (click)="toggleTraitValue(slug, traitKey, val)"
-                            [style.background]="traitSelections()[slug]?.[traitKey] === val ? '#00e676' : 'rgba(255,255,255,0.08)'"
-                            [style.color]="traitSelections()[slug]?.[traitKey] === val ? '#000' : 'inherit'"
-                            [style.border]="traitSelections()[slug]?.[traitKey] === val ? '1px solid #00e676' : '1px solid rgba(255,255,255,0.15)'"
-                            style="font-size: 11px; padding: 2px 8px; cursor: pointer; border-radius: 3px;"
-                          >{{ val }}</button>
-                        }
-                      </div>
-                    </div>
-                  }
-                }
-              </div>
-            }
-          }
-
-          <button (click)="saveCollectionTraitFilters()" [disabled]="txPending()">Save Presets</button>
-        </div>
       </div>
     }
 
