@@ -693,14 +693,25 @@ export class AdminComponent implements OnInit {
   }
 
   async toggleVisibility(field: string, current: boolean) {
+    const newValue = !current;
     this.txPending.set(true);
     this.txError.set('');
     try {
-      const { error } = await supabase.from('_global_config').update({ [field]: !current }).eq('network', environment.chainId);
+      const { error } = await supabase.from('_global_config').update({ [field]: newValue }).eq('network', environment.chainId);
       if (error) throw error;
-      await this.loadVisibility();
+      // Update local signals directly — don't re-read Supabase (race condition)
+      switch (field) {
+        case 'maintenance': this.maintenanceMode.set(newValue); break;
+        case 'showMutate': this.showMutate.set(newValue); break;
+        case 'showDevolve': this.showDevolve.set(newValue); break;
+        case 'showLottery': this.showLottery.set(newValue); break;
+        case 'showAuction': this.showAuction.set(newValue); break;
+        case 'showEthsRocksDeployer': this.showEthsRocksDeployer.set(newValue); break;
+        case 'showPhunkSwap': this.showPhunkSwap.set(newValue); break;
+        case 'showPhunkquidity': this.showPhunkquidity.set(newValue); break;
+      }
       const config = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
-      this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...config, [field]: !current } }));
+      this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...config, [field]: newValue } }));
     } catch (e: any) {
       this.txError.set(e?.message || 'Failed');
     } finally {
