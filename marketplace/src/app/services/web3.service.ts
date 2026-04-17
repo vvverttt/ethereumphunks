@@ -88,16 +88,18 @@ export class Web3Service {
       chain: this.chains[0],
       transport: fallback([
         http(environment.rpcHttpProvider),
+        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http('https://1rpc.io/eth'),
+        http('https://rpc.mevblocker.io'),
       ], { rank: false }),
     });
 
     this.l1PollingClient = createPublicClient({
       chain: this.chains[0],
       transport: fallback([
+        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http('https://1rpc.io/eth'),
+        http('https://rpc.mevblocker.io'),
       ], { rank: false }),
     });
 
@@ -111,9 +113,10 @@ export class Web3Service {
       transports: {
         [environment.chainId]: fallback([
           http(environment.rpcHttpProvider),
+          http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
           http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
           http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO'),
-          http('https://1rpc.io/eth'),
+          http('https://rpc.mevblocker.io'),
         ]),
         6969696969: http(environment.magmaRpcHttpProvider)
       },

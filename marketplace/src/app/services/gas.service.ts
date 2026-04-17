@@ -41,7 +41,7 @@ export class GasService {
       });
   }
 
-  private gasRpcUrl = 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8';
+  private gasRpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO';
 
   private fetchGasPrice() {
     return this.http.post<any>(this.gasRpcUrl, {
