@@ -10,6 +10,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
 import { AdminService } from '@/services/admin.service';
 import { DataService } from '@/services/data.service';
+import { Web3Service } from '@/services/web3.service';
 import { environment } from 'src/environments/environment';
 import { supabase } from '@/services/supabase';
 
@@ -218,6 +219,7 @@ export class AdminComponent implements OnInit {
     private store: Store<GlobalState>,
     public adminSvc: AdminService,
     private dataSvc: DataService,
+    private web3Svc: Web3Service,
   ) {}
 
   async ngOnInit() {
@@ -699,8 +701,7 @@ export class AdminComponent implements OnInit {
     this.txPending.set(true);
     this.txError.set('');
     try {
-      const { error } = await supabase.from('_global_config').update({ [field]: newValue }).eq('network', environment.chainId);
-      if (error) throw error;
+      await this.persistAdminConfig({ [field]: newValue });
       // Update local signals directly — don't re-read Supabase (race condition)
       switch (field) {
         case 'maintenance': this.maintenanceMode.set(newValue); break;
@@ -790,8 +791,7 @@ export class AdminComponent implements OnInit {
       }
       // Preserve __hiddenSlugs so saving trait filters doesn't wipe hidden collections
       updated.__hiddenSlugs = this.hiddenSlugs();
-      const { error } = await supabase.from('_global_config').update({ collectionTraitFilters: updated }).eq('network', environment.chainId);
-      if (error) throw error;
+      await this.persistAdminConfig({ collectionTraitFilters: updated });
       // Update NgRx store immediately so market filters take effect without page refresh
       const currentConfig = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
       this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...currentConfig, collectionTraitFilters: updated } }));
@@ -819,11 +819,7 @@ export class AdminComponent implements OnInit {
       // Store inside collectionTraitFilters jsonb (real existing column — no SQL migration needed)
       const currentConfig = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
       const merged = { ...(currentConfig?.collectionTraitFilters || {}), __hiddenSlugs: current } as any;
-      const { error } = await supabase
-        .from('_global_config')
-        .update({ collectionTraitFilters: merged })
-        .eq('network', environment.chainId);
-      if (error) throw error;
+      await this.persistAdminConfig({ collectionTraitFilters: merged });
 
       this.hiddenSlugs.set(current);
       this.visHiddenSlugsInput = current.join(', ');
@@ -852,6 +848,83 @@ export class AdminComponent implements OnInit {
 
     const { __hiddenSlugs, ...rest } = collectionTraitFilters;
     return rest;
+  }
+
+  private async persistAdminConfig(updates: Record<string, any>): Promise<void> {
+    const address = await firstValueFrom(this.address$);
+    if (!address) throw new Error('No admin wallet connected');
+
+    const now = Date.now();
+    const expiresAt = now + 5 * 60 * 1000;
+    const payloadHash = this.hashString(this.stableStringify(updates));
+
+    const auth = {
+      address: address.toLowerCase(),
+      network: environment.chainId,
+      payloadHash,
+      issuedAt: now,
+      expiresAt,
+    };
+
+    const message = this.buildAdminConfigMessage(auth);
+    const signature = await this.web3Svc.signMessage(message);
+
+    const response = await fetch('/api/admin-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        auth,
+        updates,
+        signature,
+      }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Failed to save admin config');
+    }
+  }
+
+  private buildAdminConfigMessage(auth: {
+    address: string;
+    network: number;
+    payloadHash: string;
+    issuedAt: number;
+    expiresAt: number;
+  }): string {
+    return [
+      'EtherPhunks Admin Config Update',
+      `Address: ${auth.address}`,
+      `Network: ${auth.network}`,
+      `Payload Hash: ${auth.payloadHash}`,
+      `Issued At: ${auth.issuedAt}`,
+      `Expires At: ${auth.expiresAt}`,
+      '',
+      'Signing this message does not cost gas.',
+    ].join('\n');
+  }
+
+  private stableStringify(value: any): string {
+    if (Array.isArray(value)) {
+      return `[${value.map(item => this.stableStringify(item)).join(',')}]`;
+    }
+
+    if (value && typeof value === 'object') {
+      return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${this.stableStringify(value[key])}`).join(',')}}`;
+    }
+
+    return JSON.stringify(value);
+  }
+
+  private hashString(input: string): string {
+    let hash = 2166136261;
+
+    for (let i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+
+    return `fnv1a_${(hash >>> 0).toString(16)}`;
   }
 
   // Pause All (Market, Auction, Lottery, Evolve, EthsRocks)
