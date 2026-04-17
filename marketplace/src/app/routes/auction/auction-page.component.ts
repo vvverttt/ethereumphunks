@@ -5,15 +5,13 @@ import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
 import { formatEther, encodePacked, keccak256, createPublicClient, http } from 'viem';
 import { mainnet } from 'viem/chains';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/services/supabase';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
 import { AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
-
-const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 
 const AUCTION_SWAP_ABI = [
   { inputs: [{ name: 'sendHashId', type: 'bytes32' }, { name: 'receiveHashId', type: 'bytes32' }, { name: 'proof', type: 'bytes32[]' }], name: 'swap', outputs: [], stateMutability: 'payable', type: 'function' },

@@ -11,12 +11,11 @@ import { Web3Service } from '@/services/web3.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/services/supabase';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 import { createPublicClient, http, encodePacked, keccak256, toBytes, parseAbi } from 'viem';
 import { mainnet } from 'viem/chains';
 
-const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 const PHUNKQUIDITY = '0x7f5763D56c7E8c34eB125DbD19124945D77e5f1A' as `0x${string}`;
 const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
 

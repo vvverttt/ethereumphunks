@@ -4,9 +4,7 @@ import { RouterModule } from '@angular/router';
 
 import { environment } from 'src/environments/environment';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+import { supabase } from '@/services/supabase';
 
 interface OwnerRow {
   address: string;

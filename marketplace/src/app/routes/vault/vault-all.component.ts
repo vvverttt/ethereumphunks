@@ -17,9 +17,8 @@ import * as marketStateSelectors from '@/state/selectors/market-state.selectors'
 import * as marketStateActions from '@/state/actions/market-state.actions';
 
 import { Subscription, combineLatest, map } from 'rxjs';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/services/supabase';
 
-const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 const VAULT_ADDRESS = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218' as `0x${string}`;
 
 @Component({

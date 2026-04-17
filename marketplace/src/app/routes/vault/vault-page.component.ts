@@ -13,12 +13,10 @@ import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/services/supabase';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 import { createPublicClient, http, encodePacked, keccak256 } from 'viem';
 import { mainnet } from 'viem/chains';
-
-const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 
 const VAULT_ADDRESS = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218' as `0x${string}`;
 

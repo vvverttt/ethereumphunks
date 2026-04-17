@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { environment } from 'src/environments/environment';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+import { supabase } from '@/services/supabase';
 
 interface MosaicItem {
   hashId: string;
