@@ -67,14 +67,14 @@ export class DataService {
    */
   fetchGlobalConfig(): Observable<GlobalConfig> {
     const initial$ = from(
-      supabase
-        .from('_global_config')
-        .select('*')
-        .eq('network', environment.chainId)
-        .limit(1)
+      Promise.all([
+        supabase.from('_global_config').select('*').eq('network', environment.chainId).limit(1),
+        // Source of truth for hidden collections — lives on the collection row, never wiped
+        supabase.from('collections').select('slug').eq('hidden', true),
+      ])
     ).pipe(
-      map(({ data }) => {
-        const config = data?.[0];
+      map(([configRes, hiddenRes]) => {
+        const config = configRes.data?.[0];
         if (!config) return null;
         if (environment.standalone) {
           config.defaultCollection = environment.defaultCollection;
@@ -87,8 +87,11 @@ export class DataService {
         if (config.showEthsRocksDeployer === undefined) config.showEthsRocksDeployer = true;
         if (config.showPhunkSwap === undefined) config.showPhunkSwap = true;
         if (config.showPhunkquidity === undefined) config.showPhunkquidity = true;
-        if (!config.hiddenSlugs) config.hiddenSlugs = [];
         if (!config.collectionTraitFilters) config.collectionTraitFilters = {};
+
+        // hiddenSlugs: always read from collections.hidden — never from _global_config
+        // hiddenRes may be empty if the table/column doesn't exist yet — safe fallback to []
+        config.hiddenSlugs = (hiddenRes.data ?? []).map((r: any) => r.slug);
 
         // Admin preview — override all visibility to show everything
         if (localStorage.getItem('admin_preview') === 'true') {
@@ -1017,6 +1020,7 @@ export class DataService {
           }))
           .sort((a: Collection, b: Collection) => a.id - b.id)
           .filter((item: Collection) => {
+            if (item.hidden) return false;
             if (environment.standalone) {
               return item.slug === environment.defaultCollection;
             }

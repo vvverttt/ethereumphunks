@@ -12,6 +12,7 @@ export interface Collection {
   mintEnabled: boolean;
   hasBackgrounds: boolean;
   defaultBackground: string;
+  hidden?: boolean;
 
   image?: string;
   previews?: Phunk[];

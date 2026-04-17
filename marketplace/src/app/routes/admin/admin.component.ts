@@ -807,12 +807,19 @@ export class AdminComponent implements OnInit {
     this.txPending.set(true);
     this.txError.set('');
     try {
-      const current = [...this.hiddenSlugs()];
-      const idx = current.indexOf(slug);
-      if (idx >= 0) current.splice(idx, 1);
-      else current.push(slug);
-      const { error } = await supabase.from('_global_config').update({ hiddenSlugs: current }).eq('network', environment.chainId);
+      const isHidden = this.isSlugHidden(slug);
+
+      // Permanent: write hidden flag directly on the collections row
+      const { error } = await supabase
+        .from('collections')
+        .update({ hidden: !isHidden })
+        .eq('slug', slug);
       if (error) throw error;
+
+      // Keep local signal + store in sync
+      const current = [...this.hiddenSlugs()];
+      if (isHidden) current.splice(current.indexOf(slug), 1);
+      else current.push(slug);
       this.hiddenSlugs.set(current);
       const config = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
       this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...config, hiddenSlugs: current } }));
