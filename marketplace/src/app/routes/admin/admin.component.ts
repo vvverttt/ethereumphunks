@@ -668,6 +668,9 @@ export class AdminComponent implements OnInit {
       const { data } = await supabase.from('_global_config').select('*').eq('network', environment.chainId).limit(1);
       const config = data?.[0];
       if (config) {
+        const hiddenSlugs = this.readHiddenSlugs(config);
+        const ctf = this.stripInternalCollectionTraitFilters(config.collectionTraitFilters);
+
         this.adminPreview.set(localStorage.getItem('admin_preview') === 'true');
         this.maintenanceMode.set(config.maintenance ?? false);
         this.showMutate.set(config.showMutate ?? true);
@@ -677,9 +680,8 @@ export class AdminComponent implements OnInit {
         this.showEthsRocksDeployer.set(config.showEthsRocksDeployer ?? true);
         this.showPhunkSwap.set(config.showPhunkSwap ?? true);
         this.showPhunkquidity.set(config.showPhunkquidity ?? true);
-        this.hiddenSlugs.set(config.hiddenSlugs ?? []);
-        this.visHiddenSlugsInput = (config.hiddenSlugs ?? []).join(', ');
-        const ctf = config.collectionTraitFilters ?? {};
+        this.hiddenSlugs.set(hiddenSlugs);
+        this.visHiddenSlugsInput = hiddenSlugs.join(', ');
         const sel: { [slug: string]: { [k: string]: string } } = {};
         for (const slug of this.ctfSlugs) {
           sel[slug] = { ...(ctf[slug] ?? {}) };
@@ -824,12 +826,32 @@ export class AdminComponent implements OnInit {
       if (error) throw error;
 
       this.hiddenSlugs.set(current);
+      this.visHiddenSlugsInput = current.join(', ');
       this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...currentConfig, hiddenSlugs: current, collectionTraitFilters: merged } }));
     } catch (e: any) {
       this.txError.set(e?.message || 'Failed');
     } finally {
       this.txPending.set(false);
     }
+  }
+
+  private readHiddenSlugs(config: any): string[] {
+    if (Array.isArray(config?.hiddenSlugs)) {
+      return config.hiddenSlugs;
+    }
+
+    return Array.isArray(config?.collectionTraitFilters?.__hiddenSlugs)
+      ? config.collectionTraitFilters.__hiddenSlugs
+      : [];
+  }
+
+  private stripInternalCollectionTraitFilters(collectionTraitFilters: any): Record<string, any> {
+    if (!collectionTraitFilters || typeof collectionTraitFilters !== 'object') {
+      return {};
+    }
+
+    const { __hiddenSlugs, ...rest } = collectionTraitFilters;
+    return rest;
   }
 
   // Pause All (Market, Auction, Lottery, Evolve, EthsRocks)
