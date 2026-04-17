@@ -2,6 +2,11 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
+import { Store } from '@ngrx/store';
+import { firstValueFrom } from 'rxjs';
+import { GlobalState } from '@/models/global-state';
+import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+
 import { environment } from 'src/environments/environment';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { supabase } from '@/services/supabase';
@@ -29,6 +34,8 @@ export class OwnersPageComponent implements OnInit {
   collections = signal<CollectionOwners[]>([]);
   loading = signal(true);
   explorerUrl = environment.explorerUrl;
+
+  constructor(private store: Store<GlobalState>) {}
 
   readonly contractNames: Record<string, string> = {
     '0xd3418772623be1a3cc6b6d45cb46420cedd9154a': 'EthereumPhunks Market',
@@ -59,13 +66,16 @@ export class OwnersPageComponent implements OnInit {
   private readonly CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
   async ngOnInit() {
+    const config = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
+    const hiddenSlugs = new Set(config?.hiddenSlugs ?? []);
+
     const cached = this.getCache();
     if (cached) {
-      this.collections.set(cached);
+      this.collections.set(cached.filter(c => !hiddenSlugs.has(c.slug)));
       this.loading.set(false);
       return;
     }
-    await this.loadOwners();
+    await this.loadOwners(hiddenSlugs);
     this.loading.set(false);
   }
 
@@ -83,12 +93,12 @@ export class OwnersPageComponent implements OnInit {
     localStorage.setItem(this.CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
   }
 
-  private async loadOwners() {
+  private async loadOwners(hiddenSlugs: Set<string> = new Set()) {
     const excludeAddresses = new Set([
       '0x0000000000000000000000000000000000000000',
     ]);
 
-    const slugs = Object.keys(this.collectionNames);
+    const slugs = Object.keys(this.collectionNames).filter(s => !hiddenSlugs.has(s));
     const result: CollectionOwners[] = [];
 
     for (const slug of slugs) {
