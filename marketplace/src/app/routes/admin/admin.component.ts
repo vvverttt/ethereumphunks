@@ -786,6 +786,8 @@ export class AdminComponent implements OnInit {
       for (const slug of this.ctfSlugs) {
         updated[slug] = sels[slug] ?? {};
       }
+      // Preserve __hiddenSlugs so saving trait filters doesn't wipe hidden collections
+      updated.__hiddenSlugs = this.hiddenSlugs();
       const { error } = await supabase.from('_global_config').update({ collectionTraitFilters: updated }).eq('network', environment.chainId);
       if (error) throw error;
       // Update NgRx store immediately so market filters take effect without page refresh
@@ -812,15 +814,17 @@ export class AdminComponent implements OnInit {
       if (isHidden) current.splice(current.indexOf(slug), 1);
       else current.push(slug);
 
+      // Store inside collectionTraitFilters jsonb (real existing column — no SQL migration needed)
+      const currentConfig = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
+      const merged = { ...(currentConfig?.collectionTraitFilters || {}), __hiddenSlugs: current } as any;
       const { error } = await supabase
         .from('_global_config')
-        .update({ hiddenSlugs: current })
+        .update({ collectionTraitFilters: merged })
         .eq('network', environment.chainId);
       if (error) throw error;
 
       this.hiddenSlugs.set(current);
-      const config = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
-      this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...config, hiddenSlugs: current } }));
+      this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...currentConfig, hiddenSlugs: current, collectionTraitFilters: merged } }));
     } catch (e: any) {
       this.txError.set(e?.message || 'Failed');
     } finally {

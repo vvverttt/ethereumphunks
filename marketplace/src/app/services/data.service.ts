@@ -83,9 +83,14 @@ export class DataService {
         if (config.showEthsRocksDeployer === undefined) config.showEthsRocksDeployer = true;
         if (config.showPhunkSwap === undefined) config.showPhunkSwap = true;
         if (config.showPhunkquidity === undefined) config.showPhunkquidity = true;
-        // hiddenSlugs: stored as jsonb in _global_config — null means column missing, treat as []
-        if (!Array.isArray(config.hiddenSlugs)) config.hiddenSlugs = [];
+        // hiddenSlugs: stored inside collectionTraitFilters jsonb under __hiddenSlugs key
+        // (avoids needing a separate DB column — collectionTraitFilters is a real existing column)
         if (!config.collectionTraitFilters) config.collectionTraitFilters = {};
+        config.hiddenSlugs = Array.isArray(config.collectionTraitFilters.__hiddenSlugs)
+          ? config.collectionTraitFilters.__hiddenSlugs
+          : [];
+        // Remove internal key so it doesn't bleed into trait filter logic
+        delete config.collectionTraitFilters.__hiddenSlugs;
 
         // Admin preview — override all visibility to show everything
         if (localStorage.getItem('admin_preview') === 'true') {
