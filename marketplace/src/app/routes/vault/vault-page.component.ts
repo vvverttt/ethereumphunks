@@ -15,8 +15,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { supabase } from '@/services/supabase';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
-import { createPublicClient, http, encodePacked, keccak256 } from 'viem';
-import { mainnet } from 'viem/chains';
+import { encodePacked, keccak256 } from 'viem';
 
 const VAULT_ADDRESS = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218' as `0x${string}`;
 
@@ -77,7 +76,7 @@ export class VaultPageComponent implements OnInit {
 
   private merkleTree: string[][] = [];
   private allV67HashIds: string[] = [];
-  private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO') });
+  private get rpcClient() { return this.web3Svc.l1Client; }
 
   constructor(
     private store: Store<GlobalState>,

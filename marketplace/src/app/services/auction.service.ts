@@ -19,6 +19,7 @@ const logsClient = createPublicClient({
     http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
     http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
     http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO'),
+    http('https://eth-mainnet.g.alchemy.com/v2/EfAq0ccQOUXyZnumZDmnJ'),
   ], { rank: false }),
 });
 
@@ -330,22 +331,31 @@ export class AuctionService {
 
   async getBidHistory(currentAuctionId: number): Promise<AuctionBidEvent[]> {
     try {
-      // Try DB first
-      const { data } = await supabase
-        .from('auctionBids' + suffix)
-        .select('fromAddress, amount, txHash')
-        .eq('auctionId', currentAuctionId)
-        .order('createdAt', { ascending: false });
+      // Check if this auction is indexed — if so, trust DB result (even 0 bids is valid)
+      const [bidsResult, auctionResult] = await Promise.all([
+        supabase
+          .from('auctionBids' + suffix)
+          .select('fromAddress, amount, txHash')
+          .eq('auctionId', currentAuctionId)
+          .order('createdAt', { ascending: false }),
+        supabase
+          .from('auctions' + suffix)
+          .select('auctionId')
+          .eq('auctionId', currentAuctionId)
+          .limit(1),
+      ]);
 
-      if (data?.length) {
-        return data.map((b: any) => ({
+      const auctionIndexed = !!auctionResult.data?.length;
+
+      if (auctionIndexed) {
+        return (bidsResult.data || []).map((b: any) => ({
           sender: b.fromAddress,
           value: BigInt(b.amount || '0'),
           txHash: b.txHash || '',
         }));
       }
 
-      // Fall back to RPC if no DB data
+      // Only fall back to RPC if auction isn't indexed at all
       const logs = await this.getEventsPaginated('AuctionBid');
       return logs
         .filter((log: any) => Number(log.args.auctionId) === currentAuctionId)

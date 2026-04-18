@@ -54,16 +54,7 @@ export async function onRequestPost(context) {
   const adminChainId = env.ADMIN_CHAIN_ID ? Number(env.ADMIN_CHAIN_ID) : null;
 
   if (!supabaseUrl || !supabaseServiceRoleKey || !adminRpcHttpProvider || !adminMarketAddress) {
-    return json(500, {
-      error: 'Missing admin config environment variables',
-      missing: [
-        !supabaseUrl && 'SUPABASE_URL',
-        !supabaseServiceRoleKey && 'SUPABASE_SERVICE_ROLE_KEY',
-        !adminRpcHttpProvider && 'ADMIN_RPC_HTTP_PROVIDER',
-        !adminMarketAddress && 'ADMIN_MARKET_ADDRESS',
-      ].filter(Boolean),
-      envKeys: Object.keys(env),
-    });
+    return json(500, { error: 'Missing admin config environment variables' });
   }
 
   try {

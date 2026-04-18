@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
-import { formatEther, encodePacked, keccak256, createPublicClient, http } from 'viem';
-import { mainnet } from 'viem/chains';
+import { formatEther, encodePacked, keccak256 } from 'viem';
 import { supabase } from '@/services/supabase';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 
@@ -107,7 +106,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   swapCooldownReady = signal(false);
   swapCooldownMessage = signal('Waiting for confirmation...');
   private merkleTree: string[][] = [];
-  private rpcClient = createPublicClient({ chain: mainnet, transport: http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO') });
+  private get rpcClient() { return this.web3Svc.l1Client; }
 
   getImageUrl(item: { sha: string }): string {
     return environment.staticUrl + '/static/images/' + item.sha;
@@ -353,7 +352,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       const tmp = document.createElement('canvas');
       tmp.width = img.naturalWidth;
       tmp.height = img.naturalHeight;
-      const tmpCtx = tmp.getContext('2d')!;
+      const tmpCtx = tmp.getContext('2d', { willReadFrequently: true })!;
       tmpCtx.drawImage(img, 0, 0);
 
       const bgPixel = tmpCtx.getImageData(0, 0, 1, 1).data;

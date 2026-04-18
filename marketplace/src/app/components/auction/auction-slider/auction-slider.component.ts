@@ -66,7 +66,7 @@ export class AuctionSliderComponent implements OnChanges {
       const c = document.createElement('canvas');
       c.width = img.naturalWidth;
       c.height = img.naturalHeight;
-      const ctx = c.getContext('2d')!;
+      const ctx = c.getContext('2d', { willReadFrequently: true })!;
       ctx.drawImage(img, 0, 0);
 
       const bg = ctx.getImageData(0, 0, 1, 1).data;
