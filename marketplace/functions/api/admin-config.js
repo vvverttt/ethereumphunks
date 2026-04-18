@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createPublicClient, http, isAddress, parseAbi } from 'viem';
-import { recoverMessageAddress } from 'viem/accounts';
+import { createPublicClient, http, isAddress, parseAbi, recoverMessageAddress } from 'viem';
 
 const OWNER_ABI = parseAbi([
   'function owner() view returns (address)',
