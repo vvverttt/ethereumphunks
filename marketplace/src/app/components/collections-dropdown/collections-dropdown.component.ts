@@ -9,9 +9,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
 
-import { firstValueFrom, map } from 'rxjs';
-
-const HIDDEN_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
+import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -26,9 +24,14 @@ const HIDDEN_SLUGS = new Set(['og-missing-phunks', 'og-dysto-phunks']);
 })
 export class CollectionsDropdownComponent {
 
-  collections$ = this.store.select(dataStateSelectors.selectCollections).pipe(
-    map((collections: any[]) => {
-      const filtered = (collections ?? []).filter((c: any) => !HIDDEN_SLUGS.has(c.slug));
+  collections$ = combineLatest([
+    this.store.select(dataStateSelectors.selectCollections),
+    this.store.select(appStateSelectors.selectConfig),
+  ]).pipe(
+    filter(([collections]) => !!collections),
+    map(([collections, config]) => {
+      const hiddenSlugs = new Set(config?.hiddenSlugs || []);
+      const filtered = (collections ?? []).filter((c: any) => !hiddenSlugs.has(c.slug));
       const ethsRocks = filtered.filter((c: any) => c.slug === 'ethsrocks');
       const rest = filtered.filter((c: any) => c.slug !== 'ethsrocks');
       return [...ethsRocks, ...rest];

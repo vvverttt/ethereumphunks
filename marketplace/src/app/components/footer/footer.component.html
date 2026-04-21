@@ -31,8 +31,12 @@
     @if ((config$ | async)?.showMutate !== false || (config$ | async)?.showDevolve !== false) {
       Mutation: <a [href]="explorerUrl + '/address/' + mutation" target="_blank"><app-address [address]="mutation" /></a><br />
     }
-    Phunk Swap: <a [href]="explorerUrl + '/address/' + vault" target="_blank"><app-address [address]="vault" /></a><br />
-    PhunkQuidity: <a [href]="explorerUrl + '/address/' + phunkquidity" target="_blank"><app-address [address]="phunkquidity" /></a>
+    @if ((config$ | async)?.showPhunkSwap !== false) {
+      Phunk Swap: <a [href]="explorerUrl + '/address/' + vault" target="_blank"><app-address [address]="vault" /></a><br />
+    }
+    @if ((config$ | async)?.showPhunkquidity !== false) {
+      PhunkQuidity: <a [href]="explorerUrl + '/address/' + phunkquidity" target="_blank"><app-address [address]="phunkquidity" /></a>
+    }
   </p>
 
   <p i18n>By using this app, you accept all risks associated, including the loss of funds. The creators of QuantumPhunks are not liable for any issues or damages that may arise from its use.</p>
