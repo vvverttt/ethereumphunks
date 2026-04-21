@@ -3,11 +3,13 @@ import hre, { upgrades } from 'hardhat';
 const proxyAddress = '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8';
 const contractName = 'EthsRocks';
 
-// Signer address derived from API_PRIVATE_KEY (will be set after upgrade)
-// API_PRIVATE_KEY = 75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5
-
 async function main() {
   const [signer] = await hre.ethers.getSigners();
+  const apiPrivateKey = process.env.API_PRIVATE_KEY;
+
+  if (!apiPrivateKey) {
+    throw new Error('API_PRIVATE_KEY env var is required');
+  }
 
   console.log('\n=====================================================================');
   console.log(`Upgrading ${contractName} to V2 (signer-based verification)`);
@@ -27,7 +29,8 @@ async function main() {
   console.log(`\nVerify: npx hardhat verify --network mainnet ${newImplAddress}`);
 
   // Derive signer address from API_PRIVATE_KEY
-  const signerWallet = new hre.ethers.Wallet('0x75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5');
+  const normalizedApiPrivateKey = apiPrivateKey.startsWith('0x') ? apiPrivateKey : `0x${apiPrivateKey}`;
+  const signerWallet = new hre.ethers.Wallet(normalizedApiPrivateKey);
   console.log(`\n  Signer wallet address: ${signerWallet.address}`);
 
   // Set signer address on the contract

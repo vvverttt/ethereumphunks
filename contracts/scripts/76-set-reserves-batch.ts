@@ -23,7 +23,7 @@ async function main() {
   const { createClient } = await import('@supabase/supabase-js');
   const sb = (createClient as any)(
     'https://hzpwkpjxhtpcygrwtwku.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDMxNDA0MywiZXhwIjoyMDg1ODkwMDQzfQ.n4_1A7B6MRHTaeXX7CZkzEsveAJ1KzHziHhxH5qsYAs'
+    'REDACTED_SUPABASE_SERVICE_ROLE'
   );
 
   const { data: tokens } = await sb

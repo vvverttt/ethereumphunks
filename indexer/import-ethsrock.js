@@ -4,7 +4,7 @@ const path = require('path');
 
 // Configuration
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDMxNDA0MywiZXhwIjoyMDg1ODkwMDQzfQ.n4_1A7B6MRHTaeXX7CZkzEsveAJ1KzHziHhxH5qsYAs';
+const SUPABASE_SERVICE_ROLE = 'REDACTED_SUPABASE_SERVICE_ROLE';
 const JSON_FILE = 'C:\\Users\\alber\\OneDrive\\Desktop\\market\\EthsRock-with-sha.json';
 const IMAGES_DIR = 'C:\\Users\\alber\\OneDrive\\Desktop\\market\\ether_rocks_original';
 const SLUG = 'ethsrock';

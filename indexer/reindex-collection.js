@@ -2,7 +2,7 @@ const axios = require('axios');
 
 // Configuration
 const INDEXER_URL = 'https://ethereumphunks.onrender.com/admin';
-const API_KEY = '75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5';
+const API_KEY = 'REDACTED_API_PRIVATE_KEY';
 const ETHSCRIPTIONS_API = 'https://api.ethscriptions.com/v2';
 const COLLECTION_NAME = 'Ethereum Phunks';
 const CONCURRENCY = 5; // Process 5 at a time

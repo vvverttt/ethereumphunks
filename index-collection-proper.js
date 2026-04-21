@@ -2,9 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import fetch from 'node-fetch';
 
 const supabaseUrl = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDMxNDA0MywiZXhwIjoyMDg1ODkwMDQzfQ.n4_1A7B6MRHTaeXX7CZkzEsveAJ1KzHziHhxH5qsYAs';
+const supabaseServiceKey = 'REDACTED_SUPABASE_SERVICE_ROLE';
 const indexerUrl = 'http://localhost:3069';
-const apiKey = '75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5';
+const apiKey = 'REDACTED_API_PRIVATE_KEY';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 

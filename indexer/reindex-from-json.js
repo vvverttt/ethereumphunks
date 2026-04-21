@@ -4,7 +4,7 @@ const axios = require('axios');
 // Configuration
 const JSON_FILE_PATH = 'C:\\Users\\alber\\OneDrive\\Desktop\\market\\cryptophunks-v67.json';
 const INDEXER_URL = 'http://localhost:3069/admin';
-const API_KEY = '75c5d7c962a7ea097f3f6c7dacb95e20afc6aa62de20a8ca04a0973cfecba0f5'; // From .env
+const API_KEY = 'REDACTED_API_PRIVATE_KEY'; // From .env
 const BATCH_SIZE = 10; // Process in batches to avoid overwhelming the indexer
 const DELAY_MS = 500; // Delay between batches
 

@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // Your Supabase credentials
 const supabaseUrl = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDMxNDA0MywiZXhwIjoyMDg1ODkwMDQzfQ.n4_1A7B6MRHTaeXX7CZkzEsveAJ1KzHziHhxH5qsYAs';
+const supabaseServiceKey = 'REDACTED_SUPABASE_SERVICE_ROLE';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 

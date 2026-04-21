@@ -1,9 +1,9 @@
 // Migrate all storage files from old Supabase project to new one
 const OLD_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const OLD_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDMxNDA0MywiZXhwIjoyMDg1ODkwMDQzfQ.n4_1A7B6MRHTaeXX7CZkzEsveAJ1KzHziHhxH5qsYAs';
+const OLD_KEY = 'REDACTED_SUPABASE_SERVICE_ROLE';
 
 const NEW_URL = 'https://kfnprbhoodmgfhqojmqp.supabase.co';
-const NEW_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbnByYmhvb2RtZ2ZocW9qbXFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzkxMzU1NiwiZXhwIjoyMDg5NDg5NTU2fQ.KMYkR8Yy0fSJ8WKvKq5_JsynnK-PqQdNxqrIWMAhJ7c';
+const NEW_KEY = 'REDACTED_SUPABASE_SERVICE_ROLE';
 
 const CONCURRENCY = 10;
 
