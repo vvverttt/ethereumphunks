@@ -1,0 +1,2535 @@
+{
+  "name": "QuantumDystoPhunkz",
+  "logo_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAIRlWElmTU0AKgAAAAgABQEGAAMAAAABAAIAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAAEsAAAAAQAAASwAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAABigAwAEAAAAAQAAABgAAAAAZ+sQ+QAAAAlwSFlzAAAuIwAALiMBeKU/dgAAA35pVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDYuMC4wIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6SXB0YzR4bXBFeHQ9Imh0dHA6Ly9pcHRjLm9yZy9zdGQvSXB0YzR4bXBFeHQvMjAwOC0wMi0yOS8iPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPmR5c3RvcGh1bmtfMTAyODk8L3JkZjpsaT4KICAgICAgICAgICAgPC9yZGY6QWx0PgogICAgICAgICA8L2RjOnRpdGxlPgogICAgICAgICA8dGlmZjpZUmVzb2x1dGlvbj4zMDA8L3RpZmY6WVJlc29sdXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6UGhvdG9tZXRyaWNJbnRlcnByZXRhdGlvbj4yPC90aWZmOlBob3RvbWV0cmljSW50ZXJwcmV0YXRpb24+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDxJcHRjNHhtcEV4dDpBcnR3b3JrVGl0bGU+ZHlzdG9waHVua18xMDI4OTwvSXB0YzR4bXBFeHQ6QXJ0d29ya1RpdGxlPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KkCDODAAAAhlJREFUSA3dVT1IA1EMTsVN/BlFXQQVFxHFVRAUSh0OCw6iRXGrq4IOglTEQbGuOlkQFQeh0kEpKA5dS0VcxBYcRGexu+d9qXl9d71nW0cf3L3k5Uu+JC/cEf3r1dwZsFEgdpHrLTjwm4M36HRwheFWeIpSyUtKHO396g9wox+BN7BgELgtOOqocbIog2P7Ih2n4pttJGoQZ303OSDr4+gKfaQzXAEIsUwJweZLAIO+etevlCrtmT+MM4kYTCS+pQkYgfPbk1RcPJE4al98v6dEx5DSITQnIhXtqiCQ4C7PGhQk8bWwSa1jeReJi6CW4DvnPLlM+ZQlSmiDJJXqlagpkuCpF3e6VjcRzrBfPXcp42PuVcleAUQOiY1hUQQCQiDvkjNv0P4RL7KsCwkTSPZlc3VpbcbVXV8HkDBKCPQe+noYDsUPZu6/NnWKYPckS6uREd+RNMSlu42IMkkbdTIYFUHy8YvyDzkmUV51CMXQVgnd3u3ychHAAhKspdNrOpgLsVyLbqqeLxnjFB5osFFF7+BwKejtU1nGSRXdr8W2FTN/i26WZ2li/6xE5ryr6QroCAiMJ5CKlT/XehU6uFY52jRD0WSPAy8FFj++A1Ewrp8McjrS88zHqALZyxov9Ino2oGXIdEnie9AkKiiJVzgu5BAtuVYCzGBcNk6oTcBBfwRjP8DZCQPeilyPXcBjgqCn7vwJvJn/Rsyjvh/xkjYUgAAAABJRU5ErkJggg==",
+  "banner_image": null,
+  "total_supply": 69,
+  "slug": "quantumdystophunkzv67",
+  "description": "Ethscription-crafted digital artifacts",
+  "website_url": null,
+  "twitter_url": "https://x.com/null",
+  "discord_url": null,
+  "background_color": "#C3FF00",
+  "collection_items": [
+    {
+      "id": "0x413f30c0b85bd3a787b40a8b4152fa3a40c1362525a0ad4620eecaf098ba67e4",
+      "index": 10251,
+      "sha": "20ce20cebd8f07eb29a1b6ce0c4e6481402b429232ebc35f157f973c2a7a9353",
+      "name": "QuantumDystoPhunk 10251",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Alien"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cyber Brain"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x1bdc861276bfe1f0909216c1e40899dc0280940ac7018d6e64e7061060355029",
+      "index": 10252,
+      "sha": "d824450e9605869076c372e430c1f4fe3bd1c40de9944113b2e3fe9444db00f3",
+      "name": "QuantumDystoPhunk 10252",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Alien"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Eye"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Shadow Synth Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Zebra"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x99511289fbbabcea6415799993158c2038301231d4c46c84bc510a91ab931030",
+      "index": 10253,
+      "sha": "04ba005dadcb602cbf1d66c5ab9ffb5c7747d1bb1c155a35f6c63cf6b456a510",
+      "name": "QuantumDystoPhunk 10253",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Alien"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Mohawk Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Eye"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Gas Mask"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xcb5f7a8fd91d524cc5997d6ba15746aeffe1116b0e062a5894a739046d993893",
+      "index": 10254,
+      "sha": "13c002cf9c32a980b588f1852e29d5aa31467ba24bdd850e51a963245cc065ca",
+      "name": "QuantumDystoPhunk 10254",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Hair",
+          "value": "Short Mohawk"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green Scouter"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Metal Green Mask"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cosmic"
+        },
+        {
+          "trait_type": "Species",
+          "value": "Zerethian"
+        }
+      ]
+    },
+    {
+      "id": "0xcbb576508e0b042d29a75bf1537a8b0db98c1b4165372f6bf58d18ae5dfa1738",
+      "index": 10255,
+      "sha": "8b7281fcedfe5b8d3cd208ebe5dbfe54a155a86a6c72acee377dac086230f5d5",
+      "name": "QuantumDystoPhunk 10255",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Alien"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Thin Mohawk Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Holo Lens"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vape"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xd8f8d30696362e8f5047cb16d4d72f740ac1091b338f3bb74971c97e43bcfcae",
+      "index": 10256,
+      "sha": "f364569977677264ac3351d85e740914b09a2cd6085e4de3cfb3a37a93b7a879",
+      "name": "QuantumDystoPhunk 10256",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Eyes",
+          "value": "Bionic Eye Patch"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Rat"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x2e72ae240a2b73247dab4d624a0d492baec62aa8fb59624c3b59bbc7cdf7051b",
+      "index": 10257,
+      "sha": "f25960efdfd913ef5f86a74f927d3009db4d57c63a03c61d10d33f4baa89c00a",
+      "name": "QuantumDystoPhunk 10257",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Hair",
+          "value": "Shadow Hoodie"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Wookiee"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cosmic"
+        },
+        {
+          "trait_type": "Species",
+          "value": "Wookiee"
+        }
+      ]
+    },
+    {
+      "id": "0xbcdb8ae0804a62025c30a7b56da30b448900f4e3e7930540ba8785e615ebe3f6",
+      "index": 10258,
+      "sha": "72409c434d0b1ba89260ffcaaec8653bbb9c8973fab03c614bf653faf23fe145",
+      "name": "QuantumDystoPhunk 10258",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ape"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyclops Visor"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x3439136078e5d3cbf059a9d66088100d6efea41f845e4f1949c705915b2a8225",
+      "index": 10259,
+      "sha": "eb519071d6ffdd583b73a76d885514e4e06223a9a8cabaee48c957385e2ba60a",
+      "name": "QuantumDystoPhunk 10259",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ape"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cap"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Wide Shades"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vape"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xd691a191f50c523718012c31de36229d9f5596654629d18aac42ccee50bba390",
+      "index": 10260,
+      "sha": "70dd0b4c06f6e3c7edb1c6dd45f245d9366afecf5ec24ebc8919e89912b2430d",
+      "name": "QuantumDystoPhunk 10260",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ape"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Neon Gaze"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Shadow Synth Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Yeti"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x92778fcc6975840b06c7d843b84e0ae3af2bef4d1fb0c208f1fcb4c309668b90",
+      "index": 10261,
+      "sha": "868b51e90993f750a2bae96e1472513fa699f417ec08f365a733c8f108755e8a",
+      "name": "QuantumDystoPhunk 10261",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ape"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Bandana"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Eye"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vortex Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xf96462971b4123ae4b8e4895229cb4558037013e049d8538a251d6cc1a3f5e35",
+      "index": 10262,
+      "sha": "083f78b635823b6bac932047d0a21591b0fe5092588a8c5797f7d72c496be910",
+      "name": "QuantumDystoPhunk 10262",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ape"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Knitted Cap"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Gas Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Zebra"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xba813d6d747aca37713bd22840c131083ff58ddb815a4487b3abb925197bf4c8",
+      "index": 10263,
+      "sha": "8619fae64fb8ac53b56876717d0414a659cdaa0e86b650e0b3d9999ecb6c9286",
+      "name": "QuantumDystoPhunk 10263",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brain With Flies"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Bull"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x0abf1f3eb026ef6044a068331c539c5176fdbca1610404585f8d87562e303b7a",
+      "index": 10264,
+      "sha": "79b71361839a0348c7eda23cf939ee395b293b492c3d9591d2a3e43dfc3f0b08",
+      "name": "QuantumDystoPhunk 10264",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brain With Flies"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyclops Visor"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Void Mask"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cosmic"
+        },
+        {
+          "trait_type": "Species",
+          "value": "Utrom"
+        }
+      ]
+    },
+    {
+      "id": "0x75491652752c842b5877f168628681becb2072e9476dbc8416b1a9f7d7f0864b",
+      "index": 10265,
+      "sha": "cf603575504f5b92ef20182d4e04c1a0f9cad1c1fd3fef1b0d453d1299bbcd80",
+      "name": "QuantumDystoPhunk 10265",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Bionic Eye Patch"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Elephant"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x360d93367f8b79c616d6958f90dcea045d058bee665f76957c8e45035ff1724a",
+      "index": 10266,
+      "sha": "78e54de103d20def67a0685683e341e1960705bc3eaa2868c9d7bbe2e352d1f4",
+      "name": "QuantumDystoPhunk 10266",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Crazy Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Holo Lens"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Alligator"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x97905b1802228aba57f16a6db7c5d2f5348a5886134c6a914934fc3c6378f9c2",
+      "index": 10267,
+      "sha": "b5c0917a5f5ce8ff7c4d13454a72858d6dcfc391b9d75f98707d542ed92675ba",
+      "name": "QuantumDystoPhunk 10267",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Mohawk Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Hyper Zoom VR"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vape"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Rhino"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x5121612d3d18f6daf822b97243122d9dfb90b86d14ea8a62ee49ef1183b76ed8",
+      "index": 10268,
+      "sha": "75b59840e271f8c647310a23e5590eb552369adb897fe3122e6f5d68b2e95ccd",
+      "name": "QuantumDystoPhunk 10268",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Peak Spike"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green Scouter"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vortex Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xf2bd44d699b85e05526935f7e50d4c189692101ff32c59acf9389d4fc2d004d6",
+      "index": 10269,
+      "sha": "e337955b9103668a8ba62847f32c2aeb0468befb4de79dae588559da26bf4e89",
+      "name": "QuantumDystoPhunk 10269",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Bandana"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Holo Black Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Bear"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x00d0c409e13a9f89bbb7b33572fa708803ac7501725d0ba43ca03b1a58dc35af",
+      "index": 10270,
+      "sha": "5437caa2ec4c7ec232fad8ba4278f1501bb3ce792068f2ec2a884c8f4969af83",
+      "name": "QuantumDystoPhunk 10270",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brain With Flies"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Meta VR"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Hog"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xda2a6389493bf5da55a338df2fb1c3b9d6b79a737094e32a0e499319fd9d3c9b",
+      "index": 10271,
+      "sha": "bb17fdd5baf4a8d003b30c1984fdfc3a2f15bd450e43e50bd4aa9ef1d3a976ba",
+      "name": "QuantumDystoPhunk 10271",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Thin Mohawk Green"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Gas Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Zebra"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xed531bbb9299b5df4880f3a10ce03f9b9d4dec28eb81f5d847007c2b7675a3d2",
+      "index": 10272,
+      "sha": "2ea71e2ef2c8c3a2ec4ff71d107a1cd8a10f0af52d62a214455de35318a1f5b5",
+      "name": "QuantumDystoPhunk 10272",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Robot"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x7aeda3e84c5798adc2ff28e4f83c68477067ced9833e5e0b97dd2f86bbf0dd63",
+      "index": 10273,
+      "sha": "43b7cf67154c21c590eec9a4e38263f67b5ac387f9a141a381eff32ddad55f7d",
+      "name": "QuantumDystoPhunk 10273",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Robot"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green Scouter"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Shadow Synth Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Zebra"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x7abaa6e344d466f13ea8363219fd4c5079f8b2f0a49cee1a0e129d5e46326cd8",
+      "index": 10274,
+      "sha": "bb9a3caaa0b0267cfea1d8a7c1dca6945f37274d5737981449d5c6e4044063e7",
+      "name": "QuantumDystoPhunk 10274",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Robot"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyclops Visor"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Neon Green Mask"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x34d63c3a4e2e99fa1ea154852d16b8b4476bc7743b0346b13b86a5c35461af2e",
+      "index": 10275,
+      "sha": "97f61e498e05b56856daddbc8b731a36db7620302f44977c10251ad45d0aca0f",
+      "name": "QuantumDystoPhunk 10275",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Robot"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "VR Headset"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Character"
+        },
+        {
+          "trait_type": "Character",
+          "value": "PhlamingoBot!"
+        }
+      ]
+    },
+    {
+      "id": "0x0615da0f42f172ae909324c82c9fe757ef6338c18940b611e39dc679b2a0a931",
+      "index": 10276,
+      "sha": "b0f61762b985df382f7ce154dce02811aa8cffbd39d187a83c85ec8b36c86905",
+      "name": "QuantumDystoPhunk 10276",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Robot"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Police Cap"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "VR Goggles"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xbcb6fc2e03fb9cb8ff6b92420d1efeeee96c172a346488fe21413c1cabe90a35",
+      "index": 10277,
+      "sha": "9e95a517a743453116b4c9f809091b1edf64c790615b960de0e6216d2d8d04c2",
+      "name": "QuantumDystoPhunk 10277",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brain Tube"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Clown Hair White"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Point Glasses"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "White Mustache"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Green Cover"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x1d7cf470fb3e7f03f14c93202fbffb563a0593e290e95202ed4c3536067b4bb7",
+      "index": 10278,
+      "sha": "eae7839e4c98f8e4af0d28b628d9757b73a62238c55958a5732a10c5f1ef7c53",
+      "name": "QuantumDystoPhunk 10278",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Undercut"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Matrix"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Black Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Pteradactyl"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x034b5b2e26f0f274cd8ee5348789f5eba2d6f5a08974b94d6dd43dccaa8c3968",
+      "index": 10279,
+      "sha": "fcacc41fa9cb0e8b83c46d29181093d24587eeb33fa91477438fb732d9f024fb",
+      "name": "QuantumDystoPhunk 10279",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Green Helmet"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Wider Gaze"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Green Alighment Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Tiger"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x9c007698a1920fa7bae27ca661d226f80e39c6a77e4b4a0a83b1d0849f83d87c",
+      "index": 10280,
+      "sha": "1bb2ec6aaebc2231c36bb7f8d0b5ecff9217fb47decfc54cb3f5bf04e974d11c",
+      "name": "QuantumDystoPhunk 10280",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Flat Top Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Sight"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Black Cover"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Walrus"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x6a4726403fee01c22fd94c6045eecc15a1fd1e57ee115bdd05f1db6d4dbf8c0d",
+      "index": 10281,
+      "sha": "db54272e1a8ccb5ce8a23ca7beb0905d0a936bb9994b27e019be39593f1663ee",
+      "name": "QuantumDystoPhunk 10281",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Thin Mohawk Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Void Goggles"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Undead Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Stegasaurus"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x43071bb32856c15dedf31020362789d8b294378709058ff9eb0b184abcc21211",
+      "index": 10282,
+      "sha": "3f58386330066797d793efe7de57e7e0d86441f6dcafe4125431ba61fddb2a4a",
+      "name": "QuantumDystoPhunk 10282",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Infinity Shades Helmet"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xc8b4ce5f1499b8f9bfa0c84a4be8f70a4738c70925b4f581394b89d5137bc176",
+      "index": 10283,
+      "sha": "6dda35e3c462ae7d08f6982a7c97aa2783a0c5e7f4e5308301ed918cd889b128",
+      "name": "QuantumDystoPhunk 10283",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Invisible Helmet"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x2ded908eaf43edff920cebfec17cc14e4d66f4c14ad9fd0d3ff7483a2d745626",
+      "index": 10284,
+      "sha": "09d6349d7723382ec2e828d2285c9eba608401c17e191ff2cdb6ada202060d9e",
+      "name": "QuantumDystoPhunk 10284",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Peak Spike"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Swamp Sight"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Outlaw Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xd12487e95a2f1b80fa53f09a94d5b1a866f659a25d5df845616d92b5976abe45",
+      "index": 10285,
+      "sha": "58dff24febdc99f12f21dd2a59a5a76da531362909c90de337b499c0b2a41a12",
+      "name": "QuantumDystoPhunk 10285",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Bionic Eye Patch"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Shadow Synth Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Hippo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xa1669b99db7f8f423a9b0ff84501f86783ad5b96f4eb4f18b5d4f8291c431aa8",
+      "index": 10286,
+      "sha": "49a473f52de0fa12caad28f23aa1d24d4342b34e1a92d32af40a8ccf1fdbd9f0",
+      "name": "QuantumDystoPhunk 10286",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Neon Gaze"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Eclipse Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Horse"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xbddf579de6472ae8eed7a435ca395111ea86cd51de80aa653efa44bb24120285",
+      "index": 10287,
+      "sha": "a643a65fb03d2211c893090817b5597ec62a9c8b85f6c54ae2becaea6a56c46b",
+      "name": "QuantumDystoPhunk 10287",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Pompadour"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Gas Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xa1d1beb1c0d69692537dce4bfd5579a85c02742b6a93bae8f1279cc9e634cc47",
+      "index": 10288,
+      "sha": "c4672d0ea4ea0d598252b4360451a6233d5f8e82bbcee499d9c3b359da7ca023",
+      "name": "QuantumDystoPhunk 10288",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Futuristic Shades"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Holo Black Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Giraffe"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x6f03cac6b1929d0b9b95cae50ef519d3e6d6208b63e4a480e0aa0be2e1007a8e",
+      "index": 10289,
+      "sha": "f34e2c5b10039851dea70c4fc12396798288e7b0438638defe015d3793e2f04e",
+      "name": "QuantumDystoPhunk 10289",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cyber Brain"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "VR Headset"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Whale"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xec86ed520cda11af33aff0bf8d977510f0ff850819828895133910e6fa7dbe69",
+      "index": 10290,
+      "sha": "7383cdab0a22a4b9c18d6a215228f9864e1fd48246c9b370f4a4a54b9c7c53dc",
+      "name": "QuantumDystoPhunk 10290",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cap"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Eye"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Specter Shield Mask"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x189d6cace544a51fb24fefef080b5fb5990c47bb006beefc7e253e3e2b270b89",
+      "index": 10291,
+      "sha": "aed2f4e7d14741d360baba9b22921bcddefc47334203a1a766fec777c2234b0c",
+      "name": "QuantumDystoPhunk 10291",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Wild Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green Scouter"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Outlaw Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Zebra"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xffda54418c9848392be6cd9da369914bc17bd053949f1d5ba0e18a8051557be5",
+      "index": 10292,
+      "sha": "8d07b2f98014c72408961cfe2c883eb229208fc8e6a84a582044c6ec4feabee3",
+      "name": "QuantumDystoPhunk 10292",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Peak Spike"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "3D Glasses"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Void Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Triceratops"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xaa04d65f69d28e1b724f0b715fd7dea5cb802b292f2390de154dea5d843e2377",
+      "index": 10293,
+      "sha": "4ec5bef52652a11a2bfbca92cd978ff606bd0713091dcd4d9be85c23818d58b9",
+      "name": "QuantumDystoPhunk 10293",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Green Helmet"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyclops Visor"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Metal Green Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x56902dad5d6302ef90c9d3c7cf8aef7160c826530950ad053f07050ed00e5e2d",
+      "index": 10294,
+      "sha": "dc0fcec543327b4df8b249e772f08020326ba911836c5c681a01ed98f75736d5",
+      "name": "QuantumDystoPhunk 10294",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Short Mohawk"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Wider Shades"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Face Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Lion"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xb9f56a93e45b4fccfb7109dcab2d76c5df67d64aac4a5a2af2a6dde707aba25f",
+      "index": 10295,
+      "sha": "e4841902495f169238eedc954ed3f910541cb081072411f41211492f41508c9c",
+      "name": "QuantumDystoPhunk 10295",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Crazy Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green Scouter"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Eclipse Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x0c9817156092f449c57db068ee04fe5f1302b92d33482a1764ff3b5d1a8ad094",
+      "index": 10296,
+      "sha": "96a1d2e8732de3191bd7408b2c530f8c7991f30ca1fde9892cd1a31a144de361",
+      "name": "QuantumDystoPhunk 10296",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Thin Mohawk Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Futuristic AR"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Neon Green Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Trex"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x5a4f709bff23e59f0a4862a669ea9eede373b94314c9b7a915939194b84390a0",
+      "index": 10297,
+      "sha": "4afb06f31867c030912b428d4842abc1ad423a763593c3f4995c4e61dbee1f90",
+      "name": "QuantumDystoPhunk 10297",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Diamond Helmet"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "AR Shades"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vortex Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Pig"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x0b1d7d2bdb9896a75bdc70ee1489e012b79cbe84b30e982c6f54c92f8d70eaad",
+      "index": 10298,
+      "sha": "a87c2dd050fde57b6795e68581046b3f02cba6ed3fd48735f33b0a9698d6ef62",
+      "name": "QuantumDystoPhunk 10298",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Hair",
+          "value": "Short Black"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Philip"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Character"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x2cd4dafac8cc7755b9579575b8a0ce7e04faee52d83c1964ddaa47f06e991613",
+      "index": 10299,
+      "sha": "593111c8ae88bdd55eaba5cfad4c1bfcf491328757a98ff92727674caa9c97ee",
+      "name": "QuantumDystoPhunk 10299",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cap Forward"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "VR Goggles Flip"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Green Cover"
+        },
+        {
+          "trait_type": "Character",
+          "value": "PhunkBotV69"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Character"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x0506caeaaf6f62ea752f579e640f4ae5a8891e0ff20358ad6e82ad709ca04ee3",
+      "index": 10300,
+      "sha": "c3849f06d4b971e8cc499d78dac32330a534ccd9a384aeeca1c8ca185a4cf52e",
+      "name": "QuantumDystoPhunk 10300",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Variant",
+          "value": "C3FF00"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xfaac0f1d76b283db7542e7877984ae1580dc4f721def628915f7f7c592298614",
+      "index": 10301,
+      "sha": "5918dee59c22e21247435a7379edaafa4b1911fd39b7597b6138b9f66849d0d7",
+      "name": "QuantumDystoPhunk 10301",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Pink Rose Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyclops Visor"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x6621756817bc3419f1a00daabffa728ec161557d911340dafce9e30da8f0ff08",
+      "index": 10302,
+      "sha": "c12ff982c23e5718af99d36e66659d084ee6b4d7ef7f8a7a307881ab5106daae",
+      "name": "QuantumDystoPhunk 10302",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Exotic Black"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Tiara"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Eye"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Pteradactyl"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x097eacb6f8685ad2a90721b035d2c1ef08226f7b02affbcb3ed300ede9e4639e",
+      "index": 10303,
+      "sha": "ef75aaec3140f598de0dd6008ff9bb3ab5e4599608ca6a30178589b795b0c82e",
+      "name": "QuantumDystoPhunk 10303",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Line"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "AR Shades"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x15eecb7051b5e371ca3adbdfe33b109b9e27efeffa084ec7554f5cedc5c7d20c",
+      "index": 10304,
+      "sha": "70b73dad6a25efdac0fd7ca8222e34124474f5266cb967323c703de61df2b3bd",
+      "name": "QuantumDystoPhunk 10304",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Straight White"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Tiara"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green Scouter"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Pig"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x4f41d6603ce5ee092d54e6e07eb917de81e46f03762127a9f4405b74aebb01e0",
+      "index": 10305,
+      "sha": "52376983bb6777dbb4e09a40066f156527621a1a540a97e3fc474fc70ac527aa",
+      "name": "QuantumDystoPhunk 10305",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Pigtails White"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Tiara"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Shadow Synth Mask"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Whale"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xd74cec8aeba3b4d3d5944678e14a5225f1f58dca2df2d22f7d56e691faca80e2",
+      "index": 10306,
+      "sha": "e5da20b16474934ef3c2e304d9e2c2ea3342d4c0365fabe1bdae1c0eacbfc8e6",
+      "name": "QuantumDystoPhunk 10306",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Welding Goggles"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Wild Black"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Gas Mask"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x544b706aaf19afd73b8dabaca03fbd4e80de98ab7f0865d6c5a8317da3cbbda3",
+      "index": 10307,
+      "sha": "e6f621ce751721e0053a0b2827362f75e04d35e4143c56a935b857b54f7f0ce6",
+      "name": "QuantumDystoPhunk 10307",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Mohawk Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Neon Gaze"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Neon Green Mask"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xd61c2419d8947a60a624924711d6f0ef361aed551326370f96fe5facd4c7b766",
+      "index": 10308,
+      "sha": "a97775851770d2827fab7da0de6db2d1ee4446d5c572870727f22377b9e56012",
+      "name": "QuantumDystoPhunk 10308",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Afro Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Neon Gaze"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Void Mask"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x721ae7de0cdc4c90de4f837cf290677e0f569c9deaf963b891ddbf3c07f15c31",
+      "index": 10309,
+      "sha": "96edb50b52ca6d34535b1381e52c93cbf7af8f7b43519141ac83265d3ac5a3be",
+      "name": "QuantumDystoPhunk 10309",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Green Side"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Meta VR"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vape"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Unicorn"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xd056e085a95d743177b1b52fffa727512fef6b9d4e94dae2c3ede76eacfc336e",
+      "index": 10310,
+      "sha": "e74aafd7e77a9a32390fd15fb81cb42299d35105cdaeafe58ea3c5088f39069e",
+      "name": "QuantumDystoPhunk 10310",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Straight Hair Dark"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Eye"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Metal Green Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Triceratops"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x918ee4631433a5c25dfa35e6c119ade592fd052a942ec85f72bb6ba1b1c0e9ea",
+      "index": 10311,
+      "sha": "df0cb7991ffe317c1b5680959ffe69fa7b5710c886ece30a0bcd4c5bb4fff5da",
+      "name": "QuantumDystoPhunk 10311",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Bob"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green Scouter"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Holo Black Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Trex"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x0d2594fa174377c84f219237498968a45df3e6e59e205970a6439eb670a23043",
+      "index": 10312,
+      "sha": "afe0a5ed04d5e5fa293146251827281dce1c33814b9347851f3af3ca974433fd",
+      "name": "QuantumDystoPhunk 10312",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Green Side"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Bionic Eye Patch"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Face Mask"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x473dc0777fbb0ad942642bd32d9cba09b684a55f289ec13cbf39bd2bc9eff2bf",
+      "index": 10313,
+      "sha": "c6e5f459a51a980b84d5127c96e1d69a90a6a0ebb70f2fd9477bb6c06c56faa2",
+      "name": "QuantumDystoPhunk 10313",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Hair",
+          "value": "Shadow Hoodie"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Stegasaurus"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xc9f0da7bccf6e252cd16ad4ac71e27c60939fd4ab759393e0f7e77120205a7c6",
+      "index": 10314,
+      "sha": "eeba3a53315376a4be7fa3b78999a2d6417824c81e033cfff3622509635a52e9",
+      "name": "QuantumDystoPhunk 10314",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Metal Green Mask"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Giraffe"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x2d03845b609ac7bd51b4f888941a0622bd659b862da29c4a0203731522677765",
+      "index": 10315,
+      "sha": "44c2a0472c5cd73fa0979e34d174839e16abe9a241f29084149e594aca545953",
+      "name": "QuantumDystoPhunk 10315",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Hair",
+          "value": "Black Shaved"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Cyber Eye"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Vape"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Zebra"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xa452a16243218ffa571a769900aa6b7d82491caf1547a97f11b48b3d065cfa72",
+      "index": 10316,
+      "sha": "c9c7604b90433d3c0fe1a41143d7d53aab5edb2b6159214dfe0b0ceb3f446564",
+      "name": "QuantumDystoPhunk 10316",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Messy Green"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Classic Shades"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Specter Shield Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Bull"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xbc7936d927e379d8a833e88e93a8dc65aba63ec26eda99316187b3b5c9d96f86",
+      "index": 10317,
+      "sha": "2bcf9f6220178ce1ab8a48d7af141773ee23b0d6b30ac5d9520060409d181873",
+      "name": "QuantumDystoPhunk 10317",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Wild White Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Black VR"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Lion"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x58574b96c9a541a5e9fad7b14d6acca4645078403a041e3369053cfe30e27dd0",
+      "index": 10318,
+      "sha": "33960ab3b3a3771eaacf77d3338233309f97f672a340711cd24cf9450f233b85",
+      "name": "QuantumDystoPhunk 10318",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Shaved"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Classic Shades"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Shadow Synth Mask"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Hippo"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0xb34b8771d19077b4c304e6ec699807fa8a53eee504f7801089845f7e3a3348ea",
+      "index": 10319,
+      "sha": "310262c88fee2c3fad1dfb021f03cc0cdc863eb11a70a35c5a4a3a72d411042b",
+      "name": "QuantumDystoPhunk 10319",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Variant",
+          "value": "C3FF00"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Cyborg"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Special",
+          "value": "DystoPhunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    }
+  ]
+}

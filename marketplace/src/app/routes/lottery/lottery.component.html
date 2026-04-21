@@ -265,6 +265,25 @@
     </div>
   </section>
 
+  <!-- Lottery pool banner -->
+  <section class="all-phunks-banner">
+    <div class="inner">
+      <h3>All</h3>
+      <div class="section-stats-wrapper">
+        <p>
+          <a class="highlight" routerLink="/lottery/pool">View all @if(poolSize() > 0) { {{ poolSize() }} } QuantumPhunks in pool.</a>
+        </p>
+      </div>
+      <app-phunk-grid
+        [phunkData]="$any(poolItems())"
+        [viewType]="'compact'"
+        [limit]="110"
+        [marketType]="'all'"
+        [activeSort]="'id'"
+      />
+    </div>
+  </section>
+
   <!-- Recent Wins -->
   <section class="recent-wins">
     <div class="inner">

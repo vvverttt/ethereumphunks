@@ -38,6 +38,10 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/lottery/lottery-wins.component').then(mod => mod.LotteryWinsComponent)
   },
   {
+    path: 'lottery/pool',
+    loadComponent: () => import('@/routes/lottery/lottery-pool.component').then(mod => mod.LotteryPoolComponent)
+  },
+  {
     path: 'auction',
     loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent)
   },
@@ -73,6 +77,14 @@ export const routes: Routes = [
   {
     path: 'details/:hashId',
     loadComponent: () => import('@/routes/item-view/item-view.component').then(mod => mod.ItemViewComponent)
+  },
+  {
+    path: ':slug/owners',
+    loadComponent: () => import('@/routes/collection-owners/collection-owners.component').then(mod => mod.CollectionOwnersComponent)
+  },
+  {
+    path: ':slug/attributes',
+    loadComponent: () => import('@/routes/collection-attributes/collection-attributes.component').then(mod => mod.CollectionAttributesComponent)
   },
   {
     path: ':slug',

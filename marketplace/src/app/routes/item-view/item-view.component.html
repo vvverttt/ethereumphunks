@@ -275,6 +275,7 @@
                           } @else {
                             <a
                               class="value"
+                              [class]="'value rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply)"
                               [routerLink]="['/', 'curated', phunk.slug, 'market', 'all']"
                               [queryParams]="item | queryParams">
 
@@ -282,6 +283,9 @@
                               @if (item | traitCount : phunk.slug) {
                                 <span class="percent">
                                   ({{ (+(item | traitCount : phunk.slug) / (phunk.collection?.supply || 0)) | percent : '1.1-1' }})
+                                </span>
+                                <span [class]="'rarity-label rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply)">
+                                  {{ (item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply | titlecase }}
                                 </span>
                               }
                             </a>
@@ -292,6 +296,22 @@
                           }
                         </div>
                       }
+                    }
+                    @let attrCount = getPhunkAttrCount(phunk.attributes!);
+                    @if (attrCount > 0) {
+                      @let attrInfo = getAttrCountRarity(phunk.slug, attrCount);
+                      <div class="accessory">
+                        <a [class]="'value rarity-' + attrInfo.rarityClass">
+                          <span>{{ attrCount }} {{ attrCount === 1 ? 'Attribute' : 'Attributes' }}</span>
+                          @if (attrInfo.pct) {
+                            <span class="percent"> ({{ attrInfo.pct }})</span>
+                            <span [class]="'rarity-label rarity-' + attrInfo.rarityClass"> {{ attrInfo.rarityLabel }}</span>
+                          }
+                        </a>
+                        <span class="trait-count">
+                          <span>{{ attrInfo.count || attrCount }} {{ phunk.collection?.name }} have this.</span>
+                        </span>
+                      </div>
                     }
                   </div>
                 }

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ViewChild, ViewChildren, ElementRef, QueryList, Component, signal } from '@angular/core';
@@ -19,6 +19,7 @@ import { CommentsComponent } from '@/components/comments/comments.component';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
 import { TraitCountPipe } from '@/pipes/trait-count.pipe';
+import { RarityTierPipe } from '@/pipes/rarity-tier.pipe';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
 import { QueryParamsPipe } from '@/pipes/query-params.pipe';
@@ -75,6 +76,8 @@ interface ActionsState {
     CommentsComponent,
 
     TraitCountPipe,
+    RarityTierPipe,
+    TitleCasePipe,
     WeiToEthPipe,
     FormatCashPipe,
     QueryParamsPipe,
@@ -900,5 +903,28 @@ export class ItemViewComponent {
       active: true,
       toAddress: '0xf1Aa941d56041d47a9a18e99609A047707Fe96c7'
     }));
+  }
+
+  private readonly ATTR_COUNT_EXCLUDE = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'animal', 'species', 'special'];
+
+  getPhunkAttrCount(attributes: any[]): number {
+    return attributes.filter((a, i) => i > 0 && !this.ATTR_COUNT_EXCLUDE.includes((a.k || '').toLowerCase())).length;
+  }
+
+  getAttrCountRarity(slug: string, attrCount: number): { rarityClass: string; rarityLabel: string; pct: string; count: number } {
+    try {
+      const raw = localStorage.getItem(`${slug}__attr_page`);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        const row = cached.countRows?.find((r: any) => r.numTraits === attrCount);
+        if (row) return {
+          rarityClass: row.rarity.toLowerCase().replace(/ /g, '-'),
+          rarityLabel: row.rarity,
+          pct: row.pct,
+          count: row.count,
+        };
+      }
+    } catch {}
+    return { rarityClass: 'common', rarityLabel: 'Common', pct: '', count: 0 };
   }
 }

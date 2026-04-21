@@ -13,7 +13,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { supabase } from '@/services/supabase';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
-import { encodePacked, keccak256, toBytes, parseAbi } from 'viem';
+import { encodePacked, keccak256, toBytes, parseAbi, type PublicClient } from 'viem';
 
 const PHUNKQUIDITY = '0x7f5763D56c7E8c34eB125DbD19124945D77e5f1A' as `0x${string}`;
 const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
@@ -117,7 +117,7 @@ export class PhunkquidityPageComponent implements OnInit {
   });
   canSwap = computed(() => this.inputBasket().length > 0 && this.outputBasket().length > 0 && this.inputPoints() >= this.outputPoints() && !this.v67ToV67Blocked());
 
-  private get rpcClient() { return this.web3Svc.l1Client; }
+  private get rpcClient(): PublicClient { return this.web3Svc.l1Client; }
   private merkleTrees: Record<string, string[][]> = {};
 
   constructor(

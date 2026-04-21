@@ -22,6 +22,8 @@ import { DataService } from '@/services/data.service';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as notifActions from '@/state/actions/notification.actions';
 
+import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
+
 
 // Build spin path based on grid size
 function getSpinPath(count: number): number[] {
@@ -49,7 +51,7 @@ const MAX_STEP_DELAY = 400;
 @Component({
   selector: 'app-lottery',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NgSelectModule],
+  imports: [CommonModule, RouterModule, FormsModule, NgSelectModule, PhunkGridComponent],
   templateUrl: './lottery.component.html',
   styleUrls: ['./lottery.component.scss']
 })
@@ -183,6 +185,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     await this.loadContractState();
     await this.initGrid();
     this.subscribeRecentWins();
+    this.loadPoolItems();
 
     // Check if current user is owner
     const address = await firstValueFrom(this.address$);
@@ -1287,7 +1290,15 @@ export class LotteryComponent implements OnInit, OnDestroy {
   // =========================================================
 
   private subscribeRecentWins() {
+    let prevCount = 0;
     this.recentWinsSub = this.lotterySvc.fetchRecentWins().subscribe(wins => {
+      // Decrement poolSize for each new win that arrives via realtime
+      if (prevCount > 0 && wins.length > prevCount) {
+        const newWins = wins.length - prevCount;
+        this.poolSize.update(s => Math.max(0, s - newWins));
+      }
+      prevCount = wins.length;
+
       // Don't update during play — would spoil the reveal before fireworks
       if (!this.playInProgress) {
         this.recentWins.set(wins);
@@ -1433,34 +1444,24 @@ export class LotteryComponent implements OnInit, OnDestroy {
   async loadPoolItems() {
     this.poolLoading.set(true);
     try {
-      const size = Number(await this.lotterySvc.getPoolSize());
+      const size = this.poolSize() || Number(await this.lotterySvc.getPoolSize());
       if (size === 0) {
         this.poolItems.set([]);
         return;
       }
 
-      // Fetch pool hashIds in chunks to avoid RPC limits
-      const CHUNK = 100;
-      const allHashIds: string[] = [];
-      for (let offset = 0; offset < size; offset += CHUNK) {
-        const limit = Math.min(CHUNK, size - offset);
-        const chunk = await this.lotterySvc.getPoolItems(offset, limit);
-        allHashIds.push(...(chunk as string[]));
-      }
+      // Only fetch first 110 hashIds for the banner display — pool size is tracked separately
+      const DISPLAY_LIMIT = 110;
+      const hashIds = await this.lotterySvc.getPoolItems(0, Math.min(size, DISPLAY_LIMIT)) as string[];
 
-      // Look up metadata from Supabase (also chunked for large pools)
-      const allMeta: any[] = [];
-      for (let i = 0; i < allHashIds.length; i += 200) {
-        const batch = allHashIds.slice(i, i + 200);
-        const meta = await this.lotterySvc.getEthscriptionsByHashIds(batch);
-        allMeta.push(...meta);
-      }
+      // Single Supabase query for those items only
+      const allMeta = await this.lotterySvc.getEthscriptionsByHashIds(hashIds);
 
       const metaMap = new Map(allMeta.map((m: any) => [m.hashId, m]));
       const slug = 'cryptophunksv67';
       const attrMap = await firstValueFrom(this.dataSvc.getAttributes(slug));
       this.poolItems.set(
-        allHashIds.map(h => {
+        hashIds.map(h => {
           const meta = metaMap.get(h) || {};
           return {
             hashId: h, sha: meta.sha || '', tokenId: meta.tokenId ?? 0, slug: meta.slug || '',

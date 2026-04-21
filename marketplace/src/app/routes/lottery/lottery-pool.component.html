@@ -1,0 +1,29 @@
+<div class="inner">
+  <div class="header-wrapper">
+    <a class="back-link" routerLink="/lottery">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      Philip Lottery
+    </a>
+    <h1>Lottery Pool</h1>
+    <h3>Showing <span class="highlight">{{ items().length }}</span> of <span class="highlight">{{ totalSize() }}</span> QuantumPhunks in pool</h3>
+  </div>
+
+  @if (!loaded()) {
+    <p class="loading-message">Loading pool...</p>
+  } @else if (items().length === 0) {
+    <p class="empty-message">Pool is empty.</p>
+  } @else {
+    <app-phunk-grid
+      [phunkData]="$any(items())"
+      [viewType]="'compact'"
+      [limit]="5000"
+      [marketType]="'all'"
+      [activeSort]="'id'"
+    />
+    @if (hasMore()) {
+      <button class="load-more" [disabled]="loadingMore()" (click)="loadMore()">
+        {{ loadingMore() ? 'Loading...' : 'Load More' }}
+      </button>
+    }
+  }
+</div>

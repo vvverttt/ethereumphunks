@@ -1,0 +1,194 @@
+@use 'abstracts/variables' as *;
+
+:host {
+  display: block;
+  padding-top: calc(var(--header-height) + 4rem);
+  padding-bottom: 8rem;
+  min-height: 100vh;
+}
+
+.header-wrapper {
+  margin-bottom: 2.5rem;
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    padding: 0;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.3rem;
+    text-decoration: none;
+    color: rgba(var(--highlight), 1);
+    margin-bottom: 1rem;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      margin-right: .4rem;
+      path { fill: rgba(var(--highlight), 1); }
+    }
+  }
+
+  h1 {
+    font-size: 4rem;
+    font-weight: 700;
+  }
+}
+
+.status {
+  font-family: var(--secondary-font-stack);
+  font-size: 1.6rem;
+  color: rgba(var(--text-color), .5);
+}
+
+// Tab bar
+.tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(var(--text-color), .1);
+  margin-bottom: 2.5rem;
+}
+
+.tab-btn {
+  background: none;
+  border: 1px solid rgba(var(--text-color), .2);
+  color: rgba(var(--text-color), .6);
+  font-family: var(--secondary-font-stack);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: .5rem 1.1rem;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: rgba(var(--highlight), .5);
+    color: rgba(var(--highlight), 1);
+  }
+
+  &.active {
+    background: rgba(var(--highlight), 1);
+    border-color: rgba(var(--highlight), 1);
+    color: rgba(var(--background), 1);
+    font-weight: 700;
+  }
+}
+
+.section-meta {
+  margin-bottom: 1rem;
+  font-family: var(--secondary-font-stack);
+  font-size: 1.1rem;
+  color: rgba(var(--text-color), .4);
+}
+
+// Table
+.attr-table {
+  border: 1px solid rgba(var(--text-color), .12);
+}
+
+.attr-table-head {
+  display: grid;
+  grid-template-columns: 20rem 7rem 6rem 10rem 1fr;
+  padding: .8rem 1.4rem;
+  background: rgba(var(--text-color), .04);
+  border-bottom: 1px solid rgba(var(--text-color), .12);
+  font-family: var(--secondary-font-stack);
+  font-size: .95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: rgba(var(--text-color), .35);
+}
+
+.attr-row {
+  display: grid;
+  grid-template-columns: 20rem 7rem 6rem 10rem 1fr;
+  align-items: center;
+  padding: 0 0 0 1.4rem;
+  border-bottom: 1px solid rgba(var(--text-color), .06);
+  font-family: var(--secondary-font-stack);
+  font-size: 1.15rem;
+  min-height: 5rem;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(var(--text-color), .025); }
+
+  &.count-row {
+    grid-template-columns: 20rem 7rem 6rem 1fr;
+    padding: .6rem 1.4rem;
+    min-height: unset;
+  }
+}
+
+.attr-val-name {
+  color: rgba(var(--highlight), 1);
+  font-weight: 600;
+  padding: .5rem 0;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
+.attr-val-count {
+  color: rgba(var(--text-color), .85);
+}
+
+.attr-val-pct {
+  color: rgba(var(--text-color), .5);
+}
+
+.attr-val-rarity {
+  font-size: 1rem;
+  font-weight: 700;
+
+  &.one-of-one { color: #ff0080; letter-spacing: .02em; }
+  &.mythic     { color: #ff6b00; }
+  &.legendary  { color: #ffb700; }
+  &.epic       { color: #b44fff; }
+  &.rare       { color: #4fa8ff; }
+  &.uncommon   { color: #4ddd7a; }
+  &.common     { color: rgba(var(--text-color), .5); font-weight: 400; }
+  &.abundant   { color: rgba(var(--text-color), .3); font-weight: 400; }
+}
+
+.attr-val-examples {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  align-items: end;
+  width: 100%;
+  height: 5rem;
+
+  img {
+    width: 100%;
+    height: 5rem;
+    image-rendering: pixelated;
+    object-fit: contain;
+    display: block;
+    cursor: pointer;
+    background-color: #c3ff00;
+
+    &:hover { opacity: .75; }
+  }
+}
+
+// Count tab head
+.attr-table-head .col-rarity,
+.attr-row .attr-val-rarity { }
+
+@media (max-width: $mobile) {
+  .header-wrapper h1 { font-size: 2.8rem; }
+
+  .attr-table-head,
+  .attr-row {
+    grid-template-columns: 1fr 5rem 5rem;
+
+    .col-rarity, .attr-val-rarity,
+    .col-examples, .attr-val-examples { display: none; }
+  }
+
+  .attr-row.count-row {
+    grid-template-columns: 1fr 5rem 5rem;
+  }
+}

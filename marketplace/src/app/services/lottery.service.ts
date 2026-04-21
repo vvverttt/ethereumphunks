@@ -290,7 +290,7 @@ export class LotteryService {
     const query$ = from(
       supabase
         .from('lottery_wins' + suffix)
-        .select('*')
+        .select('id,contract_address,play_id,winner,hash_id,sha,token_id,collection_slug,transfer_status,tx_hash,created_at')
         .in('contract_address', addresses)
         .order('created_at', { ascending: false })
         .limit(5000)
@@ -322,7 +322,7 @@ export class LotteryService {
     const query$ = from(
       supabase
         .from('lottery_wins' + suffix)
-        .select('*')
+        .select('id,contract_address,play_id,winner,hash_id,sha,token_id,collection_slug,transfer_status,tx_hash,created_at')
         .eq('contract_address', addr)
         .order('created_at', { ascending: false })
         .limit(20)
@@ -403,7 +403,7 @@ export class LotteryService {
       const pollTimer = setInterval(async () => {
         const { data } = await supabase
           .from('lottery_wins' + suffix)
-          .select('*')
+          .select('id,contract_address,play_id,winner,hash_id,sha,token_id,collection_slug,transfer_status,tx_hash,created_at')
           .eq('tx_hash', txHash.toLowerCase())
           .limit(1);
         if (data && data.length > 0) {

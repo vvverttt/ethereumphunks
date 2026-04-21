@@ -89,6 +89,29 @@
   margin-bottom: 2rem;
 }
 
+.load-more-button {
+  display: block;
+  margin: 3rem auto;
+  padding: 1rem 3rem;
+  background: rgba(var(--pink), 1);
+  color: rgba(var(--highlight), 1);
+  font-family: var(--secondary-font-stack);
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.loading-message {
+  font-size: 1.6rem;
+  opacity: 0.6;
+}
+
 @media (max-width: $mobile) {
   .header-wrapper {
     h1 {

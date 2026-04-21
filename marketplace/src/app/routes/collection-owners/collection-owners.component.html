@@ -1,0 +1,41 @@
+<div class="inner">
+  <div class="header-wrapper">
+    <a class="back-link" [routerLink]="['/' + slug]">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      {{ collectionName() }}
+    </a>
+    <h1>{{ ownerLabel() }} Owners</h1>
+    <h3><span class="highlight">{{ owners().length }}</span> unique owners</h3>
+  </div>
+
+  @if (loading()) {
+    <p class="status">Loading...</p>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th class="account">Account</th>
+            <th class="contract">Contract</th>
+            <th class="count">Owned</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (owner of owners(); track owner.address; let i = $index) {
+            <tr>
+              <td class="rank">{{ i + 1 }}</td>
+              <td class="account">
+                <a [href]="explorerUrl + '/address/' + owner.address" target="_blank">
+                  <app-address [address]="owner.address" />
+                </a>
+              </td>
+              <td class="contract">{{ getContractName(owner.address) }}</td>
+              <td class="count">{{ owner.count }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

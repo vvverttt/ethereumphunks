@@ -1,0 +1,84 @@
+<div class="inner">
+  <div class="header-wrapper">
+    <a class="back-link" [routerLink]="['/' + slug]">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      {{ collectionName() }}
+    </a>
+    <h1>Types and Attributes</h1>
+  </div>
+
+  @if (loading()) {
+    <p class="status">Loading...</p>
+  } @else {
+
+    <div class="tab-bar">
+      @for (tab of tabs(); track tab) {
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === tab"
+          (click)="setTab(tab)">
+          {{ tab }}
+        </button>
+      }
+    </div>
+
+    @if (activeTab() === 'Attribute Count') {
+      <div class="attr-table">
+        <div class="attr-table-head">
+          <span class="col-attr"># of Attributes</span>
+          <span class="col-count">#</span>
+          <span class="col-pct">%</span>
+          <span class="col-rarity">Rarity</span>
+          <span class="col-examples">Examples</span>
+        </div>
+        @for (row of countRows(); track row.numTraits) {
+          <div class="attr-row">
+            <span class="attr-val-name">{{ row.numTraits }} {{ row.numTraits === 1 ? 'attribute' : 'attributes' }}</span>
+            <span class="attr-val-count">{{ row.count | number }}</span>
+            <span class="attr-val-pct">{{ row.pct }}</span>
+            <span class="attr-val-rarity" [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')">{{ row.rarity }}</span>
+            <span class="attr-val-examples">
+              @for (url of row.examples; track url; let i = $index) {
+                <img [src]="url" [alt]="row.numTraits + ' attributes'" loading="lazy" (click)="goToPhunk(row.exampleShas[i])" />
+              }
+            </span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeSection(); as section) {
+      <div class="section-meta">
+        <span class="section-count">{{ section.rows.length }} {{ section.rows.length === 1 ? 'value' : 'values' }}</span>
+      </div>
+      <div class="attr-table">
+        <div class="attr-table-head">
+          <span class="col-attr">Attribute</span>
+          <span class="col-count">#</span>
+          <span class="col-pct">%</span>
+          <span class="col-rarity">Rarity</span>
+          <span class="col-examples">Examples</span>
+        </div>
+        @for (row of section.rows; track row.name) {
+          <div class="attr-row">
+            <span class="attr-val-name" (click)="goToAttribute(row.traitType, row.name)">{{ row.name }}</span>
+            <span class="attr-val-count">{{ row.count | number }}</span>
+            <span class="attr-val-pct">{{ row.pct }}</span>
+            <span class="attr-val-rarity" [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')">{{ row.rarity }}</span>
+            <span class="attr-val-examples">
+              @for (url of row.examples; track url; let i = $index) {
+                <img
+                  [src]="url"
+                  [alt]="row.name"
+                  loading="lazy"
+                  (click)="goToPhunk(row.exampleShas[i])"
+                />
+              }
+            </span>
+          </div>
+        }
+      </div>
+    }
+
+  }
+</div>

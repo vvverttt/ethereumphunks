@@ -121,7 +121,7 @@
                 Select a QuantumPhunk from the vault to swap for yours.
               } @else {
                 <a class="highlight view-all-link" routerLink="/vault/all">
-                  View all {{ vaultItems().length }} QuantumPhunks.
+                  View all {{ poolSize() }} QuantumPhunks.
                 </a>
               }
             </p>
@@ -139,6 +139,11 @@
               </div>
             }
           </div>
+          @if (vaultItems().length < poolSize()) {
+            <button class="load-more-btn" [disabled]="vaultLoadingMore()" (click)="loadMoreVaultItems()">
+              {{ vaultLoadingMore() ? 'Loading...' : 'Load More (' + (poolSize() - vaultItems().length) + ' remaining)' }}
+            </button>
+          }
         </div>
       </section>
     }

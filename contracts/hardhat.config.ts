@@ -10,12 +10,25 @@ dotenv.config();
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   solidity: {
-    version: '0.8.20',
-    settings: {
-      evmVersion: 'paris',
-      optimizer: {
-        enabled: true,
-        runs: 200,
+    compilers: [
+      {
+        version: '0.8.20',
+        settings: {
+          evmVersion: 'paris',
+          optimizer: { enabled: true, runs: 200 },
+          viaIR: true,
+        },
+      },
+    ],
+    overrides: {
+      // Size-optimize the V67 implementation (very large contract, infrequently called)
+      'contracts/V2MainnetUpgrade/ERC721PhunksV67/ERC721PhunksV67.sol': {
+        version: '0.8.20',
+        settings: {
+          evmVersion: 'paris',
+          optimizer: { enabled: true, runs: 1 },
+          viaIR: true,
+        },
       },
     },
   },
@@ -39,6 +52,7 @@ const config: HardhatUserConfig = {
       chainId: 1,
       from: process.env.MAINNET_ADDRESS as string,
       accounts: [`0x${process.env.MAINNET_PK}`],
+      gasPrice: 1_000_000_000, // 1 gwei
     },
     ...(process.env.TREASURY_PK ? {
       treasury: {

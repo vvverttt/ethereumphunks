@@ -1,0 +1,711 @@
+{
+  "name": "QuantumMissingPhunks",
+  "logo_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABR0lEQVR4nGNgGAUEACMDceA/uWYQY8H/U36COCXNNr3Haw4TJYaDAFT+Pzk++D/ZnJOBWJB78jtW8wj5gMFcnIMoGgQKeY/9B2FifcDw4cMHfJGLAhplr4Hp/s9WjCRZwOvkBOd/3rePwWkuL5y/L/kziuHIAGYRviAiyvV8PUcZevPfgwzEMBwEWAgZ8HnfPhQ+zNX4ACgeYJbgTUU/XyI468vqGcJkzTAUrXp8iiFiYSPD/5tqDIzqtzDMJMoCD2tDrAr23znP8K9mKwNTizfM5VgjGp8F/0EYGh8Y+F/NVjAGsdGTJ9FxAAUgF4EMYyA27IkBYJf9hPgARQzdF/h8QMi2/1jUYfgEGgdYzSJUVDDikwSlIEKAYFnEgMcSULJl9Cuk2AKcAGT4/0391Ldg1eNTRBlOtgXh2cuJMpxsC5ANJxTRAIG9lxdl7JMoAAAAAElFTkSuQmCC",
+  "banner_image": null,
+  "total_supply": 17,
+  "slug": "quantummissingphunksv67",
+  "description": "Ethscription-crafted digital artifacts",
+  "website_url": null,
+  "twitter_url": "https://x.com/null",
+  "discord_url": null,
+  "background_color": "#C3FF00",
+  "collection_items": [
+    {
+      "id": "0xa62831366cceaf8e3a8c528696ec9b5d36685bfa7d54afffdc08f3a812fbe87c",
+      "index": 10004,
+      "sha": "82d87406ea7f2d7cdaebd184c2fdcbf0a98a82550409e030f416375fa46cc083",
+      "name": "QuantumMissingPhunk 10004",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Alien"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x3ad92cc565ecd9ba04bea8ddaf4b273e36a9209716bf1fd7182002e5f65bfa87",
+      "index": 10006,
+      "sha": "09616eae1dc94dc592532894eca242d8915bab7f6ba15edbb596e5783bdb4477",
+      "name": "QuantumMissingPhunk 10006",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Alien"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Top Hat"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        }
+      ]
+    },
+    {
+      "id": "0xc13c9446b70ed7b40b2f379305c0587a669b36cd44c97f51fcaa1bbad6f41a2b",
+      "index": 10015,
+      "sha": "95b99e77380af22c56f23744c8eff463af8913eecd9b778b1fcc5411f8733bce",
+      "name": "QuantumMissingPhunk 10015",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ape"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "VR"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x2c7239224131b3dc26c4befccbb52d4d7011341c35220cf0a6b022ae2e28838b",
+      "index": 10027,
+      "sha": "27e83b7701363098ce759021fd5e93e113cf96126bc08a8f0ff442cddef71f2e",
+      "name": "QuantumMissingPhunk 10027",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ape"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Stringy Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cowboy Hat"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Front Beard"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0xad4964f95926e9729efb8244becf0c6bdcb8c52cc254caf3cff0e60e92628a11",
+      "index": 10041,
+      "sha": "b473b9a2f26f05bce46832f240456ec07362a115f626e22b69abd8e11c1c29a1",
+      "name": "QuantumMissingPhunk 10041",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Police Cap"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Clown Hair Green"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Luxurious Beard"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x872d06f01dedd8c820dc136c2d817e24b623a70526a1c8acd5c923239ef31646",
+      "index": 10058,
+      "sha": "8384666c11d4988e2f0de133381972d3e8763eda6b3fe75726b36cfbc0b16bd7",
+      "name": "QuantumMissingPhunk 10058",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "VR"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Top Hat"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Shadow Beard"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x81572acff458eb7ce8ed98cee95adcb9dbce1c7a1d3b3b5590a6ed19dcadaf51",
+      "index": 10071,
+      "sha": "40e8e51e4fe292c0e0a8eaf8458fb2edb74e3ab8d492d346de649009301e8108",
+      "name": "QuantumMissingPhunk 10071",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Stringy Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Beanie"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Shadow Beard"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Handlebars"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x632f46a2880e85c86eadb867c76262a7c5df4cc0763d4fc851dd542f82b326ab",
+      "index": 10078,
+      "sha": "1d39bd811c57d9ab0499de5f78011618b35152bb027d132491854fd698d304b5",
+      "name": "QuantumMissingPhunk 10078",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Do-rag"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Fedora"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x7aeab1aad11f6933ddc32cc24a9ff8886ac02c1996317851b0208a840074a473",
+      "index": 10092,
+      "sha": "a329e7f216f2d23228841681244516d42f73a57e8ea1e713ff1444241609de55",
+      "name": "QuantumMissingPhunk 10092",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "3D Glasses"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Police Cap"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Clown Hair Green"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Mustache"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x10aef8ca7bbb020e62204b273f958b3f0a6c524ee9ccf24a7ea8163b23b6e4a6",
+      "index": 10093,
+      "sha": "f652c160aa07043574f7c5487fa4180bea3c76ddea3cc6d3a76e2e98766a51b0",
+      "name": "QuantumMissingPhunk 10093",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Wild Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Headband"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0xad6f4303eb6b70301da8fd3e261bd9943878c609603af98c8027c7956e08d6f1",
+      "index": 10099,
+      "sha": "673f35b159245e964dc4b5b24e476e378e6aac5a86b8fb8654ef2184cf7f7641",
+      "name": "QuantumMissingPhunk 10099",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "VR"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Hoodie"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Handlebars"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0xf4cef145fc995c4b1b3ffb53edb73f5cb80c0af2e842e3716784da1afad6e887",
+      "index": 10107,
+      "sha": "fd42f0ee7340dee07059c699020defd8a8f7dce3c0bd62c5f5619c5e39bcce4b",
+      "name": "QuantumMissingPhunk 10107",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "3D Glasses"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Knitted Cap"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Mustache"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Spots"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0xffecd6a66c3caaf927f22149cb5e83c42d92ba0510ef979e22c46e2eaeb5173d",
+      "index": 10169,
+      "sha": "b9fb46166b8ca069d7fa0cc5c991e6907efe6299843b43d43d4b16134da405e1",
+      "name": "QuantumMissingPhunk 10169",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Stringy Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Beanie"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Mustache"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0xfa6fc347399d2d8fc7bc3cbc42130f8541b67ff42a95456299e51d76f21c55c9",
+      "index": 10198,
+      "sha": "8716449642f1d613f5c6e128b82888656e817b8cfacbc095de7860bca9059e21",
+      "name": "QuantumMissingPhunk 10198",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Variant",
+          "value": "C3FF00"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    },
+    {
+      "id": "0x31b478578539e973101ad77db1e4556ebb46b298f36c4f170a5b37d093d79d32",
+      "index": 10207,
+      "sha": "ee25e3f8091dcec39db150532355324288fcc6018731fa1b9f5e265bf1cc6ef4",
+      "name": "QuantumMissingPhunk 10207",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Earring"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Blue Eye Shadow"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Wild Blonde"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Tiara"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Hot Lipstick"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0xcb4f6cd66bd532e1f57e49e9937a64ff3469c134e0cab660e9d43f5c77b24948",
+      "index": 10236,
+      "sha": "f4ea87a99125621f0d2755f5601657f420b5a0d3ac3e939713b77c5bfb070aef",
+      "name": "QuantumMissingPhunk 10236",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "3D Glasses"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Half Shaved"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Orange Side"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cap"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Hot Lipstick"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Cheeks",
+          "value": "Rosy Cheeks"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        }
+      ]
+    },
+    {
+      "id": "0x8b44334a95310db60e84bdcfe8332330623746dccffc915ab0011e7a309823aa",
+      "index": 10250,
+      "sha": "0d66cd7a89f5718ec5b04019d536178e4e15e2b66dada21e8280d02eca0dd054",
+      "name": "QuantumMissingPhunk 10250",
+      "description": "",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Flamingo"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Variant",
+          "value": "C3FF00"
+        },
+        {
+          "trait_type": "Special",
+          "value": "Missing Phunk"
+        },
+        {
+          "trait_type": "Special",
+          "value": "One of One"
+        }
+      ]
+    }
+  ]
+}

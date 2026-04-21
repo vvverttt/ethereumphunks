@@ -58,8 +58,9 @@ export class VaultPageComponent implements OnInit {
   selectedItem = signal<OwnedItem | null>(null);
   pickedItem = signal<OwnedItem | null>(null);
   vaultItems = signal<OwnedItem[]>([]);
-  showAllVault = signal(false);
-  vaultLimit = 110;
+  vaultLoadingMore = signal(false);
+  private vaultOffset = 0;
+  private readonly VAULT_PAGE = 200;
 
   // Fake collection object for splash — uses vault pool items as previews
   vaultCollection: any = {
@@ -129,33 +130,40 @@ export class VaultPageComponent implements OnInit {
 
   async loadVaultItems() {
     try {
-      // Query Supabase for items owned by the vault contract
-      const results: OwnedItem[] = [];
-      let offset = 0;
-      while (true) {
-        const { data } = await supabase
-          .from('ethscriptions')
-          .select('hashId,sha,tokenId')
-          .eq('slug', 'cryptophunksv67')
-          .eq('owner', VAULT_ADDRESS.toLowerCase())
-          .order('tokenId')
-          .range(offset, offset + 999);
-        if (!data?.length) break;
-        results.push(...data as OwnedItem[]);
-        if (data.length < 1000) break;
-        offset += 1000;
-      }
+      await this.fetchVaultPage();
 
-      this.vaultItems.set(results);
-
-      // Set splash previews from vault items
+      // Set splash previews from first page
       this.vaultCollection = {
         ...this.vaultCollection,
-        previews: results.map(r => ({ sha: r.sha })),
+        previews: this.vaultItems().map(r => ({ sha: r.sha })),
       };
     } catch (e) {
       console.error('Failed to load vault items:', e);
     }
+  }
+
+  async loadMoreVaultItems() {
+    if (this.vaultLoadingMore() || this.vaultItems().length >= this.poolSize()) return;
+    this.vaultLoadingMore.set(true);
+    try {
+      await this.fetchVaultPage();
+    } finally {
+      this.vaultLoadingMore.set(false);
+    }
+  }
+
+  private async fetchVaultPage() {
+    const { data } = await supabase
+      .from('ethscriptions')
+      .select('hashId,sha,tokenId')
+      .eq('slug', 'cryptophunksv67')
+      .eq('owner', VAULT_ADDRESS.toLowerCase())
+      .order('tokenId')
+      .range(this.vaultOffset, this.vaultOffset + this.VAULT_PAGE - 1);
+
+    if (!data?.length) return;
+    this.vaultItems.update(existing => [...existing, ...(data as OwnedItem[])]);
+    this.vaultOffset += data.length;
   }
 
   async loadOwnedItems() {
@@ -295,6 +303,8 @@ export class VaultPageComponent implements OnInit {
       this.savePendingDeposit(null);
       this.selectedItem.set(null);
       await this.loadContractState();
+      this.vaultItems.set([]);
+      this.vaultOffset = 0;
       await this.loadVaultItems();
       await this.loadOwnedItems();
     } catch (e) {

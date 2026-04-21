@@ -1,10 +1,9 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 
-import { environment } from 'src/environments/environment';
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 import { MarketFiltersComponent } from '@/components/market-filters/market-filters.component';
 import { AttributeFilterPipe } from '@/pipes/attribute-filter';
@@ -20,6 +19,7 @@ import { Subscription, combineLatest, map } from 'rxjs';
 import { supabase } from '@/services/supabase';
 
 const VAULT_ADDRESS = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218' as `0x${string}`;
+const PAGE_SIZE = 200;
 
 @Component({
   standalone: true,
@@ -30,11 +30,18 @@ const VAULT_ADDRESS = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218' as `0x${strin
 })
 export class VaultAllComponent implements OnInit, OnDestroy {
   items = signal<any[]>([]);
+  totalSize = signal(0);
+  loaded = signal(false);
+  loadingMore = signal(false);
   filtersVisible = false;
   traitFilters: TraitFilter | null = null;
 
+  hasMore = computed(() => this.items().length < this.totalSize());
+
   objectKeys = Object.keys;
 
+  private attrMap: any = null;
+  private offset = 0;
   private sub = new Subscription();
 
   constructor(
@@ -44,39 +51,28 @@ export class VaultAllComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    // Load all vault items
-    const results: any[] = [];
-    let offset = 0;
-    while (true) {
-      const { data } = await supabase
-        .from('ethscriptions')
-        .select('hashId,sha,tokenId')
-        .eq('slug', 'cryptophunksv67')
-        .eq('owner', VAULT_ADDRESS.toLowerCase())
-        .order('tokenId', { ascending: false })
-        .range(offset, offset + 999);
-      if (!data?.length) break;
-      results.push(...data);
-      if (data.length < 1000) break;
-      offset += 1000;
-    }
+    // Get total count first
+    const { count } = await supabase
+      .from('ethscriptions')
+      .select('hashId', { count: 'exact', head: true })
+      .eq('slug', 'cryptophunksv67')
+      .eq('owner', VAULT_ADDRESS.toLowerCase());
+    this.totalSize.set(count ?? 0);
 
-    // Load attributes and merge with items
+    // Load attributes once
     this.dataSvc.getAttributes('cryptophunksv67').subscribe(attrMap => {
-      const withAttrs = results.map(item => ({
-        ...item,
-        attributes: attrMap?.[item.sha] || [],
-      }));
-      this.items.set(withAttrs);
+      this.attrMap = attrMap;
     });
 
-    // Dispatch initial query params as trait filters so MarketFiltersComponent shows active state
+    await this.loadPage();
+    this.loaded.set(true);
+
+    // Dispatch initial query params as trait filters
     const queryParams = this.route.snapshot.queryParams;
     const initialFilters: any = {};
     Object.keys(queryParams).forEach(k => { initialFilters[k] = queryParams[k]; });
     this.store.dispatch(marketStateActions.setActiveTraitFilters({ traitFilters: initialFilters }));
 
-    // Subscribe to trait filter changes + globalConfig preset, merge them
     this.sub.add(
       combineLatest([
         this.store.select(marketStateSelectors.selectActiveTraitFilters),
@@ -94,6 +90,36 @@ export class VaultAllComponent implements OnInit, OnDestroy {
         this.traitFilters = filters;
       })
     );
+  }
+
+  async loadMore() {
+    if (this.loadingMore() || !this.hasMore()) return;
+    this.loadingMore.set(true);
+    try {
+      await this.loadPage();
+    } finally {
+      this.loadingMore.set(false);
+    }
+  }
+
+  private async loadPage() {
+    const { data } = await supabase
+      .from('ethscriptions')
+      .select('hashId,sha,tokenId')
+      .eq('slug', 'cryptophunksv67')
+      .eq('owner', VAULT_ADDRESS.toLowerCase())
+      .order('tokenId', { ascending: false })
+      .range(this.offset, this.offset + PAGE_SIZE - 1);
+
+    if (!data?.length) return;
+
+    const withAttrs = data.map(item => ({
+      ...item,
+      attributes: this.attrMap?.[item.sha] || [],
+    }));
+
+    this.items.update(existing => [...existing, ...withAttrs]);
+    this.offset += data.length;
   }
 
   ngOnDestroy() {

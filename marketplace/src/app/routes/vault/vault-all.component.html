@@ -5,7 +5,7 @@
       Phunk Swap
     </a>
     <h1>All QuantumPhunks</h1>
-    <h3>Showing <span class="highlight">{{ (items() | attributeFilter : traitFilters).length | number }}</span> of {{ items().length | number }}</h3>
+    <h3>Showing <span class="highlight">{{ (items() | attributeFilter : traitFilters).length | number }}</span> of <span class="highlight">{{ totalSize() | number }}</span></h3>
   </div>
 
   <div class="content-layout">
@@ -33,14 +33,23 @@
         </div>
       }
 
-      <app-phunk-grid
-        [phunkData]="$any(items())"
-        [viewType]="'market'"
-        [activeSort]="'id'"
-        [limit]="items().length"
-        [marketType]="'all'"
-        [traitFilters]="traitFilters"
-      />
+      @if (!loaded()) {
+        <p class="loading-message">Loading...</p>
+      } @else {
+        <app-phunk-grid
+          [phunkData]="$any(items())"
+          [viewType]="'market'"
+          [activeSort]="'id'"
+          [limit]="items().length"
+          [marketType]="'all'"
+          [traitFilters]="traitFilters"
+        />
+        @if (hasMore()) {
+          <button class="load-more-button" [disabled]="loadingMore()" (click)="loadMore()">
+            {{ loadingMore() ? 'Loading...' : 'Load More (' + (totalSize() - items().length) + ' remaining)' }}
+          </button>
+        }
+      }
     </div>
   </div>
 </div>

@@ -156,9 +156,10 @@ contract Phunkquidity is
         }
     }
 
-    // Owner deposits ethscriptions via fallback (calldata transfer)
+    // Fallback: handles ethscription deposits
+    // - Owner: 64-byte chunks [slug(32)][hashId(32)] = pool deposit
+    // - Anyone: 64-byte chunks [slug(32)][hashId(32)] = user escrow deposit for trade offers
     fallback() external {
-        require(msg.sender == owner(), "Only owner can deposit");
         require(msg.data.length > 0 && msg.data.length % 64 == 0, "Invalid length");
 
         // Format: [slug(32)][hashId(32)] per item
@@ -169,18 +170,22 @@ contract Phunkquidity is
                 slug := calldataload(mul(i, 64))
                 hashId := calldataload(add(mul(i, 64), 32))
             }
+            require(collections[slug].exists && collections[slug].enabled, "Collection not active");
             require(collections[slug].collType == CollectionType.Ethscription, "Not ethsc collection");
 
             EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[
                 msg.sender
             ][hashId] = 1;
 
-            _ethscPool[slug].push(hashId);
-            _ethscPoolIndex[slug][hashId] = _ethscPool[slug].length;
-            ethscInPool[slug][hashId] = true;
-            ethscDepositor[slug][hashId] = msg.sender;
-
-            emit EthscPoolDeposited(slug, hashId, msg.sender);
+            if (msg.sender == owner()) {
+                // Owner deposit goes into pool
+                _ethscPool[slug].push(hashId);
+                _ethscPoolIndex[slug][hashId] = _ethscPool[slug].length;
+                ethscInPool[slug][hashId] = true;
+                ethscDepositor[slug][hashId] = msg.sender;
+                emit EthscPoolDeposited(slug, hashId, msg.sender);
+            }
+            // Non-owner: just records in escrow for use in createOffer
         }
     }
 

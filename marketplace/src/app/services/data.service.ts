@@ -1316,7 +1316,7 @@ export class DataService {
   async getUserAvatar(address: string): Promise<string> {
     const { data, error } = await supabase
       .from('ethscriptions' + this.suffix)
-      .select('*')
+      .select('sha')
       .eq('owner', address.toLowerCase())
       .limit(1);
 

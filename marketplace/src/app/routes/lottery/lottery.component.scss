@@ -683,10 +683,44 @@ $lottery-muted: #c3ff00;
   }
 }
 
+.all-phunks-banner {
+  width: 100%;
+  margin-top: 4rem;
+
+  .inner {
+    width: 100%;
+  }
+
+  h3 {
+    font-family: var(--primary-font-stack) !important;
+    font-size: 2.4rem !important;
+    font-weight: 700;
+    color: $lottery-text;
+    margin: 0;
+    padding-bottom: 0.5rem;
+  }
+
+  .section-stats-wrapper {
+    padding-bottom: 1rem;
+
+    p {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    a {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $lottery-accent;
+      text-decoration: none;
+    }
+  }
+}
+
 .recent-wins {
   width: 100%;
   max-width: 726px;
-  margin-top: 2rem;
+  margin-top: 4rem;
   padding: 0 0 8rem;
 
   .inner {
@@ -694,6 +728,7 @@ $lottery-muted: #c3ff00;
   }
 
   h3 {
+    font-family: var(--primary-font-stack);
     font-size: 2.4rem;
     font-weight: 700;
     color: $lottery-text;

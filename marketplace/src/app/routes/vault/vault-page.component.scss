@@ -279,6 +279,23 @@ h1 {
   gap: .5rem;
 }
 
+.load-more-btn {
+  display: block;
+  margin: 2rem auto;
+  padding: 1rem 3rem;
+  background: $vault-accent;
+  color: #fff;
+  font-family: var(--secondary-font-stack);
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .swap-preview {
   display: flex;
   flex-direction: column;
