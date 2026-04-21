@@ -11,9 +11,9 @@ import { DataService } from '@/services/data.service';
 import { environment } from 'src/environments/environment';
 
 const EXAMPLES = 10;
-const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender'];
+const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-const CACHE_VERSION = 13;
+const CACHE_VERSION = 14;
 
 function rarityTier(count: number, pct: number): string {
   if (count === 1)  return 'One of One';
