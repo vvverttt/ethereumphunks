@@ -1029,9 +1029,7 @@ export class DataService {
     );
 
     // No realtime channel — collections rarely change, saves DB IO
-    return rpcFetch$.pipe(
-      tap((collections) => this.prefetchAttributes(collections)),
-    );
+    return rpcFetch$;
   }
 
   /**

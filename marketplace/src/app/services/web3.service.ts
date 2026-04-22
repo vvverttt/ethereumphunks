@@ -134,6 +134,7 @@ export class Web3Service {
     this.discoverEip6963Wallets();
     this.createListeners();
     this.startBlockWatcher();
+    this.setupBlockWatcherVisibilityHandling();
     this.startPointsWatcher();
 
     // setInterval(() => {
@@ -334,9 +335,10 @@ export class Web3Service {
   blockWatcher!: WatchBlockNumberReturnType | undefined;
   startBlockWatcher(): void {
     if (this.blockWatcher) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     this.blockWatcher = this.l1PollingClient.watchBlockNumber({
       emitOnBegin: true,
-      pollingInterval: 30_000,
+      pollingInterval: 60_000,
       onBlockNumber: (blockNumber) => {
         if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
         const currentBlock = Number(blockNumber);
@@ -347,6 +349,24 @@ export class Web3Service {
         this.blockWatcher = undefined;
         setTimeout(() => this.startBlockWatcher(), 10_000);
       }
+    });
+  }
+
+  private stopBlockWatcher(): void {
+    if (!this.blockWatcher) return;
+    this.blockWatcher();
+    this.blockWatcher = undefined;
+  }
+
+  private setupBlockWatcherVisibilityHandling(): void {
+    if (typeof document === 'undefined') return;
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        this.stopBlockWatcher();
+        return;
+      }
+      this.startBlockWatcher();
     });
   }
 
