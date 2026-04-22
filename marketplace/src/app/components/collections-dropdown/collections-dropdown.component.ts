@@ -8,6 +8,7 @@ import { GlobalState } from '@/models/global-state';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
+import { environment } from 'src/environments/environment';
 
 import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
 
@@ -23,6 +24,7 @@ import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
   styleUrl: './collections-dropdown.component.scss'
 })
 export class CollectionsDropdownComponent {
+  private readonly hiddenDropdownSlugs = new Set(environment.ogSlugs || []);
 
   collections$ = combineLatest([
     this.store.select(dataStateSelectors.selectCollections),
@@ -31,7 +33,9 @@ export class CollectionsDropdownComponent {
     filter(([collections]) => !!collections),
     map(([collections, config]) => {
       const hiddenSlugs = new Set(config?.hiddenSlugs || []);
-      const filtered = (collections ?? []).filter((c: any) => !hiddenSlugs.has(c.slug));
+      const filtered = (collections ?? []).filter((c: any) =>
+        !hiddenSlugs.has(c.slug) && !this.hiddenDropdownSlugs.has(c.slug)
+      );
       const ethsRocks = filtered.filter((c: any) => c.slug === 'ethsrocks');
       const rest = filtered.filter((c: any) => c.slug !== 'ethsrocks');
       return [...ethsRocks, ...rest];
