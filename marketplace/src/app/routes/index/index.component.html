@@ -67,15 +67,15 @@
           }
         }
 
-        <section>
-          <div class="inner">
-            <h3 i18n>For Sale</h3>
+        @if ((listings$ | async); as listings) {
+          @if (listings.length) {
+            <section>
+              <div class="inner">
+                <h3 i18n>For Sale</h3>
 
-            @if ((listings$ | async); as listings) {
-              @if (listings.length) {
                 <div class="section-stats-wrapper">
                   @if ((listings | calc : 'lowestListingPrice'); as ethPrice) {
-                    <p i18n>The lowest price {{ activeCollection.singleName }} currently for sale is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                    <p i18n>The lowest price {{ activeCollection.singleName }} currently for sale is <span class="bold">Îž{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
                   }
 
                   <p i18n>Showing lowest price offers, <a class="highlight" [routerLink]="['market', 'listings']" [relativeTo]="route">({{ listings.length | number }}) view all.</a></p>
@@ -88,10 +88,10 @@
                   [marketType]="'listings'"
                   [activeSort]="'price-low'"
                 />
-              }
-            }
-          </div>
-        </section>
+              </div>
+            </section>
+          }
+        }
 
         <!-- <section>
           <div class="inner">
@@ -100,10 +100,10 @@
             @if ((bids$ | async); as bids) {
               <div class="section-stats-wrapper">
                 @if ((bids | calc : 'averageBidPrice'); as ethPrice) {
-                  <p i18n>The average currently open bid is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                  <p i18n>The average currently open bid is <span class="bold">Îž{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
                 }
                 @if ((bids | calc : 'totalBidsValue'); as ethPrice) {
-                  <p i18n>Total value of all current bids is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                  <p i18n>Total value of all current bids is <span class="bold">Îž{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
                 }
                 <p i18n>Showing top bids, <a class="highlight" [routerLink]="['market', 'bids']">({{ bids.length | number }}) view all.</a></p>
               </div>
@@ -166,7 +166,7 @@
                   <div class="faq-item" (click)="toggleFaq(item.q)">
                     <div class="faq-question">
                       <span>{{ item.q }}</span>
-                      <span class="faq-toggle">{{ openFaq() === item.q ? '−' : '+' }}</span>
+                      <span class="faq-toggle">{{ openFaq() === item.q ? 'âˆ’' : '+' }}</span>
                     </div>
                     @if (openFaq() === item.q) {
                       <div class="faq-answer">{{ item.a }}</div>

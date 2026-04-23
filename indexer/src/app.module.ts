@@ -16,6 +16,7 @@ import { MintModule } from '@/modules/mint/mint.module';
 import { AppService } from '@/app.service';
 import { AppController } from '@/app.controller';
 import { AppGateway } from '@/app.gateway';
+import { RpcController } from '@/rpc.controller';
 
 import { DataService } from '@/services/data.service';
 import { ProcessingService } from '@/services/processing.service';
@@ -40,7 +41,7 @@ import { ApiKeyMiddleware } from '@/middleware/api-key.middleware';
     CommentsModule,
     StorageModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, RpcController],
   providers: [
     AppService,
     AppGateway,

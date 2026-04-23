@@ -41,7 +41,7 @@ export class GasService {
       });
   }
 
-  private gasRpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO';
+  private gasRpcUrl = (environment as any).receiptRpcUrl || environment.rpcHttpProvider;
 
   private fetchGasPrice() {
     return this.http.post<any>(this.gasRpcUrl, {

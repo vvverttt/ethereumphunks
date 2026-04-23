@@ -16,10 +16,11 @@ const MAX_BLOCK_RANGE = 10000n;
 const logsClient = createPublicClient({
   chain: mainnet,
   transport: fallback([
+    http((environment as any).receiptRpcUrl || environment.rpcHttpProvider),
+    http(environment.rpcHttpProvider),
     http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
     http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-    http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO'),
-    http('https://eth-mainnet.g.alchemy.com/v2/EfAq0ccQOUXyZnumZDmnJ'),
+    http(`${environment.relayUrl}/rpc`),
   ], { rank: false }),
 });
 

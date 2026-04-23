@@ -3,7 +3,7 @@
 
   <div class="stats-grid">
     <div class="stat-item">
-      <span class="stat-value">{{ totalSupply() | number }}</span>
+      <span class="stat-value">{{ totalSupplyDisplay() }}</span>
       <span class="stat-label">Total Artifacts</span>
     </div>
     <div class="stat-item">
@@ -18,14 +18,12 @@
       <span class="stat-value">{{ loading() ? '-' : (oneOfOnes() | number) }}</span>
       <span class="stat-label">Total One of Ones</span>
     </div>
-    <div class="stat-item">
-      <span class="stat-value">{{ loading() ? '-' : (typeSection()?.rows?.length || 0) }}</span>
-      <span class="stat-label">Phunk Types</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">{{ loading() ? '-' : (variants() | number) }}</span>
-      <span class="stat-label">Variants</span>
-    </div>
+    @for (stat of extraStats(); track stat.label) {
+      <div class="stat-item">
+        <span class="stat-value">{{ stat.value | number }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+      </div>
+    }
   </div>
 
   <div class="stat-buttons">

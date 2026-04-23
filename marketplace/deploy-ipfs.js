@@ -1,4 +1,4 @@
-import { create } from 'ipfs-http-client';
+import { PinataSDK } from 'pinata';
 import { fileURLToPath } from 'url';
 import moment from 'moment';
 
@@ -23,9 +23,16 @@ if (!config || !['mainnet', 'sepolia'].includes(config)) {
   process.exit(1);
 }
 
+const ensGatewayByConfig = {
+  mainnet: 'etherphunks.eth.limo',
+  sepolia: 'sepolia.etherphunks.eth.limo',
+};
+
 // IPFS configuration
-const cloudNode = process.env.IPFS_CLOUD_NODE;
-const cloudToken = process.env.IPFS_CLOUD_TOKEN;
+const pinataJwt = process.env.PINATA_JWT;
+const pinataGatewayDomain = (process.env.PINATA_GATEWAY_DOMAIN || 'gateway.pinata.cloud')
+  .replace(/^https?:\/\//, '')
+  .replace(/\/+$/, '');
 
 // Get the current timestamp for the build directory
 const timestamp = moment().format('MMMD').toLowerCase();
@@ -83,14 +90,11 @@ function logUrl(url) {
 
 async function deployToIPFS() {
   try {
-    // Create IPFS client with timeout configuration
-    const cloudClient = create({
-      url: cloudNode,
-      timeout: '5m',
-      headers: {
-        Authorization: `Bearer ${cloudToken}`
-      }
-    });
+    if (!pinataJwt) {
+      throw new Error('Missing PINATA_JWT environment variable');
+    }
+
+    const pinata = new PinataSDK({ pinataJwt });
 
     logSection(`Deploying ${config.toUpperCase()} Build`);
 
@@ -109,43 +113,41 @@ async function deployToIPFS() {
       const items = fs.readdirSync(dir).sort(); // Sort files for consistent order
       for (const item of items) {
         const fullPath = path.join(dir, item);
-        const relPath = path.join(relativePath, item);
+        const relPath = relativePath ? `${relativePath}/${item}` : item;
         if (fs.statSync(fullPath).isDirectory()) {
           readDir(fullPath, relPath);
         } else {
-          files.push({
-            path: relPath,
-            content: fs.createReadStream(fullPath)
-          });
+          files.push({ fullPath, relPath });
         }
       }
     }
     readDir(buildDir);
 
     let rootHash;
-    let rootCid;
 
-    // Upload to remote node
     try {
-      logInfo(`Uploading to remote IPFS node...`);
-      const remoteAddResult = cloudClient.addAll(files, ipfsOptions);
-      for await (const result of remoteAddResult) {
-        if (result.path === '') {
-          rootHash = result.cid.toString();
-          rootCid = result.cid;
-          logSuccess(`IPFS Hash: ${rootHash}`);
-        }
-      }
-      logSuccess(`Pinned to remote node`);
+      logInfo('Uploading to Pinata...');
+      const fileObjects = files.map(({ fullPath, relPath }) => {
+        const buffer = fs.readFileSync(fullPath);
+        return new File([buffer], relPath);
+      });
+      const result = await retryOperation(() => pinata.upload.public.fileArray(fileObjects));
+      rootHash = result.cid;
+      logSuccess(`IPFS Hash: ${rootHash}`);
+      logSuccess('Pinned to Pinata');
     } catch (error) {
-      logError(`Failed to upload to remote node: ${error.message}`);
+      logError(`Failed to upload to Pinata: ${error.message}`);
       throw error;
     }
 
     logSection(`${config.toUpperCase()} Deployment Complete`);
     logSuccess(`IPFS Hash: ${rootHash}`);
-    logInfo('You can access your site at:');
-    logUrl(`https://${rootHash}.ipfs.dweb.link`);
+    logInfo('Temporary Pinata gateway URL:');
+    logUrl(`https://${pinataGatewayDomain}/ipfs/${rootHash}`);
+    logInfo('Set your ENS content hash to:');
+    logUrl(`ipfs://${rootHash}`);
+    logInfo('Live ENS gateway URL after content hash update:');
+    logUrl(`https://${ensGatewayByConfig[config]}`);
 
   } catch (error) {
     logError(`Deployment failed: ${error.message}`);

@@ -105,6 +105,7 @@ export class MosaicComponent implements OnChanges {
   allItems: MosaicItem[] = [];
   cols = 50;
   isDragging = false;
+  private readonly cache = new Map<string, MosaicItem[]>();
 
   private dragStartX = 0;
   private dragStartY = 0;
@@ -158,6 +159,13 @@ export class MosaicComponent implements OnChanges {
   }
 
   private async loadAll() {
+    const cached = this.cache.get(this.slug);
+    if (cached) {
+      this.allItems = cached;
+      this.setCols(cached.length);
+      return;
+    }
+
     const items: any[] = [];
     let offset = 0;
     while (true) {
@@ -173,18 +181,30 @@ export class MosaicComponent implements OnChanges {
       offset += 1000;
     }
 
-    const { data: listings } = await supabase
-      .from('listings')
-      .select('hashId')
-      .eq('listed', true);
-    const listedSet = new Set((listings || []).map((l: any) => l.hashId));
+    const listedSet = new Set<string>();
+    const hashIds = items.map(item => item.hashId).filter(Boolean);
+    for (let i = 0; i < hashIds.length; i += 1000) {
+      const chunk = hashIds.slice(i, i + 1000);
+      const { data: listings } = await supabase
+        .from('listings')
+        .select('hashId')
+        .eq('listed', true)
+        .in('hashId', chunk);
+      for (const listing of listings || []) {
+        if (listing?.hashId) listedSet.add(listing.hashId);
+      }
+    }
 
-    this.allItems = items.map(item => ({
+    const allItems = items.map(item => ({
       ...item,
       listed: listedSet.has(item.hashId),
     }));
+    this.cache.set(this.slug, allItems);
+    this.allItems = allItems;
+    this.setCols(allItems.length);
+  }
 
-    const count = items.length;
+  private setCols(count: number): void {
     if (count <= 70) this.cols = 10;
     else if (count <= 250) this.cols = 25;
     else this.cols = 50;

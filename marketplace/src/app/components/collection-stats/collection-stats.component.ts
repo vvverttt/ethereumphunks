@@ -33,6 +33,15 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; uniqueTrai
     oneOfOnes: 69,
   },
 };
+const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; value: number }>> = {
+  'cryptophunksv67': [
+    { label: 'Lottery', value: 2367 },
+    { label: 'Lottery Pro', value: 535 },
+    { label: 'Swap (Locked)', value: 1003 },
+    { label: 'Auction (Swap)', value: 264 },
+    { label: 'Auction Pro', value: 45 },
+  ],
+};
 
 function rarityTier(count: number, pct: number): string {
   if (count === 1) return 'One of One';
@@ -83,6 +92,11 @@ export class CollectionStatsComponent implements OnChanges {
     return override ?? this.collectionSupply();
   });
 
+  totalSupplyDisplay = computed<string>(() => {
+    if (this.collectionSlug() === 'cryptophunksv67') return '4,251 / 10,000';
+    return new Intl.NumberFormat('en-US').format(this.totalSupply());
+  });
+
   uniqueTraitValues = computed<number>(() => {
     const override = STATS_OVERRIDES_BY_SLUG[this.collectionSlug()]?.uniqueTraitValues;
     return override ?? this.dynamicUniqueTraitValues();
@@ -97,10 +111,8 @@ export class CollectionStatsComponent implements OnChanges {
     (this.typeSection() ? 1 : 0) + this.sections().length
   );
 
-  variants = computed<number>(() =>
-    this.sections()
-      .filter(section => section.name.toLowerCase().includes('variant'))
-      .reduce((sum, section) => sum + section.rows.length, 0)
+  extraStats = computed(() =>
+    EXTRA_STATS_BY_SLUG[this.collectionSlug()] ?? []
   );
 
   async ngOnChanges(changes: SimpleChanges) {
