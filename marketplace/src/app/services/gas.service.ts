@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, interval, switchMap, catchError, of, startWith, filter } from 'rxjs';
+import { BehaviorSubject, Observable, interval, switchMap, catchError, of, startWith, filter } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface GasData {
@@ -17,6 +17,14 @@ export interface GasData {
 })
 export class GasService {
   private http = inject(HttpClient);
+  private relayRpcUrl = `${environment.relayUrl}/rpc`;
+  private gasRpcUrls = [
+    (environment as any).receiptRpcUrl || environment.rpcHttpProvider,
+    environment.rpcHttpProvider,
+    this.relayRpcUrl,
+    'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8',
+    'https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f',
+  ].filter((url, index, arr) => !!url && arr.indexOf(url) === index);
 
   private gasSubject = new BehaviorSubject<GasData>({
     ProposeGasPrice: '...',
@@ -41,10 +49,17 @@ export class GasService {
       });
   }
 
-  private gasRpcUrl = (environment as any).receiptRpcUrl || environment.rpcHttpProvider;
+  private fetchGasPrice(): Observable<GasData> {
+    return this.fetchGasPriceFromRpc(0);
+  }
 
-  private fetchGasPrice() {
-    return this.http.post<any>(this.gasRpcUrl, {
+  private fetchGasPriceFromRpc(index: number): Observable<GasData> {
+    const rpcUrl = this.gasRpcUrls[index];
+    if (!rpcUrl) {
+      return of(this.errorData());
+    }
+
+    return this.http.post<any>(rpcUrl, {
       jsonrpc: '2.0',
       method: 'eth_gasPrice',
       params: [],
@@ -52,7 +67,9 @@ export class GasService {
     }).pipe(
       switchMap(response => {
         if (!response?.result) {
-          return of(this.errorData());
+          return index < this.gasRpcUrls.length - 1
+            ? this.fetchGasPriceFromRpc(index + 1)
+            : of(this.errorData());
         }
 
         try {
@@ -70,10 +87,16 @@ export class GasService {
 
           return of(gasData);
         } catch {
-          return of(this.errorData());
+          return index < this.gasRpcUrls.length - 1
+            ? this.fetchGasPriceFromRpc(index + 1)
+            : of(this.errorData());
         }
       }),
-      catchError(() => of(this.errorData()))
+      catchError(() => (
+        index < this.gasRpcUrls.length - 1
+          ? this.fetchGasPriceFromRpc(index + 1)
+          : of(this.errorData())
+      ))
     );
   }
 
