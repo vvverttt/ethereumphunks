@@ -8,7 +8,7 @@ export const environment = {
   chainId: 1,
 
   rpcHttpProvider: 'https://1rpc.io/eth',
-  receiptRpcUrl: 'https://rpc.mevblocker.io',
+  receiptRpcUrl: 'https://1rpc.io/eth',
   explorerUrl: 'https://etherscan.io',
   externalMarketUrl: 'https://ethscriptions.com',
 
