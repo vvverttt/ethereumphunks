@@ -1,5 +1,5 @@
 import { Component, Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 
 import { Observable, filter, map, take } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -21,14 +21,20 @@ export class InitialCollectionGuard implements CanActivate {
     private router: Router
   ) {}
 
-  canActivate(): Observable<boolean> {
+  canActivate(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<boolean | UrlTree> {
     return this.store.select(selectConfig).pipe(
-      filter(config => !!config.defaultCollection),
+      filter(config => !!config),
       take(1),
       map(config => {
-        const defaultSlug = config.defaultCollection;
-        this.router.navigate([`/${defaultSlug}`]);
-        return false;
+        const hiddenSlugs = new Set(config.hiddenSlugs || []);
+        const defaultSlug = hiddenSlugs.has('cryptophunksv67')
+          ? 'ethsrocks'
+          : (config.defaultCollection || 'cryptophunksv67');
+        const marketType = route.paramMap.get('marketType');
+
+        return marketType
+          ? this.router.createUrlTree([`/${defaultSlug}/market/${marketType}`])
+          : this.router.createUrlTree([`/${defaultSlug}`]);
       })
     );
   }

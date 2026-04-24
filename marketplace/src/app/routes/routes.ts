@@ -5,13 +5,15 @@ import { InitialCollectionGuard } from '@/guards/initial-collection.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'cryptophunksv67',
-    pathMatch: 'full'
+    canActivate: [InitialCollectionGuard],
+    component: InitialCollectionGuard,
+    pathMatch: 'full',
   },
   {
     path: 'market/:marketType',
-    redirectTo: 'cryptophunksv67/market/:marketType',
-    pathMatch: 'full'
+    canActivate: [InitialCollectionGuard],
+    component: InitialCollectionGuard,
+    pathMatch: 'full',
   },
   {
     path: 'curated/:slug',
