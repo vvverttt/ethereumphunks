@@ -46,14 +46,36 @@
 }
 
 @if (expanded()) {
-  @if ((logs$ | async); as logs) {
-    <div class="logger">
-      <div class="title-bar">
-        <div class="title">Indexer Logs</div>
-      </div>
-      <app-logger [logs]="logs" />
+  <div class="logger">
+    <div class="title-bar">
+      <div class="title">Indexer Logs</div>
+
+      @if (loadingLogs()) {
+        <div class="status initializing">
+          Initializing logs
+          @if (loadingCountdown() !== null) {
+            <span class="countdown">{{ loadingCountdown() }}s</span>
+          }
+        </div>
+      } @else if (waitingForLogs()) {
+        <div class="status waiting">Connected - waiting for logs</div>
+      } @else {
+        <div class="status ready">{{ logItems().length }} loaded</div>
+      }
     </div>
-  }
+
+    @if (logItems().length) {
+      <app-logger [logs]="logItems()" />
+    } @else {
+      <div class="logger-placeholder">
+        @if (loadingLogs()) {
+          <div class="message">Opening live indexer feed...</div>
+        } @else {
+          <div class="message">Connected. Waiting for the next log entry.</div>
+        }
+      </div>
+    }
+  </div>
 }
 
 <ng-template #arrowIcon>

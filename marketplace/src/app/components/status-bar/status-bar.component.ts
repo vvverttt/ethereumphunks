@@ -1,5 +1,6 @@
 import { Component, effect, input, OnDestroy, signal, untracked } from '@angular/core';
 import { AsyncPipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 import { Store } from '@ngrx/store';
 import { GlobalState } from '@/models/global-state';
@@ -10,8 +11,7 @@ import { setChat } from '@/state/actions/chat.actions';
 import { LogItem, SocketService } from '@/services/socket.service';
 
 import { LoggerComponent } from '@/components/status-bar/logger/logger.component';
-
-import { combineLatest, scan, startWith, switchMap, take } from 'rxjs';
+import { combineLatest } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -37,15 +37,10 @@ export class StatusBarComponent implements OnDestroy {
     this.store.select(appStateSelectors.selectIndexerBlock),
   ]);
 
-  logs$ = this.socketSvc.logs$.pipe(
-    take(1),
-    switchMap((logs: LogItem[]) => {
-      return this.socketSvc.log$.pipe(
-        startWith(...logs),
-        scan((acc: LogItem[], log: LogItem) => [...acc, log], []),
-      )
-    })
-  );
+  logItems = signal<LogItem[]>([]);
+  loadingLogs = signal(false);
+  loadingCountdown = signal<number | null>(null);
+  waitingForLogs = signal(false);
 
   chain = environment.chainId;
 
@@ -53,6 +48,10 @@ export class StatusBarComponent implements OnDestroy {
 
   expanded = signal(false);
   private logsConnected = false;
+  private initialLogsSub?: Subscription;
+  private liveLogsSub?: Subscription;
+  private loadingCountdownTimer: ReturnType<typeof setInterval> | null = null;
+  private loadingFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private store: Store<GlobalState>,
@@ -68,10 +67,7 @@ export class StatusBarComponent implements OnDestroy {
 
     effect(() => {
       if (this.expanded()) {
-        if (!this.logsConnected) {
-          this.socketSvc.connectLogs();
-          this.logsConnected = true;
-        }
+        this.connectLogs();
         return;
       }
 
@@ -95,9 +91,75 @@ export class StatusBarComponent implements OnDestroy {
     this.disconnectLogs();
   }
 
+  private connectLogs(): void {
+    if (this.logsConnected) return;
+
+    this.logsConnected = true;
+    this.loadingLogs.set(true);
+    this.waitingForLogs.set(false);
+    this.startLoadingCountdown();
+
+    this.initialLogsSub = this.socketSvc.logs$.subscribe((logs: LogItem[]) => {
+      this.logItems.set(logs || []);
+      this.finishLoading();
+      if (!(logs || []).length) {
+        this.waitingForLogs.set(true);
+      }
+    });
+
+    this.liveLogsSub = this.socketSvc.log$.subscribe((log: LogItem) => {
+      this.logItems.update((logs) => [...logs, log]);
+      this.finishLoading();
+      this.waitingForLogs.set(false);
+    });
+
+    this.socketSvc.connectLogs();
+
+    this.loadingFallbackTimer = setTimeout(() => {
+      if (!this.loadingLogs()) return;
+      this.finishLoading();
+      this.waitingForLogs.set(this.logItems().length === 0);
+    }, 4000);
+  }
+
   private disconnectLogs(): void {
+    this.initialLogsSub?.unsubscribe();
+    this.initialLogsSub = undefined;
+    this.liveLogsSub?.unsubscribe();
+    this.liveLogsSub = undefined;
+    this.clearLoadingTimers();
+    this.loadingLogs.set(false);
+    this.loadingCountdown.set(null);
+    this.waitingForLogs.set(false);
     if (!this.logsConnected) return;
     this.socketSvc.disconnectLogs();
     this.logsConnected = false;
+  }
+
+  private startLoadingCountdown(): void {
+    this.clearLoadingTimers();
+    this.loadingCountdown.set(3);
+    this.loadingCountdownTimer = setInterval(() => {
+      const current = this.loadingCountdown();
+      if (current === null) return;
+      this.loadingCountdown.set(Math.max(0, current - 1));
+    }, 1000);
+  }
+
+  private finishLoading(): void {
+    this.loadingLogs.set(false);
+    this.loadingCountdown.set(null);
+    this.clearLoadingTimers();
+  }
+
+  private clearLoadingTimers(): void {
+    if (this.loadingCountdownTimer) {
+      clearInterval(this.loadingCountdownTimer);
+      this.loadingCountdownTimer = null;
+    }
+    if (this.loadingFallbackTimer) {
+      clearTimeout(this.loadingFallbackTimer);
+      this.loadingFallbackTimer = null;
+    }
   }
 }

@@ -21,6 +21,8 @@
   .title-bar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
     padding: .5rem 1rem;
 
     font-family: var(--secondary-font-stack);
@@ -31,11 +33,49 @@
     background-color: rgba(var(--base-color), 1);
   }
 
+  .status {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    opacity: .85;
+
+    &.initializing {
+      opacity: 1;
+    }
+
+    .countdown {
+      display: inline-block;
+      min-width: 1.8rem;
+      text-align: right;
+      margin-left: .35rem;
+    }
+  }
+
   app-logger {
     max-width: 60rem;
     height: 30rem;
     border: .2rem solid rgba(var(--base-color), 1);
     border-top: none;
+  }
+
+  .logger-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60rem;
+    max-width: 60rem;
+    height: 30rem;
+    padding: 2rem;
+    border: .2rem solid rgba(var(--base-color), 1);
+    border-top: none;
+    background-color: rgba(var(--black), 1);
+    color: rgba(var(--white), .8);
+    font-family: var(--secondary-font-stack);
+    text-align: center;
+
+    .message {
+      font-size: 1rem;
+    }
   }
 
 }
