@@ -107,6 +107,7 @@ export class AppService implements OnModuleInit {
         emitOnBegin: true,
         emitMissed: true,
         includeTransactions: false,
+        poll: true,
         onBlock: async (block) => {
           try {
             const blockNum = Number(block.number);

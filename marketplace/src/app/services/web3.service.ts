@@ -347,6 +347,7 @@ export class Web3Service {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     this.blockWatcher = this.l1PollingClient.watchBlockNumber({
       emitOnBegin: true,
+      poll: true,
       pollingInterval: 60_000,
       onBlockNumber: (blockNumber) => {
         if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
@@ -389,12 +390,20 @@ export class Web3Service {
     this.pointsWatcher = this.l1PollingClient.watchContractEvent({
       address: pointsAddress as `0x${string}`,
       abi: PointsABI,
+      poll: true,
+      pollingInterval: 30_000,
       onLogs: (logs) => {
         logs.forEach((log: any) => {
           if (log.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log }));
           // TODO: Add event to smart contract
           if (log.eventName === 'MultiplierSet') {}
         });
+      },
+      onError: (error) => {
+        console.error('[Web3Service] Points watcher error, restarting:', error);
+        if (this.pointsWatcher) this.pointsWatcher();
+        this.pointsWatcher = undefined;
+        setTimeout(() => this.startPointsWatcher(), 10_000);
       }
     });
   }
