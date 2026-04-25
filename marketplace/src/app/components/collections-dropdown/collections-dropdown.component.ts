@@ -24,7 +24,11 @@ import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
   styleUrl: './collections-dropdown.component.scss'
 })
 export class CollectionsDropdownComponent {
-  private readonly hiddenDropdownSlugs = new Set(environment.ogSlugs || []);
+  private readonly hiddenDropdownSlugs = new Set([
+    ...(environment.ogSlugs || []),
+    'ethereumphunks',
+    'etherphunks',
+  ]);
 
   collections$ = combineLatest([
     this.store.select(dataStateSelectors.selectCollections),

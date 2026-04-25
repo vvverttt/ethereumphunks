@@ -26,6 +26,11 @@ import { combineLatest, filter, map } from 'rxjs';
   styleUrl: './collections.component.scss'
 })
 export class CollectionsComponent {
+  private readonly permanentlyHiddenSlugs = new Set([
+    'cryptophunksv67',
+    'ethereumphunks',
+    'etherphunks',
+  ]);
 
   collections$ = combineLatest([
     this.store.select(selectCollections),
@@ -34,8 +39,9 @@ export class CollectionsComponent {
     filter(([collections]) => !!collections),
     map(([collections, config]) => {
       const hiddenSlugs = new Set(config?.hiddenSlugs || []);
-      // Exclude cryptophunksv67 (the main default collection) by slug, not by position
-      const filtered = collections.filter(c => c.slug !== 'cryptophunksv67' && !hiddenSlugs.has(c.slug));
+      const filtered = collections.filter(c =>
+        !this.permanentlyHiddenSlugs.has(c.slug) && !hiddenSlugs.has(c.slug)
+      );
       const ethsRocks = filtered.filter(c => c.slug === 'ethsrocks');
       const rest = filtered.filter(c => c.slug !== 'ethsrocks');
       return [...ethsRocks, ...rest];
