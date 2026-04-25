@@ -20,6 +20,7 @@ import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, t
 
 import { environment } from 'src/environments/environment';
 import { supabase } from './supabase';
+import { isAdminWallet } from '@/constants/admin-wallets';
 
 import * as dataStateActions from '@/state/actions/data-state.actions';
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -93,7 +94,18 @@ export class DataService {
         delete config.collectionTraitFilters.__hiddenSlugs;
 
         // Admin preview — override all visibility to show everything
-        if (localStorage.getItem('admin_preview') === 'true') {
+        return config;
+      }),
+    );
+
+    // No realtime channel — config rarely changes, fetched on every page load
+    return combineLatest([
+      initial$,
+      this.walletAddress$.pipe(startWith(null)),
+    ]).pipe(
+      map(([config, walletAddress]) => {
+        if (!config) return null;
+        if (localStorage.getItem('admin_preview') === 'true' && isAdminWallet(walletAddress)) {
           config.maintenance = false;
           config.showMutate = true;
           config.showDevolve = true;
@@ -104,13 +116,8 @@ export class DataService {
           config.showPhunkquidity = true;
           config.hiddenSlugs = [];
         }
-
         return config;
       }),
-    );
-
-    // No realtime channel — config rarely changes, fetched on every page load
-    return initial$.pipe(
       filter(config => !!config),
     );
   }

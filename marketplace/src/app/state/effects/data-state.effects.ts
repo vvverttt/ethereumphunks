@@ -6,6 +6,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { GlobalState } from '@/models/global-state';
 
 import { DataService } from '@/services/data.service';
+import { isAdminWallet } from '@/constants/admin-wallets';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 
@@ -29,15 +30,11 @@ export class DataStateEffects {
     )),
   ));
 
-  whitelist: string[] = ['0xf1Aa941d56041d47a9a18e99609A047707Fe96c7'];
   fetchDisabledCollections$ = createEffect(() => this.actions$.pipe(
     ofType(appStateActions.setWalletAddress),
     filter((action) => {
-      // console.log('fetchDisabledCollections$', { action });
       if (!action.walletAddress) return !environment.production;
-      return this.whitelist
-        .map((w) => w.toLowerCase())
-        .includes(action.walletAddress.toLowerCase());
+      return isAdminWallet(action.walletAddress);
     }),
     switchMap(() => this.store.select(dataStateSelectors.selectCollections).pipe(
       filter((collections) => collections.length > 0),
