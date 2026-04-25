@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
-import { tap } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -28,7 +27,8 @@ const chain = environment.chainId === 1 ? 'mainnet' : 'sepolia';
 const socketConfig: SocketIoConfig = {
   url: environment.relayUrl,
   options: {
-    path: '/socket.io/'
+    path: '/socket.io/',
+    autoConnect: false,
   }
 };
 
@@ -39,6 +39,9 @@ const socketConfig: SocketIoConfig = {
   providedIn: 'root',
 })
 export class SocketService extends Socket {
+
+  private logConsumers = 0;
+  private disconnectTimeout: ReturnType<typeof setTimeout> | null = null;
 
   /** Observable stream of individual log messages for current chain */
   log$ = this.fromEvent<LogItem, `log_${typeof chain}`>(`log_${chain}`);
@@ -62,15 +65,51 @@ export class SocketService extends Socket {
    * @param callback Optional error callback function
    */
   connect(callback?: ((err: any) => void) | undefined): this {
-    super.connect();
+    this.clearDisconnectTimeout();
+    if (!this.ioSocket.connected) {
+      super.connect();
+    }
     return this;
   }
 
+  connectLogs(): void {
+    this.logConsumers += 1;
+    this.connect();
+  }
+
+  disconnectLogs(): void {
+    this.logConsumers = Math.max(0, this.logConsumers - 1);
+    if (this.logConsumers === 0) {
+      this.scheduleDisconnect();
+    }
+  }
+
   sendMessage(id: string, message: string) {
+    this.connect();
     this.emit('message', { id, message });
+    if (this.logConsumers === 0) {
+      this.scheduleDisconnect();
+    }
   }
 
   onMessage() {
     return this.fromEvent<{ id: string, message: string }, 'message'>('message');
+  }
+
+  private scheduleDisconnect(): void {
+    this.clearDisconnectTimeout();
+    this.disconnectTimeout = setTimeout(() => {
+      if (!this.logConsumers && this.ioSocket.connected) {
+        super.disconnect();
+      }
+      this.disconnectTimeout = null;
+    }, 3000);
+  }
+
+  private clearDisconnectTimeout(): void {
+    if (this.disconnectTimeout) {
+      clearTimeout(this.disconnectTimeout);
+      this.disconnectTimeout = null;
+    }
   }
 }

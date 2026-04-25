@@ -45,8 +45,8 @@
   </div>
 }
 
-@if ((logs$ | async); as logs) {
-  @if (expanded()) {
+@if (expanded()) {
+  @if ((logs$ | async); as logs) {
     <div class="logger">
       <div class="title-bar">
         <div class="title">Indexer Logs</div>

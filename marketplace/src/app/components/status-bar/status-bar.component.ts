@@ -1,4 +1,4 @@
-import { Component, effect, input, signal, untracked } from '@angular/core';
+import { Component, effect, input, OnDestroy, signal, untracked } from '@angular/core';
 import { AsyncPipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 
 import { Store } from '@ngrx/store';
@@ -28,7 +28,7 @@ import { environment } from 'src/environments/environment';
   templateUrl: './status-bar.component.html',
   styleUrl: './status-bar.component.scss',
 })
-export class StatusBarComponent {
+export class StatusBarComponent implements OnDestroy {
 
   visible = input.required<boolean>();
 
@@ -52,6 +52,7 @@ export class StatusBarComponent {
   levels: any = {};
 
   expanded = signal(false);
+  private logsConnected = false;
 
   constructor(
     private store: Store<GlobalState>,
@@ -63,6 +64,18 @@ export class StatusBarComponent {
       if (!visible && this.expanded()) {
         untracked(() => this.expanded.set(false));
       }
+    });
+
+    effect(() => {
+      if (this.expanded()) {
+        if (!this.logsConnected) {
+          this.socketSvc.connectLogs();
+          this.logsConnected = true;
+        }
+        return;
+      }
+
+      this.disconnectLogs();
     });
   }
 
@@ -76,5 +89,15 @@ export class StatusBarComponent {
 
   openChat() {
     this.store.dispatch(setChat({ active: true }));
+  }
+
+  ngOnDestroy(): void {
+    this.disconnectLogs();
+  }
+
+  private disconnectLogs(): void {
+    if (!this.logsConnected) return;
+    this.socketSvc.disconnectLogs();
+    this.logsConnected = false;
   }
 }
