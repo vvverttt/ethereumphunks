@@ -40,6 +40,7 @@ const marketAddressL2 = environment.marketAddressL2;
 const pointsAddress = environment.pointsAddress;
 const bridgeAddressL2 = environment.bridgeAddressL2;
 const receiptRpcUrl = ((environment as any).receiptRpcUrl || environment.rpcHttpProvider) as string;
+const frontendBackupRpcUrl = ((environment as any).frontendBackupRpcUrl || '') as string;
 const relayRpcUrl = `${environment.relayUrl}/rpc`;
 
 const projectId = 'fb5073eb31498f38d17c73bcabc03255';
@@ -91,6 +92,7 @@ export class Web3Service {
       transport: fallback([
         http(environment.rpcHttpProvider),
         http(receiptRpcUrl),
+        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
         http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
         http(relayRpcUrl),
@@ -102,6 +104,7 @@ export class Web3Service {
       transport: fallback([
         http(receiptRpcUrl),
         http(environment.rpcHttpProvider),
+        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
         http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
         http(relayRpcUrl),
@@ -119,6 +122,7 @@ export class Web3Service {
         [environment.chainId]: fallback([
           http(environment.rpcHttpProvider),
           http(receiptRpcUrl),
+          ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
           http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
           http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
           http(relayRpcUrl),
