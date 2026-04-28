@@ -385,8 +385,15 @@ export class Web3Service {
    * Dispatches store actions when points are added or multipliers change
    */
   pointsWatcher!: WatchContractEventReturnType | undefined;
+  private pointsWatcherRestartTimer: ReturnType<typeof setTimeout> | undefined;
+  private pointsWatcherRetryAttempt = 0;
   startPointsWatcher(): void {
     if (this.pointsWatcher) return;
+    if (this.pointsWatcherRestartTimer) {
+      clearTimeout(this.pointsWatcherRestartTimer);
+      this.pointsWatcherRestartTimer = undefined;
+    }
+
     this.pointsWatcher = this.l1PollingClient.watchContractEvent({
       address: pointsAddress as `0x${string}`,
       abi: PointsABI,
@@ -400,12 +407,56 @@ export class Web3Service {
         });
       },
       onError: (error) => {
-        console.error('[Web3Service] Points watcher error, restarting:', error);
+        const details = this.extractViemErrorDetails(error);
+        const isFilterNotFound = details.includes('filter not found');
+        const isTimeoutOrGateway = details.includes('timeout') || details.includes('gateway timeout') || details.includes('status: 504');
+
+        if (isFilterNotFound) {
+          console.warn('[Web3Service] Points watcher filter expired, recreating watcher');
+        } else {
+          console.error('[Web3Service] Points watcher error, restarting:', error);
+        }
+
         if (this.pointsWatcher) this.pointsWatcher();
         this.pointsWatcher = undefined;
-        setTimeout(() => this.startPointsWatcher(), 10_000);
+
+        if (isFilterNotFound) {
+          this.schedulePointsWatcherRestart(1_500);
+          return;
+        }
+
+        if (isTimeoutOrGateway) {
+          this.pointsWatcherRetryAttempt += 1;
+          const baseDelay = Math.min(10_000 * (2 ** Math.min(this.pointsWatcherRetryAttempt, 5)), 120_000);
+          const jitter = Math.floor(Math.random() * 2_500);
+          this.schedulePointsWatcherRestart(baseDelay + jitter);
+          return;
+        }
+
+        this.pointsWatcherRetryAttempt = 0;
+        this.schedulePointsWatcherRestart(10_000);
       }
     });
+
+    // Successful setup: reset retry count so future incidents start from minimal backoff.
+    this.pointsWatcherRetryAttempt = 0;
+  }
+
+  private schedulePointsWatcherRestart(delayMs: number): void {
+    if (this.pointsWatcherRestartTimer) clearTimeout(this.pointsWatcherRestartTimer);
+    this.pointsWatcherRestartTimer = setTimeout(() => {
+      this.pointsWatcherRestartTimer = undefined;
+      this.startPointsWatcher();
+    }, delayMs);
+  }
+
+  private extractViemErrorDetails(error: unknown): string {
+    if (!error) return '';
+    if (typeof error === 'string') return error.toLowerCase();
+    const maybeMessage = (error as { message?: string }).message || '';
+    const maybeDetails = (error as { details?: string }).details || '';
+    const maybeShortMessage = (error as { shortMessage?: string }).shortMessage || '';
+    return `${maybeMessage} ${maybeDetails} ${maybeShortMessage}`.toLowerCase();
   }
 
   /**
