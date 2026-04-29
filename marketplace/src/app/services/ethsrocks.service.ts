@@ -8,6 +8,7 @@ import { EthsRocksABI } from '@/abi/EthsRocks';
 
 const ethsrocksAddress = ((environment as any).ethsrocksAddress || '') as `0x${string}`;
 const ethsrocksDeployBlock = ((environment as any).ethsrocksDeployBlock as bigint) || 0n;
+const MAX_LOG_BLOCK_RANGE = 10n;
 
 export interface RockPurchase {
   buyer: string;
@@ -170,12 +171,23 @@ export class EthsRocksService {
   async getPurchaseHistory(): Promise<RockPurchase[]> {
     if (!this.hasAddress) return [];
     try {
-      const logs = await this.web3Svc.l1Client.getContractEvents({
-        address: ethsrocksAddress,
-        abi: EthsRocksABI,
-        eventName: 'RockPurchased',
-        fromBlock: ethsrocksDeployBlock,
-      });
+      const latestBlock = await this.web3Svc.l1Client.getBlockNumber();
+      const logs: any[] = [];
+
+      for (let from = ethsrocksDeployBlock; from <= latestBlock; from += MAX_LOG_BLOCK_RANGE) {
+        const to = from + MAX_LOG_BLOCK_RANGE - 1n > latestBlock
+          ? latestBlock
+          : from + MAX_LOG_BLOCK_RANGE - 1n;
+
+        const chunk = await this.web3Svc.l1Client.getContractEvents({
+          address: ethsrocksAddress,
+          abi: EthsRocksABI,
+          eventName: 'RockPurchased',
+          fromBlock: from,
+          toBlock: to,
+        });
+        logs.push(...chunk);
+      }
 
       return logs.map((log: any) => ({
         buyer: log.args.buyer,
