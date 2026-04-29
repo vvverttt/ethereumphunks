@@ -736,29 +736,27 @@ export class Web3Service {
     };
     if (value) tx.value = value;
 
+    const data = encodeFunctionData({
+      abi: (abi || EtherPhunksMarketABI) as any,
+      functionName,
+      args,
+    });
+
+    const rawTx: any = {
+      account: walletClient.account.address as `0x${string}`,
+      to: contractAddress as `0x${string}`,
+      data,
+      value: value ? BigInt(value) : undefined,
+    };
+
     try {
+      // Simulate to get a gas estimate; ignore reverts (some providers produce
+      // false-negative preflight reverts for valid market writes).
       const { request } = await publicClient.simulateContract(tx);
-      return await this.sendTransactionWithFallback(walletClient, request);
-    } catch (error: any) {
-      const message = `${error?.shortMessage || ''} ${error?.message || ''}`.toLowerCase();
-      const reverted = message.includes('execution reverted') || message.includes('simulatecontract');
-      if (!reverted) throw error;
+      if (request.gas) rawTx.gas = request.gas;
+    } catch (_) {}
 
-      // Some providers produce false-negative preflight reverts for valid market writes.
-      // Fall back to the exact calldata the contract expects and let the wallet submit it.
-      const data = encodeFunctionData({
-        abi: (abi || EtherPhunksMarketABI) as any,
-        functionName,
-        args,
-      });
-
-      return await this.sendTransactionWithFallback(walletClient, {
-        account: walletClient.account.address as `0x${string}`,
-        to: contractAddress as `0x${string}`,
-        data,
-        value: value ? BigInt(value) : undefined,
-      });
-    }
+    return await this.sendTransactionWithFallback(walletClient, rawTx);
   }
 
   /**
