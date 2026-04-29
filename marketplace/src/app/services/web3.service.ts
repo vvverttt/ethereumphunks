@@ -1039,27 +1039,32 @@ export class Web3Service {
     if (tx.maxPriorityFeePerGas !== undefined) params.maxPriorityFeePerGas = toHex(BigInt(tx.maxPriorityFeePerGas));
     if (tx.nonce !== undefined) params.nonce = toHex(BigInt(tx.nonce));
 
-    // Use eth_sendTransaction directly — avoids wallet_sendTransaction which some wallet
-    // implementations route through their Alchemy HTTP endpoint (which rejects signing requests).
+    // Use eth_sendTransaction directly — avoids the wallet_sendTransaction path that some
+    // wallet transports (e.g. WalletConnect with an expired session) route through an
+    // Alchemy HTTP endpoint, which doesn't support signing.
     try {
       return await wallet.request({ method: 'eth_sendTransaction', params: [params] });
     } catch (firstErr: any) {
+      // User explicitly rejected — stop immediately, no retries.
+      if (firstErr?.code === 4001) throw firstErr;
       const msg = `${firstErr?.shortMessage || ''} ${firstErr?.message || ''}`.toLowerCase();
-      // User rejected or connection issue — don't retry, surface immediately.
       if (msg.includes('user rejected') || msg.includes('user denied') || msg.includes('rejected the request')) throw firstErr;
 
-      // eth_sendTransaction also failed (e.g. wallet transport is an HTTP RPC).
-      // Try wallet.sendTransaction which handles gas estimation and may use a different path.
-      try {
-        return await wallet.sendTransaction(tx);
-      } catch (secondErr: any) {
-        // Last resort: call the injected EIP-1193 provider directly, bypassing the viem transport.
+      // If connected via WalletConnect, window.ethereum is the WC-injected provider —
+      // calling it would just open another WC reconnect modal. Skip it and surface the error.
+      const isWalletConnect = this.config.state.connections.get(this.config.state.current!)
+        ?.connector?.id === 'walletConnect';
+
+      if (!isWalletConnect) {
+        // For injected wallets (MetaMask etc.) try window.ethereum as a last resort.
         const injected = typeof window !== 'undefined' && (window as any).ethereum;
         if (injected?.request) {
           return await injected.request({ method: 'eth_sendTransaction', params: [params] });
         }
-        throw secondErr;
       }
+
+      // WalletConnect session is expired or wallet transport is broken.
+      throw new Error('Wallet connection failed. Please disconnect and reconnect your wallet, then try again.');
     }
   }
 

@@ -323,17 +323,12 @@ export class ItemViewComponent {
           }
         }
       } else {
-        // Non-escrowed path: always attempt escrow+list first (desired one-click behavior).
-        try {
+        // UI shows not-escrowed, but check on-chain — indexed state can lag.
+        const actuallyEscrowed = await this.web3Svc.isInEscrow(hashId, targetMarket);
+        if (actuallyEscrowed) {
+          hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
+        } else {
           hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
-        } catch (err: any) {
-          const msg = `${err?.shortMessage || ''} ${err?.message || ''}`.toLowerCase();
-          if (msg.includes('already in escrow') || msg.includes('escrowed')) {
-            // If it actually is already escrowed, fallback to direct list.
-            hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
-          } else {
-            throw err;
-          }
         }
       }
 
