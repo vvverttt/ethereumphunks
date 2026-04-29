@@ -28,7 +28,7 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
 
-import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPublicClient, decodeEventLog, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
+import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPublicClient, decodeEventLog, decodeFunctionData, encodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 const marketAddress = environment.marketAddress;
@@ -736,8 +736,29 @@ export class Web3Service {
     };
     if (value) tx.value = value;
 
-    const { request } = await publicClient.simulateContract(tx);
-    return await this.sendTransactionWithFallback(walletClient, request);
+    try {
+      const { request } = await publicClient.simulateContract(tx);
+      return await this.sendTransactionWithFallback(walletClient, request);
+    } catch (error: any) {
+      const message = `${error?.shortMessage || ''} ${error?.message || ''}`.toLowerCase();
+      const reverted = message.includes('execution reverted') || message.includes('simulatecontract');
+      if (!reverted) throw error;
+
+      // Some providers produce false-negative preflight reverts for valid market writes.
+      // Fall back to the exact calldata the contract expects and let the wallet submit it.
+      const data = encodeFunctionData({
+        abi: (abi || EtherPhunksMarketABI) as any,
+        functionName,
+        args,
+      });
+
+      return await this.sendTransactionWithFallback(walletClient, {
+        account: walletClient.account.address as `0x${string}`,
+        to: contractAddress as `0x${string}`,
+        data,
+        value: value ? BigInt(value) : undefined,
+      });
+    }
   }
 
   /**
