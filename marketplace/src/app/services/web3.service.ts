@@ -1156,6 +1156,18 @@ export class Web3Service {
       abi: EtherPhunksMarketABI as any
     };
 
+    if (this.isOldMarketAddress(contractAddress)) {
+      const listing = await this.l1Client.readContract({
+        ...contract,
+        functionName: 'phunksOfferedForSale',
+        args: [hashId as `0x${string}`],
+      });
+      return {
+        stored: !!(listing as any)?.[0],
+        ...(listing as any),
+      };
+    }
+
     const multicall = await this.l1Client.multicall({
       contracts: [{
         ...contract,
@@ -1181,6 +1193,29 @@ export class Web3Service {
       address: contractAddress as `0x${string}`,
       abi: EtherPhunksMarketABI
     };
+
+    if (this.isOldMarketAddress(contractAddress)) {
+      const calls = phunks.map((phunk) => ({
+        ...contract,
+        functionName: 'phunksOfferedForSale',
+        args: [phunk.hashId as `0x${string}`],
+      }));
+
+      const res = await this.l1Client.multicall({ contracts: calls });
+      const combined: any = {};
+
+      for (let i = 0; i < res.length; i++) {
+        const result = (res[i] as any).result;
+        const hashId = result?.[1];
+        if (!hashId) continue;
+        combined[hashId] = {
+          stored: !!result?.[0],
+          ...result,
+        };
+      }
+
+      return combined;
+    }
 
     const calls: any[] = [];
     for (const phunk of phunks) {
