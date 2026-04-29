@@ -113,15 +113,11 @@ export class Web3Service {
       ], { rank: false }),
     });
 
-    // Dedicated client for receipt polling — ankr first to avoid Alchemy 429s.
+    // Dedicated client for receipt polling — uses the backup Alchemy key to
+    // spread load and avoid hitting the primary key's rate limit.
     this.l1ReceiptClient = createPublicClient({
       chain: this.chains[0],
-      transport: fallback([
-        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
-        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http(receiptRpcUrl),
-        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-      ], { rank: false }),
+      transport: http(frontendBackupRpcUrl || receiptRpcUrl),
     });
 
     this.l2Client = createPublicClient({
