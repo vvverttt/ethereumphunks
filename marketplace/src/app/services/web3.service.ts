@@ -422,29 +422,36 @@ export class Web3Service {
         }
 
         const fromBlock = this.pointsLastProcessedBlock + 1n;
-        const logs = await this.l1PollingClient.getLogs({
-          address: pointsAddress as `0x${string}`,
-          fromBlock,
-          toBlock: latest,
-        });
+        const maxRange = 10n; // Alchemy free tier getLogs window.
+        let cursor = fromBlock;
+        while (cursor <= latest) {
+          const toBlock = cursor + (maxRange - 1n) > latest ? latest : cursor + (maxRange - 1n);
+          const logs = await this.l1PollingClient.getLogs({
+            address: pointsAddress as `0x${string}`,
+            fromBlock: cursor,
+            toBlock,
+          });
 
-        logs.forEach((log: any) => {
-          let decoded: any;
-          try {
-            decoded = decodeEventLog({
-              abi: PointsABI,
-              data: log.data,
-              topics: log.topics,
-            });
-          } catch {
-            return;
-          }
+          logs.forEach((log: any) => {
+            let decoded: any;
+            try {
+              decoded = decodeEventLog({
+                abi: PointsABI,
+                data: log.data,
+                topics: log.topics,
+              });
+            } catch {
+              return;
+            }
 
-          const normalizedLog = { ...log, eventName: decoded.eventName, args: decoded.args };
-          if (decoded.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log: normalizedLog }));
-          // TODO: Add event to smart contract
-          if (decoded.eventName === 'MultiplierSet') {}
-        });
+            const normalizedLog = { ...log, eventName: decoded.eventName, args: decoded.args };
+            if (decoded.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log: normalizedLog }));
+            // TODO: Add event to smart contract
+            if (decoded.eventName === 'MultiplierSet') {}
+          });
+
+          cursor = toBlock + 1n;
+        }
 
         this.pointsLastProcessedBlock = latest;
         this.pointsWatcherRetryAttempt = 0;

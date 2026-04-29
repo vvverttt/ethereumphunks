@@ -309,30 +309,31 @@ export class ItemViewComponent {
       let hash;
       if (phunk.nft) {
         hash = await this.web3Svc.offerPhunkForSaleL2(hashId, value, address);
-      } else {
-        // Guard against stale indexed escrow flags by checking on-chain storage before deciding path.
-        const currentAddress = this.web3Svc.getCurrentAddress() || phunk.prevOwner || phunk.owner;
-        let isStoredOnMarket = !!phunk.isEscrowed;
+      } else if (phunk.isEscrowed) {
+        // Escrowed path: direct listing first.
         try {
-          const escrowInfo = await this.web3Svc.fetchEscrowAndListing(currentAddress, hashId, targetMarket);
-          isStoredOnMarket = Boolean((escrowInfo?.[0] as any)?.result);
-        } catch {
-          // Keep UI-derived fallback if the read fails.
-        }
-
-        if (isStoredOnMarket) {
-          try {
-            hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
-          } catch (err: any) {
-            const msg = `${err?.shortMessage || ''} ${err?.message || ''}`.toLowerCase();
-            if (msg.includes('escrow')) {
-              hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
-            } else {
-              throw err;
-            }
+          hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
+        } catch (err: any) {
+          const msg = `${err?.shortMessage || ''} ${err?.message || ''}`.toLowerCase();
+          if (msg.includes('not in escrow') || msg.includes('escrow')) {
+            // Indexed state can lag; recover by doing escrow+list.
+            hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
+          } else {
+            throw err;
           }
-        } else {
+        }
+      } else {
+        // Non-escrowed path: always attempt escrow+list first (desired one-click behavior).
+        try {
           hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
+        } catch (err: any) {
+          const msg = `${err?.shortMessage || ''} ${err?.message || ''}`.toLowerCase();
+          if (msg.includes('already in escrow') || msg.includes('escrowed')) {
+            // If it actually is already escrowed, fallback to direct list.
+            hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
+          } else {
+            throw err;
+          }
         }
       }
 
