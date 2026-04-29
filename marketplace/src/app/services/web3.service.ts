@@ -976,13 +976,14 @@ export class Web3Service {
     const chainId = getChainId(this.config);
     const wallet = await getWalletClient(this.config, { chainId });
 
-    return wallet.sendTransaction({
+    const tx = {
       chain: wallet.chain,
       account: getAccount(this.config).address as `0x${string}`,
       to: toAddress as `0x${string}`,
       value,
       data: hashId as `0x${string}`,
-    });
+    };
+    return await this.sendTransactionWithFallback(wallet, tx);
   }
 
   /**
@@ -1024,7 +1025,35 @@ export class Web3Service {
 
     // console.log({req});
 
-    return wallet?.sendTransaction(req);
+    return await this.sendTransactionWithFallback(wallet, req as any);
+  }
+
+  private async sendTransactionWithFallback(wallet: any, tx: any): Promise<string | undefined> {
+    try {
+      return await wallet.sendTransaction(tx);
+    } catch (err: any) {
+      const msg = `${err?.shortMessage || ''} ${err?.message || ''}`.toLowerCase();
+      const unsupportedWalletSend = msg.includes('unsupported method') && msg.includes('wallet_sendtransaction');
+      if (!unsupportedWalletSend) throw err;
+
+      // Some providers/RPC paths reject wallet_sendTransaction; retry with legacy eth_sendTransaction.
+      const account = (tx.account || wallet?.account?.address) as `0x${string}`;
+      const params: any = {
+        from: account,
+        to: tx.to as `0x${string}`,
+      };
+      if (tx.data) params.data = tx.data as `0x${string}`;
+      if (tx.value !== undefined) params.value = toHex(BigInt(tx.value));
+      if (tx.gas !== undefined) params.gas = toHex(BigInt(tx.gas));
+      if (tx.maxFeePerGas !== undefined) params.maxFeePerGas = toHex(BigInt(tx.maxFeePerGas));
+      if (tx.maxPriorityFeePerGas !== undefined) params.maxPriorityFeePerGas = toHex(BigInt(tx.maxPriorityFeePerGas));
+      if (tx.nonce !== undefined) params.nonce = toHex(BigInt(tx.nonce));
+
+      return await wallet.request({
+        method: 'eth_sendTransaction',
+        params: [params],
+      });
+    }
   }
 
   /**
