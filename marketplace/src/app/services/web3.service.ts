@@ -736,9 +736,8 @@ export class Web3Service {
     };
     if (value) tx.value = value;
 
-    const { request, result } = await publicClient.simulateContract(tx);
-
-    return await walletClient.writeContract(request);
+    const { request } = await publicClient.simulateContract(tx);
+    return await this.sendTransactionWithFallback(walletClient, request);
   }
 
   /**
@@ -1308,8 +1307,8 @@ export class Web3Service {
     };
     if (value) tx.value = value;
 
-    const { request, result } = await this.l2Client.simulateContract(tx);
-    return await walletClient?.writeContract(request);
+    const { request } = await this.l2Client.simulateContract(tx);
+    return await this.sendTransactionWithFallback(walletClient, request);
   }
 
   /**
@@ -1346,8 +1345,8 @@ export class Web3Service {
     };
     if (value) tx.value = value;
 
-    const { request, result } = await this.l2Client.simulateContract(tx);
-    return await walletClient?.writeContract(request);
+    const { request } = await this.l2Client.simulateContract(tx);
+    return await this.sendTransactionWithFallback(walletClient, request);
   }
 
   /**
@@ -1444,7 +1443,8 @@ export class Web3Service {
       data: toHex(dataUri),
     });
 
-    return await walletClient?.sendTransaction(tx);
+    const hash = await this.sendTransactionWithFallback(walletClient, tx);
+    return (hash as `0x${string}`) || null;
   }
 
   //////////////////////////////////
