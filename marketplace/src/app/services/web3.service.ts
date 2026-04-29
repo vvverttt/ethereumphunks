@@ -1476,7 +1476,7 @@ export class Web3Service {
     return this.l1Client.waitForTransactionReceipt({
       hash: hash as `0x${string}`,
       timeout: maxWaitMs,
-      pollingInterval: 2_000,
+      pollingInterval: 5_000,
     });
   }
 
