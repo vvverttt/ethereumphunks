@@ -727,22 +727,11 @@ export class Web3Service {
 
     const chainId = getChainId(this.config);
     const walletClient = await getWalletClient(this.config, { chainId });
-    const publicClient = getPublicClient(this.config, { chainId });
 
     if (!walletClient) throw new Error('No wallet connected. Please reconnect your wallet.');
-    if (!publicClient) throw new Error('No public client');
 
     const { maintenance } = await firstValueFrom(this.globalConfig$);
     if (maintenance && environment.production) throw new Error('In maintenance mode');
-
-    const tx: any = {
-      address: contractAddress as `0x${string}`,
-      abi: abi || EtherPhunksMarketABI,
-      functionName,
-      args,
-      account: walletClient.account.address as `0x${string}`,
-    };
-    if (value) tx.value = value;
 
     const data = encodeFunctionData({
       abi: (abi || EtherPhunksMarketABI) as any,
@@ -756,13 +745,6 @@ export class Web3Service {
       data,
       value: value ? BigInt(value) : undefined,
     };
-
-    try {
-      // Simulate to get a gas estimate; ignore reverts (some providers produce
-      // false-negative preflight reverts for valid market writes).
-      const { request } = await publicClient.simulateContract(tx);
-      if (request.gas) rawTx.gas = request.gas;
-    } catch (_) {}
 
     return await this.sendTransactionWithFallback(walletClient, rawTx);
   }
