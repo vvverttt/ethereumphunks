@@ -33,6 +33,7 @@ import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPub
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 const marketAddress = environment.marketAddress;
 const oldMarketAddresses: string[] = (environment as any).oldMarketAddresses || [];
+const oldMarketAddressSet = new Set(oldMarketAddresses.map((a) => a.toLowerCase()));
 const ogSlugs: string[] = (environment as any).ogSlugs || [];
 const evolveAddress: string = (environment as any).evolveAddress || '';
 const evolvePairs: Record<string, string> = (environment as any).evolvePairs || {};
@@ -603,8 +604,8 @@ export class Web3Service {
    * Otherwise returns the new market address.
    */
   resolveMarketAddress(opts?: { owner?: string; slug?: string }): string {
-    if (opts?.owner && oldMarketAddresses.includes(opts.owner.toLowerCase())) {
-      return opts.owner.toLowerCase();
+    if (this.isOldMarketAddress(opts?.owner)) {
+      return (opts?.owner || '').toLowerCase();
     }
     if (opts?.slug && ogSlugs.includes(opts.slug) && oldMarketAddresses.length > 0) {
       return oldMarketAddresses[0];
@@ -672,7 +673,7 @@ export class Web3Service {
    */
   async withdrawPhunk(hashId: string, contractAddress: string = marketAddress): Promise<string | undefined> {
     // Skip isInEscrow check for old market — its view function reverts for OG collection items
-    if (!oldMarketAddresses.includes(contractAddress.toLowerCase())) {
+    if (!this.isOldMarketAddress(contractAddress)) {
       const escrowed = await this.isInEscrow(hashId, contractAddress);
       if (!escrowed) throw new Error('Phunk not in escrow');
     }
@@ -825,7 +826,7 @@ export class Web3Service {
 
     // Old market's offerPhunkForSale has a different signature (extra revSharePercentage param).
     // Use offerPhunkForSaleToAddress with zeroAddress which works on both contracts.
-    if (oldMarketAddresses.includes(contractAddress.toLowerCase())) {
+    if (this.isOldMarketAddress(contractAddress)) {
       return this._writeMarketContractAt(
         contractAddress,
         'offerPhunkForSaleToAddress',
@@ -857,7 +858,7 @@ export class Web3Service {
 
     // Old market (V2_1) uses keccak256 of the unpadded string; new market uses raw ASCII bytes
     const rawSig = toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE'), { size: 32 });
-    const sig = oldMarketAddresses.includes(contractAddress.toLowerCase())
+    const sig = this.isOldMarketAddress(contractAddress)
       ? keccak256(toHex(stringToBytes('DEPOSIT_AND_LIST_SIGNATURE')))
       : rawSig;
     const bytes32Value = weiValue.toString(16).padStart(64, '0');
@@ -876,7 +877,7 @@ export class Web3Service {
     const weiValues = listPrices.map((price) => this.ethToWei(price));
 
     // Old market's batchOfferPhunkForSale has extra revSharePercentage param
-    if (oldMarketAddresses.includes(contractAddress.toLowerCase())) {
+    if (this.isOldMarketAddress(contractAddress)) {
       const oldBatchAbi = [{
         inputs: [
           { name: 'phunkIds', type: 'bytes32[]' },
@@ -1602,5 +1603,10 @@ export class Web3Service {
     const paired = evolvePairs[slug];
     if (!paired) return false;
     return ogSlugs.includes(slug);
+  }
+
+  private isOldMarketAddress(address?: string | null): boolean {
+    if (!address) return false;
+    return oldMarketAddressSet.has(address.toLowerCase());
   }
 }
