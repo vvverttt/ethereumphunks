@@ -347,26 +347,13 @@ export class AuctionService {
           .limit(1),
       ]);
 
-      const auctionIndexed = !!auctionResult.data?.length;
-
-      if (auctionIndexed) {
-        return (bidsResult.data || []).map((b: any) => ({
-          sender: b.fromAddress,
-          value: BigInt(b.amount || '0'),
-          txHash: b.txHash || '',
-        }));
-      }
-
-      // Only fall back to RPC if auction isn't indexed at all
-      const logs = await this.getEventsPaginated('AuctionBid');
-      return logs
-        .filter((log: any) => Number(log.args.auctionId) === currentAuctionId)
-        .map((log: any) => ({
-          sender: log.args.sender,
-          value: log.args.value,
-          txHash: log.transactionHash,
-        }))
-        .reverse();
+      // Return whatever bids the indexer has — DB is authoritative.
+      // No RPC fallback: eth_getLogs over thousands of blocks hammers Alchemy.
+      return (bidsResult.data || []).map((b: any) => ({
+        sender: b.fromAddress,
+        value: BigInt(b.amount || '0'),
+        txHash: b.txHash || '',
+      }));
     } catch {
       return [];
     }

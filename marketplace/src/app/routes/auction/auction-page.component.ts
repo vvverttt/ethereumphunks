@@ -441,15 +441,16 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       const hasHashId = auctionData.hashId && auctionData.hashId !== '0x0000000000000000000000000000000000000000000000000000000000000000';
 
       if (hasHashId) {
-        // Fetch item reserve, ethscription details, and bid history in parallel
-        const [itemReserve, eth, bidHistory] = await Promise.all([
+        // Load image/reserve first (fast), then bid history separately so it can't block.
+        const [itemReserve, eth] = await Promise.all([
           this.auctionSvc.getItemReservePrice(auctionData.hashId),
           this.auctionSvc.getEthscriptionByHashId(auctionData.hashId),
-          this.auctionSvc.getBidHistory(auctionData.auctionId),
         ]);
 
         this.reservePrice.set(formatEther(itemReserve > 0n ? itemReserve : globalReserve));
-        this.bids.set(bidHistory);
+
+        // Bids load independently — DB-only now, won't hammer RPC.
+        this.auctionSvc.getBidHistory(auctionData.auctionId).then(h => this.bids.set(h)).catch(() => {});
 
         if (eth) {
           this.phunkImage.set(`${this.staticUrl}/static/images/${eth.sha}`);
