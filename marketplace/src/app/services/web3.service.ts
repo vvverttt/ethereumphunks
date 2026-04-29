@@ -28,7 +28,7 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
 
-import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, WatchContractEventReturnType, createPublicClient, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
+import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPublicClient, decodeEventLog, decodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 const marketAddress = environment.marketAddress;
@@ -384,79 +384,93 @@ export class Web3Service {
    * Starts watching for points-related events from the Points contract
    * Dispatches store actions when points are added or multipliers change
    */
-  pointsWatcher!: WatchContractEventReturnType | undefined;
-  private pointsWatcherRestartTimer: ReturnType<typeof setTimeout> | undefined;
+  pointsWatcher!: (() => void) | undefined;
+  private pointsWatcherPollTimer: ReturnType<typeof setTimeout> | undefined;
+  private pointsWatcherPollInFlight = false;
+  private pointsLastProcessedBlock: bigint | undefined;
   private pointsWatcherRetryAttempt = 0;
   startPointsWatcher(): void {
     if (this.pointsWatcher) return;
-    if (this.pointsWatcherRestartTimer) {
-      clearTimeout(this.pointsWatcherRestartTimer);
-      this.pointsWatcherRestartTimer = undefined;
-    }
+    let stopped = false;
 
-    this.pointsWatcher = this.l1PollingClient.watchContractEvent({
-      address: pointsAddress as `0x${string}`,
-      abi: PointsABI,
-      poll: true,
-      pollingInterval: 30_000,
-      onLogs: (logs) => {
-        logs.forEach((log: any) => {
-          if (log.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log }));
-          // TODO: Add event to smart contract
-          if (log.eventName === 'MultiplierSet') {}
+    const scheduleNextPoll = (delayMs: number) => {
+      if (stopped) return;
+      if (this.pointsWatcherPollTimer) clearTimeout(this.pointsWatcherPollTimer);
+      this.pointsWatcherPollTimer = setTimeout(() => {
+        void pollPointsEvents();
+      }, delayMs);
+    };
+
+    const pollPointsEvents = async () => {
+      if (stopped || this.pointsWatcherPollInFlight) return;
+      this.pointsWatcherPollInFlight = true;
+      try {
+        const latest = await this.l1PollingClient.getBlockNumber();
+
+        // Seed cursor at current head to avoid expensive historical backfill on app boot.
+        if (this.pointsLastProcessedBlock === undefined) {
+          this.pointsLastProcessedBlock = latest;
+          this.pointsWatcherRetryAttempt = 0;
+          scheduleNextPoll(60_000);
+          return;
+        }
+
+        if (latest <= this.pointsLastProcessedBlock) {
+          this.pointsWatcherRetryAttempt = 0;
+          scheduleNextPoll(60_000);
+          return;
+        }
+
+        const fromBlock = this.pointsLastProcessedBlock + 1n;
+        const logs = await this.l1PollingClient.getLogs({
+          address: pointsAddress as `0x${string}`,
+          fromBlock,
+          toBlock: latest,
         });
-      },
-      onError: (error) => {
-        const details = this.extractViemErrorDetails(error);
-        const isFilterNotFound = details.includes('filter not found');
-        const isTimeoutOrGateway = details.includes('timeout') || details.includes('gateway timeout') || details.includes('status: 504');
 
-        if (isFilterNotFound) {
-          console.warn('[Web3Service] Points watcher filter expired, recreating watcher');
-        } else {
-          console.error('[Web3Service] Points watcher error, restarting:', error);
-        }
+        logs.forEach((log: any) => {
+          let decoded: any;
+          try {
+            decoded = decodeEventLog({
+              abi: PointsABI,
+              data: log.data,
+              topics: log.topics,
+            });
+          } catch {
+            return;
+          }
 
-        if (this.pointsWatcher) this.pointsWatcher();
-        this.pointsWatcher = undefined;
+          const normalizedLog = { ...log, eventName: decoded.eventName, args: decoded.args };
+          if (decoded.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log: normalizedLog }));
+          // TODO: Add event to smart contract
+          if (decoded.eventName === 'MultiplierSet') {}
+        });
 
-        if (isFilterNotFound) {
-          this.schedulePointsWatcherRestart(1_500);
-          return;
-        }
-
-        if (isTimeoutOrGateway) {
-          this.pointsWatcherRetryAttempt += 1;
-          const baseDelay = Math.min(10_000 * (2 ** Math.min(this.pointsWatcherRetryAttempt, 5)), 120_000);
-          const jitter = Math.floor(Math.random() * 2_500);
-          this.schedulePointsWatcherRestart(baseDelay + jitter);
-          return;
-        }
-
+        this.pointsLastProcessedBlock = latest;
         this.pointsWatcherRetryAttempt = 0;
-        this.schedulePointsWatcherRestart(10_000);
+        scheduleNextPoll(60_000);
+      } catch (error) {
+        console.error('[Web3Service] Points poll error, retrying:', error);
+        this.pointsWatcherRetryAttempt += 1;
+        const baseDelay = Math.min(10_000 * (2 ** Math.min(this.pointsWatcherRetryAttempt, 5)), 120_000);
+        const jitter = Math.floor(Math.random() * 2_500);
+        scheduleNextPoll(baseDelay + jitter);
+      } finally {
+        this.pointsWatcherPollInFlight = false;
       }
-    });
+    };
 
-    // Successful setup: reset retry count so future incidents start from minimal backoff.
-    this.pointsWatcherRetryAttempt = 0;
-  }
+    this.pointsWatcher = () => {
+      stopped = true;
+      if (this.pointsWatcherPollTimer) clearTimeout(this.pointsWatcherPollTimer);
+      this.pointsWatcherPollTimer = undefined;
+      this.pointsWatcherPollInFlight = false;
+      this.pointsWatcher = undefined;
+      this.pointsWatcherRetryAttempt = 0;
+      this.pointsLastProcessedBlock = undefined;
+    };
 
-  private schedulePointsWatcherRestart(delayMs: number): void {
-    if (this.pointsWatcherRestartTimer) clearTimeout(this.pointsWatcherRestartTimer);
-    this.pointsWatcherRestartTimer = setTimeout(() => {
-      this.pointsWatcherRestartTimer = undefined;
-      this.startPointsWatcher();
-    }, delayMs);
-  }
-
-  private extractViemErrorDetails(error: unknown): string {
-    if (!error) return '';
-    if (typeof error === 'string') return error.toLowerCase();
-    const maybeMessage = (error as { message?: string }).message || '';
-    const maybeDetails = (error as { details?: string }).details || '';
-    const maybeShortMessage = (error as { shortMessage?: string }).shortMessage || '';
-    return `${maybeMessage} ${maybeDetails} ${maybeShortMessage}`.toLowerCase();
+    void pollPointsEvents();
   }
 
   /**

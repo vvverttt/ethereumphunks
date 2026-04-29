@@ -307,12 +307,33 @@ export class ItemViewComponent {
       const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner, slug: phunk.slug });
 
       let hash;
-      if (phunk.isEscrowed) {
-        hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
-      } else if (phunk.nft) {
+      if (phunk.nft) {
         hash = await this.web3Svc.offerPhunkForSaleL2(hashId, value, address);
       } else {
-        hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
+        // Guard against stale indexed escrow flags by checking on-chain storage before deciding path.
+        const currentAddress = this.web3Svc.getCurrentAddress() || phunk.prevOwner || phunk.owner;
+        let isStoredOnMarket = !!phunk.isEscrowed;
+        try {
+          const escrowInfo = await this.web3Svc.fetchEscrowAndListing(currentAddress, hashId, targetMarket);
+          isStoredOnMarket = Boolean((escrowInfo?.[0] as any)?.result);
+        } catch {
+          // Keep UI-derived fallback if the read fails.
+        }
+
+        if (isStoredOnMarket) {
+          try {
+            hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
+          } catch (err: any) {
+            const msg = `${err?.shortMessage || ''} ${err?.message || ''}`.toLowerCase();
+            if (msg.includes('escrow')) {
+              hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
+            } else {
+              throw err;
+            }
+          }
+        } else {
+          hash = await this.web3Svc.escrowAndOfferPhunkForSale(hashId, value, address, targetMarket);
+        }
       }
 
       // this.initNotificationMessage();
