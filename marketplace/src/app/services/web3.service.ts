@@ -66,6 +66,7 @@ export class Web3Service {
 
   l1Client!: PublicClient;
   l1PollingClient!: PublicClient;
+  l1ReceiptClient!: PublicClient;
   l2Client!: PublicClient;
 
   config!: Config;
@@ -109,6 +110,17 @@ export class Web3Service {
         http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
         http(relayRpcUrl),
+      ], { rank: false }),
+    });
+
+    // Dedicated client for receipt polling — ankr first to avoid Alchemy 429s.
+    this.l1ReceiptClient = createPublicClient({
+      chain: this.chains[0],
+      transport: fallback([
+        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
+        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+        http(receiptRpcUrl),
+        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
       ], { rank: false }),
     });
 
@@ -1062,27 +1074,11 @@ export class Web3Service {
     // Alchemy HTTP endpoint, which doesn't support signing.
     try {
       return await wallet.request({ method: 'eth_sendTransaction', params: [params] });
-    } catch (firstErr: any) {
-      // User explicitly rejected — stop immediately, no retries.
-      if (firstErr?.code === 4001) throw firstErr;
-      const msg = `${firstErr?.shortMessage || ''} ${firstErr?.message || ''}`.toLowerCase();
-      if (msg.includes('user rejected') || msg.includes('user denied') || msg.includes('rejected the request')) throw firstErr;
-
-      // If connected via WalletConnect, window.ethereum is the WC-injected provider —
-      // calling it would just open another WC reconnect modal. Skip it and surface the error.
-      const isWalletConnect = this.config.state.connections.get(this.config.state.current!)
-        ?.connector?.id === 'walletConnect';
-
-      if (!isWalletConnect) {
-        // For injected wallets (MetaMask etc.) try window.ethereum as a last resort.
-        const injected = typeof window !== 'undefined' && (window as any).ethereum;
-        if (injected?.request) {
-          return await injected.request({ method: 'eth_sendTransaction', params: [params] });
-        }
-      }
-
-      // WalletConnect session is expired or wallet transport is broken.
-      throw new Error('Wallet connection failed. Please disconnect and reconnect your wallet, then try again.');
+    } catch (err: any) {
+      // Surface all errors directly — no retries, no window.ethereum fallback
+      // (retries cause multiple wallet popups; injected fallback is redundant since
+      // wagmi already routes injected wallets through window.ethereum).
+      throw err;
     }
   }
 
@@ -1470,11 +1466,24 @@ export class Web3Service {
    * @param hash The transaction hash to poll for
    * @returns Promise resolving to the transaction receipt once found
    */
-  pollReceipt(hash: string, maxWaitMs = 120_000): Promise<TransactionReceipt> {
-    return this.l1Client.waitForTransactionReceipt({
-      hash: hash as `0x${string}`,
-      timeout: maxWaitMs,
-      pollingInterval: 5_000,
+  pollReceipt(hash: string, maxWaitMs = 180_000): Promise<TransactionReceipt> {
+    // Manually rotate between Alchemy (l1Client) and ankr (l1ReceiptClient) on each poll
+    // so a sustained Alchemy 429 doesn't abort the wait.
+    const clients = [this.l1Client, this.l1ReceiptClient];
+    const deadline = Date.now() + maxWaitMs;
+    let idx = 0;
+
+    return new Promise((resolve, reject) => {
+      const poll = async () => {
+        if (Date.now() >= deadline) { reject(new Error('Transaction receipt timeout')); return; }
+        const client = clients[idx++ % clients.length];
+        try {
+          const receipt = await client.getTransactionReceipt({ hash: hash as `0x${string}` });
+          if (receipt) { resolve(receipt); return; }
+        } catch {}
+        setTimeout(poll, 5_000);
+      };
+      poll();
     });
   }
 

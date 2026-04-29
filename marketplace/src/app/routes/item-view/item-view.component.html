@@ -127,7 +127,6 @@
                           @if (
                             (phunk.isEscrowed &&
                             (phunk.prevOwner | lowercase) === (address | lowercase)) ||
-                            (owner | lowercase) === (address | lowercase) ||
                             (phunk.nft && phunk.nft.owner === address)
                           ) {
                             <button class="sell" (click)="sellPhunk()" [class.active]="actionsState().sell">
