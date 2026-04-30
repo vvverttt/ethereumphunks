@@ -287,6 +287,38 @@ export class AuctionService {
     return hash;
   }
 
+  async getOwner(): Promise<string> {
+    const result = await this.web3Svc.l1Client.readContract({
+      address: this.address,
+      abi: EtherPhunksAuctionHouseV2ABI,
+      functionName: 'owner',
+    });
+    return (result as string).toLowerCase();
+  }
+
+  async withdrawFromPoolBatch(hashIds: string[]): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+    const chainId = environment.chainId;
+    let walletClient;
+    try {
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    } catch {
+      await reconnect(this.web3Svc.config);
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    }
+    if (!walletClient) throw new Error('No wallet connected');
+
+    const hash = await walletClient.writeContract({
+      address: this.address,
+      abi: EtherPhunksAuctionHouseV2ABI,
+      functionName: 'withdrawFromPoolBatch',
+      args: [hashIds as `0x${string}`[]],
+      chain: walletClient.chain,
+      account: walletClient.account,
+    });
+    return hash;
+  }
+
   async withdrawReturns(): Promise<string | undefined> {
     await this.web3Svc.switchNetwork();
 
@@ -413,6 +445,30 @@ export class AuctionService {
       }).filter(a => a.tokenId > 0);
     } catch {
       return [];
+    }
+  }
+
+  async getCurrentAuctionFromDB(): Promise<AuctionData | null> {
+    try {
+      const { data } = await supabase
+        .from('auctions' + suffix)
+        .select('auctionId, hashId, amount, bidder, startTime, endTime, settled')
+        .eq('settled', false)
+        .order('auctionId', { ascending: false })
+        .limit(1);
+      if (!data?.length) return null;
+      const row = data[0];
+      return {
+        auctionId: row.auctionId,
+        hashId: row.hashId,
+        amount: BigInt(row.amount || '0'),
+        bidder: row.bidder,
+        startTime: Math.floor(new Date(row.startTime).getTime() / 1000),
+        endTime: Math.floor(new Date(row.endTime).getTime() / 1000),
+        settled: row.settled,
+      };
+    } catch {
+      return null;
     }
   }
 

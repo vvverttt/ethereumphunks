@@ -29,6 +29,10 @@
           (nextAuction)="nextAuction()"
         />
 
+        @if (updating()) {
+          <div class="updating-indicator">New bid detected, updating...</div>
+        }
+
         <!-- Bid Panel (absolutely positioned, overlapping hero/slider) -->
         <app-bid-panel
           [auction]="auction()"
@@ -67,6 +71,11 @@
         <div class="inner">
           <h3>Items in Auction Pool ({{ poolItems().length }})</h3>
           <p class="hint">Swap your CryptoPhunksV67 for one in the pool. Free, 1:1.</p>
+          @if (isAdmin()) {
+            <button class="btn admin-withdraw-btn" (click)="onWithdrawAllFromPool()" [disabled]="swapTxPending()">
+              @if (swapTxPending()) { Processing... } @else { Withdraw All ({{ poolItems().length }}) }
+            </button>
+          }
 
           <div class="pool-grid">
             @for (item of poolItems(); track item.hashId) {

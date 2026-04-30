@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
 import { formatEther, encodePacked, keccak256 } from 'viem';
 import { supabase } from '@/services/supabase';
+const suffix = environment.chainId === 1 ? '' : '_sepolia';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
@@ -57,6 +58,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   errorMessage = signal('');
   txPending = signal(false);
   txHash = signal<string>('');
+  updating = signal(false);
 
   settledAuctions = signal<SettledAuction[]>([]);
   viewingAuctionId = signal<number | null>(null);
@@ -93,6 +95,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
   staticUrl = environment.staticUrl;
   explorerUrl = environment.explorerUrl;
+
+  isAdmin = signal(false);
 
   // Auction 2 swap state
   isAuction2 = false;
@@ -328,6 +332,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   }
 
   private pollInterval: any;
+  private realtimeChannel: any;
 
   constructor(
     private store: Store<GlobalState>,
@@ -344,6 +349,10 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     } else {
       this.auctionSvc.setAddress('');
     }
+
+    // Check admin after wallet restores
+    this.web3Svc.connectionReady?.then(() => this.checkAdmin());
+    this.store.select(appStateSelectors.selectWalletAddress).subscribe(() => this.checkAdmin());
   }
 
   onMainImageLoad(event: Event) {
@@ -416,13 +425,36 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       this.loading.set(false);
     }
 
-    this.pollInterval = setInterval(() => {
-      if (!this.isHistorical()) this.loadAuction();
-    }, 30000);
+    // Realtime: refresh from DB immediately when a new bid lands
+    this.realtimeChannel = supabase
+      .channel('auction_bids_live')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'auctionBids' + suffix,
+      }, () => {
+        if (!this.isHistorical()) {
+          this.updating.set(true);
+          this.refreshAuctionFromDB().finally(() => this.updating.set(false));
+        }
+      })
+      .subscribe();
+
+    // Fallback poll (DB only) — tightens to 10s in last 5 minutes, otherwise 60s
+    const schedulePoll = () => {
+      const timeLeft = (this.auction()?.endTime ?? 0) * 1000 - Date.now();
+      const delay = !this.auctionEnded() && timeLeft < 5 * 60 * 1000 && timeLeft > 0 ? 10_000 : 60_000;
+      this.pollInterval = setTimeout(async () => {
+        if (!this.isHistorical() && this.hasActiveAuction && !this.auctionEnded() && this.bids().length > 0) await this.refreshAuctionFromDB();
+        schedulePoll();
+      }, delay);
+    };
+    schedulePoll();
   }
 
   ngOnDestroy() {
-    clearInterval(this.pollInterval);
+    clearTimeout(this.pollInterval);
+    if (this.realtimeChannel) supabase.removeChannel(this.realtimeChannel);
   }
 
   async loadAuction() {
@@ -479,6 +511,24 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       }
     } catch (err) {
       console.error('Failed to load auction:', err);
+    }
+  }
+
+  async refreshAuctionFromDB(): Promise<void> {
+    try {
+      let updated = await this.auctionSvc.getCurrentAuctionFromDB();
+      if (!updated) {
+        // DB failed — fall back to RPC
+        updated = await this.auctionSvc.getAuction();
+      }
+      if (!updated) return;
+      this.auction.set(updated);
+      if (updated.startTime > 0) {
+        this.auctionEnded.set(Date.now() >= updated.endTime * 1000);
+      }
+      this.auctionSvc.getBidHistory(updated.auctionId).then(h => this.bids.set(h)).catch(() => {});
+    } catch (err) {
+      console.error('Failed to refresh auction:', err);
     }
   }
 
@@ -636,6 +686,38 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       this.errorMessage.set(err?.shortMessage || err?.message || 'Settle failed');
     } finally {
       this.txPending.set(false);
+    }
+  }
+
+  async checkAdmin() {
+    try {
+      const address = await firstValueFrom(this.store.select(appStateSelectors.selectWalletAddress));
+      if (!address) { this.isAdmin.set(false); return; }
+      const owner = await this.auctionSvc.getOwner();
+      this.isAdmin.set(owner === address.toLowerCase());
+    } catch {
+      this.isAdmin.set(false);
+    }
+  }
+
+  async onWithdrawAllFromPool() {
+    const items = this.poolItems();
+    if (!items.length || this.swapTxPending()) return;
+    this.swapTxPending.set(true);
+    this.errorMessage.set('');
+    try {
+      const hashIds = items.map(i => i.hashId as `0x${string}`);
+      const hash = await this.auctionSvc.withdrawFromPoolBatch(hashIds);
+      if (hash) {
+        this.txHash.set(hash);
+        await this.web3Svc.pollReceipt(hash);
+        this.txHash.set('');
+        await this.loadAuction2Pool();
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
+    } finally {
+      this.swapTxPending.set(false);
     }
   }
 
