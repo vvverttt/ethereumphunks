@@ -712,7 +712,8 @@ export class StorageService implements OnModuleInit {
       hashId: string,
       auctionId: bigint,
       startTime: bigint,
-      endTime: bigint
+      endTime: bigint,
+      contractAddress: string,
     },
     createdAt: Date
   ): Promise<void> {
@@ -720,6 +721,7 @@ export class StorageService implements OnModuleInit {
       .from('auctions' + this.suffix)
       .upsert({
         auctionId: Number(args.auctionId),
+        contractAddress: args.contractAddress.toLowerCase(),
         createdAt,
         hashId: args.hashId.toLowerCase(),
         amount: '0',
@@ -727,7 +729,7 @@ export class StorageService implements OnModuleInit {
         endTime: new Date(Number(args.endTime) * 1000),
         bidder: zeroAddress.toLowerCase(),
         settled: false,
-      });
+      }, { onConflict: 'auctionId,contractAddress' });
 
     if (error) throw error;
     Logger.log('Auction created', args.hashId);
@@ -747,6 +749,7 @@ export class StorageService implements OnModuleInit {
       auctionId: bigint,
       sender: string,
       value: bigint,
+      contractAddress: string,
     },
     txn: Transaction,
     createdAt: Date
@@ -757,7 +760,8 @@ export class StorageService implements OnModuleInit {
         amount: args.value.toString(),
         bidder: args.sender.toLowerCase()
       })
-      .eq('auctionId', Number(args.auctionId));
+      .eq('auctionId', Number(args.auctionId))
+      .eq('contractAddress', args.contractAddress.toLowerCase());
 
     if (auctionsData) throw auctionsError;
 
@@ -765,6 +769,7 @@ export class StorageService implements OnModuleInit {
       .from('auctionBids' + this.suffix)
       .insert({
         auctionId: Number(args.auctionId),
+        contractAddress: args.contractAddress.toLowerCase(),
         createdAt: createdAt,
         fromAddress: args.sender.toLowerCase(),
         amount: args.value.toString(),
@@ -784,7 +789,8 @@ export class StorageService implements OnModuleInit {
       hashId: string,
       auctionId: bigint,
       winner: string,
-      amount: bigint
+      amount: bigint,
+      contractAddress: string,
     }
   ): Promise<void> {
     const { data, error } = await this.supabase
@@ -792,7 +798,8 @@ export class StorageService implements OnModuleInit {
       .update({
         settled: true,
       })
-      .eq('hashId', args.hashId.toLowerCase());
+      .eq('hashId', args.hashId.toLowerCase())
+      .eq('contractAddress', args.contractAddress.toLowerCase());
 
     if (error) throw error;
     Logger.log(`Auction settled`, args.hashId);
@@ -806,7 +813,8 @@ export class StorageService implements OnModuleInit {
     args: {
       hashId: string,
       auctionId: bigint,
-      endTime: bigint
+      endTime: bigint,
+      contractAddress: string,
     }
   ): Promise<void> {
     const { data, error } = await this.supabase
@@ -814,7 +822,8 @@ export class StorageService implements OnModuleInit {
       .update({
         endTime: new Date(Number(args.endTime) * 1000),
       })
-      .eq('auctionId', Number(args.auctionId));
+      .eq('auctionId', Number(args.auctionId))
+      .eq('contractAddress', args.contractAddress.toLowerCase());
 
     if (error) throw error;
     Logger.log(`Auction extended`, args.hashId);

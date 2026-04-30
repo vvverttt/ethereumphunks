@@ -371,11 +371,13 @@ export class AuctionService {
           .from('auctionBids' + suffix)
           .select('fromAddress, amount, txHash')
           .eq('auctionId', currentAuctionId)
+          .eq('contractAddress', this.address.toLowerCase())
           .order('createdAt', { ascending: false }),
         supabase
           .from('auctions' + suffix)
           .select('auctionId')
           .eq('auctionId', currentAuctionId)
+          .eq('contractAddress', this.address.toLowerCase())
           .limit(1),
       ]);
 
@@ -410,14 +412,12 @@ export class AuctionService {
 
   async getSettledAuctions(): Promise<SettledAuction[]> {
     try {
-      // Auction 2 has no history yet — return empty
-      if (this._addressOverride) return [];
-
-      // Read settled auctions from DB instead of scanning RPC logs
+      // Read settled auctions from DB, filtered by contract address
       const { data: auctions } = await supabase
         .from('auctions' + suffix)
         .select('auctionId, hashId, amount, bidder, settled, createdAt')
         .eq('settled', true)
+        .eq('contractAddress', this.address.toLowerCase())
         .order('auctionId', { ascending: false });
 
       if (!auctions?.length) return [];
@@ -454,6 +454,7 @@ export class AuctionService {
         .from('auctions' + suffix)
         .select('auctionId, hashId, amount, bidder, startTime, endTime, settled')
         .eq('settled', false)
+        .eq('contractAddress', this.address.toLowerCase())
         .order('auctionId', { ascending: false })
         .limit(1);
       if (!data?.length) return null;
@@ -478,6 +479,7 @@ export class AuctionService {
         .from('auctions' + suffix)
         .select('hashId, startTime, endTime')
         .eq('auctionId', auctionId)
+        .eq('contractAddress', this.address.toLowerCase())
         .limit(1);
       if (!data?.length) return null;
       return {
@@ -496,6 +498,7 @@ export class AuctionService {
         .from('auctions' + suffix)
         .select('bidder, amount, settled')
         .eq('auctionId', auctionId)
+        .eq('contractAddress', this.address.toLowerCase())
         .eq('settled', true)
         .limit(1);
       if (!data?.length) return null;

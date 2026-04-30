@@ -940,7 +940,7 @@ export class EthscriptionsService {
         const { hashId, auctionId, startTime, endTime } = args;
 
         await this.storageSvc.createAuction(
-          { hashId, auctionId, startTime, endTime },
+          { hashId, auctionId, startTime, endTime, contractAddress: auctionAddr },
           createdAt
         );
 
@@ -963,7 +963,7 @@ export class EthscriptionsService {
         const { hashId, auctionId, sender, value } = args;
 
         await this.storageSvc.createAuctionBid(
-          { hashId, auctionId, sender, value },
+          { hashId, auctionId, sender, value, contractAddress: auctionAddr },
           transaction,
           createdAt
         );
@@ -987,7 +987,7 @@ export class EthscriptionsService {
         const { hashId, auctionId, endTime } = args;
 
         await this.storageSvc.extendAuction(
-          { hashId, auctionId, endTime }
+          { hashId, auctionId, endTime, contractAddress: auctionAddr }
         );
       }
 
@@ -996,7 +996,7 @@ export class EthscriptionsService {
         const zeroAddress = '0x0000000000000000000000000000000000000000';
 
         await this.storageSvc.settleAuction(
-          { hashId, auctionId, winner, amount }
+          { hashId, auctionId, winner, amount, contractAddress: auctionAddr }
         );
 
         // Only update ownership and create events if there was a winner
