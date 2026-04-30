@@ -678,8 +678,37 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         this.txHash.set(hash);
         await this.web3Svc.pollReceipt(hash);
         this.txHash.set('');
-        await this.loadAuction();
+
+        // Optimistically add just-settled auction to history before DB catches up
+        const current = this.auction();
+        if (current && this.phunkImage()) {
+          const justSettled = {
+            auctionId: current.auctionId,
+            hashId: current.hashId,
+            winner: current.bidder,
+            amount: current.amount,
+            imageUrl: this.phunkImage(),
+            tokenId: this.phunkTokenId(),
+            slug: this.phunkSlug(),
+            settledTimestamp: Math.floor(Date.now() / 1000),
+          };
+          this.settledAuctions.update(prev =>
+            [justSettled, ...prev.filter(s => s.auctionId !== justSettled.auctionId)]
+          );
+        }
+
+        // Reset phunk data so new auction loads clean
+        this.phunkImage.set('');
+        this.phunkTokenId.set(0);
+        this.phunkSlug.set('');
+        this.phunkSha.set('');
+        this.liveAuctionEntry.set(null);
+        this.bids.set([]);
         this.auctionEnded.set(false);
+
+        await this.loadAuction();
+
+        // Refresh settled list from DB in background
         this.loadSettledAuctions();
       }
     } catch (err: any) {
