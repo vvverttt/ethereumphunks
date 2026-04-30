@@ -48,7 +48,6 @@ export const initialState: AppState = {
     showDevolve: true,
     showLottery: true,
     showAuction: true,
-    showEthsRocksDeployer: true,
     showPhunkSwap: true,
     showPhunkquidity: true,
     hiddenSlugs: [],

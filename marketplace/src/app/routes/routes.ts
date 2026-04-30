@@ -53,10 +53,6 @@ export const routes: Routes = [
     data: { auctionAddress: '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630'.toLowerCase() }
   },
   {
-    path: 'ethsrocks/deployer',
-    loadComponent: () => import('@/routes/ethsrocks/ethsrocks-page.component').then(mod => mod.EthsRocksPageComponent)
-  },
-  {
     path: 'owners',
     loadComponent: () => import('@/routes/owners/owners-page.component').then(mod => mod.OwnersPageComponent)
   },

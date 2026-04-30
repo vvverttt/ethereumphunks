@@ -81,7 +81,6 @@ export class DataService {
         if (config.showDevolve === undefined) config.showDevolve = true;
         if (config.showLottery === undefined) config.showLottery = true;
         if (config.showAuction === undefined) config.showAuction = true;
-        if (config.showEthsRocksDeployer === undefined) config.showEthsRocksDeployer = true;
         if (config.showPhunkSwap === undefined) config.showPhunkSwap = true;
         if (config.showPhunkquidity === undefined) config.showPhunkquidity = true;
         // hiddenSlugs: stored inside collectionTraitFilters jsonb under __hiddenSlugs key
@@ -111,7 +110,6 @@ export class DataService {
           config.showDevolve = true;
           config.showLottery = true;
           config.showAuction = true;
-          config.showEthsRocksDeployer = true;
           config.showPhunkSwap = true;
           config.showPhunkquidity = true;
           config.hiddenSlugs = [];

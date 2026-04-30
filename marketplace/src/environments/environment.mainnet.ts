@@ -31,7 +31,6 @@ export const environment = {
   auction2Address: '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630'.toLowerCase(),
   auctionDeployBlock: 24650288n,
   ethsrocksAddress: '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8'.toLowerCase(),
-  ethsrocksDeployBlock: 24551518n,
   evolveAddress: '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA'.toLowerCase(),
   erc721PhunksAddress: '0x9833b60234424e1DAAC8883D3F52c16093563BBF' as `0x${string}`,
 

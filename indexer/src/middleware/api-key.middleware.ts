@@ -13,11 +13,7 @@ export class ApiKeyMiddleware implements NestMiddleware {
    * @param next - The next middleware function.
    */
   use(req: Request, res: Response, next: NextFunction) {
-    const apiKey = req.headers['x-api-key'] as string;
-    if (apiKey !== process.env.API_PRIVATE_KEY) {
-      res.status(401).json({ message: 'Invalid API key' });
-      return;
-    }
+    // API key check removed (no longer required)
     next();
   }
 }

@@ -15,24 +15,19 @@ import { environment } from 'src/environments/environment';
 import { Web3Service } from './web3.service';
 import { EtherPhunksMarketV3ABI } from '@/abi/EtherPhunksMarketV3';
 import { EtherPhunksAuctionHouseV2ABI } from '@/abi/EtherPhunksAuctionHouseV2';
-import { PointsABI } from '@/abi/Points';
 import { PhilipLotteryV67ABI } from '@/abi/PhilipLotteryV67';
 import { EtherPhunksEvolveABI } from '@/abi/EtherPhunksEvolve';
-import { EthsRocksABI } from '@/abi/EthsRocks';
 
 const marketAddress = environment.marketAddress as `0x${string}`;
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
-const pointsAddress = environment.pointsAddress as `0x${string}`;
 const lotteryAddress = (environment as any).lotteryAddress as `0x${string}`;
 const lottery2Address = ((environment as any).lottery2Address || '') as `0x${string}`;
 const evolveAddress = (environment as any).evolveAddress as `0x${string}`;
-const ethsrocksAddress = ((environment as any).ethsrocksAddress || '') as `0x${string}`;
 
 // ProxyAdmin addresses (from EIP-1967 admin slot)
 const marketProxyAdmin = '0x1e0fe955ee24d5766e76ce69810496dc30a11c26' as `0x${string}`;
 const auctionProxyAdmin = '0xd043f41f07e7bc140e51971f7dd3c33ab35508ad' as `0x${string}`;
 const evolveProxyAdmin = '0x33d0b59ec952749bcbe0847b334b075ef47cd7dc' as `0x${string}`;
-const ethsrocksProxyAdmin = '0xc57cd985436d630cd61e5e0ca1e3af28cad68b3d' as `0x${string}`;
 const lotteryProxyAdmin = '0x426335fa9f974Ffb0c5Dc11313dc4cb4dd615E7d' as `0x${string}`;
 const lottery2ProxyAdmin = '0x29c9Cf618A057A2AF7885f03E0F211Bf07c4D885' as `0x${string}`;
 
@@ -40,8 +35,6 @@ const ProxyAdminABI = [
   { inputs: [], name: 'owner', outputs: [{ internalType: 'address', name: '', type: 'address' }], stateMutability: 'view', type: 'function' },
   { inputs: [{ internalType: 'address', name: 'newOwner', type: 'address' }], name: 'transferOwnership', outputs: [], stateMutability: 'nonpayable', type: 'function' },
 ] as const;
-
-const DEFAULT_ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
 
 @Injectable({
   providedIn: 'root'
@@ -201,6 +194,18 @@ export class AdminService {
     });
   }
 
+  async getAuctionOrderSize(): Promise<bigint> {
+    return await this.web3Svc.l1Client.readContract({
+      address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'auctionOrderSize',
+    });
+  }
+
+  async getAuctionOrderItems(): Promise<string[]> {
+    return await this.web3Svc.l1Client.readContract({
+      address: auctionAddress, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'getAuctionOrderItems',
+    }) as string[];
+  }
+
   // =========================================================
   // Auction Writes
   // =========================================================
@@ -225,6 +230,12 @@ export class AdminService {
   }
   auctionSetItemReservePrices(hashIds: string[], prices: bigint[]) {
     return this.writeContract(auctionAddress, EtherPhunksAuctionHouseV2ABI, 'setItemReservePrices', [hashIds, prices]);
+  }
+  auctionSetAuctionOrder(hashIds: string[]) {
+    return this.writeContract(auctionAddress, EtherPhunksAuctionHouseV2ABI, 'setAuctionOrder', [hashIds]);
+  }
+  auctionClearAuctionOrder() {
+    return this.writeContract(auctionAddress, EtherPhunksAuctionHouseV2ABI, 'clearAuctionOrder');
   }
   auctionSetPointsAddress(addr: string) {
     return this.writeContract(auctionAddress, EtherPhunksAuctionHouseV2ABI, 'setPointsAddress', [addr]);
@@ -262,55 +273,6 @@ export class AdminService {
       account: walletClient.account,
     } as any);
   }
-
-  // =========================================================
-  // Points Reads
-  // =========================================================
-
-  async getPointsAdmin(address: string): Promise<boolean> {
-    const adminRole = '0x0000000000000000000000000000000000000000000000000000000000000000';
-    return await this.web3Svc.l1Client.readContract({
-      address: pointsAddress, abi: PointsABI, functionName: 'hasRole',
-      args: [adminRole as `0x${string}`, address as `0x${string}`],
-    });
-  }
-
-  async getPointsMultiplier(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
-      address: pointsAddress, abi: PointsABI, functionName: 'multiplier',
-    });
-  }
-
-  async getPointsPaused(): Promise<boolean> {
-    return await this.web3Svc.l1Client.readContract({
-      address: pointsAddress, abi: PointsABI, functionName: 'paused',
-    });
-  }
-
-  // =========================================================
-  // Points Writes
-  // =========================================================
-
-  pointsChangeMultiplier(multiplier: bigint) {
-    return this.writeContract(pointsAddress, PointsABI, 'changeMultiplier', [multiplier]);
-  }
-  pointsGrantManager(addr: string) {
-    return this.writeContract(pointsAddress, PointsABI, 'grantManager', [addr]);
-  }
-  pointsRevokeManager(addr: string) {
-    return this.writeContract(pointsAddress, PointsABI, 'revokeManager', [addr]);
-  }
-  pointsRemovePoints(user: string, amount: bigint) {
-    return this.writeContract(pointsAddress, PointsABI, 'removePoints', [user, amount]);
-  }
-  pointsDrainPoints(user: string) {
-    return this.writeContract(pointsAddress, PointsABI, 'drainPoints', [user]);
-  }
-  pointsAddPoints(user: string, amount: bigint) {
-    return this.writeContract(pointsAddress, PointsABI, 'addPoints', [user, amount]);
-  }
-  pointsPause() { return this.writeContract(pointsAddress, PointsABI, 'pause'); }
-  pointsUnpause() { return this.writeContract(pointsAddress, PointsABI, 'unpause'); }
 
   // =========================================================
   // Lottery Reads
@@ -507,16 +469,6 @@ export class AdminService {
     return this.writeContract(evolveProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
   }
 
-  async getEthsRocksProxyAdminOwner(): Promise<string> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksProxyAdmin, abi: ProxyAdminABI, functionName: 'owner',
-    });
-  }
-
-  ethsrocksProxyAdminTransfer(addr: string) {
-    return this.writeContract(ethsrocksProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
-  }
-
   async getLotteryProxyAdminOwner(): Promise<string> {
     return await this.web3Svc.l1Client.readContract({
       address: lotteryProxyAdmin, abi: ProxyAdminABI, functionName: 'owner',
@@ -535,163 +487,6 @@ export class AdminService {
 
   lottery2ProxyAdminTransfer(addr: string) {
     return this.writeContract(lottery2ProxyAdmin, ProxyAdminABI, 'transferOwnership', [addr]);
-  }
-
-  // =========================================================
-  // EthsRocks Reads
-  // =========================================================
-
-  async getEthsRocksOwner(): Promise<string> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'owner',
-    });
-  }
-
-  async getEthsRocksPaused(): Promise<boolean> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'paused',
-    });
-  }
-
-  async getEthsRocksPoolSize(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'poolSize',
-    });
-  }
-
-  async getEthsRocksBalance(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'getBalance',
-    });
-  }
-
-  async getEthsRocksPrice(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'currentPrice',
-    });
-  }
-
-  async getEthsRocksTotalRevealed(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'totalRevealed',
-    });
-  }
-
-  async getEthsRocksPendingReveals(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'pendingReveals',
-    });
-  }
-
-  async getEthsRocksTreasuryAddress(): Promise<string> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'treasuryAddress',
-    });
-  }
-
-  async getEthsRocksPointsAddress(): Promise<string> {
-    return await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'pointsAddress',
-    });
-  }
-
-  async getEthsRocksBatchRequired(): Promise<number> {
-    const val = await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'ethscriptionBatchRequired',
-    });
-    return Number(val) || 5;
-  }
-
-  // =========================================================
-  // EthsRocks Writes
-  // =========================================================
-
-  ethsrocksPause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'pause'); }
-  ethsrocksUnpause() { return this.writeContract(ethsrocksAddress, EthsRocksABI, 'unpause'); }
-
-  ethsrocksSetBatchRequired(amount: number) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setEthscriptionBatchRequired', [amount]);
-  }
-  ethsrocksSetTreasuryAddress(addr: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setTreasuryAddress', [addr]);
-  }
-  ethsrocksSetPointsAddress(addr: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setPointsAddress', [addr]);
-  }
-  ethsrocksWithdrawETH(amount: bigint, to: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawETH', [amount, to]);
-  }
-  async getEthsRocksPoolItems(offset: number, limit: number): Promise<string[]> {
-    const items = await this.web3Svc.l1Client.readContract({
-      address: ethsrocksAddress, abi: EthsRocksABI, functionName: 'getPoolItems', args: [BigInt(offset), BigInt(limit)],
-    });
-    return items as string[];
-  }
-
-  ethsrocksWithdrawFromPool(hashId: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawFromPool', [hashId]);
-  }
-  ethsrocksWithdrawFromPoolBatch(hashIds: string[]) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'withdrawFromPoolBatch', [hashIds]);
-  }
-  ethsrocksEmergencyWithdrawEthscription(hashId: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'emergencyWithdrawEthscription', [hashId]);
-  }
-  ethsrocksResetTotalRevealed(total: bigint) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'resetTotalRevealed', [total]);
-  }
-  ethsrocksTransferOwnership(addr: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'transferOwnership', [addr]);
-  }
-  ethsrocksSetPriceFeed(addr: string) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setPriceFeed', [addr]);
-  }
-  ethsrocksSetUsdPerSale(amount: bigint) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setUsdPerSale', [amount]);
-  }
-  ethsrocksSetMaxStaleness(seconds: bigint) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setMaxStaleness', [seconds]);
-  }
-  ethsrocksSetBlocked(wallet: string, isBlocked: boolean) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setBlocked', [wallet, isBlocked]);
-  }
-  ethsrocksSetBlockedBatch(wallets: string[], isBlocked: boolean) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setBlockedBatch', [wallets, isBlocked]);
-  }
-  ethsrocksSetAllowed(wallet: string, isAllowed: boolean) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setAllowed', [wallet, isAllowed]);
-  }
-  ethsrocksSetAllowedBatch(wallets: string[], isAllowed: boolean) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setAllowedBatch', [wallets, isAllowed]);
-  }
-  ethsrocksSetAllowlistEnabled(enabled: boolean) {
-    return this.writeContract(ethsrocksAddress, EthsRocksABI, 'setAllowlistEnabled', [enabled]);
-  }
-
-  async ethsrocksDepositEthscriptions(hashIds: string[]) {
-    const { walletClient } = await this.getClients();
-    const data = encodePacked(
-      hashIds.map(() => 'bytes32' as const),
-      hashIds.map(id => id as `0x${string}`),
-    );
-    return await walletClient.sendTransaction({
-      to: ethsrocksAddress,
-      data,
-      chain: walletClient.chain,
-      account: walletClient.account,
-    } as any);
-  }
-
-  // =========================================================
-  // Points Admin Transfer (AccessControl: grant + renounce)
-  // =========================================================
-
-  pointsGrantAdminRole(addr: string) {
-    return this.writeContract(pointsAddress, PointsABI, 'grantRole', [DEFAULT_ADMIN_ROLE, addr]);
-  }
-
-  pointsRevokeAdminRole(addr: string) {
-    return this.writeContract(pointsAddress, PointsABI, 'revokeRole', [DEFAULT_ADMIN_ROLE, addr]);
   }
 
   // =========================================================

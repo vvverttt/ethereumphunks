@@ -67,12 +67,7 @@ if (!process.env.AUCTION_ADDRESS_MAINNET) {
   process.env.AUCTION_ADDRESS_MAINNET = '0xc1fA86b53e8e101c93c570f276bC5177832bd031';
 }
 
-if (!process.env.ETHSROCKS_ADDRESS_MAINNET) {
-  process.env.ETHSROCKS_ADDRESS_MAINNET = '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8';
-}
 
-// API_PRIVATE_KEY must be set via environment variable (e.g. Render dashboard)
-// Used by EthsRocks signer — do NOT hardcode here
 
 import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';

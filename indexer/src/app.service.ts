@@ -61,8 +61,8 @@ export class AppService implements OnModuleInit {
       await this.startPolling();
 
     } catch (error) {
-      Logger.error('Indexer error:', error instanceof Error ? error.message : String(error));
-      Logger.error('Stack:', error instanceof Error ? error.stack : 'No stack trace');
+      Logger.error('Indexer error: ' + JSON.stringify(error));
+      Logger.error('Stack: ' + (error instanceof Error ? error.stack : 'No stack trace'));
 
       // Wait before restarting to avoid rapid restart loops
       await this.utilSvc.delay(30000);
