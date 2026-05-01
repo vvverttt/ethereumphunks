@@ -41,30 +41,21 @@ if (!process.env.SUPABASE_SERVICE_ROLE) {
   throw new Error('SUPABASE_SERVICE_ROLE env var is required');
 }
 
-if (!process.env.MARKET_ADDRESS_MAINNET_L1) {
-  process.env.MARKET_ADDRESS_MAINNET_L1 = '0xa48a43186612B179C0bc68Ea34B4932549a70BfA';
-}
-if (!process.env.OLD_MARKET_ADDRESS_MAINNET_L1) {
-  process.env.OLD_MARKET_ADDRESS_MAINNET_L1 = '0xD3418772623Be1a3cc6B6D45CB46420CEdD9154a';
-}
+const requiredMainnetContractEnvs = [
+  'MARKET_ADDRESS_MAINNET_L1',
+  'OLD_MARKET_ADDRESS_MAINNET_L1',
+  'POINTS_ADDRESS_MAINNET',
+  'LOTTERY_ADDRESS_MAINNET',
+  'LOTTERY2_ADDRESS_MAINNET',
+  'EVOLVE_ADDRESS_MAINNET',
+  'AUCTION_ADDRESS_MAINNET',
+  'AUCTION2_ADDRESS_MAINNET',
+] as const;
 
-if (!process.env.POINTS_ADDRESS_MAINNET) {
-  process.env.POINTS_ADDRESS_MAINNET = '0xA22a3E40C3C5A01F802c5698Af6Ed5fAA21095eb';
-}
-
-if (!process.env.LOTTERY_ADDRESS_MAINNET) {
-  process.env.LOTTERY_ADDRESS_MAINNET = '0x29b0d38112e8e743b63EB463F3351ab0F1E15977';
-}
-if (!process.env.LOTTERY2_ADDRESS_MAINNET) {
-  process.env.LOTTERY2_ADDRESS_MAINNET = '0x298771ECc338DE242ADa11e49E2B8224c33bf620';
-}
-
-if (!process.env.EVOLVE_ADDRESS_MAINNET) {
-  process.env.EVOLVE_ADDRESS_MAINNET = '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA';
-}
-
-if (!process.env.AUCTION_ADDRESS_MAINNET) {
-  process.env.AUCTION_ADDRESS_MAINNET = '0xc1fA86b53e8e101c93c570f276bC5177832bd031';
+for (const envName of requiredMainnetContractEnvs) {
+  if (!process.env[envName]) {
+    throw new Error(`${envName} env var is required`);
+  }
 }
 
 

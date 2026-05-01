@@ -1,13 +1,13 @@
 import hre from 'hardhat';
 
-const pointsAddress = '0x0493bdBC99d17fe5fD8BD21Fd03792BE66eA3E14';
-const marketV3Address = '0x7DDe39623aF1D78651b0EEc754622b95bbD56896';
+const pointsAddress = '0xA22a3E40C3C5A01F802c5698Af6Ed5fAA21095eb';
+const marketV3Address = '0xa48a43186612B179C0bc68Ea34B4932549a70BfA';
 
 async function main() {
   const [signer] = await hre.ethers.getSigners();
 
   console.log('\n=====================================================================');
-  console.log('Granting POINTS_MANAGER_ROLE to Market V3');
+  console.log('Granting POINTS_MANAGER_ROLE to Marketplace');
   console.log(`  Signer:   ${signer.address}`);
   console.log(`  Points:   ${pointsAddress}`);
   console.log(`  Market:   ${marketV3Address}`);
@@ -21,7 +21,7 @@ async function main() {
   console.log(`\n  tx: ${tx.hash}`);
   await tx.wait();
 
-  console.log('  Confirmed! Market V3 can now award points.');
+  console.log('  Confirmed! Marketplace can now award points.');
   console.log('=====================================================================\n');
 }
 
