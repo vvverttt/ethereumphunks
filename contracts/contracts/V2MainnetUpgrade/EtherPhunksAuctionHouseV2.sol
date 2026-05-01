@@ -267,21 +267,32 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
     function _createAuction() internal {
         require(_pool.length > 0, "Pool empty");
 
-        // Random selection (LotteryV68 chained hash pattern)
-        bytes32 randomHash = keccak256(abi.encodePacked(
-            _lastRandomHash,
-            block.prevrandao,
-            block.timestamp,
-            block.basefee,
-            blockhash(block.number - 1),
-            auctionId,
-            msg.sender,
-            gasleft()
-        ));
-        _lastRandomHash = randomHash;
+        bytes32 hashId;
+        uint256 idx;
 
-        uint256 idx = uint256(randomHash) % _pool.length;
-        bytes32 hashId = _pool[idx];
+        if (_orderQueue.length > 0) {
+            // Use next item from ordered queue (pop from end = last item owner added)
+            hashId = _orderQueue[_orderQueue.length - 1];
+            _orderQueue.pop();
+            // Verify it's still in the pool (owner may have withdrawn it since setAuctionOrder)
+            require(inPool[hashId], "Ordered item not in pool");
+            idx = _poolIndex[hashId];
+        } else {
+            // Random selection (LotteryV68 chained hash pattern)
+            bytes32 randomHash = keccak256(abi.encodePacked(
+                _lastRandomHash,
+                block.prevrandao,
+                block.timestamp,
+                block.basefee,
+                blockhash(block.number - 1),
+                auctionId,
+                msg.sender,
+                gasleft()
+            ));
+            _lastRandomHash = randomHash;
+            idx = uint256(randomHash) % _pool.length;
+            hashId = _pool[idx];
+        }
 
         // Swap-and-pop removal
         bytes32 lastHash = _pool[_pool.length - 1];
@@ -499,6 +510,33 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         revert("Cannot renounce ownership");
     }
 
+    // ─── Ordered queue (owner sets priority auction order) ───
+
+    bytes32[] private _orderQueue;
+
+    event AuctionOrderSet(bytes32[] hashIds);
+
+    // Owner sets an ordered list of hashIds to auction next (last item auctioned first).
+    // All hashIds must already be in the pool.
+    function setAuctionOrder(bytes32[] calldata hashIds) external onlyOwner {
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            require(inPool[hashIds[i]], "Item not in pool");
+        }
+        delete _orderQueue;
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            _orderQueue.push(hashIds[i]);
+        }
+        emit AuctionOrderSet(hashIds);
+    }
+
+    function auctionOrderSize() external view returns (uint256) {
+        return _orderQueue.length;
+    }
+
+    function getAuctionOrderItems() external view returns (bytes32[] memory) {
+        return _orderQueue;
+    }
+
     // ─── Swap: users swap their v67 for one in the pool ─────
 
     bool public swapEnabled;
@@ -591,7 +629,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         return hash == root;
     }
 
-    // ─── Storage gap for future upgrades (49 - 4 swap slots = 45) ──
+    // ─── Storage gap for future upgrades (49 - 4 swap slots - 1 orderQueue = 44) ──
 
-    uint256[45] private __gap;
+    uint256[44] private __gap;
 }

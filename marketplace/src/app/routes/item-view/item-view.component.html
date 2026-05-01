@@ -384,7 +384,7 @@
 
     <div class="form-actions">
       <button i18n type="reset" class="cancel" (click)="closeTransfer()">Cancel</button>
-      <button i18n type="submit" class="submit" (click)="transferPhunk(phunk)">Submit</button>
+      <button i18n type="button" class="submit" (click)="transferPhunk(phunk)">Submit</button>
     </div>
   </form>
 </ng-template>
@@ -441,7 +441,7 @@
 
     <div class="form-actions">
       <button i18n type="reset" class="cancel" (click)="closeListing()">Cancel</button>
-      <button i18n type="submit" class="submit" (click)="submitListing(phunk)">Offer {{ phunk.singleName }}</button>
+      <button i18n type="button" class="submit" (click)="submitListing(phunk)">Offer {{ phunk.singleName }}</button>
     </div>
 
     @if (!phunk.isEscrowed && !phunk.nft) {
