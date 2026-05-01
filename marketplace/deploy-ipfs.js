@@ -1,6 +1,5 @@
 import { PinataSDK } from 'pinata';
 import { fileURLToPath } from 'url';
-import moment from 'moment';
 
 import fs from 'fs';
 import path from 'path';
@@ -33,9 +32,6 @@ const pinataJwt = process.env.PINATA_JWT;
 const pinataGatewayDomain = (process.env.PINATA_GATEWAY_DOMAIN || 'gateway.pinata.cloud')
   .replace(/^https?:\/\//, '')
   .replace(/\/+$/, '');
-
-// Get the current timestamp for the build directory
-const timestamp = moment().format('MMMD').toLowerCase();
 
 // Common IPFS options for consistent hashing
 const ipfsOptions = {
@@ -88,6 +84,28 @@ function logUrl(url) {
   console.log(chalk.hex('#00BFFF').underline(url));
 }
 
+function getBuildDirectory(config) {
+  const angularJsonPath = path.join(__dirname, 'angular.json');
+  const angularJson = JSON.parse(fs.readFileSync(angularJsonPath, 'utf8'));
+  const outputBase = angularJson?.projects?.['etherphunks-market']?.architect?.build?.configurations?.[config]?.outputPath?.base;
+
+  if (!outputBase) {
+    throw new Error(`Could not resolve outputPath.base for Angular build configuration "${config}"`);
+  }
+
+  const browserDir = path.join(__dirname, outputBase, 'browser');
+  if (fs.existsSync(browserDir)) {
+    return browserDir;
+  }
+
+  const baseDir = path.join(__dirname, outputBase);
+  if (fs.existsSync(baseDir)) {
+    return baseDir;
+  }
+
+  throw new Error(`Build directory not found for configuration "${config}". Checked: ${browserDir} and ${baseDir}`);
+}
+
 async function deployToIPFS() {
   try {
     if (!pinataJwt) {
@@ -98,12 +116,7 @@ async function deployToIPFS() {
 
     logSection(`Deploying ${config.toUpperCase()} Build`);
 
-    const buildDir = path.join(__dirname, 'dist', `etherphunks-market-${config}_${timestamp}`, 'browser');
-
-    if (!fs.existsSync(buildDir)) {
-      logError(`Build directory not found: ${buildDir}`);
-      process.exit(1);
-    }
+    const buildDir = getBuildDirectory(config);
 
     logInfo(`Build directory: ${buildDir}`);
 
