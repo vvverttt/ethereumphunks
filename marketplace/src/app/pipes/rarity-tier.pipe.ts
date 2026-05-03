@@ -7,17 +7,26 @@ export class RarityTierPipe implements PipeTransform {
     const s = supply || 0;
     if (!c || !s) return '';
     const pct = (c / s) * 100;
-    if (c === 1)      return 'one-of-one';
-    if (pct <= 0.1)   return 'mythic';
-    if (pct <= 0.3)   return 'legendary';
-    if (pct <= 0.7)   return 'epic';
-    if (pct <= 2)     return 'rare';
-    if (pct <= 10)    return 'uncommon';
+    if (pct <= 0.15)  return 'ancient';
+    if (pct <= 0.28)  return 'god';
+    if (pct <= 0.32)  return 'mythic';
+    if (pct <= 0.35)  return 'exotic';
+    if (pct <= 0.38)  return 'legendary';
+    if (pct <= 0.60)  return 'ultra';
+    if (pct <= 0.80)  return 'epic';
+    if (pct <= 1.3)   return 'very-rare';
+    if (pct <= 2.0)   return 'rare';
+    if (pct <= 2.5)   return 'uncommon';
     return 'common';
   }
 }
 
 export function rarityLabel(tier: string): string {
-  if (tier === 'one-of-one') return 'One of One';
-  return tier.charAt(0).toUpperCase() + tier.slice(1);
+  const labels: Record<string, string> = {
+    'god-tier': 'God Tier', 'divine': 'Divine', 'ancient': 'Ancient',
+    'mythic': 'Mythic', 'god': 'God', 'exotic': 'Exotic',
+    'legendary': 'Legendary', 'ultra': 'Ultra', 'epic': 'Epic',
+    'very-rare': 'Very Rare', 'rare': 'Rare', 'uncommon': 'Uncommon', 'common': 'Common',
+  };
+  return labels[tier] || tier.charAt(0).toUpperCase() + tier.slice(1);
 }

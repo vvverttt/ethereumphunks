@@ -13,17 +13,23 @@ import { environment } from 'src/environments/environment';
 const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-const CACHE_VERSION = 15;
+const CACHE_VERSION = 20;
 
 const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67', 'quantumdystophunkzv67'];
 
-function rarityTier(count: number, pct: number): string {
-  if (count === 1)  return 'One of One';
-  if (pct <= 0.1)   return 'Mythic';
-  if (pct <= 0.3)   return 'Legendary';
-  if (pct <= 0.7)   return 'Epic';
-  if (pct <= 2)     return 'Rare';
-  if (pct <= 10)    return 'Uncommon';
+function rarityTier(count: number, pct: number, isType = false): string {
+  if (isType) {
+    if (pct <= 0.15)  return 'Ancient';
+    if (pct <= 0.28)  return 'God';
+  }
+  if (pct <= 0.32)  return 'Mythic';
+  if (pct <= 0.35)  return 'Exotic';
+  if (pct <= 0.38)  return 'Legendary';
+  if (pct <= 0.60)  return 'Ultra';
+  if (pct <= 0.80)  return 'Epic';
+  if (pct <= 1.3)   return 'Very Rare';
+  if (pct <= 2.0)   return 'Rare';
+  if (pct <= 2.5)   return 'Uncommon';
   return 'Common';
 }
 
@@ -193,14 +199,14 @@ export class CollectionAttributesComponent implements OnInit {
       }
     }
 
-    const toRow = (name: string, traitType: string, d: { count: number; examples: string[]; shas: string[] }): AttrRow => {
+    const toRow = (name: string, traitType: string, d: { count: number; examples: string[]; shas: string[] }, isType = false): AttrRow => {
       const pctNum = (d.count / total) * 100;
       return {
         name,
         traitType,
         count: d.count,
         pct: pctNum.toFixed(1) + '%',
-        rarity: rarityTier(d.count, pctNum),
+        rarity: rarityTier(d.count, pctNum, isType),
         examples: d.examples,
         exampleShas: d.shas,
       };
@@ -209,7 +215,7 @@ export class CollectionAttributesComponent implements OnInit {
     const typeSection: AttrSection = {
       name: 'Phunk Types',
       rows: Object.entries(typeTraitMap)
-        .map(([name, d]) => toRow(name, 'Type', d))
+        .map(([name, d]) => toRow(name, 'Type', d, true))
         .sort((a, b) => a.count - b.count),
     };
 
@@ -328,12 +334,12 @@ export class CollectionAttributesComponent implements OnInit {
       if (attrCountMap[numAttrs].examples.length < EXAMPLES) { attrCountMap[numAttrs].examples.push(`${this.staticUrl}/static/images/${item.sha}`); attrCountMap[numAttrs].shas.push(item.sha); }
     }
 
-    const toRow = (name: string, traitType: string, d: { count: number; examples: string[]; shas: string[] }) => {
+    const toRow = (name: string, traitType: string, d: { count: number; examples: string[]; shas: string[] }, isType = false) => {
       const pctNum = (d.count / total) * 100;
-      return { name, traitType, count: d.count, pct: pctNum.toFixed(1) + '%', rarity: rarityTier(d.count, pctNum), examples: d.examples, exampleShas: d.shas };
+      return { name, traitType, count: d.count, pct: pctNum.toFixed(1) + '%', rarity: rarityTier(d.count, pctNum, isType), examples: d.examples, exampleShas: d.shas };
     };
 
-    const typeSection: AttrSection = { name: 'Phunk Types', rows: Object.entries(typeTraitMap).map(([n, d]) => toRow(n, 'Type', d)).sort((a, b) => a.count - b.count) };
+    const typeSection: AttrSection = { name: 'Phunk Types', rows: Object.entries(typeTraitMap).map(([n, d]) => toRow(n, 'Type', d, true)).sort((a, b) => a.count - b.count) };
     const sections: AttrSection[] = Object.entries(sectionMap).sort(([a], [b]) => a.localeCompare(b)).map(([traitType, valMap]) => ({ name: traitType, rows: Object.entries(valMap).map(([n, d]) => toRow(n, traitType, d)).sort((a, b) => a.count - b.count) }));
     const countRows: CountRow[] = Object.entries(attrCountMap).map(([n, d]) => { const pctNum = (d.count / total) * 100; return { numTraits: +n, count: d.count, pct: pctNum.toFixed(1) + '%', rarity: rarityTier(d.count, pctNum), examples: d.examples, exampleShas: d.shas }; }).sort((a, b) => a.numTraits - b.numTraits);
 
