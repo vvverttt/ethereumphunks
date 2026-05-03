@@ -107,6 +107,9 @@
   .phunk-fallback {
     width: 42rem;
     height: 42rem;
+    max-width: 42rem;
+    max-height: 42rem;
+    object-fit: contain;
     image-rendering: pixelated;
     display: block;
   }

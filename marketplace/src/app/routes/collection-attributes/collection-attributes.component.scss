@@ -7,6 +7,34 @@
   min-height: 100vh;
 }
 
+.combined-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 0.6rem 1.4rem;
+  font-family: var(--secondary-font-stack);
+  font-size: 1.2rem;
+  background: transparent;
+  border: 2px solid var(--color-primary, #fff);
+  color: var(--color-primary, #fff);
+  cursor: pointer;
+
+  .toggle-indicator {
+    font-size: 1rem;
+    opacity: 0.6;
+  }
+
+  &.active {
+    background: var(--color-primary, #fff);
+    color: #000;
+
+    .toggle-indicator {
+      opacity: 1;
+    }
+  }
+}
+
 .header-wrapper {
   margin-bottom: 2.5rem;
 

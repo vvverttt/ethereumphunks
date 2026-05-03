@@ -5,9 +5,15 @@
       {{ collectionName() }}
     </a>
     <h1>Types and Attributes</h1>
+    @if (isCombinableSlug) {
+      <button class="combined-toggle" [class.active]="showCombined()" (click)="toggleCombined()">
+        {{ showCombined() ? 'Full Collection' : 'Full Collection' }}
+        <span class="toggle-indicator">{{ showCombined() ? 'ON' : 'OFF' }}</span>
+      </button>
+    }
   </div>
 
-  @if (loading()) {
+  @if (loading() || combinedLoading()) {
     <p class="status">Loading...</p>
   } @else {
 
@@ -31,7 +37,7 @@
           <span class="col-rarity">Rarity</span>
           <span class="col-examples">Examples</span>
         </div>
-        @for (row of countRows(); track row.numTraits) {
+        @for (row of activeCountRows(); track row.numTraits) {
           <div class="attr-row">
             <span class="attr-val-name">{{ row.numTraits }} {{ row.numTraits === 1 ? 'attribute' : 'attributes' }}</span>
             <span class="attr-val-count">{{ row.count | number }}</span>

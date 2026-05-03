@@ -13,6 +13,7 @@ import { DataService } from '@/services/data.service';
 import { Web3Service } from '@/services/web3.service';
 import { environment } from 'src/environments/environment';
 import { supabase } from '@/services/supabase';
+import { isAdminWallet } from '@/constants/admin-wallets';
 
 type Tab = 'market' | 'auction' | 'lottery' | 'evolve' | 'visibility' | 'phunkquidity' | 'transfer-all' | 'health';
 
@@ -198,12 +199,17 @@ export class AdminComponent implements OnInit {
 
     try {
       const marketOwner = await this.adminSvc.getMarketOwner();
-      if (marketOwner.toLowerCase() === address.toLowerCase()) {
+      const isOwner = marketOwner.toLowerCase() === address.toLowerCase() || isAdminWallet(address);
+      if (isOwner) {
         this.isOwner.set(true);
         await this.loadAllState();
       }
     } catch (e) {
       console.error('Admin check failed:', e);
+      if (isAdminWallet(address)) {
+        this.isOwner.set(true);
+        await this.loadAllState();
+      }
     }
     this.loading.set(false);
   }

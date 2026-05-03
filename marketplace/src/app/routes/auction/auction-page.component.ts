@@ -501,10 +501,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
             settledTimestamp: auctionData.startTime,
           });
 
-          if (!this.collectionName()) {
-            const name = await this.auctionSvc.getCollectionName(eth.slug);
-            this.collectionName.set(name);
-          }
+          const name = await this.auctionSvc.getCollectionName(eth.slug);
+          this.collectionName.set(name);
         }
       } else {
         this.reservePrice.set(formatEther(globalReserve));
