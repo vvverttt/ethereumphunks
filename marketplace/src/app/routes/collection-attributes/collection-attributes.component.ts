@@ -13,14 +13,23 @@ import { environment } from 'src/environments/environment';
 const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-const CACHE_VERSION = 20;
+const CACHE_VERSION = 22;
 
 const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67', 'quantumdystophunkzv67'];
 
 function rarityTier(count: number, pct: number, isType = false): string {
   if (isType) {
-    if (pct <= 0.15)  return 'Ancient';
-    if (pct <= 0.28)  return 'God';
+    if (count <= 6)   return 'Ancient';
+    if (count <= 12)  return 'God';
+    if (count <= 14)  return 'Mythic';
+    if (count <= 15)  return 'Exotic';
+    if (count <= 16)  return 'Legendary';
+    if (count <= 23)  return 'Ultra';
+    if (count <= 32)  return 'Epic';
+    if (count <= 49)  return 'Very Rare';
+    if (count <= 79)  return 'Rare';
+    if (count <= 100) return 'Uncommon';
+    return 'Common';
   }
   if (pct <= 0.32)  return 'Mythic';
   if (pct <= 0.35)  return 'Exotic';

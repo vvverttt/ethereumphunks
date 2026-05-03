@@ -79,25 +79,17 @@
     }
 
     @if ((config$ | async)?.showAuction !== false) {
-      <div class="auction-group">
-        <a
-          class="auction-button"
-          routerLink="/auction"
-          (click)="goToAuction()">
+      <a
+        class="auction-button"
+        routerLink="/auction"
+        (click)="goToAuction()">
 
-          <span>Auction House</span>
+        <span>Auction House</span>
 
-          <div class="arrow">
-            <ng-template [ngTemplateOutlet]="arrowIcon" />
-          </div>
-        </a>
-        <a
-          class="auction2-button"
-          routerLink="/auction2"
-          (click)="goToAuction()">
-          Pro
-        </a>
-      </div>
+        <div class="arrow">
+          <ng-template [ngTemplateOutlet]="arrowIcon" />
+        </div>
+      </a>
     }
 
     @if ((config$ | async)?.showPhunkquidity !== false) {
