@@ -13,7 +13,7 @@ import { environment } from 'src/environments/environment';
 const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-const CACHE_VERSION = 25;
+const CACHE_VERSION = 26;
 
 const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67', 'quantumdystophunkzv67'];
 
@@ -33,7 +33,7 @@ function rarityTier(count: number, pct: number, isType = false): string {
     return 'Common';
   }
   // Non-type attributes: count-based for better distribution and 1-of-1 support
-  if (count === 1)   return 'God Tier';
+  if (count === 1)   return 'One of One';
   if (count <= 8)    return 'Mythic';
   if (count <= 20)   return 'Exotic';
   if (count <= 40)   return 'Legendary';
@@ -163,12 +163,16 @@ export class CollectionAttributesComponent implements OnInit {
     let attrs = await this.loadAttrsFromStatic(this.slug);
     if (!attrs.length) attrs = await this.loadAttrsFromSupabase(this.slug);
 
-    // Always load combined attrs for type section (consistent across all pages)
+    // Load combined type attrs only for cryptophunksv67 — other collections use their own data
     const combinedTypeAttrs: { sha: string; values: Record<string, any> }[] = [];
-    for (const slug of COMBINED_SLUGS) {
-      let a = await this.loadAttrsFromStatic(slug);
-      if (!a.length) a = await this.loadAttrsFromSupabase(slug);
-      combinedTypeAttrs.push(...a);
+    if (this.slug === 'cryptophunksv67') {
+      for (const slug of COMBINED_SLUGS) {
+        let a = await this.loadAttrsFromStatic(slug);
+        if (!a.length) a = await this.loadAttrsFromSupabase(slug);
+        combinedTypeAttrs.push(...a);
+      }
+    } else {
+      combinedTypeAttrs.push(...attrs);
     }
 
     const total = attrs.length;

@@ -5,7 +5,7 @@ export class RarityTierPipe implements PipeTransform {
   transform(count: number | string, supply: number | undefined): string {
     const c = +count;
     if (!c) return '';
-    if (c === 1)    return 'god-tier';
+    if (c === 1)    return 'one-of-one';
     if (c <= 8)     return 'mythic';
     if (c <= 20)    return 'exotic';
     if (c <= 40)    return 'legendary';
@@ -20,7 +20,7 @@ export class RarityTierPipe implements PipeTransform {
 
 export function rarityLabel(tier: string): string {
   const labels: Record<string, string> = {
-    'god-tier': 'God Tier', 'ancient': 'Ancient', 'mythic': 'Mythic',
+    'one-of-one': 'One of One', 'ancient': 'Ancient', 'mythic': 'Mythic',
     'god': 'God', 'exotic': 'Exotic', 'legendary': 'Legendary',
     'ultra': 'Ultra', 'ultra-rare': 'Ultra Rare', 'epic': 'Epic', 'elite': 'Elite',
     'rare': 'Rare', 'uncommon': 'Uncommon', 'common': 'Common',
