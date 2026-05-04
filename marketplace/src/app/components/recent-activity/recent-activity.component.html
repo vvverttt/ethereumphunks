@@ -52,7 +52,7 @@
         <div class="labels-wrapper">
 
           <div class="token-id">
-            #{{ event.slug === 'ethsrocks' ? '-' + (event.tokenId < 0 ? -event.tokenId : event.tokenId) : (event.tokenId < 0 ? -event.tokenId : event.tokenId) }}
+            #{{ event.slug === 'ethsrocks' ? '-' + ((event.tokenId ?? 0) < 0 ? -(event.tokenId ?? 0) : (event.tokenId ?? 0)) : ((event.tokenId ?? 0) < 0 ? -(event.tokenId ?? 0) : (event.tokenId ?? 0)) }}
           </div>
 
           <div class="label">
