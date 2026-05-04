@@ -38,18 +38,6 @@
     }
   </p>
 
-  <div class="rpc-health">
-    @for (svc of (rpcStatus$ | async); track svc.label) {
-      <span
-        class="rpc-dot"
-        [class.ok]="svc.ok === true"
-        [class.err]="svc.ok === false"
-        [title]="svc.label + ': ' + (svc.ok === null ? 'checking...' : svc.ok ? 'online' : 'offline')">
-        <span class="dot"></span>{{ svc.label }}
-      </span>
-    }
-  </div>
-
   <p i18n>By using this app, you accept all risks associated, including the loss of funds. The creators of QuantumPhunks are not liable for any issues or damages that may arise from its use.</p>
 
   <p i18n>Be Phree. Be Phunky. 👍</p>
