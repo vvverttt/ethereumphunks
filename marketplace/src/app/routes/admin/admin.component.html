@@ -535,7 +535,7 @@
               <span style="width: 1rem; height: 1rem; border-radius: 50%; display: inline-block;"
                 [style.background]="r.status === 'ok' ? '#00e676' : r.status === 'error' ? '#ff1744' : '#ffab40'">
               </span>
-              <span style="flex: 1; font-family: var(--secondary-font-stack); font-size: 1.2rem;">{{ r.name }}</span>
+              <span style="flex: 1; font-family: var(--secondary-font-stack); font-size: 1.2rem;">{{ r.name }}<span style="opacity:.4; font-size:1rem; margin-left:.6rem;">{{ maskUrl(r.url) }}</span></span>
               @if (r.status === 'ok') {
                 @if (r.blockNumber) {
                   <span style="color: #00e676; font-size: 1.1rem;">Block #{{ r.blockNumber }} — {{ r.latency }}ms</span>

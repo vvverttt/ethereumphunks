@@ -964,14 +964,27 @@ export class AdminComponent implements OnInit {
     this.transferAllRunning.set(false);
   }
 
+  maskUrl(url: string): string {
+    try {
+      const u = new URL(url);
+      const parts = u.pathname.split('/').filter(Boolean);
+      const key = parts[parts.length - 1] || '';
+      const masked = key.length > 8 ? key.slice(0, 4) + '…' + key.slice(-4) : key;
+      return `${u.hostname}${masked ? '/' + masked : ''}`;
+    } catch {
+      return url;
+    }
+  }
+
   async checkHealth() {
     const rpcs = [
-      { name: 'frontend receipt', url: (environment as any).receiptRpcUrl || environment.rpcHttpProvider },
-      { name: 'frontend primary', url: environment.rpcHttpProvider },
-      { name: 'relay rpc', url: `${environment.relayUrl}/rpc` },
-      { name: 'ankr (key 1)', url: 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8' },
-      { name: 'ankr (key 2)', url: 'https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f' },
-    ];
+      { name: 'Ankr A',      url: 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8' },
+      { name: 'Ankr B',      url: 'https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f' },
+      { name: 'Alchemy A (backup)', url: (environment as any).frontendBackupRpcUrl || '' },
+      { name: 'Alchemy B (receipt)', url: (environment as any).receiptRpcUrl || environment.rpcHttpProvider },
+      { name: 'Primary RPC', url: environment.rpcHttpProvider },
+      { name: 'Relay (indexer)', url: `${environment.relayUrl}/rpc` },
+    ].filter(r => r.url);
 
     this.healthChecking.set(true);
     this.healthResults.set(rpcs.map(r => ({ ...r, status: 'pending' as const })));
