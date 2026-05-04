@@ -196,11 +196,12 @@ app-phunk-billboard {
           &.rarity-exotic    { color: #ff00cc; }
           &.rarity-legendary { color: #ffb700; }
           &.rarity-ultra     { color: #ff4500; }
+          &.rarity-ultra-rare { color: #ff6a00; }
           &.rarity-epic      { color: #b44fff; }
-          &.rarity-very-rare { color: #00cfff; }
+          &.rarity-elite     { color: #8a7aff; }
           &.rarity-rare      { color: #4fa8ff; }
           &.rarity-uncommon  { color: #4ddd7a; }
-          &.rarity-common    { color: #c8f560; font-weight: 400; }
+          &.rarity-common    { color: #c8f560; }
 
           .percent {
             font-size: 1.4rem;
@@ -221,10 +222,10 @@ app-phunk-billboard {
             &.rarity-legendary { color: #ffb700; }
             &.rarity-ultra     { color: #ff4500; }
             &.rarity-epic      { color: #b44fff; }
-            &.rarity-very-rare { color: #00cfff; }
+            &.rarity-elite     { color: #8a7aff; }
             &.rarity-rare      { color: #4fa8ff; }
             &.rarity-uncommon  { color: #4ddd7a; }
-            &.rarity-common    { color: #c8f560; font-weight: 400; }
+            &.rarity-common    { color: #c8f560; }
           }
         }
 

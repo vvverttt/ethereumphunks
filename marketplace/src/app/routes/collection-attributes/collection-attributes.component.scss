@@ -171,7 +171,7 @@
   font-size: 1rem;
   font-weight: 700;
 
-  &.god-tier   { color: #ff0080; letter-spacing: .05em; text-shadow: 0 0 8px #ff0080; }
+  &.god-tier   { color: #ff0080; letter-spacing: .05em; text-shadow: 0 0 10px #ff0080; }
   &.divine     { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
   &.ancient    { color: #ff2222; }
   &.exotic     { color: #ff00cc; }
@@ -179,11 +179,12 @@
   &.god        { color: #ff8c00; }
   &.legendary  { color: #ffb700; }
   &.ultra      { color: #ff4500; }
+  &.ultra-rare { color: #ff6a00; }
   &.epic       { color: #b44fff; }
-  &.very-rare  { color: #00cfff; }
+  &.elite      { color: #8a7aff; }
   &.rare       { color: #4fa8ff; }
   &.uncommon   { color: #4ddd7a; }
-  &.common     { color: #c8f560; font-weight: 400; }
+  &.common     { color: #c8f560; }
   &.abundant   { color: rgba(var(--text-color), .3); font-weight: 400; }
 }
 

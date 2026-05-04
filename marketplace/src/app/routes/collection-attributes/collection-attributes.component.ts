@@ -13,10 +13,11 @@ import { environment } from 'src/environments/environment';
 const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-const CACHE_VERSION = 22;
+const CACHE_VERSION = 25;
 
 const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67', 'quantumdystophunkzv67'];
 
+// Types always use fixed count-based tiers (based on combined ecosystem counts)
 function rarityTier(count: number, pct: number, isType = false): string {
   if (isType) {
     if (count <= 6)   return 'Ancient';
@@ -24,21 +25,23 @@ function rarityTier(count: number, pct: number, isType = false): string {
     if (count <= 14)  return 'Mythic';
     if (count <= 15)  return 'Exotic';
     if (count <= 16)  return 'Legendary';
-    if (count <= 23)  return 'Ultra';
+    if (count <= 29)  return 'Ultra';
     if (count <= 32)  return 'Epic';
-    if (count <= 49)  return 'Very Rare';
+    if (count <= 49)  return 'Elite';
     if (count <= 79)  return 'Rare';
     if (count <= 100) return 'Uncommon';
     return 'Common';
   }
-  if (pct <= 0.32)  return 'Mythic';
-  if (pct <= 0.35)  return 'Exotic';
-  if (pct <= 0.38)  return 'Legendary';
-  if (pct <= 0.60)  return 'Ultra';
-  if (pct <= 0.80)  return 'Epic';
-  if (pct <= 1.3)   return 'Very Rare';
-  if (pct <= 2.0)   return 'Rare';
-  if (pct <= 2.5)   return 'Uncommon';
+  // Non-type attributes: count-based for better distribution and 1-of-1 support
+  if (count === 1)   return 'God Tier';
+  if (count <= 8)    return 'Mythic';
+  if (count <= 20)   return 'Exotic';
+  if (count <= 40)   return 'Legendary';
+  if (count <= 70)   return 'Ultra';
+  if (count <= 120)  return 'Epic';
+  if (count <= 200)  return 'Elite';
+  if (count <= 350)  return 'Rare';
+  if (count <= 600)  return 'Uncommon';
   return 'Common';
 }
 
@@ -156,10 +159,16 @@ export class CollectionAttributesComponent implements OnInit {
       }
     } catch {}
 
-    // Prefer cached/static attribute source first to minimize DB reads.
+    // Load individual collection attrs for sections/attribute count
     let attrs = await this.loadAttrsFromStatic(this.slug);
-    if (!attrs.length) {
-      attrs = await this.loadAttrsFromSupabase(this.slug);
+    if (!attrs.length) attrs = await this.loadAttrsFromSupabase(this.slug);
+
+    // Always load combined attrs for type section (consistent across all pages)
+    const combinedTypeAttrs: { sha: string; values: Record<string, any> }[] = [];
+    for (const slug of COMBINED_SLUGS) {
+      let a = await this.loadAttrsFromStatic(slug);
+      if (!a.length) a = await this.loadAttrsFromSupabase(slug);
+      combinedTypeAttrs.push(...a);
     }
 
     const total = attrs.length;
@@ -169,6 +178,25 @@ export class CollectionAttributesComponent implements OnInit {
     const sectionMap: Record<string, Record<string, { count: number; examples: string[]; shas: string[] }>> = {};
     const attrCountMap: Record<number, { count: number; examples: string[]; shas: string[] }> = {};
 
+    // Build typeTraitMap from COMBINED data (always consistent)
+    for (const item of combinedTypeAttrs) {
+      const vals = item.values || {};
+      for (const [k, v] of Object.entries(vals)) {
+        if (!TYPE_TRAIT_KEYS.includes(k.toLowerCase())) continue;
+        const vArr = Array.isArray(v) ? v : [String(v)];
+        for (const vi of vArr) {
+          if (!vi || vi === 'null' || vi === 'undefined') continue;
+          if (!typeTraitMap[vi]) typeTraitMap[vi] = { count: 0, examples: [], shas: [] };
+          typeTraitMap[vi].count++;
+          if (typeTraitMap[vi].examples.length < EXAMPLES) {
+            typeTraitMap[vi].examples.push(`${this.staticUrl}/static/images/${item.sha}`);
+            typeTraitMap[vi].shas.push(item.sha);
+          }
+        }
+      }
+    }
+
+    // Build sectionMap and attrCountMap from individual collection
     for (const item of attrs) {
       const vals = item.values || {};
       let numAttrs = 0;
@@ -181,14 +209,7 @@ export class CollectionAttributesComponent implements OnInit {
           if (!vi || vi === 'null' || vi === 'undefined') continue;
           if (!isType && !ATTR_COUNT_EXCLUDE_EXTRA.includes(k.toLowerCase())) numAttrs++;
 
-          if (isType) {
-            if (!typeTraitMap[vi]) typeTraitMap[vi] = { count: 0, examples: [], shas: [] };
-            typeTraitMap[vi].count++;
-            if (typeTraitMap[vi].examples.length < EXAMPLES) {
-              typeTraitMap[vi].examples.push(`${this.staticUrl}/static/images/${item.sha}`);
-              typeTraitMap[vi].shas.push(item.sha);
-            }
-          } else {
+          if (!isType) {
             if (!sectionMap[k]) sectionMap[k] = {};
             if (!sectionMap[k][vi]) sectionMap[k][vi] = { count: 0, examples: [], shas: [] };
             sectionMap[k][vi].count++;
