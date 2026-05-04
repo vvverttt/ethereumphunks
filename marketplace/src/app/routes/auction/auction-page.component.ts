@@ -440,12 +440,20 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       })
       .subscribe();
 
-    // Fallback poll (DB only) — tightens to 10s in last 5 minutes, otherwise 60s
+    // Fallback poll — tightens to 10s in last 5 minutes, otherwise 30s
     const schedulePoll = () => {
       const timeLeft = (this.auction()?.endTime ?? 0) * 1000 - Date.now();
-      const delay = !this.auctionEnded() && timeLeft < 5 * 60 * 1000 && timeLeft > 0 ? 10_000 : 60_000;
+      const delay = !this.auctionEnded() && timeLeft < 5 * 60 * 1000 && timeLeft > 0 ? 10_000 : 30_000;
       this.pollInterval = setTimeout(async () => {
-        if (!this.isHistorical() && this.hasActiveAuction && !this.auctionEnded() && this.bids().length > 0) await this.refreshAuctionFromDB();
+        if (!this.isHistorical()) {
+          const prevHashId = this.auction()?.hashId;
+          await this.refreshAuctionFromDB();
+          const nextHashId = this.auction()?.hashId;
+          // New auction started — do a full reload to get new phunk image/name
+          if (prevHashId && nextHashId && prevHashId !== nextHashId) {
+            await this.loadAuction();
+          }
+        }
         schedulePoll();
       }, delay);
     };
@@ -520,9 +528,14 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         updated = await this.auctionSvc.getAuction();
       }
       if (!updated) return;
+      const prev = this.auction();
       this.auction.set(updated);
       if (updated.startTime > 0) {
         this.auctionEnded.set(Date.now() >= updated.endTime * 1000);
+      }
+      // New auction started — reset ended state
+      if (prev && updated.auctionId !== prev.auctionId) {
+        this.auctionEnded.set(false);
       }
       this.auctionSvc.getBidHistory(updated.auctionId).then(h => this.bids.set(h)).catch(() => {});
     } catch (err) {
