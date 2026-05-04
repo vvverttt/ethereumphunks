@@ -13,16 +13,16 @@ const auctionDeployBlock = ((environment as any).auctionDeployBlock as bigint) |
 // Alchemy Free allows at most a 10-block range per eth_getLogs request.
 const MAX_BLOCK_RANGE = 10n;
 
-// Dedicated client for eth_getLogs (Alchemy free tier limits to 10 blocks)
+// Dedicated client for eth_getLogs
 const logsClient = createPublicClient({
   chain: mainnet,
   transport: fallback([
+    http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+    http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
+    ...((environment as any).frontendBackupRpcUrl ? [http((environment as any).frontendBackupRpcUrl)] : []),
     http((environment as any).receiptRpcUrl || environment.rpcHttpProvider),
     http(environment.rpcHttpProvider),
-    http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
-    http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-    http(`${environment.relayUrl}/rpc`),
-  ], { rank: false }),
+  ], { rank: false, retryCount: 0 }),
 });
 
 export interface AuctionData {

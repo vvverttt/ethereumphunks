@@ -104,13 +104,12 @@ export class Web3Service {
     this.l1PollingClient = createPublicClient({
       chain: this.chains[0],
       transport: fallback([
+        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
+        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
         http(receiptRpcUrl),
         http(environment.rpcHttpProvider),
-        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
-        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http(relayRpcUrl),
-      ], { rank: false }),
+      ], { rank: false, retryCount: 0 }),
     });
 
     // Dedicated client for receipt polling — uses the backup Alchemy key to
@@ -430,37 +429,31 @@ export class Web3Service {
           return;
         }
 
-        const fromBlock = this.pointsLastProcessedBlock + 1n;
-        const maxRange = 10n; // Alchemy free tier getLogs window.
-        let cursor = fromBlock;
-        while (cursor <= latest) {
-          const toBlock = cursor + (maxRange - 1n) > latest ? latest : cursor + (maxRange - 1n);
-          const logs = await this.l1PollingClient.getLogs({
-            address: pointsAddress as `0x${string}`,
-            fromBlock: cursor,
-            toBlock,
-          });
+        const fromBlock = this.pointsLastProcessedBlock + 1n > latest - 499n
+          ? this.pointsLastProcessedBlock + 1n
+          : latest - 499n;
+        const logs = await this.l1PollingClient.getLogs({
+          address: pointsAddress as `0x${string}`,
+          fromBlock,
+          toBlock: latest,
+        });
 
-          logs.forEach((log: any) => {
-            let decoded: any;
-            try {
-              decoded = decodeEventLog({
-                abi: PointsABI,
-                data: log.data,
-                topics: log.topics,
-              });
-            } catch {
-              return;
-            }
+        logs.forEach((log: any) => {
+          let decoded: any;
+          try {
+            decoded = decodeEventLog({
+              abi: PointsABI,
+              data: log.data,
+              topics: log.topics,
+            });
+          } catch {
+            return;
+          }
 
-            const normalizedLog = { ...log, eventName: decoded.eventName, args: decoded.args };
-            if (decoded.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log: normalizedLog }));
-            // TODO: Add event to smart contract
-            if (decoded.eventName === 'MultiplierSet') {}
-          });
-
-          cursor = toBlock + 1n;
-        }
+          const normalizedLog = { ...log, eventName: decoded.eventName, args: decoded.args };
+          if (decoded.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log: normalizedLog }));
+          if (decoded.eventName === 'MultiplierSet') {}
+        });
 
         this.pointsLastProcessedBlock = latest;
         this.pointsWatcherRetryAttempt = 0;

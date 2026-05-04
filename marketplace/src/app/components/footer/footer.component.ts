@@ -5,10 +5,11 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { environment } from 'src/environments/environment';
+import { RpcHealthService } from '@/services/rpc-health.service';
 
 @Component({
   standalone: true,
-  imports: [ CommonModule, WalletAddressDirective],
+  imports: [CommonModule, WalletAddressDirective],
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss']
@@ -33,5 +34,10 @@ export class FooterComponent {
   vault = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218';
   phunkquidity = '0x7f5763D56c7E8c34eB125DbD19124945D77e5f1A';
 
-  constructor(private store: Store<GlobalState>) {}
+  rpcStatus$ = this.rpcHealth.status$;
+
+  constructor(
+    private store: Store<GlobalState>,
+    private rpcHealth: RpcHealthService,
+  ) {}
 }
