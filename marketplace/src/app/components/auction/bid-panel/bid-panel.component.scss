@@ -52,11 +52,18 @@
     &.time-remaining {
       width: 100%;
       max-width: 20rem;
+      flex-shrink: 0;
     }
 
     &.current-bid {
-      width: 100%;
-      max-width: 11rem;
+      flex: 1;
+      min-width: 0;
+
+      .value {
+        font-size: 2rem;
+        word-break: break-all;
+        white-space: normal;
+      }
     }
   }
 
@@ -68,10 +75,13 @@
 
       &.time-remaining {
         max-width: 13rem;
+        flex-shrink: 0;
       }
 
       &.current-bid {
-        max-width: 9rem;
+        .value {
+          font-size: 1.5rem;
+        }
       }
     }
   }
