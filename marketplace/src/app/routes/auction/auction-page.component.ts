@@ -522,10 +522,10 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
   async refreshAuctionFromDB(): Promise<void> {
     try {
-      let updated = await this.auctionSvc.getCurrentAuctionFromDB();
+      // Always use RPC as source of truth — DB can have stale amount/bidder
+      let updated = await this.auctionSvc.getAuction();
       if (!updated) {
-        // DB failed — fall back to RPC
-        updated = await this.auctionSvc.getAuction();
+        updated = await this.auctionSvc.getCurrentAuctionFromDB();
       }
       if (!updated) return;
       const prev = this.auction();
