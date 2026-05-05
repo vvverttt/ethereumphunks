@@ -18,7 +18,15 @@ const CACHE_VERSION = 26;
 const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67', 'quantumdystophunkzv67'];
 
 // Types always use fixed count-based tiers (based on combined ecosystem counts)
-function rarityTier(count: number, pct: number, isType = false): string {
+const RARITY_OVERRIDES: Record<string, string> = {
+  'one of one': 'Epic',
+  'character':  'Elite',
+};
+
+function rarityTier(count: number, pct: number, isType = false, name = ''): string {
+  const override = RARITY_OVERRIDES[name.toLowerCase().trim()];
+  if (override) return override;
+
   if (isType) {
     if (count <= 6)   return 'Ancient';
     if (count <= 12)  return 'God';
@@ -240,7 +248,7 @@ export class CollectionAttributesComponent implements OnInit {
         traitType,
         count: d.count,
         pct: pctNum.toFixed(1) + '%',
-        rarity: rarityTier(d.count, pctNum, isType),
+        rarity: rarityTier(d.count, pctNum, isType, name),
         examples: d.examples,
         exampleShas: d.shas,
       };
@@ -370,7 +378,7 @@ export class CollectionAttributesComponent implements OnInit {
 
     const toRow = (name: string, traitType: string, d: { count: number; examples: string[]; shas: string[] }, isType = false) => {
       const pctNum = (d.count / total) * 100;
-      return { name, traitType, count: d.count, pct: pctNum.toFixed(1) + '%', rarity: rarityTier(d.count, pctNum, isType), examples: d.examples, exampleShas: d.shas };
+      return { name, traitType, count: d.count, pct: pctNum.toFixed(1) + '%', rarity: rarityTier(d.count, pctNum, isType, name), examples: d.examples, exampleShas: d.shas };
     };
 
     const typeSection: AttrSection = { name: 'Phunk Types', rows: Object.entries(typeTraitMap).map(([n, d]) => toRow(n, 'Type', d, true)).sort((a, b) => a.count - b.count) };
