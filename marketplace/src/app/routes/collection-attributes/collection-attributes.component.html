@@ -42,7 +42,7 @@
             <span class="attr-val-name">{{ row.numTraits }} {{ row.numTraits === 1 ? 'attribute' : 'attributes' }}</span>
             <span class="attr-val-count">{{ row.count | number }}</span>
             <span class="attr-val-pct">{{ row.pct }}</span>
-            <span class="attr-val-rarity" [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')">{{ row.rarity }}</span>
+            <span class="attr-val-rarity" [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-') + (row.name.toLowerCase() === 'cosmic' ? ' cosmic' : '')">{{ row.rarity }}</span>
             <span class="attr-val-examples">
               @for (url of row.examples; track url; let i = $index) {
                 <img [src]="url" [alt]="row.numTraits + ' attributes'" loading="lazy" (click)="goToPhunk(row.exampleShas[i])" />
@@ -70,7 +70,7 @@
             <span class="attr-val-name" (click)="goToAttribute(row.traitType, row.name)">{{ row.name }}</span>
             <span class="attr-val-count">{{ row.count | number }}</span>
             <span class="attr-val-pct">{{ row.pct }}</span>
-            <span class="attr-val-rarity" [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')">{{ row.rarity }}</span>
+            <span class="attr-val-rarity" [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-') + (row.name.toLowerCase() === 'cosmic' ? ' cosmic' : '')">{{ row.rarity }}</span>
             <span class="attr-val-examples">
               @for (url of row.examples; track url; let i = $index) {
                 <img

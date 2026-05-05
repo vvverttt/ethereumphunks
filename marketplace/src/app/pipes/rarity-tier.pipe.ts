@@ -1,7 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 const RARITY_NAME_OVERRIDES: Record<string, string> = {
-  'cosmic':     'cosmic',
   'one of one': 'epic',
   'character':  'elite',
 };

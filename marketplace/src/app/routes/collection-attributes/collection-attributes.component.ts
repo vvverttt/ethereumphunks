@@ -21,7 +21,6 @@ const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67
 const RARITY_OVERRIDES: Record<string, string> = {
   'one of one': 'Epic',
   'character':  'Elite',
-  'cosmic':     'Cosmic',
 };
 
 function rarityTier(count: number, pct: number, isType = false, name = ''): string {
