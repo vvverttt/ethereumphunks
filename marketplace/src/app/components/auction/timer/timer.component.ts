@@ -32,30 +32,26 @@ export class TimerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.clearTimer();
+    clearInterval(this.intervalId);
   }
 
   stop(): void {
-    this.clearTimer();
-  }
-
-  private clearTimer(): void {
-
-    this.setTimer();
-
-    this.days = '00';
-    this.hours = '00';
-    this.minutes = '00';
-    this.seconds = '00';
-
     clearInterval(this.intervalId);
   }
 
   private countDown() {
-    this.clearTimer();
+    clearInterval(this.intervalId);
+    this.setTimer(); // show immediately, no flash of zeros
     this.intervalId = setInterval(() => {
       const diff = this.setTimer();
-      if (diff < 1) this.clearTimer();
+      if (diff < 1) {
+        clearInterval(this.intervalId);
+        this.days = '00';
+        this.hours = '00';
+        this.minutes = '00';
+        this.seconds = '00';
+        this.event.emit({ left: 0 });
+      }
     }, 1000);
   }
 
