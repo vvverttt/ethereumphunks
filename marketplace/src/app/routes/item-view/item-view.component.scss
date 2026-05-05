@@ -219,7 +219,7 @@ app-phunk-billboard {
           &.rarity-god       { color: #ff8c00; }
           &.rarity-mythic    { color: #ff6b00; }
           &.rarity-exotic    { color: #ff00cc; }
-          &.rarity-legendary { color: #ffb700; }
+          &.rarity-legendary { color: #ff9100; }
           &.rarity-ultra     { color: #ff4500; }
           &.rarity-ultra-rare { color: #ff6a00; }
           &.rarity-epic      { color: #b44fff; }
@@ -245,8 +245,9 @@ app-phunk-billboard {
             &.rarity-god       { color: #ff8c00; }
             &.rarity-mythic    { color: #ff6b00; }
             &.rarity-exotic    { color: #ff00cc; }
-            &.rarity-legendary { color: #ffb700; }
+            &.rarity-legendary { color: #ff9100; }
             &.rarity-ultra     { color: #ff4500; }
+            &.rarity-ultra-rare { color: #ff6a00; }
             &.rarity-epic      { color: #b44fff; }
             &.rarity-elite     { color: #8a7aff; }
             &.rarity-rare      { color: #4fa8ff; }
