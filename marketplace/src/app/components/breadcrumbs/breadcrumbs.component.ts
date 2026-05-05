@@ -33,10 +33,18 @@ export class BreadcrumbsComponent {
   height: number = 480;
   scale: number = 2;
   transparentCheck = new FormControl(false);
+  gbaCheck = new FormControl(false);
 
   pfpOptionsActive = signal(false);
   downloadEnabled = signal(false);
   customizeEnabled = signal(false);
+
+  private readonly gbaPalette = [
+    [155, 188, 15],
+    [139, 172, 15],
+    [48,  98,  48],
+    [15,  56,  15],
+  ];
 
   constructor(
     private ethscriptionSvc: EthscriptionService,
@@ -51,6 +59,13 @@ export class BreadcrumbsComponent {
 
     this.transparentCheck.valueChanges.pipe(
       filter(() => !!this.phunk()),
+      tap((v) => { if (v) this.gbaCheck.setValue(false, { emitEvent: false }); }),
+      tap(() => this.paintCanvas(this.phunk()!))
+    ).subscribe();
+
+    this.gbaCheck.valueChanges.pipe(
+      filter(() => !!this.phunk()),
+      tap((v) => { if (v) this.transparentCheck.setValue(false, { emitEvent: false }); }),
       tap(() => this.paintCanvas(this.phunk()!))
     ).subscribe();
   }
@@ -78,8 +93,13 @@ export class BreadcrumbsComponent {
     // Apply scaling
     this.ctx.scale(this.scale, this.scale);
 
-    // If not transparent, fill with background color first
-    if (!transparent && phunk.isSupported) {
+    const gba = this.gbaCheck.value;
+
+    // Fill background
+    if (gba && phunk.isSupported) {
+      this.ctx.fillStyle = '#9bbc0f';
+      this.ctx.fillRect(0, 0, this.width / this.scale, this.height / this.scale);
+    } else if (!transparent && phunk.isSupported) {
       const theme = localStorage.getItem('EtherPhunks_theme');
       this.ctx.fillStyle = theme === 'light' ? '#FFDF00' : '#C3FF00';
       this.ctx.fillRect(0, 0, this.width / this.scale, this.height / this.scale);
@@ -89,13 +109,27 @@ export class BreadcrumbsComponent {
     const image = await this.drawPhunk(phunk);
     if (!image) return;
 
-    this.ctx.drawImage(
-      image,
-      0,
-      0,
-      this.width / this.scale,
-      this.height / this.scale
-    );
+    this.ctx.drawImage(image, 0, 0, this.width / this.scale, this.height / this.scale);
+
+    // Apply GBA 4-color palette quantization
+    if (gba) {
+      this.applyGbaPalette(this.ctx, this.width, this.height);
+    }
+  }
+
+  private applyGbaPalette(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] === 0) continue;
+      const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      const p = gray > 191 ? this.gbaPalette[0]
+              : gray > 127 ? this.gbaPalette[1]
+              : gray > 63  ? this.gbaPalette[2]
+              :               this.gbaPalette[3];
+      data[i] = p[0]; data[i + 1] = p[1]; data[i + 2] = p[2];
+    }
+    ctx.putImageData(imageData, 0, 0);
   }
 
   async drawPhunk(phunk: Phunk): Promise<HTMLImageElement | undefined> {
@@ -144,8 +178,9 @@ export class BreadcrumbsComponent {
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
       const transparent = this.transparentCheck.value;
+      const gba = this.gbaCheck.value;
       const theme = localStorage.getItem('EtherPhunks_theme');
-      const bgColor = transparent ? null : (theme === 'light' ? '#FFDF00' : '#C3FF00');
+      const bgColor = gba ? '#9bbc0f' : transparent ? null : (theme === 'light' ? '#FFDF00' : '#C3FF00');
 
       const blobUrl = await upscaleApng(bytes.buffer, this.width, this.height, bgColor);
       if (window.innerWidth > 800) link.download = name + '.png';

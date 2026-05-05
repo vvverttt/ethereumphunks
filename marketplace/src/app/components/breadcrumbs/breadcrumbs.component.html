@@ -40,6 +40,22 @@
                 />
                 <label i18n for="transparent">Transparent</label>
               </div>
+
+              @if (phunk()?.slug !== 'ethsrocks') {
+                <div
+                  class="shape-select"
+                  [class.disabled]="!customizeEnabled()">
+
+                  <input
+                    type="checkbox"
+                    id="gba"
+                    name="gba"
+                    value="gba"
+                    [formControl]="gbaCheck"
+                  />
+                  <label for="gba">GBA</label>
+                </div>
+              }
             </div>
 
             <div class="actions-wrapper">
