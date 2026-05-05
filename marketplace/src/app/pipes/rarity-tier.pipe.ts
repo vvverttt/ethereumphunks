@@ -1,16 +1,23 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 const RARITY_NAME_OVERRIDES: Record<string, string> = {
-  'one of one': 'epic',
-  'character':  'elite',
-  'zombie':     'elite',
-  'cosmic':     'cosmic',
-  'mythic':     'mythic',
-  'legendary':  'legendary',
-  'exotic':     'exotic',
-  'ultra':      'ultra',
-  'ancient':    'ancient',
-  'divine':     'divine',
+  'one of one':    'epic',
+  'character':     'character-trait',
+  'zombie':        'elite',
+  'cosmic':        'cosmic',
+  'mythic':        'mythic',
+  'legendary':     'legendary',
+  'exotic':        'exotic',
+  'ultra':         'ultra',
+  'ancient':       'ancient',
+  'divine':        'divine',
+  'infinity stone':'ancient',
+  'alien':         'legendary',
+  'cyborg':        'ultra',
+  'power ranger':  'power-ranger',
+  'xcopy':         'xcopy',
+  'phunkism':            'phunkism',
+  'alien invasion study':'alien-invasion',
 };
 
 @Pipe({ standalone: true, name: 'rarityTier' })

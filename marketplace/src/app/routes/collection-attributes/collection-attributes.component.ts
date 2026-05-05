@@ -19,8 +19,12 @@ const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67
 
 // Types always use fixed count-based tiers (based on combined ecosystem counts)
 const RARITY_OVERRIDES: Record<string, string> = {
-  'one of one': 'Epic',
-  'character':  'Elite',
+  'one of one':    'Epic',
+  'character':     'Elite',  // label stays Elite, color overridden via [class.character-trait]
+  'zombie':        'Elite',
+  'infinity stone':'Ancient',
+  'alien':         'Legendary',
+  'cyborg':        'Ultra',
 };
 
 function rarityTier(count: number, pct: number, isType = false, name = ''): string {

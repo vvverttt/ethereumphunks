@@ -171,13 +171,17 @@
   font-size: 1rem;
   font-weight: 700;
 
-  &.one-of-one { color: #ffd700; }
+  &.one-of-one { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.divine     { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
   &.ancient    { color: #ff2222; }
   &.exotic     { color: #ff00cc; }
   &.mythic     { color: #ff6b00; }
   &.god        { color: #ff8c00; }
-  &.legendary  { color: #ff9100; }
+  &.legendary  { color: #ffcc00; }
+  &.xcopy      { background: linear-gradient(90deg, #89f7fe, #e0c3fc, #ffffff, #e0c3fc, #89f7fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.phunkism       { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0, #89f7fe, #e0c3fc, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.character-trait  { background: linear-gradient(90deg, #ff2222, #4fa8ff, #4ddd7a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.alien-invasion   { background: linear-gradient(90deg, #00d4ff, #4ddd7a, #ffd700, #ff9100, #ff2222, #ff4da6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.ultra      { color: #ff4500; }
   &.ultra-rare { color: #ff6a00; }
   &.epic       { color: #b44fff; }
@@ -186,7 +190,8 @@
   &.uncommon   { color: #4ddd7a; }
   &.common     { color: #c3ff00; }
   &.abundant   { color: rgba(var(--text-color), .3); font-weight: 400; }
-  &.cosmic     { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.cosmic        { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.power-ranger  { background: linear-gradient(90deg, #ff4da6, #ffd700, #888888, #4fa8ff, #4ddd7a, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 }
 
 .attr-val-examples {
