@@ -35,7 +35,7 @@
             @if (phunk.attributes && phunk.attributes.length) {
               <h2 i18n>One of {{ phunk.attributes[0] | traitCount : phunk.slug }}
                 <a
-                  [class]="'rarity-' + ((phunk.attributes[0] | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply)"
+                  [class]="'rarity-' + ((phunk.attributes[0] | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : phunk.attributes[0].v)"
                   [routerLink]="['/', 'curated', phunk.slug, 'market', 'all']"
                   [queryParams]="phunk.attributes[0] | queryParams">
 
@@ -274,7 +274,7 @@
                           } @else {
                             <a
                               class="value"
-                              [class]="'value rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply)"
+                              [class]="'value rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v)"
                               [routerLink]="['/', 'curated', phunk.slug, 'market', 'all']"
                               [queryParams]="item | queryParams">
 
@@ -283,8 +283,8 @@
                                 <span class="percent">
                                   ({{ (+(item | traitCount : phunk.slug) / (phunk.collection?.supply || 0)) | percent : '1.1-1' }})
                                 </span>
-                                <span [class]="'rarity-label rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply)">
-                                  {{ (item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply | titlecase }}
+                                <span [class]="'rarity-label rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v)">
+                                  {{ (item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v | titlecase }}
                                 </span>
                               }
                             </a>

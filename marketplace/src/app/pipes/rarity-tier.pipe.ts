@@ -1,8 +1,18 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
+const RARITY_NAME_OVERRIDES: Record<string, string> = {
+  'cosmic':     'cosmic',
+  'one of one': 'epic',
+  'character':  'elite',
+};
+
 @Pipe({ standalone: true, name: 'rarityTier' })
 export class RarityTierPipe implements PipeTransform {
-  transform(count: number | string, supply: number | undefined): string {
+  transform(count: number | string, supply: number | undefined, name?: string): string {
+    if (name) {
+      const override = RARITY_NAME_OVERRIDES[name.toLowerCase().trim()];
+      if (override) return override;
+    }
     const c = +count;
     if (!c) return '';
     if (c === 1)    return 'one-of-one';

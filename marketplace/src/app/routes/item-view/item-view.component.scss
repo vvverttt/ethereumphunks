@@ -188,6 +188,7 @@ app-phunk-billboard {
           color: rgba(var(--highlight), 1);
           text-decoration: none;
 
+          &.rarity-cosmic     { color: #ff6ef7; text-shadow: 0 0 8px #ff6ef7, 0 0 20px #9b5de5; }
           &.rarity-one-of-one { color: #b44fff; }
           &.rarity-divine    { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
           &.rarity-ancient   { color: #ff2222; }

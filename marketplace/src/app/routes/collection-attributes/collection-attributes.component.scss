@@ -171,6 +171,7 @@
   font-size: 1rem;
   font-weight: 700;
 
+  &.cosmic     { color: #ff6ef7; text-shadow: 0 0 8px #ff6ef7, 0 0 20px #9b5de5; }
   &.one-of-one { color: #b44fff; }
   &.divine     { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
   &.ancient    { color: #ff2222; }
