@@ -1,11 +1,21 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
+const CUSTOM_DISPLAY_LABELS: Record<string, string> = {
+  'character-trait':  'Elite',
+  'power-ranger':     'Mythic',
+  'cosmic':           'Rare',
+  'xcopy':            'Legendary',
+  'phunkism':         'Epic',
+  'alien-invasion':   'Exotic',
+  'infinity stone':   'Ancient',
+};
+
 const RARITY_NAME_OVERRIDES: Record<string, string> = {
   'one of one':    'epic',
   'character':     'character-trait',
   'zombie':        'elite',
   'cosmic':        'cosmic',
-  'mythic':        'mythic',
+  'mythic':        'god',
   'legendary':     'legendary',
   'exotic':        'exotic',
   'ultra':         'ultra',
@@ -14,6 +24,7 @@ const RARITY_NAME_OVERRIDES: Record<string, string> = {
   'infinity stone':'ancient',
   'alien':         'legendary',
   'cyborg':        'ultra',
+  'ethsrock':      'uncommon',
   'power ranger':  'power-ranger',
   'xcopy':         'xcopy',
   'phunkism':            'phunkism',
@@ -22,10 +33,13 @@ const RARITY_NAME_OVERRIDES: Record<string, string> = {
 
 @Pipe({ standalone: true, name: 'rarityTier' })
 export class RarityTierPipe implements PipeTransform {
-  transform(count: number | string, supply: number | undefined, name?: string): string {
+  transform(count: number | string, supply: number | undefined, name?: string, labelMode?: boolean): string {
     if (name) {
       const override = RARITY_NAME_OVERRIDES[name.toLowerCase().trim()];
-      if (override) return override;
+      if (override) {
+        if (labelMode) return CUSTOM_DISPLAY_LABELS[override] || override.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return override;
+      }
     }
     const c = +count;
     if (!c) return '';

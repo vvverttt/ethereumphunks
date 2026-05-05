@@ -284,7 +284,7 @@
                                   ({{ (+(item | traitCount : phunk.slug) / (phunk.collection?.supply || 0)) | percent : '1.1-1' }})
                                 </span>
                                 <span [class]="'rarity-label rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v)">
-                                  {{ (item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v | titlecase }}
+                                  {{ (item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v : true | titlecase }}
                                 </span>
                               }
                             </a>

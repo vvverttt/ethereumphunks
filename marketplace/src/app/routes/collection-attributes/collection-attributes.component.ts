@@ -25,6 +25,8 @@ const RARITY_OVERRIDES: Record<string, string> = {
   'infinity stone':'Ancient',
   'alien':         'Legendary',
   'cyborg':        'Ultra',
+  'ethsrock':      'Uncommon',
+  'mythic':        'God',
 };
 
 function rarityTier(count: number, pct: number, isType = false, name = ''): string {
