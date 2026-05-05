@@ -28,6 +28,10 @@
     filter: blur(0px);
     @include trans($duration: .2s);
 
+    :host-context([data-theme="light"]) & img {
+      filter: grayscale(1) sepia(1) hue-rotate(65deg) saturate(4) brightness(0.85);
+    }
+
     img {
       display: block;
       width: var(--inscription-size);
