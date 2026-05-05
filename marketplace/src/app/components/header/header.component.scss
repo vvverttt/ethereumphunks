@@ -426,9 +426,3 @@
   }
 }
 
-// Game Boy palette filter on all header images in light mode
-:host-context([data-theme="light"]) {
-  img {
-    filter: grayscale(1) sepia(1) hue-rotate(65deg) saturate(4) brightness(0.85);
-  }
-}
