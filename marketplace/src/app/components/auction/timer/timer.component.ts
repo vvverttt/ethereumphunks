@@ -59,7 +59,7 @@ export class TimerComponent implements OnInit, OnChanges, OnDestroy {
     const padWithZero = (n: number, t: number) => String(n).padStart(t, '0');
 
     const now = Date.now();
-    let diff = this.endTime ? this.endTime - now : 0;
+    let diff = this.endTime ? Math.max(0, this.endTime - now) : 0;
 
     // Time calculations for days, hours, minutes and seconds
     const d = Math.floor(diff / (1000 * 60 * 60 * 24));
