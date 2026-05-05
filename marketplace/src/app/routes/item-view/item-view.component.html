@@ -35,7 +35,7 @@
             @if (phunk.attributes && phunk.attributes.length) {
               <h2 i18n>One of {{ phunk.attributes[0] | traitCount : phunk.slug }}
                 <a
-                  class="highlight"
+                  [class]="'rarity-' + ((phunk.attributes[0] | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply)"
                   [routerLink]="['/', 'curated', phunk.slug, 'market', 'all']"
                   [queryParams]="phunk.attributes[0] | queryParams">
 
