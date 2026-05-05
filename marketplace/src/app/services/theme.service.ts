@@ -34,19 +34,19 @@ export class ThemeService {
     },
     light: {
       label: 'Light',
-      '--background': '155, 188, 15',       // #9bbc0f — GB lightest green
-      '--text-color': '15, 56, 15',          // #0f380f — GB darkest green
-      '--dark-text': '15, 56, 15',           // #0f380f
-      '--pink': '48, 98, 48',                // #306230
-      '--base-color': '139, 172, 15',        // #8bac0f
-      '--highlight': '15, 56, 15',           // #0f380f — dark for contrast
-      '--button-color': '15, 56, 15',        // #0f380f
+      '--background': '255, 4, 180',
+      '--text-color': '0, 0, 0',
+      '--dark-text': '0, 0, 0',
+      '--pink': '255, 4, 180',
+      '--base-color': '195, 255, 0',
+      '--highlight': '195, 255, 0',
+      '--button-color': '0, 0, 0',
 
-      '--header-text': '155, 188, 15',       // #9bbc0f — light on dark header
-      '--header-highlight': '139, 172, 15',  // #8bac0f
+      '--header-text': '0, 0, 0',
+      '--header-highlight': '255, 4, 180',
 
-      '--header-text-active': '155, 188, 15',
-      '--header-highlight-active': '139, 172, 15'
+      '--header-text-active': '0, 0, 0',
+      '--header-highlight-active': '255, 4, 180'
     }
   }
 
