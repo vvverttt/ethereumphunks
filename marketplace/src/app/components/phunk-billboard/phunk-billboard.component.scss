@@ -27,6 +27,10 @@
 
         object-fit: contain;
         object-position: 50% 100%;
+
+        :host-context([data-theme="light"]) & {
+          filter: grayscale(1) sepia(1) hue-rotate(65deg) saturate(4) brightness(0.85);
+        }
       }
     }
 
