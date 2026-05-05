@@ -212,19 +212,19 @@ app-phunk-billboard {
           color: rgba(var(--highlight), 1);
           text-decoration: none;
 
-          &.rarity-cosmic        { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-power-ranger  { background: linear-gradient(90deg, #ff4da6, #ffd700, #888888, #4fa8ff, #4ddd7a, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-one-of-one    { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-cosmic        { color: #00d4ff; }
+          &.rarity-power-ranger  { color: #ff4da6; }
+          &.rarity-one-of-one    { color: #ffb700; }
           &.rarity-divine    { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
           &.rarity-ancient   { color: #ff2222; }
           &.rarity-god       { color: #ff8c00; }
           &.rarity-mythic    { color: #ff6b00; }
           &.rarity-exotic    { color: #ff00cc; }
           &.rarity-legendary { color: #ffcc00; }
-          &.rarity-xcopy     { background: linear-gradient(90deg, #89f7fe, #e0c3fc, #ffffff, #e0c3fc, #89f7fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-phunkism       { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0, #89f7fe, #e0c3fc, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-character-trait  { background: linear-gradient(90deg, #ff2222, #4fa8ff, #4ddd7a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-alien-invasion   { background: linear-gradient(90deg, #00d4ff, #4ddd7a, #ffd700, #ff9100, #ff2222, #ff4da6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-xcopy     { color: #89f7fe; }
+          &.rarity-phunkism       { color: #ffd700; }
+          &.rarity-character-trait  { color: #ff2222; }
+          &.rarity-alien-invasion   { color: #00d4ff; }
           &.rarity-ultra     { color: #ff4500; }
           &.rarity-ultra-rare { color: #ff6a00; }
           &.rarity-epic      { color: #b44fff; }
@@ -233,9 +233,19 @@ app-phunk-billboard {
           &.rarity-uncommon  { color: #4ddd7a; }
           &.rarity-common    { color: #c3ff00; }
 
+          &.rarity-cosmic > span:first-child        { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-power-ranger > span:first-child  { background: linear-gradient(90deg, #ff4da6, #ffd700, #888888, #4fa8ff, #4ddd7a, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-one-of-one > span:first-child    { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-xcopy > span:first-child         { background: linear-gradient(90deg, #89f7fe, #e0c3fc, #ffffff, #e0c3fc, #89f7fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-phunkism > span:first-child      { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0, #89f7fe, #e0c3fc, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-character-trait > span:first-child { background: linear-gradient(90deg, #ff2222, #4fa8ff, #4ddd7a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-alien-invasion > span:first-child { background: linear-gradient(90deg, #00d4ff, #4ddd7a, #ffd700, #ff9100, #ff2222, #ff4da6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
           .percent {
             font-size: 1.4rem;
             opacity: .5;
+            background: none;
+            -webkit-text-fill-color: currentColor;
           }
 
           .rarity-label {
@@ -243,19 +253,19 @@ app-phunk-billboard {
             font-weight: 700;
             margin-left: .5rem;
 
-            &.rarity-cosmic        { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-            &.rarity-power-ranger  { background: linear-gradient(90deg, #ff4da6, #ffd700, #888888, #4fa8ff, #4ddd7a, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-            &.rarity-one-of-one    { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+            &.rarity-cosmic        { color: #00d4ff; }
+            &.rarity-power-ranger  { color: #ff4da6; }
+            &.rarity-one-of-one    { color: #ffb700; }
             &.rarity-divine    { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
             &.rarity-ancient   { color: #ff2222; }
             &.rarity-god       { color: #ff8c00; }
             &.rarity-mythic    { color: #ff6b00; }
             &.rarity-exotic    { color: #ff00cc; }
             &.rarity-legendary { color: #ffcc00; }
-          &.rarity-xcopy     { background: linear-gradient(90deg, #89f7fe, #e0c3fc, #ffffff, #e0c3fc, #89f7fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-phunkism       { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0, #89f7fe, #e0c3fc, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-character-trait  { background: linear-gradient(90deg, #ff2222, #4fa8ff, #4ddd7a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-          &.rarity-alien-invasion   { background: linear-gradient(90deg, #00d4ff, #4ddd7a, #ffd700, #ff9100, #ff2222, #ff4da6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-xcopy     { color: #89f7fe; }
+          &.rarity-phunkism       { color: #ffd700; }
+          &.rarity-character-trait  { color: #ff2222; }
+          &.rarity-alien-invasion   { color: #00d4ff; }
             &.rarity-ultra     { color: #ff4500; }
             &.rarity-ultra-rare { color: #ff6a00; }
             &.rarity-epic      { color: #b44fff; }
