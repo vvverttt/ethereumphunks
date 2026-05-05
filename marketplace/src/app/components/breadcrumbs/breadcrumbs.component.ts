@@ -196,6 +196,22 @@ export class BreadcrumbsComponent {
       link.href = this.pfp.nativeElement.toDataURL('image/png;base64');
     }
 
+    // iOS/mobile: use native share sheet if available (supports Save to Photos)
+    const isMobile = window.innerWidth <= 800;
+    if (isMobile && navigator.canShare) {
+      try {
+        const res = await fetch(link.href);
+        const blob = await res.blob();
+        const ext = isGif ? 'gif' : 'png';
+        const file = new File([blob], `${name}.${ext}`, { type: blob.type });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: name });
+          this.pfpOptionsActive.set(false);
+          return;
+        }
+      } catch {}
+    }
+
     link.click();
     this.pfpOptionsActive.set(false);
   }
