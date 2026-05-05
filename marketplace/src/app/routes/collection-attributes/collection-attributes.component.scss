@@ -171,7 +171,7 @@
   font-size: 1rem;
   font-weight: 700;
 
-  &.one-of-one { color: #b44fff; }
+  &.one-of-one { color: #ffd700; }
   &.divine     { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
   &.ancient    { color: #ff2222; }
   &.exotic     { color: #ff00cc; }
@@ -186,7 +186,7 @@
   &.uncommon   { color: #4ddd7a; }
   &.common     { color: #c3ff00; }
   &.abundant   { color: rgba(var(--text-color), .3); font-weight: 400; }
-  &.cosmic     { color: #ff6ef7; text-shadow: 0 0 8px #ff6ef7, 0 0 20px #9b5de5; }
+  &.cosmic     { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 }
 
 .attr-val-examples {

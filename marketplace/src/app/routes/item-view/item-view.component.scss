@@ -119,6 +119,30 @@ app-phunk-billboard {
 
     h2 {
       font-size: 1.8rem;
+
+      a {
+        text-decoration: none;
+
+        &.rarity-one-of-one { color: #ffd700; }
+        &.rarity-divine     { color: #00eeff; }
+        &.rarity-ancient    { color: #ff2222; }
+        &.rarity-god        { color: #ff8c00; }
+        &.rarity-mythic     { color: #ff6b00; }
+        &.rarity-exotic     { color: #ff00cc; }
+        &.rarity-legendary  { color: #ffb700; }
+        &.rarity-ultra      { color: #ff4500; }
+        &.rarity-epic       { color: #b44fff; }
+        &.rarity-elite      { color: #8a7aff; }
+        &.rarity-rare       { color: #4fa8ff; }
+        &.rarity-uncommon   { color: #4ddd7a; }
+        &.rarity-common     { color: #c3ff00; }
+        &.rarity-cosmic     {
+          background: linear-gradient(90deg, #00d4ff, #f953c6);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      }
     }
   }
 
@@ -188,8 +212,8 @@ app-phunk-billboard {
           color: rgba(var(--highlight), 1);
           text-decoration: none;
 
-          &.rarity-cosmic     { color: #ff6ef7; text-shadow: 0 0 8px #ff6ef7, 0 0 20px #9b5de5; }
-          &.rarity-one-of-one { color: #b44fff; }
+          &.rarity-cosmic     { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-one-of-one { color: #ffd700; }
           &.rarity-divine    { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
           &.rarity-ancient   { color: #ff2222; }
           &.rarity-god       { color: #ff8c00; }
@@ -214,7 +238,8 @@ app-phunk-billboard {
             font-weight: 700;
             margin-left: .5rem;
 
-            &.rarity-one-of-one { color: #b44fff; }
+            &.rarity-cosmic     { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+            &.rarity-one-of-one { color: #ffd700; }
             &.rarity-divine    { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
             &.rarity-ancient   { color: #ff2222; }
             &.rarity-god       { color: #ff8c00; }

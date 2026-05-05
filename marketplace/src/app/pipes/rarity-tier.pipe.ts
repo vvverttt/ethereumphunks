@@ -3,6 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 const RARITY_NAME_OVERRIDES: Record<string, string> = {
   'one of one': 'epic',
   'character':  'elite',
+  'cosmic':     'cosmic',
 };
 
 @Pipe({ standalone: true, name: 'rarityTier' })
