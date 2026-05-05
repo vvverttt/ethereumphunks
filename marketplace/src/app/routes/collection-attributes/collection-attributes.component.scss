@@ -172,23 +172,23 @@
   font-weight: 700;
 
   &.one-of-one { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  &.divine     { color: #00eeff; text-shadow: 0 0 6px #00eeff; }
-  &.ancient    { color: #ff2222; }
-  &.exotic     { color: #ff00cc; }
-  &.mythic     { color: #ff8c00; }
-  &.god        { color: #ff8c00; }
-  &.legendary  { color: #ffcc00; }
+  &.divine     { background: linear-gradient(90deg, #00eeff, #e9ffff, #00bcd4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 0 6px rgba(0, 238, 255, .35); }
+  &.ancient    { background: linear-gradient(90deg, #ff2222, #ff8a00, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.exotic     { background: linear-gradient(90deg, #ff00cc, #ff7af0, #9b00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.mythic     { background: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.god        { background: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.legendary  { background: linear-gradient(90deg, #ffcc00, #fff2a0, #ff9d00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.xcopy      { background: linear-gradient(90deg, #89f7fe, #e0c3fc, #ffffff, #e0c3fc, #89f7fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.phunkism       { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0, #89f7fe, #e0c3fc, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.character-trait  { background: linear-gradient(90deg, #ff2222, #4fa8ff, #4ddd7a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.alien-invasion   { background: linear-gradient(90deg, #00d4ff, #4ddd7a, #ffd700, #ff9100, #ff2222, #ff4da6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  &.ultra      { color: #ff4500; }
-  &.ultra-rare { color: #ff6a00; }
-  &.epic       { color: #b44fff; }
-  &.elite      { color: #8a7aff; }
-  &.rare       { color: #4fa8ff; }
-  &.uncommon   { color: #4ddd7a; }
-  &.common     { color: #c3ff00; }
+  &.ultra      { background: linear-gradient(90deg, #ff4500, #ff9b37, #ff2a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.ultra-rare { background: linear-gradient(90deg, #ff6a00, #ffc16a, #ff3300); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.epic       { background: linear-gradient(90deg, #b44fff, #df9cff, #7c3cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.elite      { background: linear-gradient(90deg, #8a7aff, #c8c0ff, #6454ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.rare       { background: linear-gradient(90deg, #4fa8ff, #a7d7ff, #1f7cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.uncommon   { background: linear-gradient(90deg, #4ddd7a, #b7ffcb, #20b957); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  &.common     { background: linear-gradient(90deg, #c3ff00, #efff87, #8fd600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.abundant   { color: rgba(var(--text-color), .3); font-weight: 400; }
   &.cosmic        { background: linear-gradient(90deg, #00d4ff, #f953c6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   &.power-ranger  { background: linear-gradient(90deg, #ff4da6, #ffd700, #888888, #4fa8ff, #4ddd7a, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }

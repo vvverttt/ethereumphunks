@@ -124,18 +124,18 @@ app-phunk-billboard {
         text-decoration: none;
 
         &.rarity-one-of-one { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        &.rarity-divine     { color: #00eeff; }
-        &.rarity-ancient    { color: #ff2222; }
-        &.rarity-god        { color: #ff8c00; }
-        &.rarity-mythic     { color: #ff8c00; }
-        &.rarity-exotic     { color: #ff00cc; }
-        &.rarity-legendary  { color: #ffcc00; }
-        &.rarity-ultra      { color: #ff4500; }
-        &.rarity-epic       { color: #b44fff; }
-        &.rarity-elite      { color: #8a7aff; }
-        &.rarity-rare       { color: #4fa8ff; }
-        &.rarity-uncommon   { color: #4ddd7a; }
-        &.rarity-common     { color: #c3ff00; }
+        &.rarity-divine     { background: linear-gradient(90deg, #00eeff, #e9ffff, #00bcd4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 0 6px rgba(0, 238, 255, .35); }
+        &.rarity-ancient    { background: linear-gradient(90deg, #ff2222, #ff8a00, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-god        { background: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-mythic     { background: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-exotic     { background: linear-gradient(90deg, #ff00cc, #ff7af0, #9b00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-legendary  { background: linear-gradient(90deg, #ffcc00, #fff2a0, #ff9d00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-ultra      { background: linear-gradient(90deg, #ff4500, #ff9b37, #ff2a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-epic       { background: linear-gradient(90deg, #b44fff, #df9cff, #7c3cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-elite      { background: linear-gradient(90deg, #8a7aff, #c8c0ff, #6454ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-rare       { background: linear-gradient(90deg, #4fa8ff, #a7d7ff, #1f7cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-uncommon   { background: linear-gradient(90deg, #4ddd7a, #b7ffcb, #20b957); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        &.rarity-common     { background: linear-gradient(90deg, #c3ff00, #efff87, #8fd600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         &.rarity-cosmic     {
           background: linear-gradient(90deg, #00d4ff, #f953c6);
           -webkit-background-clip: text;
@@ -240,6 +240,19 @@ app-phunk-billboard {
           &.rarity-phunkism > span:first-child      { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0, #89f7fe, #e0c3fc, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
           &.rarity-character-trait > span:first-child { background: linear-gradient(90deg, #ff2222, #4fa8ff, #4ddd7a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
           &.rarity-alien-invasion > span:first-child { background: linear-gradient(90deg, #00d4ff, #4ddd7a, #ffd700, #ff9100, #ff2222, #ff4da6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-divine > span:first-child      { background: linear-gradient(90deg, #00eeff, #e9ffff, #00bcd4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-ancient > span:first-child     { background: linear-gradient(90deg, #ff2222, #ff8a00, #ff2222); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-god > span:first-child         { background: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-mythic > span:first-child      { background: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-exotic > span:first-child      { background: linear-gradient(90deg, #ff00cc, #ff7af0, #9b00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-legendary > span:first-child   { background: linear-gradient(90deg, #ffcc00, #fff2a0, #ff9d00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-ultra > span:first-child       { background: linear-gradient(90deg, #ff4500, #ff9b37, #ff2a00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-ultra-rare > span:first-child  { background: linear-gradient(90deg, #ff6a00, #ffc16a, #ff3300); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-epic > span:first-child        { background: linear-gradient(90deg, #b44fff, #df9cff, #7c3cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-elite > span:first-child       { background: linear-gradient(90deg, #8a7aff, #c8c0ff, #6454ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-rare > span:first-child        { background: linear-gradient(90deg, #4fa8ff, #a7d7ff, #1f7cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-uncommon > span:first-child    { background: linear-gradient(90deg, #4ddd7a, #b7ffcb, #20b957); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+          &.rarity-common > span:first-child      { background: linear-gradient(90deg, #c3ff00, #efff87, #8fd600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
           .percent {
             font-size: 1.4rem;

@@ -20,7 +20,17 @@
         <tr>
           <td>
             <div class="cell-inner">
-              {{ labels[event.type] }}
+              @if (event.type === 'PhunkBought') {
+                <span class="prismatic-bought">Bought</span> for
+              } @else if (event.type === 'created') {
+                <span class="prismatic-created">Created</span> by
+              } @else if (event.type === 'PrizeAwarded') {
+                <span class="prismatic-won">Won</span> in lottery by
+              } @else if (event.type === 'AuctionSettled') {
+                Auction <span class="prismatic-won">won</span> by
+              } @else {
+                {{ labels[event.type] }}
+              }
             </div>
           </td>
           <td>

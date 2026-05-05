@@ -37,3 +37,82 @@
 
 // 6. Themes
 @use 'themes/default';
+
+.prismatic-bought {
+  display: inline-block;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: #ffd700;
+  background: linear-gradient(90deg, #ffd700, #ffcc00, #ffd700, #ffcc00, #ffd700);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 .25rem rgba(255, 215, 0, .55));
+  will-change: background-position;
+  animation: boughtPrism 3.2s linear infinite;
+}
+
+.prismatic-created {
+  display: inline-block;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: #00ffe7;
+  background:
+    linear-gradient(90deg, #00ffe7, #37f5ff, #c3ff00, #5ce1e6, #00ffe7, #c3ff00, #37f5ff, #00ffe7);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 .22rem rgba(0, 255, 231, .7));
+  will-change: background-position;
+  animation: createdDiamondPrism 3.4s linear infinite;
+}
+
+.prismatic-won {
+  display: inline-block;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: #00ffe7;
+  background: linear-gradient(90deg, #00ffe7, #37f5ff, #5ce1e6, #00ffe7, #37f5ff, #5ce1e6, #00ffe7);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 .24rem rgba(0, 255, 231, .75));
+  will-change: background-position;
+  animation: wonDiamondPrism 3.1s linear infinite;
+}
+
+@keyframes boughtPrism {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes wonDiamondPrism {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes createdDiamondPrism {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}

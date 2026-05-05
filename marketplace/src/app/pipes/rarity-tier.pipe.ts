@@ -33,9 +33,10 @@ const RARITY_NAME_OVERRIDES: Record<string, string> = {
 
 @Pipe({ standalone: true, name: 'rarityTier' })
 export class RarityTierPipe implements PipeTransform {
-  transform(count: number | string, supply: number | undefined, name?: string, labelMode?: boolean): string {
+  transform(count: number | string, supply: number | undefined, name?: string | string[], labelMode?: boolean): string {
     if (name) {
-      const override = RARITY_NAME_OVERRIDES[name.toLowerCase().trim()];
+      const nameStr = (Array.isArray(name) ? name[0] : name) || '';
+      const override = RARITY_NAME_OVERRIDES[nameStr.toLowerCase().trim()];
       if (override) {
         if (labelMode) return CUSTOM_DISPLAY_LABELS[override] || override.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         return override;
