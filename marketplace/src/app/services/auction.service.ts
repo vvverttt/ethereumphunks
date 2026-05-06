@@ -442,7 +442,7 @@ export class AuctionService {
           slug: eth?.slug ?? '',
           settledTimestamp: Math.floor(new Date(a.createdAt).getTime() / 1000),
         };
-      }).filter(a => a.tokenId > 0);
+      }).filter(a => !!a.imageUrl);
     } catch {
       return [];
     }

@@ -64,8 +64,12 @@
                   <span class="prismatic-created">Created</span> by
                 } @else if (event.type === 'PrizeAwarded') {
                   <span class="prismatic-won">Won</span> in lottery by
-                } @else if (event.type === 'AuctionSettled') {
+                } @else if (event.type === 'AuctionSettled' && event.to && event.to !== '0x0000000000000000000000000000000000000000') {
                   Auction <span class="prismatic-won">won</span> by
+                } @else if (event.type === 'AuctionSettled') {
+                  Auction ended — no bids
+                } @else if (event.type === 'AuctionBid') {
+                  <span class="prismatic-bid">Auction bid</span> of
                 } @else {
                   {{ labels[event.type] }}
                 }
@@ -73,7 +77,8 @@
             }
 
             @if (
-              event.to && (
+              event.to &&
+              event.to !== '0x0000000000000000000000000000000000000000' && (
                 event.type === 'transfer' ||
                 event.type === 'created' ||
                 event.type === 'bridgeIn' ||
@@ -98,7 +103,8 @@
               event.type !== 'PrizeAwarded' &&
               event.type !== 'Evolved' &&
               event.type !== 'Devolved' &&
-              event.type !== 'AuctionCreated'
+              event.type !== 'AuctionCreated' &&
+              event.type !== 'AuctionSettled'
             ) {
               <span class="value">
                 Ξ{{ event.value | weiToEth }}<br />

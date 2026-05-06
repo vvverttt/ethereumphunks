@@ -44,9 +44,9 @@
 
     .value {
       font-family: var(--secondary-font-stack);
-      font-size: 2.2rem;
+      font-size: 2rem;
       word-break: break-all;
-      white-space: normal;
+      white-space: nowrap;
 
       .eth-symbol {
         font-weight: 900;
