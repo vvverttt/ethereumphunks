@@ -3,7 +3,6 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ViewChild, ViewChildren, ElementRef, QueryList, Component, signal } from '@angular/core';
 
-import { signTypedData } from '@wagmi/core';
 import { formatEther } from 'viem';
 import { HttpClient } from '@angular/common/http';
 
@@ -53,7 +52,6 @@ interface ActionsState {
   withdraw: boolean;
   transfer: boolean;
   escrow: boolean;
-  bridge: boolean;
   privateSale: boolean;
   evolve: boolean;
   devolve: boolean;
@@ -100,14 +98,12 @@ export class ItemViewComponent {
   explorerUrl = environment.explorerUrl;
   externalMarketUrl = environment.externalMarketUrl;
   escrowAddress = environment.marketAddress;
-  bridgeAddress = environment.bridgeAddress;
 
   actionsState = signal<ActionsState>({
     sell: false,
     withdraw: false,
     transfer: false,
     escrow: false,
-    bridge: false,
     privateSale: false,
     evolve: false,
     devolve: false,
@@ -220,11 +216,6 @@ export class ItemViewComponent {
     setTimeout(() => this.transferAddressInput?.nativeElement.focus(), 0);
   }
 
-  bridgePhunkAction(): void {
-    this.closeAll();
-    this.actionsState.update((state) => ({ ...state, bridge: true }));
-  }
-
   privateSalePhunkAction(): void {
     this.actionsState.update((state) => ({ ...state, privateSale: true }));
   }
@@ -244,10 +235,6 @@ export class ItemViewComponent {
     this.clearAll();
   }
 
-  closeBridge(): void {
-    this.actionsState.update((state) => ({ ...state, bridge: false }));
-  }
-
   closePrivateSale(): void {
     this.actionsState.update((state) => ({ ...state, privateSale: false }));
   }
@@ -262,7 +249,6 @@ export class ItemViewComponent {
     this.closeListing();
     this.closeTransfer();
     this.closeEscrow();
-    this.closeBridge();
   }
 
   async submitListing(phunk: Phunk): Promise<void> {
@@ -307,9 +293,7 @@ export class ItemViewComponent {
       const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner, slug: phunk.slug });
 
       let hash;
-      if (phunk.nft) {
-        hash = await this.web3Svc.offerPhunkForSaleL2(hashId, value, address);
-      } else if (phunk.isEscrowed) {
+      if (phunk.isEscrowed) {
         // Escrowed path: direct listing first.
         try {
           hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
@@ -437,12 +421,7 @@ export class ItemViewComponent {
     try {
       const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
 
-      let hash;
-      if (phunk.nft) {
-        hash = await this.web3Svc.phunkNoLongerForSaleL2(hashId);
-      } else {
-        hash = await this.web3Svc.phunkNoLongerForSale(hashId, targetMarket);
-      }
+      const hash = await this.web3Svc.phunkNoLongerForSale(hashId, targetMarket);
       if (!hash) throw new Error('Could not process transaction');
 
       notification = {
@@ -499,12 +478,7 @@ export class ItemViewComponent {
 
       const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
 
-      let hash: string | undefined = undefined;
-      if (phunk.nft) {
-        hash = await this.web3Svc.buyPhunkL2(hashId);
-      } else {
-        hash = await this.web3Svc.batchBuyPhunks([phunk], targetMarket);
-      }
+      const hash = await this.web3Svc.batchBuyPhunks([phunk], targetMarket);
 
       if (!hash) throw new Error('Could not process transaction');
 
@@ -633,124 +607,6 @@ export class ItemViewComponent {
         detail: err,
       };
       this.store.dispatch(upsertNotification({ notification }));
-    }
-  }
-
-  async bridge(phunk: Phunk): Promise<void> {
-
-    const hashId = phunk.hashId;
-
-    const config = this.web3Svc.config;
-    const chainId = config.getClient().chain.id;
-
-    const address = await this.web3Svc.getCurrentAddress();
-    if (!address) throw new Error('Invalid user address');
-
-    let notification: Notification = {
-      id: this.utilSvc.createIdFromString('bridgeOut' + hashId),
-      timestamp: Date.now(),
-      slug: phunk.slug,
-      type: 'wallet',
-      function: 'bridgeOut',
-      hashId,
-      tokenId: phunk.tokenId,
-    };
-
-    try {
-      this.store.dispatch(upsertNotification({ notification }));
-
-      const baseUrl = environment.relayUrl;
-      const nonceUrl = `${baseUrl}/generate-nonce`;
-      const nonceResult = await firstValueFrom(
-        this.http.get(nonceUrl, { params: { address }, responseType: 'text' })
-      );
-
-      // const signature = await signMessage(config, {
-      //   message: `Sign this message to verify ownership of the asset.\n\nAddress: ${address.toLowerCase()}\nEthscription ID: ${phunk.hashId}\nSHA: ${phunk.sha}\nNonce: ${nonceResult}\nChain ID: ${chainId}`,
-      // });
-
-      const typedData: any = {
-        domain: {
-          name: 'EtherPhunks',
-          version: '1',
-          chainId: BigInt(chainId),
-        },
-        message: {
-          address: address as `0x${string}`,
-          hashId: phunk.hashId,
-          sha: phunk.sha,
-          nonce: nonceResult,
-          chainId: BigInt(chainId),
-        },
-        types: {
-          EIP712Domain: [
-            { name: 'name', type: 'string' },
-            { name: 'version', type: 'string' },
-            { name: 'chainId', type: 'uint256' },
-          ],
-          Bridge: [
-            { name: 'address', type: 'address' },
-            { name: 'hashId', type: 'string' },
-            { name: 'sha', type: 'string' },
-            { name: 'nonce', type: 'string' },
-            { name: 'chainId', type: 'uint256' },
-          ],
-        },
-        primaryType: 'Bridge',
-      };
-
-      const signature = await signTypedData(config, typedData);
-
-      const relayUrl = `${baseUrl}/bridge-phunk`;
-      const relayResponse: any = await firstValueFrom(
-        this.http.post(relayUrl, {
-          address,
-          hashId: phunk.hashId,
-          sha: phunk.sha,
-          signature,
-          chainId,
-        }, {
-          headers: {
-            'x-api-key': 'yY.nnrLrRQ_gL.kGWb*QRCYqs3YJNtjVGXfoNLpfwwenH@FL',
-          }
-        })
-      );
-
-      const hexArr = [
-        relayResponse.hashId,
-        relayResponse.signature.r,
-        relayResponse.signature.s,
-        relayResponse.signature.v,
-      ];
-
-      const hash = await this.web3Svc.lockPhunk(hexArr);
-      if (!hash) throw new Error('Could not process transaction');
-      notification = {
-        ...notification,
-        type: 'pending',
-        hash,
-      };
-      this.store.dispatch(upsertNotification({ notification }));
-
-      const receipt = await this.web3Svc.pollReceipt(hash!);
-      notification = {
-        ...notification,
-        type: 'complete',
-        hash: receipt.transactionHash,
-      };
-      this.store.dispatch(upsertNotification({ notification }));
-
-      // this.store.dispatch(appStateActions.addCooldown({ cooldown: { [hashId]: Number(receipt.blockNumber) }}));
-    } catch (err) {
-      console.log(err);
-      notification = {
-        ...notification,
-        type: 'error',
-        detail: err,
-      };
-      this.store.dispatch(upsertNotification({ notification }));
-    } finally {
-      this.closeBridge();
     }
   }
 

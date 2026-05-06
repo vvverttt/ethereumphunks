@@ -57,8 +57,8 @@ export class RecentActivityComponent {
       { label: 'Sold', value: 'PhunkBought' },
       { label: 'Transferred', value: 'transfer' },
       { label: 'Created', value: 'created' },
-      { label: 'Won', value: 'PrizeAwarded' },
-      { label: 'Auction', value: 'AuctionCreated' },
+      { label: 'Won', value: 'Won' },
+      { label: 'Auction', value: 'AuctionBid' },
     ];
 
     const slug = this.collection()?.slug;

@@ -29,6 +29,8 @@
                       <span class="prismatic-won">Won</span>
                     } @else if (event.type === 'AuctionSettled') {
                       Auction <span class="prismatic-won">Won</span>
+                    } @else if (event.type === 'AuctionBid') {
+                      Auction <span class="prismatic-bid">Bid</span>
                     } @else {
                       {{ eventLabels[event.type] }}
                     }

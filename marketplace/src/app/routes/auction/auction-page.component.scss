@@ -8,6 +8,43 @@
 .auction-page {
 }
 
+.auction-house-header {
+  position: absolute;
+  top: 1.5rem;
+  left: 2rem;
+  z-index: 10;
+
+  .auction-house-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .auction-house-logo {
+      height: 5.6rem;
+      width: auto;
+      image-rendering: pixelated;
+    }
+
+    .auction-house-title {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+      text-decoration: none;
+
+      .auction-house-name,
+      .auction-house-sub {
+        font-family: var(--secondary-font-stack);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
 .updating-indicator {
   position: absolute;
   top: 1rem;
@@ -50,6 +87,7 @@
   background-color: rgb(17, 26, 0);
   color: rgb(255, 255, 255);
   padding-top: 16rem;
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -65,7 +103,7 @@
     justify-content: space-between;
     width: 100%;
     max-width: var(--max-width);
-    padding: 0 5rem 0 0;
+    padding: 0 16rem 0 16rem;
     margin: 0 auto;
   }
 
@@ -149,6 +187,8 @@
 
 .auction-history {
   padding-top: 0;
+  padding-left: 16rem;
+  padding-right: 16rem;
 }
 
 // ─── Pool & Swap Section (Auction 2) ──────────────────────

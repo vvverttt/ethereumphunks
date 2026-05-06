@@ -520,19 +520,20 @@ export class DataService {
       return cached.data;
     }
 
+    const isWonFilter = type === 'Won';
     const query = supabase.rpc(
       'fetch_events' + this.suffix,
       {
-        p_limit: limit,
-        p_type: type && type !== 'All' ? type : null,
+        p_limit: isWonFilter ? 500 : limit,
+        p_type: (type && type !== 'All' && !isWonFilter) ? type : null,
         p_collection_slug: slug,
-        p_offset: offset,
+        p_offset: isWonFilter ? 0 : offset,
       }
     );
 
     const rpcFetch$ = from(query).pipe(
       map((res: any) => {
-        const result = res.data?.map((tx: any) => {
+        let result = res.data?.map((tx: any) => {
           let type = tx.type;
           if (type === 'transfer') {
             if (tx.to?.toLowerCase() === environment.bridgeAddress) type = 'bridgeOut';
@@ -548,6 +549,9 @@ export class DataService {
           }
           return true;
         });
+        if (isWonFilter) {
+          result = result?.filter((e: any) => e.type === 'PrizeAwarded' || e.type === 'AuctionSettled');
+        }
         return result;
       }),
     );

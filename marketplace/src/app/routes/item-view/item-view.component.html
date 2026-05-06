@@ -57,16 +57,6 @@
                   @if (phunk.prevOwner; as owner) {
                     <p i18n>This {{ phunk.collection?.singleName }} is held in <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: phunk.owner }">escrow</a> for <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: owner }"><app-address [address]="owner" /></a>.</p>
                   }
-                } @else if (phunk.isBridged) {
-                  <!-- Owner -->
-                  @if (phunk.prevOwner; as owner) {
-                    <p i18n>This {{ phunk.collection?.singleName }} has been <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: bridgeAddress }">bridged</a> to L2.</p>
-                  }
-
-                  <!-- NFT info -->
-                  @if (phunk.nft; as nft) {
-                    <p i18n>This {{ phunk.collection?.singleName }} is owned by <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: nft.owner}"><app-address [address]="nft.owner" /></a>.</p>
-                  }
                 } @else {
                   <!-- Owner -->
                   @if (phunk.owner; as owner) {
@@ -93,18 +83,6 @@
                     @if (phunk.owner; as owner) {
                       @if (phunk.isSupported) {
                         @if (phunk.consensus) {
-
-                          <!-- Bridge button -->
-                          <!-- @if ((owner | lowercase) === (address | lowercase)) {
-                            <button class="bridge" [class.active]="bridgeActive" (click)="bridgePhunkAction()">
-                              <span>Bridge</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'bridgePhunk' }" />
-                            </button>
-
-                            @if (bridgeActive) {
-                              <ng-container *ngTemplateOutlet="bridgeForm; context:{ $implicit: phunk }" />
-                            }
-                          } -->
 
                           <!-- Buy button -->
                           @if (
@@ -461,24 +439,6 @@
       <button i18n type="reset" class="cancel" (click)="closeEscrow()">Cancel</button>
       <button i18n class="sell" (click)="sendToEscrow(phunk)">
         Send to Escrow
-      </button>
-    </div>
-  </div>
-</ng-template>
-
-<!-- Bridge Form -->
-<ng-template #bridgeForm let-phunk>
-  <div class="form-wrapper">
-    <ng-container *ngTemplateOutlet="cooldown; context:{ $implicit: phunk }" />
-
-    <p i18n>Bridge your {{ phunk.singleName }} to Magma L2 for faster and cheaper transacting. You can unlock and bridge your {{ phunk.singleName }} back at any time.</p>
-
-    <!-- <p><span class="small">You must own magma's native token in order to transact on the L2.</span> <a href="#">Click here to swap</a></p> -->
-
-    <div class="form-actions">
-      <button i18n type="reset" class="cancel" (click)="closeBridge()">Cancel</button>
-      <button i18n class="sell" (click)="bridge(phunk)">
-        Bridge
       </button>
     </div>
   </div>

@@ -18,7 +18,6 @@ import { EtherPhunksEvolveABI } from '@/abi/EtherPhunksEvolve';
 
 // L2
 import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
-import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
 
 import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType, connect as wagmiConnect, reconnect } from '@wagmi/core';
 import { walletConnect, injected } from '@wagmi/connectors';
@@ -39,7 +38,6 @@ const evolveAddress: string = (environment as any).evolveAddress || '';
 const evolvePairs: Record<string, string> = (environment as any).evolvePairs || {};
 const marketAddressL2 = environment.marketAddressL2;
 const pointsAddress = environment.pointsAddress;
-const bridgeAddressL2 = environment.bridgeAddressL2;
 const receiptRpcUrl = ((environment as any).receiptRpcUrl || environment.rpcHttpProvider) as string;
 const frontendBackupRpcUrl = ((environment as any).frontendBackupRpcUrl || '') as string;
 const relayRpcUrl = `${environment.relayUrl}/rpc`;
@@ -1002,34 +1000,6 @@ export class Web3Service {
     return await this.transferPhunk(`0x${hash}`, toAddress);
   }
 
-  /**
-   * Locks a phunk in the bridge contract
-   * @param hexArr Array of hex values for the lock transaction
-   * @returns Promise resolving to the transaction hash if successful
-   * @throws Error if no phunk selected
-   */
-  async lockPhunk(hexArr: string[]): Promise<string | undefined> {
-    if (!hexArr.length) throw new Error('No phunk selected');
-    await this.switchNetwork();
-
-    const data = hexArr.map((res) => res.replace('0x', '')).join('');
-
-    const chainId = getChainId(this.config);
-    const wallet = await getWalletClient(this.config, { chainId });
-
-    const req = await wallet.prepareTransactionRequest({
-      chain: wallet.chain,
-      account: getAccount(this.config).address as `0x${string}`,
-      to: environment.bridgeAddress as `0x${string}`,
-      value: BigInt(1000000000000000),
-      data: `0x${data}` as `0x${string}`,
-    });
-
-    // console.log({req});
-
-    return await this.sendTransactionWithFallback(wallet, req as any);
-  }
-
   private async sendTransactionWithFallback(wallet: any, tx: any): Promise<string | undefined> {
     const account = (tx.account || wallet?.account?.address) as `0x${string}`;
     const params: any = { from: account, to: tx.to as `0x${string}` };
@@ -1217,84 +1187,6 @@ export class Web3Service {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Fetches the sale offer details for a phunk on L2
-   * @param hashId The hash ID of the phunk to check
-   * @returns Promise resolving to the offer details, or null if error
-   */
-  async phunksOfferedForSaleL2(hashId: string): Promise<any> {
-    try {
-      const tokenId = await this.readTokenContractL2('hashToToken', [hashId]);
-      const offer = await this.readMarketContractL2('phunksOfferedForSale', [tokenId]);
-      return offer;
-    } catch (error) {
-      console.log('phunksOfferedForSaleL2', {hashId, error});
-      return null;
-    }
-  }
-
-  /**
-   * Lists a phunk for sale on L2
-   * @param hashId The hash ID of the phunk to list
-   * @param value The sale price in ETH
-   * @param address Optional specific address to sell to
-   * @returns Promise resolving to the transaction hash if successful
-   * @throws Error if address is invalid
-   */
-  async offerPhunkForSaleL2(
-    hashId: string,
-    value: number,
-    address?: string,
-    // revShare = 0
-  ): Promise<string | undefined> {
-    const tokenId = await this.readTokenContractL2('hashToToken', [hashId]);
-    const weiValue = this.ethToWei(value);
-
-    const isApproved = await this.readTokenContractL2(
-      'isApprovedForAll',
-      [getAccount(this.config).address, marketAddressL2]
-    );
-
-    if (!isApproved) {
-      await this.writeTokenContractL2('setApprovalForAll', [marketAddressL2, true]);
-    }
-
-    if (address) {
-      if (!isAddress(address)) throw new Error('Invalid address');
-      return this.writeMarketContractL2('offerPhunkForSaleToAddress', [tokenId, weiValue, address]);
-    } else {
-      return this.writeMarketContractL2('offerPhunkForSale', [tokenId, weiValue]);
-    }
-  }
-
-  /**
-   * Purchases a phunk listed for sale on L2
-   * @param hashId The hash ID of the phunk to buy
-   * @returns Promise resolving to the transaction hash if successful
-   * @throws Error if phunk is not for sale
-   */
-  async buyPhunkL2(hashId: string): Promise<string | undefined> {
-    const tokenId = await this.readTokenContractL2('hashToToken', [hashId]);
-    const offer = await this.readMarketContractL2('phunksOfferedForSale', [tokenId]);
-
-    // console.log({tokenId, offer});
-    if (!offer[0]) throw new Error('Phunk not for sale');
-
-    const value = offer[3];
-    await this.switchNetwork('l2');
-    return this.writeMarketContractL2('buyPhunk', [tokenId], value);
-  }
-
-  /**
-   * Cancels a phunk listing on L2
-   * @param hashId The hash ID of the phunk listing to cancel
-   * @returns Promise resolving to the transaction hash if successful
-   */
-  async phunkNoLongerForSaleL2(hashId: string): Promise<string | undefined> {
-    const tokenId = await this.readTokenContractL2('hashToToken', [hashId]);
-    return this.writeMarketContractL2('phunkNoLongerForSale', [tokenId]);
-  }
-
-  /**
    * Executes a write operation on the L2 marketplace contract
    * @param functionName The name of the contract function to call
    * @param args The arguments to pass to the function
@@ -1333,44 +1225,6 @@ export class Web3Service {
   }
 
   /**
-   * Executes a write operation on the L2 token contract
-   * @param functionName The name of the contract function to call
-   * @param args The arguments to pass to the function
-   * @param value Optional value in wei to send with the transaction
-   * @returns Promise resolving to the transaction hash if successful
-   * @throws Error if contract is paused or in maintenance mode
-   */
-  async writeTokenContractL2(
-    functionName: string,
-    args: any[],
-    value?: string
-  ): Promise<string | undefined> {
-    if (!functionName) return;
-    await this.switchNetwork('l2');
-
-    const chainId = getChainId(this.config);
-    const walletClient = await getWalletClient(this.config, { chainId });
-
-    const paused = await this.readMarketContractL2('paused', []);
-    const { maintenance } = await firstValueFrom(this.globalConfig$);
-
-    if (paused) throw new Error('Contract is paused');
-    if (maintenance) throw new Error('In maintenance mode');
-
-    const tx: any = {
-      address: bridgeAddressL2 as `0x${string}`,
-      abi: EtherPhunksBridgeL2ABI,
-      functionName,
-      args,
-      account: walletClient?.account?.address as `0x${string}`,
-    };
-    if (value) tx.value = value;
-
-    const { request } = await this.l2Client.simulateContract(tx);
-    return await this.sendTransactionWithFallback(walletClient, request);
-  }
-
-  /**
    * Reads data from the L2 marketplace contract
    * @param functionName The name of the contract function to call
    * @param args The arguments to pass to the function
@@ -1386,25 +1240,6 @@ export class Web3Service {
       args: args as any,
     });
     // console.log('readMarketContractL2', {functionName, args, call});
-    return call;
-  }
-
-  /**
-   * Reads data from the L2 token contract
-   * @param functionName The name of the contract function to call
-   * @param args The arguments to pass to the function
-   * @returns Promise resolving to the function result
-   */
-  async readTokenContractL2(functionName: any, args: (string | undefined)[]): Promise<any> {
-    // console.log('l2client', this.l2Client);
-    if (!this.l2Client?.chain) return null;
-    const call: any = await this.l2Client.readContract({
-      address: bridgeAddressL2 as `0x${string}`,
-      abi: EtherPhunksBridgeL2ABI,
-      functionName,
-      args: args as any,
-    });
-    // console.log('readTokenContractL2', {functionName, args, call});
     return call;
   }
 

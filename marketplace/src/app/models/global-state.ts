@@ -159,4 +159,5 @@ export type EventType =
   | 'Devolved'
   | 'AuctionCreated'
   | 'AuctionBid'
-  | 'AuctionSettled';
+  | 'AuctionSettled'
+  | 'Won';

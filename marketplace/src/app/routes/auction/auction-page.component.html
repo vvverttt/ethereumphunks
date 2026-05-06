@@ -7,6 +7,17 @@
     <section class="auction" [style.background-image]="accentColor() ? 'linear-gradient(rgba(' + accentColor() + ', 0.15), rgba(' + accentColor() + ', 0.15))' : null">
       <div class="inner">
 
+        <!-- Auction House Brand -->
+        <div class="auction-house-header">
+          <div class="auction-house-brand">
+            <img src="assets/images/beam.png" alt="QuantumPhunks" class="auction-house-logo" />
+            <div class="auction-house-title">
+              <span class="auction-house-name">QuantumPhunks</span>
+              <span class="auction-house-sub">Auction House</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Phunk Image (left) -->
         <div class="phunk-image-wrapper">
           @if (phunkImage()) {

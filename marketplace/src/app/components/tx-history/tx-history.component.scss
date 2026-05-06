@@ -90,7 +90,6 @@
                 font: inherit;
                 line-height: inherit;
                 letter-spacing: inherit;
-                color: #ffd700;
                 background: linear-gradient(90deg, #ffd700, #ffcc00, #ffd700, #ffcc00, #ffd700);
                 background-size: 200% 100%;
                 -webkit-background-clip: text;
@@ -99,6 +98,27 @@
                 filter: drop-shadow(0 0 .25rem rgba(255, 215, 0, .55));
                 will-change: background-position;
                 animation: boughtPrism 3.2s linear infinite;
+              }
+
+              .prismatic-won {
+                display: inline-block;
+                font: inherit;
+                line-height: inherit;
+                letter-spacing: inherit;
+                background: linear-gradient(90deg, #00d4ff, #4fa8ff, #00d4ff, #4fa8ff, #00d4ff);
+                background-size: 200% 100%;
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                filter: drop-shadow(0 0 .4rem rgba(0, 212, 255, .8));
+                will-change: background-position;
+                animation: boughtPrism 2.4s linear infinite;
+              }
+
+              .prismatic-bid {
+                display: inline-block;
+                font: inherit;
+                color: #ff00cc;
               }
             }
 
