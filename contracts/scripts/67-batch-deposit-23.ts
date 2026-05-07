@@ -8,7 +8,6 @@ const sb = (createClient as any)(
 );
 
 const TOKEN_IDS = [10004,10015,10058,10078,10093,10099,10207,10250,10251,10259,10261,10277,10287,10290,10293,10295,10298,10299,10301,10306,10307,10308,10312];
-const OWNER = '0xea04f65f9dc5917302532859d80fcf36a15de266';
 
 async function main() {
   const [signer] = await hre.ethers.getSigners();
@@ -19,7 +18,7 @@ async function main() {
     .from('ethscriptions')
     .select('tokenId, hashId')
     .in('tokenId', TOKEN_IDS)
-    .eq('owner', OWNER);
+    .eq('owner', signer.address.toLowerCase());
 
   if (!tokens || tokens.length !== 23) {
     throw new Error(`Expected 23 tokens, got ${tokens?.length}`);

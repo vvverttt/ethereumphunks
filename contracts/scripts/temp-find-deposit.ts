@@ -4,6 +4,7 @@ async function main() {
   const contract = await hre.ethers.getContractAt('EthsRocksV2', '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8');
   const provider = hre.ethers.provider;
   const block = await provider.getBlockNumber();
+  const SAFE_WALLET = '0x19d57A31b982d3d75c16358795A4D19c803e4A72';
 
   // Look at recent transactions to the contract
   // Check the last 50 blocks for any transactions
@@ -11,8 +12,7 @@ async function main() {
 
   // Try known addresses - your wallet
   const addresses = [
-    '0xEa04F65f9dC5917302532859D80fCf36a15dE266',
-    '0x19d57A31b982d3d75c16358795A4D19c803e4A72',
+    SAFE_WALLET,
     '0xf1Aa941d56041d47a9a18e99609A047707Fe96c7',
   ];
 

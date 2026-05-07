@@ -13,9 +13,6 @@ async function main() {
   console.log('Swap enabled:', swapEnabled);
   console.log('Paused:', paused);
 
-  // Check your address for pending deposits
-  const yourAddr = '0xEa04F65f9dC5917302532859D80fCf36a15dE266';
-
   // Check recent events
   const provider = hre.ethers.provider;
   const block = await provider.getBlockNumber();

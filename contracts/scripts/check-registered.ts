@@ -34,6 +34,7 @@ const OLD_HASHIDS = [
 ];
 
 async function main() {
+  const [signer] = await hre.ethers.getSigners();
   const contract = await hre.ethers.getContractAt('Mutation', PROXY);
 
   // Check old hashIds for registered state
@@ -50,9 +51,9 @@ async function main() {
 
   // Get the new hashIds for the 23 tokens from DB
   const tokenIds = [10004,10015,10058,10078,10093,10099,10207,10250,10251,10259,10261,10277,10287,10290,10293,10295,10298,10299,10301,10306,10307,10308,10312];
-  const { data } = await sb.from('ethscriptions').select('tokenId,hashId,owner').in('tokenId', tokenIds).eq('owner', '0xea04f65f9dc5917302532859d80fcf36a15de266');
+  const { data } = await sb.from('ethscriptions').select('tokenId,hashId,owner').in('tokenId', tokenIds).eq('owner', signer.address.toLowerCase());
   
-  console.log(`=== NEW hashIds from DB (owner=0xea04) ===`);
+  console.log(`=== NEW hashIds from DB (owner=${signer.address.toLowerCase()}) ===`);
   for (const row of (data || [])) {
     const reg = await contract.registered(row.hashId as `0x${string}`);
     const dep = await contract.depositor(row.hashId as `0x${string}`);

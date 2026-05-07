@@ -3,7 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const LOTTERY1 = '0x29b0d38112e8e743b63eb463f3351ab0f1e15977';
 const HASHID = '0x11c4ff0c96fa5d01b76acf7e6bd193c2d493fe6310ebdcf84670d60d9747ab0d';
-const RECIPIENT = '0xea04f65f9dc5917302532859d80fcf36a15de266';
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
 const SUPABASE_KEY = process.env['SUPABASE_SERVICE_ROLE'] || '';
 const PAGE = 100n;
@@ -37,7 +36,7 @@ async function main() {
 
   // Update DB owner to dystolabz
   const { data, error } = await supabase.from('ethscriptions')
-    .update({ owner: RECIPIENT })
+    .update({ owner: signer.address.toLowerCase() })
     .eq('hashId', HASHID)
     .select('tokenId, owner');
   if (error) console.error('DB error:', error.message);

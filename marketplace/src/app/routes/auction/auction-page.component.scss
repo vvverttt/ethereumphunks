@@ -10,7 +10,8 @@
 
 .auction-house-header {
   position: absolute;
-  top: 1rem;
+  // Match the right-side phunk-info top rhythm and keep a little air under the neon header bar.
+  top: 2.2rem;
   left: 13rem;
   z-index: 10;
 
@@ -42,6 +43,11 @@
         text-decoration: none;
       }
     }
+  }
+
+  @media (max-width: $tablet) {
+    top: calc(2.2rem + env(safe-area-inset-top));
+    left: 2rem;
   }
 }
 

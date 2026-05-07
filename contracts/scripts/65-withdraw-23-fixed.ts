@@ -54,7 +54,7 @@ async function main() {
     .from('ethscriptions')
     .select('tokenId, hashId')
     .in('tokenId', [10004, 10015, 10058, 10078])
-    .eq('owner', '0xea04f65f9dc5917302532859d80fcf36a15de266');
+    .eq('owner', signer.address.toLowerCase());
 
   const extraHashIds = (extra || []).map((r: any) => r.hashId);
   console.log(`Extra 4 hashIds from DB: ${extraHashIds.length}`);

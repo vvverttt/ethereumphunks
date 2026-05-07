@@ -1,7 +1,6 @@
 import hre from 'hardhat';
 
 const PROXY_ADDRESS = '0x0b4a5C756c4DF0A6FB399bF73ce5667A746dbFbA';
-const RECIPIENT = '0xea04f65f9dc5917302532859d80fcf36a15de266'; // dystolabz
 
 // 8 Quantum Missing Phunks
 const MISSING_HASHIDS: string[] = [
@@ -38,7 +37,7 @@ async function main() {
   const [signer] = await hre.ethers.getSigners();
   console.log('Signer:', signer.address);
   console.log('Evolve contract:', PROXY_ADDRESS);
-  console.log('Recipient:', RECIPIENT);
+  console.log('Recipient:', signer.address);
 
   const contract = await hre.ethers.getContractAt('Mutation', PROXY_ADDRESS, signer);
 
@@ -49,7 +48,7 @@ async function main() {
 
   for (const hashId of allHashIds) {
     try {
-      const tx = await contract.withdrawEthscription(hashId, RECIPIENT);
+      const tx = await contract.withdrawEthscription(hashId, signer.address);
       const receipt = await tx.wait();
       console.log(`✅ ${hashId.slice(0, 16)}... tx=${tx.hash.slice(0, 16)}... status=${receipt?.status}`);
       success++;
