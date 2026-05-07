@@ -104,8 +104,8 @@
   .inner {
     position: relative;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: flex-end;
+    justify-content: center;
     width: 100%;
     max-width: var(--max-width);
     padding: 0 16rem 0 16rem;
@@ -113,7 +113,10 @@
   }
 
   app-phunk-info {
-    align-self: flex-start;
+    position: absolute;
+    right: 16rem;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   @media (max-width: $tablet) {
@@ -149,7 +152,7 @@
 
 .phunk-image-wrapper {
   flex-shrink: 0;
-  align-self: flex-end;
+  align-self: center;
   margin-left: 0;
 
   .phunk-fallback {
