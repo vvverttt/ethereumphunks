@@ -164,7 +164,7 @@
   grid-column: 2;
   grid-row: 2;
   // Nudge the image left so it sits like the earlier layout, while the overall hero remains centered.
-  transform: translateX(-6rem);
+  transform: translateX(-12rem);
   justify-self: center;
 
   .phunk-fallback {
