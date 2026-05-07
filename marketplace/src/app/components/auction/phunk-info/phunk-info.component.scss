@@ -14,7 +14,8 @@
 .prev-auction,
 .next-auction {
   position: absolute;
-  top: 6rem;
+  top: 50%;
+  transform: translateY(-50%);
   left: 0;
   font-family: var(--secondary-font-stack);
   font-size: 5rem;

@@ -7,9 +7,7 @@
 
 .auction-slider-wrapper {
   width: 100%;
-  max-width: var(--max-width);
-  padding: 3rem 53rem 0 4rem;
-  margin: 0 auto;
+  padding: 3rem 53rem 0 0;
 
   .inner {
     position: relative;
@@ -39,7 +37,7 @@
   }
 
   @media (max-width: $mobile) {
-    padding: 3rem 2rem 0;
+    padding: 3rem 0 0;
   }
 }
 

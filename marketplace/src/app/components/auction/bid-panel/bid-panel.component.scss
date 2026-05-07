@@ -4,13 +4,12 @@
   display: block;
   position: absolute;
   z-index: 99;
-  top: 100%;
-  right: 5rem;
+  top: 0;
+  right: 10rem;
   width: 100%;
   max-width: 48rem;
   background-color: rgba(var(--background), 1);
   padding: 3rem 3.5rem;
-  transform: translate(3.5rem, 2rem);
 
   @media (max-width: $tablet) {
     position: static;

@@ -10,8 +10,8 @@
 
 .auction-house-header {
   position: absolute;
-  top: 1.5rem;
-  left: 2rem;
+  top: 1rem;
+  left: 13rem;
   z-index: 10;
 
   .auction-house-brand {
@@ -86,7 +86,7 @@
   --text-color: 255, 255, 255;
   background-color: rgb(17, 26, 0);
   color: rgb(255, 255, 255);
-  padding-top: 16rem;
+  padding-top: 9rem;
   position: relative;
   display: flex;
   align-items: flex-end;
@@ -99,7 +99,7 @@
   .inner {
     position: relative;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     width: 100%;
     max-width: var(--max-width);
@@ -108,7 +108,7 @@
   }
 
   @media (max-width: $tablet) {
-    padding-top: calc(14rem + env(safe-area-inset-top));
+    padding-top: calc(10rem + env(safe-area-inset-top));
 
     .inner {
       flex-direction: column;
@@ -140,7 +140,7 @@
 .phunk-image-wrapper {
   flex-shrink: 0;
   align-self: flex-end;
-  margin-left: 16rem;
+  margin-left: 0;
 
   .phunk-fallback {
     width: 42rem;
@@ -186,9 +186,19 @@
 // ─── Auction History Section ──────────────────────────────
 
 .auction-history {
-  padding-top: 0;
-  padding-left: 16rem;
-  padding-right: 16rem;
+  position: relative;
+
+  .history-inner {
+    position: relative;
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 16rem;
+
+    @media (max-width: $tablet) {
+      padding: 0 2rem;
+    }
+  }
 }
 
 // ─── Pool & Swap Section (Auction 2) ──────────────────────

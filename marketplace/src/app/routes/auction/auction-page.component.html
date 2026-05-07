@@ -44,7 +44,18 @@
           <div class="updating-indicator">New bid detected, updating...</div>
         }
 
-        <!-- Bid Panel (absolutely positioned, overlapping hero/slider) -->
+      </div>
+    </section>
+
+    <!-- ========== AUCTION HISTORY + BID PANEL ========== -->
+    <section class="auction-history">
+      <div class="history-inner">
+        <app-auction-slider
+          [settledAuctions]="allAuctions()"
+          (selectAuction)="navigateToAuction($event)"
+        />
+
+        <!-- Bid Panel aligned to same inner edges -->
         <app-bid-panel
           [auction]="auction()"
           [bids]="bids()"
@@ -66,14 +77,6 @@
           (timerEvent)="handleTimerEvent($event)"
         />
       </div>
-    </section>
-
-    <!-- ========== AUCTION HISTORY SLIDER ========== -->
-    <section class="auction-history">
-      <app-auction-slider
-        [settledAuctions]="allAuctions()"
-        (selectAuction)="navigateToAuction($event)"
-      />
     </section>
 
     <!-- ========== POOL & SWAP (Auction 2 only) ========== -->
