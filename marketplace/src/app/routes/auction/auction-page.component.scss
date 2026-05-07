@@ -105,7 +105,7 @@
     position: relative;
     display: flex;
     align-items: flex-end;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
     max-width: var(--max-width);
     padding: 0 16rem 0 16rem;
@@ -122,29 +122,35 @@
   @media (max-width: $tablet) {
     padding-top: calc(10rem + env(safe-area-inset-top));
 
+    app-phunk-info {
+      position: static;
+      transform: none;
+      order: 1;
+      width: 100%;
+      max-width: 100%;
+    }
+
     .inner {
       display: flex;
       flex-direction: column;
       align-items: stretch;
       padding: 0 2rem 2rem;
-      gap: 0;
+      gap: 2rem;
     }
 
     .phunk-image-wrapper {
       order: 2;
-    }
-
-    app-phunk-info {
-      order: 1;
-    }
-
-    app-bid-panel {
-      order: 3;
+      align-self: center;
     }
   }
 
   @media (max-width: $mobile) {
-    padding-top: calc(18rem + env(safe-area-inset-top));
+    padding-top: calc(14rem + env(safe-area-inset-top));
+
+    app-phunk-info {
+      position: static;
+      transform: none;
+    }
   }
 }
 
