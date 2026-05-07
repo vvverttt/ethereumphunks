@@ -9,11 +9,13 @@
 }
 
 .auction-house-header {
-  position: absolute;
-  // Match the right-side phunk-info top rhythm and keep a little air under the neon header bar.
-  top: 2.2rem;
-  left: 13rem;
+  // Part of the hero grid (top-left). Keeping it in-flow prevents overlap with the main image.
   z-index: 10;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  justify-self: start;
+  margin-top: .6rem;
 
   .auction-house-brand {
     display: flex;
@@ -46,8 +48,7 @@
   }
 
   @media (max-width: $tablet) {
-    top: calc(2.2rem + env(safe-area-inset-top));
-    left: 2rem;
+    margin-top: calc(.6rem + env(safe-area-inset-top));
   }
 }
 
@@ -105,19 +106,30 @@
 
   .inner {
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: auto 1fr;
     align-items: center;
-    justify-content: space-between;
     width: 100%;
     max-width: var(--max-width);
     padding: 0 16rem 0 16rem;
     margin: 0 auto;
+    column-gap: 4rem;
+  }
+
+  // Right-side info block: center it vertically within the hero area.
+  app-phunk-info {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: center;
+    justify-self: end;
   }
 
   @media (max-width: $tablet) {
     padding-top: calc(10rem + env(safe-area-inset-top));
 
     .inner {
+      display: flex;
       flex-direction: column;
       align-items: stretch;
       padding: 0 2rem 2rem;
@@ -146,8 +158,10 @@
 
 .phunk-image-wrapper {
   flex-shrink: 0;
-  align-self: flex-end;
+  align-self: center;
   margin-left: 0;
+  grid-column: 2;
+  grid-row: 2;
 
   .phunk-fallback {
     width: 42rem;

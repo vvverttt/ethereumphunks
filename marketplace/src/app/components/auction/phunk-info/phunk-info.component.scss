@@ -5,11 +5,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  align-self: flex-start;
+  align-self: center;
   width: 100%;
   max-width: 44rem;
-  // Drop the right-side info block a bit so it sits more centered in the hero.
-  padding-top: 16.8rem;
+  padding-top: 0;
 }
 
 // ─── Prev/Next Navigation ─────────────────────────────────
@@ -17,7 +16,7 @@
 .prev-auction,
 .next-auction {
   position: absolute;
-  top: 62%;
+  top: 50%;
   transform: translateY(-50%);
   left: 0;
   font-family: var(--secondary-font-stack);
@@ -37,7 +36,7 @@
   }
 
   @media (max-width: $mobile) {
-    top: 6rem;
+    top: 50%;
     font-size: 3rem;
   }
 }
@@ -141,7 +140,7 @@ h2 {
 
   .prev-auction,
   .next-auction {
-    top: 3.5rem;
+    top: 50%;
     font-size: 2.4rem;
   }
 
