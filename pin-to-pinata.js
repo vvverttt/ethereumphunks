@@ -8,7 +8,7 @@ const FormData = require('form-data');
 // Configuration
 const PINATA_API_KEY = process.env.PINATA_API_KEY;
 const PINATA_API_SECRET = process.env.PINATA_API_SECRET;
-const BROWSER_FOLDER = 'C:\\Users\\alber\\OneDrive\\Desktop\\market\\ethereumphunks\\marketplace\\dist\\etherphunks-market-mainnet_may7\\browser';
+const BROWSER_FOLDER = 'C:\\Users\\alber\\OneDrive\\Desktop\\market\\ethereumphunks\\marketplace\\dist\\etherphunks-market-mainnet_may8\\browser';
 
 if (!PINATA_API_KEY || !PINATA_API_SECRET) {
   console.error('Error: PINATA_API_KEY and PINATA_API_SECRET environment variables are required');
