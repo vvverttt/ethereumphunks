@@ -595,10 +595,13 @@ section {
         align-items: center;
         padding-bottom: 1.5rem;
 
-        svg {
+        img {
           width: 5rem;
           height: 5rem;
-          transform: scaleX(-1);
+          image-rendering: pixelated;
+          object-fit: contain;
+          transform: scale(1.35);
+          transform-origin: center;
         }
       }
 

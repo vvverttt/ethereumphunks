@@ -30,22 +30,24 @@
   }
 
   .logo-wrapper {
-    background-color: rgba(var(--highlight), 1);
     padding: 1rem;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    flex: 0 0 auto;
 
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 1rem;
 
-    svg {
-      width: 6rem;
+    img {
+      width: 4rem;
       height: 4rem;
-      transform: scaleX(-1);
-
-      path {
-        fill: rgba(var(--black), 1);
-      }
+      image-rendering: pixelated;
+      object-fit: contain;
+      transform: scale(1.6);
+      transform-origin: center;
     }
   }
 

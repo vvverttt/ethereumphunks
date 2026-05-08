@@ -19,20 +19,22 @@
       class="leaderboard-button">
 
       <div class="logo-wrapper">
-        <ng-template [ngTemplateOutlet]="pointsIcon"></ng-template>
+        <img
+          src="assets/cryptophunkv67-9986.png"
+          alt="QuantumPhunk 9986" />
       </div>
 
       <div class="button-content">
-        <h4>Points Leaderboard</h4>
+        <h4>Fart Leaderboard</h4>
         @if ((leaderboard$ | async); as leaderboard) {
           @if (leaderboard.length) {
             <span class="top-points">
               <div class="value">{{ leaderboard[0]?.points | formatCash }}</div>
-              <div class="label">Points</div>
+              <div class="label">Farts</div>
             </span>
             <div class="top-holder">
               <app-address [address]="leaderboard[0]?.address" />
-              <div class="label">#1 Points holder</div>
+              <div class="label">#1 Fart holder</div>
             </div>
           }
         }
@@ -275,10 +277,6 @@
 
 <ng-template #backIcon>
   <svg height="15" viewBox="0 0 9 15" width="9" xmlns="http://www.w3.org/2000/svg"><path d="m6 6h3v3h-3zm-3-3h3v3h-3zm0 6h3v3h-3zm-3-9h3v3h-3zm0 12h3v3h-3z" fill-rule="evenodd"/></svg>
-</ng-template>
-
-<ng-template #pointsIcon>
-  <svg height="119" viewBox="0 0 119 119" width="119" xmlns="http://www.w3.org/2000/svg"><path d="m17 17v17h-17v-17zm17-17v17h-17v-17zm0 17v-17h34v17zm-34 17h17v34h-17zm68 17v-17h34v34h-17v-17zm51-17h-17v17h17zm-85 17v-17h34v17zm0 17h-17v17h17zm0 17v-17h34v17zm34-68v-17h34v34h-17v-17zm0 68v-17h34v17zm17 0h17v34h-17z"/></svg>
 </ng-template>
 
 <ng-template #arrowIcon>
