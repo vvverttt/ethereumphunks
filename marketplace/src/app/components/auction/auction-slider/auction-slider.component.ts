@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { TimeAgoPipe } from '@/pipes/time-ago.pipe';
 import { SettledAuction } from '@/services/auction.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   selector: 'app-auction-slider',
@@ -13,6 +14,8 @@ import { SettledAuction } from '@/services/auction.service';
 })
 export class AuctionSliderComponent implements OnChanges {
 
+  constructor(public preferences: PhunkPreferencesService) {}
+
   @Input() settledAuctions: SettledAuction[] = [];
   private hasScrolledOnce = false;
 
@@ -22,6 +25,10 @@ export class AuctionSliderComponent implements OnChanges {
 
   canScrollLeft = signal(false);
   canScrollRight = signal(false);
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['settledAuctions'] && this.settledAuctions.length > 0 && !this.hasScrolledOnce) {

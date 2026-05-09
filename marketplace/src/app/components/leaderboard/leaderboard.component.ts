@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { Store } from '@ngrx/store';
 
-import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -30,7 +30,12 @@ export class LeaderboardComponent {
   activeCollection$ = this.store.select(dataStateSelectors.selectActiveCollection);
 
   constructor(
-    private store: Store<GlobalState>
+    private store: Store<GlobalState>,
+    private preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
 }

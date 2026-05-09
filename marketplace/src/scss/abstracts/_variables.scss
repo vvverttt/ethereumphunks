@@ -53,3 +53,13 @@ $tablet: 1040px;
     --slideout-width: 100%;
   }
 }
+
+html[data-phunk-font='blockscript'] {
+  --primary-font-stack: 'Low Blockscript', 'Retro Computer', sans-serif;
+  --secondary-font-stack: 'Low Blockscript', 'Retro Computer', sans-serif;
+}
+
+html[data-phunk-font='high-blockscript'] {
+  --primary-font-stack: 'High Blockscript', 'Retro Computer', sans-serif;
+  --secondary-font-stack: 'High Blockscript', 'Retro Computer', sans-serif;
+}

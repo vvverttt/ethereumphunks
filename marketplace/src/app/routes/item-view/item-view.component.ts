@@ -29,6 +29,7 @@ import { Web3Service } from '@/services/web3.service';
 import { ThemeService } from '@/services/theme.service';
 import { UtilService } from '@/services/util.service';
 import { EthsRocksService } from '@/services/ethsrocks.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { Phunk } from '@/models/db';
 import { GlobalState, Notification } from '@/models/global-state';
@@ -197,7 +198,12 @@ export class ItemViewComponent {
     public themeSvc: ThemeService,
     private utilSvc: UtilService,
     private ethsrocksSvc: EthsRocksService,
+    public preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
   sellPhunk(): void {
     this.closeAll();

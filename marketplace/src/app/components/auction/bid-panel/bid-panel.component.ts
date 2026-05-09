@@ -7,6 +7,7 @@ import { TimerComponent } from '@/components/auction/timer/timer.component';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { AuctionData, AuctionBidEvent } from '@/services/auction.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   selector: 'app-bid-panel',
@@ -44,6 +45,12 @@ export class BidPanelComponent {
   @Output() timerEvent = new EventEmitter<any>();
 
   bidValue = new FormControl<string>('');
+
+  constructor(public preferences: PhunkPreferencesService) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
   get currentBidEth(): string {
     const a = this.auction;

@@ -18,6 +18,7 @@ import { CollectionStatsComponent } from '@/components/collection-stats/collecti
 
 import { DataService } from '@/services/data.service';
 import { ThemeService } from '@/services/theme.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { GlobalState } from '@/models/global-state';
 
@@ -119,7 +120,8 @@ export class IndexComponent {
     private store: Store<GlobalState>,
     public themeSvc: ThemeService,
     public dataSvc: DataService,
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    public preferences: PhunkPreferencesService,
   ) {
     this.activeCollection$.subscribe((collection) => {
       if (!collection) return;
@@ -131,6 +133,10 @@ export class IndexComponent {
         this.faqItems = this.defaultFaq;
       }
     });
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
   }
 
 }

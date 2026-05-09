@@ -37,7 +37,7 @@
 
         @if (txn.type === 'chat' && txn.chatAddress) {
           <p>
-            from <app-address [address]="txn.chatAddress" />
+            {{ t('from') }} <app-address [address]="txn.chatAddress" />
           </p>
         } @else {
           <p [innerHTML]="txn | notifText : collections : 'body'"></p>
@@ -45,7 +45,7 @@
 
         <div class="footer">
           @if (txn.type === 'chat' && txn.chatAddress) {
-            <button (click)="setChat(txn.chatAddress)">View message</button>
+            <button (click)="setChat(txn.chatAddress)">{{ t('viewMessage') }}</button>
           }
 
           @if (txn.hash) {

@@ -23,6 +23,7 @@ import { Phunk } from '@/models/db';
 import { DataService } from '@/services/data.service';
 import { Web3Service } from '@/services/web3.service';
 import { UtilService } from '@/services/util.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { CalcPipe } from '@/pipes/calculate.pipe';
@@ -82,15 +83,6 @@ export class MarketComponent {
   env = environment;
 
   escrowAddress = environment.marketAddress;
-
-  marketTitles: any = {
-    all: 'All %collectionName%',
-    listings: '%collectionName% for Sale',
-    bids: 'Current Bids',
-    owned: '%collectionName% Owned',
-    user: 'Owned Inscriptions',
-    activity: 'Activity',
-  };
 
   sorts: { label: string, value: Sorts }[] = [
     { label: 'Price Low', value: 'price-low' },
@@ -190,8 +182,25 @@ export class MarketComponent {
     public dataSvc: DataService,
     public web3Svc: Web3Service,
     private utilSvc: UtilService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
+
+  marketTitle(marketType: string, collectionName: string): string {
+    const keyByType: Record<string, string> = {
+      all: 'allMarketTitle',
+      listings: 'listingsMarketTitle',
+      bids: 'bidsMarketTitle',
+      owned: 'ownedMarketTitle',
+      user: 'userMarketTitle',
+      activity: 'activityMarketTitle',
+    };
+    return this.t(keyByType[marketType] || 'allMarketTitle').replace('%collectionName%', collectionName);
+  }
 
   setSort($event: any): void {
     this.store.dispatch(marketStateActions.setActiveSort({ activeSort: $event }));

@@ -237,6 +237,112 @@ section {
       }
     }
 
+    .preference-switcher {
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: stretch;
+      gap: .8rem;
+      margin: 0 0 1.5rem;
+
+      button {
+        height: 3rem;
+        border: .2rem solid rgba(var(--pink), 1);
+        padding: 0 .8rem;
+
+        font-family: var(--secondary-font-stack);
+        font-size: 1rem;
+        color: rgba(var(--white), 1);
+
+        background-color: rgba(var(--background), .8);
+        box-shadow: none;
+
+        cursor: pointer;
+        transition: background-color .12s ease, color .12s ease, transform .12s ease;
+
+        &.active {
+          color: rgba(var(--black), 1);
+          background-color: rgba(var(--highlight), 1);
+          border-color: rgba(var(--highlight), 1);
+        }
+
+        &:active {
+          transform: translate(0, 1px);
+        }
+      }
+
+      .language-options,
+      .font-options {
+        align-items: stretch;
+        gap: .4rem;
+      }
+
+      .language-options {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        min-width: 0;
+
+        button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          flex: 1;
+          min-width: 0;
+          padding: 0 .65rem;
+          overflow: hidden;
+
+          span {
+            overflow: visible;
+            white-space: nowrap;
+            line-height: 1;
+          }
+        }
+      }
+
+      .font-options {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding-top: .5rem;
+        border-top: .2rem solid rgba(var(--highlight), 1);
+
+        button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          min-width: 3.4rem;
+          width: auto;
+          padding: 0;
+          font-size: 1.6rem;
+          line-height: 1;
+
+          &.sample-default {
+            font-family: var(--primary-font-stack);
+            font-size: 1.6rem;
+          }
+
+          &.sample-blockscript {
+            font-family: 'Low Blockscript', 'Retro Computer', sans-serif;
+          }
+
+          &.sample-high-blockscript {
+            font-family: 'High Blockscript', 'Retro Computer', sans-serif;
+          }
+        }
+      }
+
+      @media (max-width: 480px) {
+        .language-options {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .font-options {
+          padding-top: .5rem;
+          border-top: .2rem solid rgba(var(--highlight), 1);
+        }
+      }
+    }
+
     .lottery-group {
       display: flex;
       gap: 0;

@@ -13,6 +13,7 @@ import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { EventType, GlobalState } from '@/models/global-state';
 import { Phunk } from '@/models/db';
@@ -62,29 +63,38 @@ export class TxHistoryComponent implements OnChanges {
     })
   );
 
-  eventLabels: Partial<EventLabels> = {
-    created: 'Created',
-    transfer: 'Transfer',
-    escrow: 'Escrow',
-    PhunkOffered: 'Offered',
-    PhunkBidEntered: 'Bid Entered',
-    PhunkBidWithdrawn: 'Bid Withdrawn',
-    PhunkBought: 'Bought',
-    PhunkNoLongerForSale: 'Offer Withdrawn',
-    bridgeOut: 'Lock',
-    bridgeIn: 'Unlock',
-    PrizeAwarded: 'Won',
-    Evolved: 'Mutated',
-    Devolved: 'Devolved',
-    AuctionCreated: 'Auction Start',
-    AuctionBid: 'Auction Bid',
-    AuctionSettled: 'Auction Won',
+  eventLabelKeys: Partial<Record<EventType, string>> = {
+    created: 'created',
+    transfer: 'transfer',
+    escrow: 'escrow',
+    PhunkOffered: 'offered',
+    PhunkBidEntered: 'bidEntered',
+    PhunkBidWithdrawn: 'bidWithdrawn',
+    PhunkBought: 'bought',
+    PhunkNoLongerForSale: 'offerWithdrawn',
+    bridgeOut: 'lock',
+    bridgeIn: 'unlock',
+    PrizeAwarded: 'won',
+    Evolved: 'mutated',
+    Devolved: 'devolved',
+    AuctionCreated: 'auctionStart',
+    AuctionBid: 'auctionBidOf',
+    AuctionSettled: 'auctionWonBy',
   };
 
   constructor(
     private store: Store<GlobalState>,
     private dataSvc: DataService,
+    public preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
+
+  eventLabel(type: EventType): string {
+    return this.t(this.eventLabelKeys[type] || type);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.phunk && changes.phunk.currentValue) {

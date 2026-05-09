@@ -2,6 +2,7 @@
 @use 'abstracts/mixins' as *;
 
 .bid-history-wrapper {
+  font-family: var(--secondary-font-stack);
   padding: 2.2rem 0 0;
   border-top: .2rem solid rgba(var(--text-color), .05);
 

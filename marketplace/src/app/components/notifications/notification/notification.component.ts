@@ -7,6 +7,7 @@ import { TimeagoModule } from 'ngx-timeago';
 
 import { NotificationImageComponent } from '@/components/notifications/notification-image/notification-image.component';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { NotificationPipe } from './notification.pipe';
 
@@ -62,13 +63,18 @@ export class NotificationComponent {
   );
 
   constructor(
-    private store: Store<GlobalState>
+    private store: Store<GlobalState>,
+    public preferences: PhunkPreferencesService,
   ) {
     effect(() => {
       if (this.txn()?.type === 'error') {
         // console.log('NotificationComponent', {...this.txn()?.detail});
       }
     });
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
   }
 
   dismiss(txn: Notification) {

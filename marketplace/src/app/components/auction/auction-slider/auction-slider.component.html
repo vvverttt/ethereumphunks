@@ -1,7 +1,7 @@
 <div class="auction-slider-wrapper">
   <div class="inner">
     <div class="slider-head">
-      <h3>Auction history</h3>
+      <h3>{{ t('auctionHistory') }}</h3>
     </div>
 
     @if (settledAuctions.length > 0) {
@@ -44,7 +44,7 @@
         </svg>
       </button>
     } @else {
-      <p class="empty-state">No auctions have been settled yet</p>
+      <p class="empty-state">{{ t('noSettledAuctions') }}</p>
     }
   </div>
 </div>

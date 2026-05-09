@@ -1,17 +1,17 @@
 @if ((tokenSales$ | async); as tokenSales) {
   <div class="transaction-history">
 
-    <h2 i18n>Transaction History</h2>
+    <h2>{{ t('transactionHistory') }}</h2>
 
     <div class="transaction-wrapper">
       <table [cellPadding]="0" [cellSpacing]="0">
         <thead>
           <tr>
-            <th i18n>Type</th>
-            <th i18n>From</th>
-            <th i18n>To</th>
-            <th i18n>Amount</th>
-            <th i18n>Txn</th>
+            <th>{{ t('type') }}</th>
+            <th>{{ t('from') }}</th>
+            <th>{{ t('to') }}</th>
+            <th>{{ t('amount') }}</th>
+            <th>{{ t('txn') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -22,17 +22,17 @@
                 <div class="cell-inner type-label">
                   @if (event.type) {
                     @if (event.type === 'PhunkBought') {
-                      <span class="prismatic-bought">Bought</span>
+                      <span class="prismatic-bought">{{ t('bought') }}</span>
                     } @else if (event.type === 'created') {
-                      <span class="prismatic-created">Created</span>
+                      <span class="prismatic-created">{{ t('created') }}</span>
                     } @else if (event.type === 'PrizeAwarded') {
-                      <span class="prismatic-won">Won</span>
+                      <span class="prismatic-won">{{ t('won') }}</span>
                     } @else if (event.type === 'AuctionSettled') {
-                      Auction <span class="prismatic-won">Won</span>
+                      {{ t('auction') }} <span class="prismatic-won">{{ t('won') }}</span>
                     } @else if (event.type === 'AuctionBid') {
-                      Auction <span class="prismatic-bid">Bid</span>
+                      {{ t('auction') }} <span class="prismatic-bid">{{ t('bid') }}</span>
                     } @else {
-                      {{ eventLabels[event.type] }}
+                      {{ eventLabel(event.type) }}
                     }
                   }
                 </div>

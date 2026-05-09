@@ -49,7 +49,7 @@
 
     <!-- ========== AUCTION HISTORY + BID PANEL ========== -->
     <section class="auction-history">
-      <div class="history-inner">
+      <div class="history-inner" [style.--bid-count]="bids().length">
         <app-auction-slider
           [settledAuctions]="allAuctions()"
           (selectAuction)="navigateToAuction($event)"

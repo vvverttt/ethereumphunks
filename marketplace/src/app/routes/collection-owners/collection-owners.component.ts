@@ -11,6 +11,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import { environment } from 'src/environments/environment';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { supabase } from '@/services/supabase';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 interface OwnerRow {
   address: string;
@@ -56,7 +57,12 @@ export class CollectionOwnersComponent implements OnInit {
   constructor(
     private store: Store<GlobalState>,
     private route: ActivatedRoute,
+    public preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
   getContractName(address: string): string {
     return CONTRACT_NAMES[address.toLowerCase()] || '';

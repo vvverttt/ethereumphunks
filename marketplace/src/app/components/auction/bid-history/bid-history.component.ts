@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -33,8 +34,13 @@ export class BidHistoryComponent implements OnInit {
   etherscanLink: string = `https://${environment.chainId === 11155111 ? 'sepolia' + '.' : ''}etherscan.io`;
 
   constructor(
-    public dataSvc: DataService
+    public dataSvc: DataService,
+    public preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
   ngOnInit(): void {}
 

@@ -8,6 +8,7 @@ import { GlobalState } from '@/models/global-state';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import { supabase } from '@/services/supabase';
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { environment } from 'src/environments/environment';
 
 const EXAMPLES = 10;
@@ -144,7 +145,34 @@ export class CollectionAttributesComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private dataSvc: DataService,
+    public preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
+
+  tabLabel(tab: string): string {
+    return tab === 'Attribute Count' ? this.t('attributeCount') : tab;
+  }
+
+  rarityLabel(rarity: string): string {
+    const keyByRarity: Record<string, string> = {
+      'One of One': 'oneOfOne',
+      Common: 'common',
+      Uncommon: 'uncommon',
+      Rare: 'rare',
+      Elite: 'elite',
+      Epic: 'epic',
+      Ultra: 'ultra',
+      Legendary: 'legendary',
+      Exotic: 'exotic',
+      Mythic: 'mythic',
+      God: 'god',
+      Ancient: 'ancient',
+    };
+    return this.t(keyByRarity[rarity] || rarity);
+  }
 
   async ngOnInit() {
     this.slug = this.route.snapshot.paramMap.get('slug') || 'cryptophunksv67';

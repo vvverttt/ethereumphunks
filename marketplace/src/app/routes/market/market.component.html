@@ -21,12 +21,12 @@
             <ng-template [ngTemplateOutlet]="prevIcon" />
             {{ collection.name }}
           </a>
-          <h1 i18n>{{ marketTitles[marketType]?.replace('%collectionName%', collection.name) }}</h1>
+          <h1>{{ marketTitle(marketType, collection.name) }}</h1>
 
           @if ((route.queryParams | async)?.address; as address) {
             @if (address) {
               <h2>
-                by
+                {{ t('by') }}
                 <a [href]="env.explorerUrl + '/address/' + address" target="_blank">
                   <app-address [address]="address" class="highlight" />
                 </a>
@@ -40,7 +40,7 @@
             }
           }
 
-          <h3>Showing <span class="highlight">{{ (marketType === 'all' ? phunkData.total : (phunkData.data | attributeFilter : (effectiveTraitFilters$ | async)).length) | number }}</span> of {{ collection.supply | number }}</h3>
+          <h3>{{ t('showing') }} <span class="highlight">{{ (marketType === 'all' ? phunkData.total : (phunkData.data | attributeFilter : (effectiveTraitFilters$ | async)).length) | number }}</span> {{ t('of') }} {{ collection.supply | number }}</h3>
         </div>
       }
 
@@ -51,7 +51,7 @@
               <div class="left">
                 @if (marketType !== 'all') {
                   <div class="sort-wrapper">
-                    <div class="label">Sort:</div>
+                    <div class="label">{{ t('sort') }}:</div>
                     <ng-select
                       class="sort"
                       [(ngModel)]="activeSortModel"
@@ -75,7 +75,7 @@
                       <div class="count">{{ objectKeys(filters).length }}</div>
                     }
                   }
-                  Filter by Attribute
+                  {{ t('filterByAttribute') }}
                 </button>
 
                 @if ((walletAddress$ | async); as walletAddress) {
@@ -93,7 +93,7 @@
                           [class.all]="selectAll"
                           (click)="selectAll = !selectAll">
 
-                          All
+                          {{ t('all') }}
                         </button>
                       }
                       <button
@@ -101,7 +101,7 @@
                         (click)="setSelectActive()"
                         [class.active]="selectMultipleActive">
 
-                        Select
+                        {{ t('select') }}
                       </button>
                     </div>
                   }
@@ -117,28 +117,28 @@
               ) {
                 <div class="selection-toolbar">
                   <div class="selected-label">
-                    <span>{{ objectKeys(selected).length }}</span> selected
+                    <span>{{ objectKeys(selected).length }}</span> {{ t('selected') }}
                   </div>
 
                   <div class="actions" [class.disabled]="!objectKeys(selected).length">
                     @if (marketType === 'owned') {
                       <div class="actions-group">
-                        <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">List</button>
-                        <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">Transfer</button>
-                        <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">Escrow</button>
-                        <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">Withdraw</button>
+                        <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">{{ t('list') }}</button>
+                        <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">{{ t('transfer') }}</button>
+                        <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">{{ t('escrow') }}</button>
+                        <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">{{ t('withdraw') }}</button>
                       </div>
                     } @else if (marketType === 'listings') {
                       <div class="actions-group buy-side">
                         <div class="total-value">
-                          <span class="label">Total cost: </span>
+                          <span class="label">{{ t('totalCost') }}: </span>
                           <span class="value">
                             {{ (objectValues(selected) | calc : 'totalListingsValue') | number : '1.0-5' }}Ξ
                           </span>
                           <!-- {{ (selectedValue | weiToEth) | number }}Ξ</span> -->
                         </div>
                         <button (click)="batchAction('sweep')">
-                          Buy Selected
+                          {{ t('buySelected') }}
                         </button>
                       </div>
                     }

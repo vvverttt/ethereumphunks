@@ -4,21 +4,21 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
       {{ collectionName() }}
     </a>
-    <h1>{{ ownerLabel() }} Owners</h1>
-    <h3><span class="highlight">{{ owners().length }}</span> unique owners</h3>
+    <h1>{{ ownerLabel() }} {{ t('owners') }}</h1>
+    <h3><span class="highlight">{{ owners().length }}</span> {{ t('uniqueOwners') }}</h3>
   </div>
 
   @if (loading()) {
-    <p class="status">Loading...</p>
+    <p class="status">{{ t('loading') }}</p>
   } @else {
     <div class="table-wrapper">
       <table>
         <thead>
           <tr>
             <th class="rank">#</th>
-            <th class="account">Account</th>
-            <th class="contract">Contract</th>
-            <th class="count">Owned</th>
+            <th class="account">{{ t('account') }}</th>
+            <th class="contract">{{ t('contract') }}</th>
+            <th class="count">{{ t('owned') }}</th>
           </tr>
         </thead>
         <tbody>

@@ -10,6 +10,7 @@
   max-width: 48rem;
   background-color: rgba(var(--background), 1);
   padding: 3rem 3.5rem;
+  font-family: var(--secondary-font-stack);
 
   @media (max-width: $tablet) {
     position: static;

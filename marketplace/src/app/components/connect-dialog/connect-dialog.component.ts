@@ -1,6 +1,7 @@
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Web3Service } from '@/services/web3.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 interface WalletOption {
   id: string;
@@ -21,6 +22,11 @@ export class ConnectDialogComponent {
   @Output() closed = new EventEmitter<void>();
 
   private web3 = inject(Web3Service);
+  private preferences = inject(PhunkPreferencesService);
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
   get wallets(): WalletOption[] {
     const opts: WalletOption[] = [];

@@ -7,6 +7,7 @@ import { Collection } from '@/models/data.state';
 import { environment } from 'src/environments/environment';
 import { supabase } from '@/services/supabase';
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import type { AttrSection } from '@/routes/collection-attributes/collection-attributes.component';
 
@@ -71,7 +72,18 @@ export class CollectionStatsComponent implements OnChanges {
 
   readonly staticUrl = environment.staticUrl;
 
-  constructor(private dataSvc: DataService) {}
+  constructor(
+    private dataSvc: DataService,
+    public preferences: PhunkPreferencesService,
+  ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
+
+  artifactTypeLabel(): string {
+    return this.collectionSlug() === 'ethsrocks' ? this.t('rock') : this.t('phunk');
+  }
 
   private readonly dynamicUniqueTraitValues = computed<number>(() =>
     (this.typeSection()?.rows.length ?? 0) +

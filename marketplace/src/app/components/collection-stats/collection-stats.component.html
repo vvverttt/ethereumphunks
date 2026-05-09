@@ -1,22 +1,22 @@
 <div class="inner">
-  <h3>Overall Stats</h3>
+  <h3>{{ t('overallStats') }}</h3>
 
   <div class="stats-grid">
     <div class="stat-item">
       <span class="stat-value">{{ totalSupplyDisplay() }}</span>
-      <span class="stat-label">Total Artifacts</span>
+      <span class="stat-label">{{ t('totalArtifacts') }}</span>
     </div>
     <div class="stat-item">
       <span class="stat-value">{{ loading() ? '-' : (uniqueTraitValues() | number) }}</span>
-      <span class="stat-label">Unique Trait Values</span>
+      <span class="stat-label">{{ t('uniqueTraitValues') }}</span>
     </div>
     <div class="stat-item">
       <span class="stat-value">{{ loading() ? '-' : (traitTypes() | number) }}</span>
-      <span class="stat-label">Unique Trait Types</span>
+      <span class="stat-label">{{ t('uniqueTraitTypes') }}</span>
     </div>
     <div class="stat-item">
       <span class="stat-value">{{ loading() ? '-' : (oneOfOnes() | number) }}</span>
-      <span class="stat-label">Total One of Ones</span>
+      <span class="stat-label">{{ t('totalOneOfOnes') }}</span>
     </div>
     @for (stat of extraStats(); track stat.label) {
       <div class="stat-item">
@@ -29,11 +29,11 @@
   <div class="stat-buttons">
     <a class="stat-btn" [routerLink]="['/' + collection.slug + '/owners']">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-      {{ ownerLabel() }} Owners
+      {{ ownerLabel() }} {{ t('owners') }}
     </a>
     <a class="stat-btn" [routerLink]="['/' + collection.slug + '/attributes']">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-      All {{ collectionSlug() === 'ethsrocks' ? 'Rock' : 'Phunk' }} Types and Attributes
+      {{ t('allTypesAndAttributes').replace('%type%', artifactTypeLabel()) }}
     </a>
   </div>
 </div>

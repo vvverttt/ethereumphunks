@@ -7,6 +7,7 @@ import { Store } from '@ngrx/store';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { IsNumberPipe } from '@/pipes/is-number';
 import { GlobalState } from '@/models/global-state';
 
@@ -51,6 +52,7 @@ export class MarketFiltersComponent {
     private location: Location,
     private router: Router,
     private route: ActivatedRoute,
+    public preferences: PhunkPreferencesService,
   ) {
     effect(async () => {
       const slug = this.slug();
@@ -58,6 +60,10 @@ export class MarketFiltersComponent {
       const filters = await this.dataSvc.getFilters(slug);
       this.filterData = filters || {};
     });
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
   }
 
   selectFilter($event: any): void {

@@ -9,6 +9,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { GasService } from '@/services/gas.service';
 import { setChat } from '@/state/actions/chat.actions';
 import { LogItem, SocketService } from '@/services/socket.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { LoggerComponent } from '@/components/status-bar/logger/logger.component';
 import { combineLatest } from 'rxjs';
@@ -56,7 +57,8 @@ export class StatusBarComponent implements OnDestroy {
   constructor(
     private store: Store<GlobalState>,
     public gasSvc: GasService,
-    private socketSvc: SocketService
+    private socketSvc: SocketService,
+    public preferences: PhunkPreferencesService,
   ) {
     effect(() => {
       const visible = this.visible();
@@ -73,6 +75,10 @@ export class StatusBarComponent implements OnDestroy {
 
       this.disconnectLogs();
     });
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
   }
 
   getIndexerClass(diff: number, indexerBlock: number): string {

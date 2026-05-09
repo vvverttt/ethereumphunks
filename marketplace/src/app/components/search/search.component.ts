@@ -9,6 +9,7 @@ import { firstValueFrom, tap, withLatestFrom } from 'rxjs';
 
 import { Web3Service } from '@/services/web3.service';
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { GlobalState, HistoryItem } from '@/models/global-state';
 
@@ -49,7 +50,8 @@ export class SearchComponent {
     private store: Store<GlobalState>,
     private router: Router,
     private web3Svc: Web3Service,
-    private dataSvc: DataService
+    private dataSvc: DataService,
+    public preferences: PhunkPreferencesService,
   ) {
     router.events.pipe(
       withLatestFrom(this.store.select(appStateSelectors.selectIsSearchResult)),
@@ -63,6 +65,10 @@ export class SearchComponent {
         }
       })
     ).subscribe();
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
   }
 
   @HostListener('document:keydown.escape', ['$event'])

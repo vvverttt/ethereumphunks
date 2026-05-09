@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { environment } from 'src/environments/environment';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   standalone: true,
@@ -33,5 +34,12 @@ export class FooterComponent {
   vault = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218';
   phunkquidity = '0x7f5763D56c7E8c34eB125DbD19124945D77e5f1A';
 
-  constructor(private store: Store<GlobalState>) {}
+  constructor(
+    private store: Store<GlobalState>,
+    public preferences: PhunkPreferencesService,
+  ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 }

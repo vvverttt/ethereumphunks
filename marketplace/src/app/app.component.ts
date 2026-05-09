@@ -20,6 +20,7 @@ import { Web3Service } from '@/services/web3.service';
 import { DataService } from '@/services/data.service';
 import { ThemeService } from '@/services/theme.service';
 import { PwaUpdateService } from '@/services/pwa-update.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { selectChatActive } from '@/state/selectors/chat.selectors';
 import { selectIsMobile } from '@/state/selectors/app-state.selectors';
@@ -66,6 +67,7 @@ export class AppComponent implements OnInit {
     public dataSvc: DataService,
     public web3Svc: Web3Service,
     public themeSvc: ThemeService,
+    public preferencesSvc: PhunkPreferencesService,
     private router: Router,
     private pwaUpdateSvc: PwaUpdateService,
   ) {

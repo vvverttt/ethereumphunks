@@ -3,7 +3,7 @@
 
   <div class="events-header">
     <div class="events-header-title">
-      <h2>Recent Activity</h2>
+      <h2>{{ t('recentActivity') }}</h2>
     </div>
 
     <div class="events-header-controls">
@@ -59,19 +59,19 @@
             @if (event.type) {
               <div>
                 @if (event.type === 'PhunkBought') {
-                  <span class="prismatic-bought">Bought</span> for
+                  <span class="prismatic-bought">{{ t('bought') }}</span> {{ t('for') }}
                 } @else if (event.type === 'created') {
-                  <span class="prismatic-created">Created</span> by
+                  <span class="prismatic-created">{{ t('created') }}</span> {{ t('by') }}
                 } @else if (event.type === 'PrizeAwarded') {
-                  <span class="prismatic-won">Won</span> in lottery by
+                  <span class="prismatic-won">{{ t('won') }}</span> {{ t('inLotteryBy') }}
                 } @else if (event.type === 'AuctionSettled' && event.to && event.to !== '0x0000000000000000000000000000000000000000') {
-                  Auction <span class="prismatic-won">won</span> by
+                  {{ t('auction') }} <span class="prismatic-won">{{ t('won') }}</span> {{ t('by') }}
                 } @else if (event.type === 'AuctionSettled') {
-                  Auction ended — no bids
+                  {{ t('auctionEndedNoBids') }}
                 } @else if (event.type === 'AuctionBid') {
-                  Auction <span class="prismatic-bid">bid</span> of
+                  {{ t('auction') }} <span class="prismatic-bid">{{ t('bid') }}</span> {{ t('of') }}
                 } @else {
-                  {{ labels[event.type] }}
+                  {{ eventLabel(event.type) }}
                 }
               </div>
             }
@@ -137,7 +137,7 @@
         class="event-item view-more"
         (click)="paginateEvents()">
 
-        View<br />More
+        {{ t('viewMore') }}
       </button>
     }
   </div>

@@ -1,4 +1,4 @@
-import { Component, ElementRef, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -10,6 +10,7 @@ import { GlobalState, Notification } from '@/models/global-state';
 
 import { Web3Service } from '@/services/web3.service';
 import { AdminService } from '@/services/admin.service';
+import { MenuFont, MenuLanguage, PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 import { NotificationComponent } from '@/components/notifications/notification/notification.component';
@@ -102,6 +103,11 @@ export class MenuComponent {
   isStandaloneMarket = environment.standalone;
   isOwner = signal(false);
   config$ = this.store.select(appStateSelectors.selectConfig);
+  private preferences = inject(PhunkPreferencesService);
+  currentLanguage = this.preferences.currentLanguage;
+  currentFont = this.preferences.currentFont;
+  languageOptions = this.preferences.languageOptions;
+  fontOptions = this.preferences.fontOptions;
 
   constructor(
     private store: Store<GlobalState>,
@@ -221,6 +227,18 @@ export class MenuComponent {
 
   navigateMenu(activeMenuNav: GlobalState['appState']['activeMenuNav']): void {
     this.store.dispatch(appStateActions.setActiveMenuNav({ activeMenuNav }));
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
+
+  setLanguage(language: MenuLanguage): void {
+    this.preferences.setLanguage(language);
+  }
+
+  setFont(font: MenuFont): void {
+    this.preferences.setFont(font);
   }
 
   goToLottery(): void {

@@ -21,12 +21,12 @@
   <div
     class="blocks-wrapper"
     [class.active]="expanded()"
-    [title]="(blocks[0] - blocks[1]) ? (blocks[0] - blocks[1]) + ' blocks behind' : 'synced'"
+    [title]="(blocks[0] - blocks[1]) ? (blocks[0] - blocks[1]) + ' ' + t('blocksBehind') : t('synced')"
     (click)="expandCollapse()">
 
     <div class="indexer">
       <div class="block">
-        <div class="label">Current</div>
+        <div class="label">{{ t('currentBlock') }}</div>
         <div class="value">{{ blocks[0] || 'waiting..' }}</div>
       </div>
 
@@ -34,7 +34,7 @@
         class="block"
         [class]="getIndexerClass(blocks[0] - blocks[1], blocks[1])">
 
-        <div class="label">Indexer</div>
+        <div class="label">{{ t('indexer') }}</div>
         <div class="value">{{ blocks[1] || 'waiting..' }}</div>
       </div>
     </div>
@@ -48,19 +48,19 @@
 @if (expanded()) {
   <div class="logger">
     <div class="title-bar">
-      <div class="title">Indexer Logs</div>
+      <div class="title">{{ t('indexerLogs') }}</div>
 
       @if (loadingLogs()) {
         <div class="status initializing">
-          Initializing logs
+          {{ t('initializingLogs') }}
           @if (loadingCountdown() !== null) {
             <span class="countdown">{{ loadingCountdown() }}s</span>
           }
         </div>
       } @else if (waitingForLogs()) {
-        <div class="status waiting">Connected - waiting for logs</div>
+        <div class="status waiting">{{ t('connectedWaitingLogs') }}</div>
       } @else {
-        <div class="status ready">{{ logItems().length }} loaded</div>
+        <div class="status ready">{{ logItems().length }} {{ t('loaded') }}</div>
       }
     </div>
 
@@ -69,9 +69,9 @@
     } @else {
       <div class="logger-placeholder">
         @if (loadingLogs()) {
-          <div class="message">Opening live indexer feed...</div>
+          <div class="message">{{ t('openingLiveFeed') }}</div>
         } @else {
-          <div class="message">Connected. Waiting for the next log entry.</div>
+          <div class="message">{{ t('waitingNextLog') }}</div>
         }
       </div>
     }

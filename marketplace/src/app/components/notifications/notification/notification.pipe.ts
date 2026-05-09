@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 import { Notification, TxFunction } from '@/models/global-state';
 import { Collection } from '@/models/data.state';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 type NotificationTexts = {
   titles: {
@@ -26,6 +27,8 @@ type NotificationTexts = {
   name: 'notifText'
 })
 export class NotificationPipe implements PipeTransform {
+
+  constructor(private preferences: PhunkPreferencesService) {}
 
   notifs: NotificationTexts = {
     titles: {
@@ -65,19 +68,19 @@ export class NotificationPipe implements PipeTransform {
         message: 'Sold for <strong>%value%Ξ</strong>'
       },
       wallet: {
-        message: '<strong>Please submit</strong> the transaction using your connected Ethereum wallet.'
+        message: 'notifSubmitWallet'
       },
       pending: {
-        message: 'Your transaction is <strong>being processed</strong> on the Ethereum network.'
+        message: 'notifProcessing'
       },
       complete: {
-        message: 'Your transaction is <strong>complete</strong>.'
+        message: 'notifComplete'
       },
       error: {
-        message: 'There was an <strong>error</strong> with your transaction.'
+        message: 'notifError'
       },
       chat: {
-        message: 'New message'
+        message: 'newMessage'
       },
     },
     classes: {
@@ -137,14 +140,14 @@ export class NotificationPipe implements PipeTransform {
 
     if (type === 'body') {
       if (notif.type === 'event') {
-        return this.notifs.body.event.message.replace('%value%', `${notif.value}`);
+        return `${this.preferences.t('notifSoldFor')} <strong>${notif.value}Ξ</strong>`;
       }
 
       if (notif.isBatch && notif.hashIds) {
-        return this.notifs.body[notif.type].message;
+        return this.preferences.t(this.notifs.body[notif.type].message);
       }
 
-      return this.notifs.body[notif.type].message.replace('%tokenId%', `${notif.tokenId}`);
+      return this.preferences.t(this.notifs.body[notif.type].message).replace('%tokenId%', `${notif.tokenId}`);
     }
 
     return '';

@@ -11,6 +11,7 @@ import { switchMap, startWith } from 'rxjs/operators';
 import { DataService } from '@/services/data.service';
 import { Web3Service } from '@/services/web3.service';
 import { UtilService } from '@/services/util.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { Comment, CommentWithReplies } from '@/models/comment';
 import { GlobalState, Notification } from '@/models/global-state';
@@ -66,7 +67,12 @@ export class CommentsComponent {
     private web3Svc: Web3Service,
     private dataSvc: DataService,
     private utilSvc: UtilService,
+    public preferences: PhunkPreferencesService,
   ) {}
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
 
   getAllTopicsAndIds(comments: CommentWithReplies[]): string[] {
     const uniqueTopics = new Set<string>();

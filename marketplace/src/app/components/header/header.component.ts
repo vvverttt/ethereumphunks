@@ -9,6 +9,7 @@ import { SearchComponent } from '@/components/search/search.component';
 import { CollectionsDropdownComponent } from '@/components/collections-dropdown/collections-dropdown.component';
 
 import { Web3Service } from '@/services/web3.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { Subject, firstValueFrom, map, tap, withLatestFrom } from 'rxjs';
 
@@ -78,6 +79,7 @@ export class HeaderComponent {
     private store: Store<GlobalState>,
     private router: Router,
     public web3Svc: Web3Service,
+    public preferences: PhunkPreferencesService,
   ) {
     this.toggleTheme$.pipe(
       withLatestFrom(this.theme$),
@@ -94,5 +96,9 @@ export class HeaderComponent {
         this.store.dispatch(appStateActions.setMenuActive({ menuActive: !menuActive }));
       })
     ).subscribe();
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
   }
 }

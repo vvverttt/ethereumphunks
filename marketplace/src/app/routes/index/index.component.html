@@ -39,17 +39,17 @@
             @if ((connected$ | async) && (walletAddress$ | async); as address) {
               <section>
                 <div class="inner">
-                  <h3 i18n>Owned</h3>
+                  <h3>{{ t('owned') }}</h3>
 
                   <div class="section-stats-wrapper">
-                    <p i18n>Showing owned {{ activeCollection.name }},
+                    <p>{{ t('showingOwned') }} {{ activeCollection.name }},
                       <a
                         class="highlight"
                         [routerLink]="['market', 'owned']"
                         [queryParams]="{ address }"
                         [relativeTo]="route">
 
-                        ({{ ownedData.length | number }}) view all.
+                        ({{ ownedData.length | number }}) {{ t('viewAllLower') }}.
                       </a>
                     </p>
                   </div>
@@ -71,14 +71,14 @@
           @if (listings.length) {
             <section>
               <div class="inner">
-                <h3 i18n>For Sale</h3>
+                <h3>{{ t('forSale') }}</h3>
 
                 <div class="section-stats-wrapper">
                   @if ((listings | calc : 'lowestListingPrice'); as ethPrice) {
-                    <p i18n>The lowest price {{ activeCollection.singleName }} currently for sale is <span class="bold">Îž{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                    <p>{{ t('lowestPricePrefix') }} {{ activeCollection.singleName }} {{ t('currentlyForSaleIs') }} <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
                   }
 
-                  <p i18n>Showing lowest price offers, <a class="highlight" [routerLink]="['market', 'listings']" [relativeTo]="route">({{ listings.length | number }}) view all.</a></p>
+                  <p>{{ t('showingLowestOffers') }}, <a class="highlight" [routerLink]="['market', 'listings']" [relativeTo]="route">({{ listings.length | number }}) {{ t('viewAllLower') }}.</a></p>
                 </div>
 
                 <app-phunk-grid
@@ -100,10 +100,10 @@
             @if ((bids$ | async); as bids) {
               <div class="section-stats-wrapper">
                 @if ((bids | calc : 'averageBidPrice'); as ethPrice) {
-                  <p i18n>The average currently open bid is <span class="bold">Îž{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                  <p i18n>The average currently open bid is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
                 }
                 @if ((bids | calc : 'totalBidsValue'); as ethPrice) {
-                  <p i18n>Total value of all current bids is <span class="bold">Îž{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                  <p i18n>Total value of all current bids is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
                 }
                 <p i18n>Showing top bids, <a class="highlight" [routerLink]="['market', 'bids']">({{ bids.length | number }}) view all.</a></p>
               </div>
@@ -121,18 +121,18 @@
 
         <section>
           <div class="inner">
-            <h3 i18n>All</h3>
+            <h3>{{ t('all') }}</h3>
 
             @if ((all$ | async); as allPhunks) {
               @if (activeCollection && allPhunks.length) {
                 <div class="section-stats-wrapper">
-                  <p i18n>
+                  <p>
                     <a
                       class="highlight"
                       [routerLink]="['market', 'all']"
                       [relativeTo]="route">
 
-                      View all {{ activeCollection.supply | number }} {{ activeCollection.name }}.
+                      {{ t('viewAllCollectionPrefix') }} {{ activeCollection.supply | number }} {{ activeCollection.name }}.
                     </a>
                   </p>
                 </div>

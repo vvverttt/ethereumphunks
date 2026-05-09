@@ -1,13 +1,13 @@
 <div class="bid-history-wrapper">
   <ng-container *ngIf="auction.bids?.length; else noBids">
     <div class="bid-history-head">
-      <span>Bid history</span>
+      <span>{{ t('bidHistory') }}</span>
 
       <button
         [class.disabled]="viewAllBids"
         (click)="viewAllBids = true">
 
-        View all
+        {{ t('viewAll') }}
       </button>
     </div>
     <div class="bid-history">
@@ -40,6 +40,6 @@
   </ng-container>
 
   <ng-template #noBids>
-    <p>This auction has no bids</p>
+    <p>{{ t('noBids') }}</p>
   </ng-template>
 </div>

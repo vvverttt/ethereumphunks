@@ -210,6 +210,7 @@
 
 .auction-history {
   position: relative;
+  padding-bottom: 10rem;
 
   .history-inner {
     position: relative;
@@ -217,9 +218,11 @@
     max-width: var(--max-width);
     margin: 0 auto;
     padding: 0 16rem;
+    min-height: max(34rem, calc(27rem + (var(--bid-count, 0) * 3.2rem)));
 
     @media (max-width: $tablet) {
       padding: 0 2rem;
+      min-height: 0;
     }
   }
 }

@@ -6,10 +6,10 @@
         (click)="withdraw()"
         [class.disabled]="(hasWithdrawal$ | async) === 0">
         <!-- {{ hasWithdrawal$ | async }} -->
-        <span>Withdraw Funds</span>
+        <span>{{ t('withdrawFunds') }}</span>
         <span>({{ (hasWithdrawal$ | async) }} ETH)</span>
       </button>
-      <button (click)="disconnect()">Disconnect</button>
+      <button (click)="disconnect()">{{ t('disconnect') }}</button>
     </div>
   }
 
@@ -21,20 +21,20 @@
       <div class="logo-wrapper">
         <img
           src="assets/cryptophunkv67-9986.png"
-          alt="QuantumPhunk 9986" />
+          [alt]="t('leaderboardImageAlt')" />
       </div>
 
       <div class="button-content">
-        <h4>Fart Leaderboard</h4>
+        <h4>{{ t('fartLeaderboard') }}</h4>
         @if ((leaderboard$ | async); as leaderboard) {
           @if (leaderboard.length) {
             <span class="top-points">
               <div class="value">{{ leaderboard[0]?.points | formatCash }}</div>
-              <div class="label">Farts</div>
+              <div class="label">{{ t('farts') }}</div>
             </span>
             <div class="top-holder">
               <app-address [address]="leaderboard[0]?.address" />
-              <div class="label">#1 Fart holder</div>
+              <div class="label">{{ t('topFartHolder') }}</div>
             </div>
           }
         }
@@ -50,7 +50,7 @@
         class="curated-button"
         (click)="navigateMenu('curated')">
 
-        <span>Curated Collections</span>
+        <span>{{ t('curatedCollections') }}</span>
 
         <div class="arrow">
           <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -65,7 +65,7 @@
           routerLink="/lottery"
           (click)="goToLottery()">
 
-          <span>Philip Lottery V67</span>
+          <span>{{ t('philipLottery') }}</span>
 
           <div class="arrow">
             <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -75,7 +75,7 @@
           class="lottery-pro-button"
           routerLink="/lottery-pro"
           (click)="goToLottery()">
-          Pro
+          {{ t('pro') }}
         </a>
       </div>
     }
@@ -86,7 +86,7 @@
         routerLink="/auction"
         (click)="goToAuction()">
 
-        <span>Auction House</span>
+        <span>{{ t('auctionHouse') }}</span>
 
         <div class="arrow">
           <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -100,7 +100,7 @@
         routerLink="/phunkquidity"
         (click)="goToVault()">
 
-        <span>Phunkquidity</span>
+        <span>{{ t('phunkquidity') }}</span>
 
         <div class="arrow">
           <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -114,7 +114,7 @@
       routerLink="/vault"
       (click)="goToVault()">
 
-      <span>Phunk Swap</span>
+      <span>{{ t('phunkSwap') }}</span>
 
       <div class="arrow">
         <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -127,7 +127,7 @@
       routerLink="/owners"
       (click)="goToVault()">
 
-      <span>All Owners</span>
+      <span>{{ t('allOwners') }}</span>
 
       <div class="arrow">
         <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -140,12 +140,39 @@
       target="_blank"
       rel="noopener noreferrer">
 
-      <span>DystoLabz</span>
+      <span>{{ t('dystolabz') }}</span>
 
       <div class="arrow">
         <ng-template [ngTemplateOutlet]="arrowIcon" />
       </div>
     </a>
+
+    <div class="preference-switcher" [attr.aria-label]="t('languageAndFontControls')">
+      <div class="language-options">
+        @for (option of languageOptions; track option.value) {
+          <button
+            type="button"
+            [attr.aria-label]="t(option.labelKey)"
+            [class.active]="currentLanguage() === option.value"
+            (click)="setLanguage(option.value)">
+            <span>{{ option.nativeLabel }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="font-options">
+        @for (option of fontOptions; track option.value) {
+          <button
+            type="button"
+            [attr.aria-label]="t(option.labelKey)"
+            [class]="option.className"
+            [class.active]="currentFont() === option.value"
+            (click)="setFont(option.value)">
+            {{ option.sample }}
+          </button>
+        }
+      </div>
+    </div>
 
     @if (isOwner()) {
       <a
@@ -153,7 +180,7 @@
         routerLink="/admin"
         (click)="goToAdmin()">
 
-        <span>Admin Panel</span>
+        <span>{{ t('adminPanel') }}</span>
 
         <div class="arrow">
           <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -216,7 +243,7 @@
               />
 
               <div class="stat">
-                <div class="label"><span>Active</span><span>Listings</span></div>
+                <div class="label"><span>{{ t('active') }}</span><span>{{ t('listings') }}</span></div>
                 <div class="value">{{ stats.listed | number }}</div>
               </div>
 
@@ -232,7 +259,7 @@
     @if ((notifications$ | async); as notifs) {
       @if (menuSeen()) {
         <div class="notifications-wrapper">
-          <h3>Your Activity</h3>
+          <h3>{{ t('yourActivity') }}</h3>
           <div class="notifications" [class.scrollbar]="notifs.length > 4">
             @if (notifs.length) {
               @for (txn of notifs; track txn.id) {
@@ -240,7 +267,7 @@
                 <app-notification [txn]="txn" [dismissible]="false" [isMenu]="true" />
               }
             } @else {
-              <p class="no-activity">No recent activity.</p>
+              <p class="no-activity">{{ t('noRecentActivity') }}</p>
             }
           </div>
         </div>
@@ -270,7 +297,7 @@
   <div class="section-header">
     <button (click)="navigateMenu('main')">
       <ng-template [ngTemplateOutlet]="backIcon"></ng-template>
-      Back
+      {{ t('back') }}
     </button>
   </div>
 </ng-template>

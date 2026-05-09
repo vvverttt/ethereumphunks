@@ -2,19 +2,19 @@
   <div class="logo-wrapper">
     <img
       src="assets/cryptophunkv67-9986.png"
-      alt="QuantumPhunk 9986" />
+      [alt]="t('leaderboardImageAlt')" />
   </div>
   <div>
-    <h3>Fart Leaderboard</h3>
-    <p>Farts represent your buying activity within the ecosystem. Earn farts by purchasing items across the marketplace, auction, and lottery.</p>
+    <h3>{{ t('fartLeaderboard') }}</h3>
+    <p>{{ t('fartLeaderboardDescription') }}</p>
   </div>
 </div>
 
 <div class="grid-header">
   <span></span>
-  <span>Wallet</span>
-  <span>Buys</span>
-  <span>Farts</span>
+  <span>{{ t('wallet') }}</span>
+  <span>{{ t('buys') }}</span>
+  <span>{{ t('farts') }}</span>
 </div>
 
 @for (item of (leaderboard$ | async); track $index) {
@@ -35,7 +35,7 @@
   </div>
 } @empty {
   <div class="no-results">
-    <p>No results found.</p>
+    <p>{{ t('noResultsFound') }}</p>
   </div>
 }
 
