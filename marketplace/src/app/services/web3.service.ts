@@ -773,11 +773,43 @@ export class Web3Service {
   /**
    * Internal helper: reads data from any marketplace contract
    */
+  // In-memory cache of (contract, function, args) → null when the call always reverts.
+  // Avoids burning CU on the same failed read repeatedly within a session.
+  private _readFailureCache = new Map<string, true>();
+
+  // Functions ACTUALLY present on the old DystoLabz contract at 0xD341...
+  // (verified by extracting function selectors from its deployed bytecode).
+  // The V2 ABI in our codebase advertises additional bid/royalty functions that
+  // don't exist on the deployed contract — calling those hits fallback() and
+  // reverts with "Invalid ethscription length", burning CU on every retry.
+  // Short-circuit those calls before they reach the RPC.
+  private static readonly OLD_DYSTOLABZ_FUNCTIONS = new Set([
+    'paused', 'owner', 'contractVersion', 'pointsAddress',
+    'ETHSCRIPTION_TRANSFER_COOLDOWN_BLOCKS',
+    'pendingWithdrawals', 'phunksOfferedForSale', 'phunkBids',
+    'userEthscriptionPossiblyStored', 'userEthscriptionDefinitelyNotStored',
+    'blocksRemainingUntilValidTransfer',
+    // Writes (still validated by ABI; just allow-list them):
+    'offerPhunkForSale', 'offerPhunkForSaleToAddress', 'batchOfferPhunkForSale',
+    'phunkNoLongerForSale', 'batchBuyPhunk',
+    'withdraw', 'withdrawPhunk', 'withdrawBatchPhunks',
+    'pause', 'unpause', 'setPointsAddress', 'transferOwnership', 'renounceOwnership',
+  ]);
+
   private async _readMarketContractAt(
     contractAddress: string,
     functionName: any,
     args: (string | undefined)[]
   ): Promise<any | null> {
+    // Hard short-circuit: if calling old DystoLabz with a function it doesn't have,
+    // return null without burning RPC. Saves CU on every page that probes royalty/bid
+    // state on the old contract.
+    if (this.isOldMarketAddress(contractAddress) &&
+        !Web3Service.OLD_DYSTOLABZ_FUNCTIONS.has(functionName as string)) {
+      return null;
+    }
+    const cacheKey = `${contractAddress.toLowerCase()}:${functionName}:${JSON.stringify(args)}`;
+    if (this._readFailureCache.has(cacheKey)) return null;
     try {
       const call: any = await this.l1Client.readContract({
         address: contractAddress as `0x${string}`,
@@ -787,7 +819,7 @@ export class Web3Service {
       });
       return call;
     } catch (error) {
-      console.log({functionName, args, error});
+      this._readFailureCache.set(cacheKey, true);
       return null;
     }
   }
