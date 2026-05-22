@@ -77,7 +77,7 @@ export class VaultPageComponent implements OnInit {
 
   private merkleTree: string[][] = [];
   private allV67HashIds: string[] = [];
-  private get rpcClient() { return this.web3Svc.l1Client; }
+  private get rpcClient() { return this.web3Svc.l1DedicatedClient; }
 
   constructor(
     private store: Store<GlobalState>,
