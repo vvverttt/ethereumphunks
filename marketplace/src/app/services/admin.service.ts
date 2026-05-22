@@ -9,6 +9,7 @@ const PHUNKQUIDITY_ABI = parseAbi([
   'function inputDisabled(bytes32) view returns (bool)',
   'function setInputDisabled(bytes32 slug, bool disabled)',
   'function owner() view returns (address)',
+  'function withdrawEthscBatch(bytes32 slug, bytes32[] hashIds)',
 ]);
 
 import { environment } from 'src/environments/environment';
@@ -540,5 +541,11 @@ export class AdminService {
   setPhunkquidityInputDisabled(slugStr: string, disabled: boolean) {
     const slug = keccak256(toBytes(slugStr));
     return this.writeContract(PHUNKQUIDITY_ADDRESS, PHUNKQUIDITY_ABI, 'setInputDisabled', [slug, disabled]);
+  }
+
+  phunkquidityWithdrawEthsc(slugStr: string, hashIds: string[]) {
+    const slug = keccak256(toBytes(slugStr));
+    const ids = hashIds.map((h) => h as `0x${string}`);
+    return this.writeContract(PHUNKQUIDITY_ADDRESS, PHUNKQUIDITY_ABI, 'withdrawEthscBatch', [slug, ids]);
   }
 }

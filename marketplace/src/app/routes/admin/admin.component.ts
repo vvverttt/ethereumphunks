@@ -157,6 +157,8 @@ export class AdminComponent implements OnInit {
 
   // Phunkquidity admin
   phunkquidityOwner = signal('');
+  pqWithdrawSlug = 'cryptophunksv67';
+  pqWithdrawHashId = '';
   phunkquidityCollections = signal<PhunkquidityCollectionRow[]>([
     { name: 'Philip Intern',    slugStr: 'philip-intern',     pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
     { name: 'V1 Phunks',        slugStr: 'v1-phunks',         pointValue: 0, enabled: false, inputDisabled: false, newPointValue: 0 },
@@ -257,6 +259,15 @@ export class AdminComponent implements OnInit {
     } finally {
       this.txPending.set(false);
     }
+  }
+
+  phunkquidityWithdrawEthsc() {
+    const hashId = this.pqWithdrawHashId.trim();
+    if (!hashId.startsWith('0x') || hashId.length !== 66) {
+      this.txError.set('Invalid hashId (must be 0x + 64 hex chars)');
+      return;
+    }
+    this.exec(() => this.adminSvc.phunkquidityWithdrawEthsc(this.pqWithdrawSlug, [hashId]));
   }
 
   async savePhunkquidityCollection(row: PhunkquidityCollectionRow) {

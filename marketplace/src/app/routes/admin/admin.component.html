@@ -105,6 +105,16 @@
           </tbody>
         </table>
 
+        <h3 style="margin-top: 24px;">Withdraw Ethscription</h3>
+        <p style="font-size: 12px; opacity: 0.7;">Returns the Ethscription from the Phunkquidity pool to the contract owner (quantumphunks.eth).</p>
+        <div class="action">
+          <label>Slug</label>
+          <input type="text" [(ngModel)]="pqWithdrawSlug" placeholder="cryptophunksv67" />
+          <label style="margin-top: 8px;">HashId</label>
+          <input type="text" [(ngModel)]="pqWithdrawHashId" placeholder="0x..." />
+          <button (click)="phunkquidityWithdrawEthsc()" [disabled]="txPending()" style="margin-top: 8px;">Withdraw</button>
+        </div>
+
         @if (txHash()) { <p class="tx-success">Tx: <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank">{{ txHash() }}</a></p> }
         @if (txError()) { <p class="tx-error">{{ txError() }}</p> }
       </div>
