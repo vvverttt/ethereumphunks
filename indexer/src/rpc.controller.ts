@@ -87,6 +87,19 @@ async function forwardWithFallback(body: object): Promise<{ ok: boolean; status:
       if (response.status === 429 || response.status === 502 || response.status === 503) {
         continue;
       }
+      // 200 with provider-auth-failure payload (e.g. Alchemy "Unspecified origin not on
+      // whitelist", Ankr -32079 "Origin not allowed", invalid API key) — try next upstream.
+      // Domain-locked keys (like jjWbKkRb) will always reject server-side calls, so this
+      // lets the rotation skip them automatically instead of bubbling errors to callers.
+      if (payload && typeof payload === 'object' && 'error' in payload && !('result' in payload)) {
+        const errMsg = String((payload as any).error?.message || '').toLowerCase();
+        const errCode = (payload as any).error?.code;
+        const isProviderAuthFailure =
+          /origin|whitelist|forbidden|unauthorized|api[_ ]?key|access[_ ]?denied/.test(errMsg) ||
+          errCode === -32079 ||
+          errCode === -32099;
+        if (isProviderAuthFailure) continue;
+      }
       return { ok: response.ok, status: response.status, payload };
     } catch {
       // Network error → next upstream
