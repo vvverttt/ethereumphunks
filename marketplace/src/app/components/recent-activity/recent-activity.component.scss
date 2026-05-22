@@ -135,6 +135,14 @@ section {
         color: rgba(var(--highlight), 1);
 
         padding-bottom: .5rem;
+
+        // Match the action label's color, but with SOLID color (not gradient)
+        // so the digits keep their original stroke width — gradient text
+        // rendering can make some digits look thinner than others.
+        &.prismatic-bought { color: #ffd700; -webkit-text-fill-color: #ffd700; background: none; }
+        &.prismatic-won    { color: #00d4ff; -webkit-text-fill-color: #00d4ff; background: none; }
+        &.prismatic-bid    { color: #ff00cc; -webkit-text-fill-color: #ff00cc; background: none; }
+        &.prismatic-created { color: #00d4ff; -webkit-text-fill-color: #00d4ff; background: none; }
       }
 
       .label {

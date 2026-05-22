@@ -111,20 +111,42 @@ export class VaultPageComponent implements OnInit {
   }
 
   async loadContractState() {
-    try {
-      const [poolSize, totalSwapped, swapEnabled, swapFee] = await Promise.all([
-        this.rpcClient.readContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, functionName: 'poolSize' }),
-        this.rpcClient.readContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, functionName: 'totalSwapped' }),
-        this.rpcClient.readContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, functionName: 'swapEnabled' }),
-        this.rpcClient.readContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, functionName: 'swapFee' }),
-      ]);
+    // Vault is a fixed 1-for-1 swap pool:
+    //   - poolSize never changes (every swap puts one phunk in, takes one out)
+    //   - swapEnabled stays true once vault is live
+    //   - swapFee stays 0 (free swaps)
+    //   - totalSwapped is no longer surfaced in the UI
+    // So we hardcode the constants and fetch poolSize ONCE per browser, then
+    // cache it for 24h. Vault page load goes from 4 RPC calls to ~0.
+    this.swapEnabled.set(true);
+    this.swapFee.set(0n);
 
+    const POOL_SIZE_CACHE_KEY = `vault_poolSize_${VAULT_ADDRESS}`;
+    const POOL_SIZE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+    try {
+      const cached = localStorage.getItem(POOL_SIZE_CACHE_KEY);
+      if (cached) {
+        const { value, ts } = JSON.parse(cached);
+        if (Date.now() - ts < POOL_SIZE_TTL_MS) {
+          this.poolSize.set(Number(value));
+          return;
+        }
+      }
+    } catch {}
+
+    try {
+      const poolSize = await this.rpcClient.readContract({
+        address: VAULT_ADDRESS, abi: VAULT_ABI, functionName: 'poolSize',
+      });
       this.poolSize.set(Number(poolSize));
-      this.totalSwapped.set(Number(totalSwapped));
-      this.swapEnabled.set(swapEnabled as boolean);
-      this.swapFee.set(swapFee as bigint);
+      try {
+        localStorage.setItem(POOL_SIZE_CACHE_KEY, JSON.stringify({
+          value: (poolSize as bigint).toString(),
+          ts: Date.now(),
+        }));
+      } catch {}
     } catch (e) {
-      console.error('Failed to load vault state:', e);
+      console.error('Failed to load vault poolSize:', e);
     }
   }
 

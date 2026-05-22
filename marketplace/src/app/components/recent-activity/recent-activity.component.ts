@@ -116,6 +116,25 @@ export class RecentActivityComponent {
     return this.t(this.labelKeys[type] || type);
   }
 
+  /**
+   * Returns the prismatic CSS class to apply to the token-id so it matches
+   * the color of the action label (e.g. "#-4" turns magenta on a bid event,
+   * cyan on a win, gold on a purchase). Returns empty string for event types
+   * that don't have a colored label.
+   */
+  tokenIdClass(event: { type?: string | null; to?: string | null }): string {
+    const t = event?.type;
+    if (!t) return '';
+    if (t === 'PhunkBought') return 'prismatic-bought';
+    if (t === 'created') return 'prismatic-created';
+    if (t === 'PrizeAwarded') return 'prismatic-won';
+    if (t === 'AuctionBid') return 'prismatic-bid';
+    if (t === 'AuctionSettled' && event.to && event.to !== '0x0000000000000000000000000000000000000000') {
+      return 'prismatic-won';
+    }
+    return '';
+  }
+
   setActiveTxFilter(filter: TxFilterItem): void {
     this.store.dispatch(appStateActions.setEventTypeFilter({ eventTypeFilter: filter.value }));
     this.scroller?.nativeElement?.scrollTo({ left: 0, top: 0 });

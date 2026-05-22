@@ -51,7 +51,7 @@
 
         <div class="labels-wrapper">
 
-          <div class="token-id">
+          <div class="token-id" [ngClass]="tokenIdClass(event)">
             #{{ event.slug === 'ethsrocks' ? '-' + ((event.tokenId ?? 0) < 0 ? -(event.tokenId ?? 0) : (event.tokenId ?? 0)) : ((event.tokenId ?? 0) < 0 ? -(event.tokenId ?? 0) : (event.tokenId ?? 0)) }}
           </div>
 
@@ -65,7 +65,7 @@
                 } @else if (event.type === 'PrizeAwarded') {
                   <span class="prismatic-won">{{ t('won') }}</span> {{ t('inLotteryBy') }}
                 } @else if (event.type === 'AuctionSettled' && event.to && event.to !== '0x0000000000000000000000000000000000000000') {
-                  {{ t('auction') }} <span class="prismatic-won">{{ t('won') }}</span> {{ t('by') }}
+                  {{ t('auction') }} <span class="prismatic-won">{{ t('won') | lowercase }}</span> {{ t('by') }}
                 } @else if (event.type === 'AuctionSettled') {
                   {{ t('auctionEndedNoBids') }}
                 } @else if (event.type === 'AuctionBid') {
