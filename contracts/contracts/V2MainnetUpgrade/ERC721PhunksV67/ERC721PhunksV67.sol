@@ -40,6 +40,13 @@ interface ICreatorToken {
     function setTransferValidator(address validator) external;
 }
 
+interface IV67PixelRenderer {
+    function render(bytes32[9] calldata packedPixels, bytes32 pal0, bytes32 pal1, string calldata background)
+        external
+        view
+        returns (string memory);
+}
+
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -72,6 +79,7 @@ contract ERC721PhunksV67 is
     error NotDeposited();
     error InvalidProof();
     error MerkleRootNotSet();
+    error TraitsRootNotSet();
     error NoHashId();
     error NotForSale();
     error NotForYou();
@@ -87,6 +95,7 @@ contract ERC721PhunksV67 is
     error TransferFailed();
     error CannotDrainUserFunds();
     error OperatorNotWhitelisted();
+    error OperatorBlocked();
     error InvalidSize();
     error LengthMismatch();
     error TraitLengthMismatch();
@@ -98,6 +107,9 @@ contract ERC721PhunksV67 is
     error TransferValidatorNotAllowed();
     error NotOurToken();
     error ERC721NotEscrowed();
+    error BridgePaused();
+    error PixelsAlreadySet();
+    error TraitsAlreadySet();
 
     // ========================================================
     // Constants
@@ -125,7 +137,10 @@ contract ERC721PhunksV67 is
     // Storage — bridge
     // ========================================================
 
+    /// @dev Merkle root used for mint/mintPixels paths that commit to image/pixel payloads.
     bytes32 public merkleRoot;
+    /// @dev Separate merkle root for trait-setting after mintPixels.
+    bytes32 public traitsRoot;
     mapping(bytes32 => bool)    public minted;
     mapping(address => mapping(bytes32 => uint256)) public depositBlockNumber;
     mapping(bytes32 => address) public ethscriptionDepositor;
@@ -140,6 +155,7 @@ contract ERC721PhunksV67 is
     // ========================================================
 
     mapping(address => bool) public approvedOperators;
+    mapping(address => bool) public blockedOperators;
     bool public operatorWhitelistEnabled;
 
     // ========================================================
@@ -186,6 +202,32 @@ contract ERC721PhunksV67 is
     mapping(uint256 => address) public erc721Depositor;
 
     // ========================================================
+    // Storage — bridge pause (appended for UUPS upgrade)
+    // ========================================================
+
+    bool public bridgePaused;
+
+    // ========================================================
+    // Storage — onchain pixel rendering (appended for UUPS upgrade)
+    // ========================================================
+
+    // Compact 24x24 image representation:
+    // - packedPixels: 288 bytes, 4 bits per pixel (16-color palette)
+    //   stored as 9x bytes32 for cheaper, fixed-size storage (288 == 9 * 32)
+    // - palette: 48 bytes RGB (16 * 3). Stored as two parts for cheap fixed-size storage.
+    mapping(uint256 => bytes32[9]) private _packedPixels;
+    mapping(uint256 => bytes32) public palettePart0; // first 32 bytes
+    mapping(uint256 => bytes32) public palettePart1; // next 16 bytes stored in the high bytes of this word (rest ignored)
+
+    // Deprecated: previously used for offchain image URLs. Kept for storage layout stability.
+    string public imageBaseURI;
+
+    mapping(uint256 => bool) public hasPixels;
+    mapping(uint256 => bool) public hasTraits;
+    address public pixelRenderer;
+
+
+    // ========================================================
     // Events — ethscriptions protocol
     // ========================================================
 
@@ -204,6 +246,11 @@ contract ERC721PhunksV67 is
     event BridgedIn(address indexed to, uint256 indexed tokenId, bytes32 indexed hashId);
     event Unbridged(address indexed by, uint256 indexed tokenId, bytes32 indexed hashId);
     event MerkleRootUpdated(bytes32 root);
+    event TraitsRootUpdated(bytes32 root);
+    event BridgePauseUpdated(bool paused);
+    event TokenPixelsSet(uint256 indexed tokenId);
+    event TokenTraitsSet(uint256 indexed tokenId);
+    event PixelRendererUpdated(address indexed renderer);
 
     // ========================================================
     // Events — metadata
@@ -223,6 +270,7 @@ contract ERC721PhunksV67 is
     // ========================================================
 
     event OperatorWhitelistUpdated(address indexed operator, bool approved);
+    event OperatorBlockedUpdated(address indexed operator, bool blocked);
     event OperatorWhitelistToggled(bool enabled);
     event ToggledToEthscription(address indexed holder, uint256 indexed tokenId, bytes32 indexed hashId);
     event ToggledToERC721(address indexed holder, uint256 indexed tokenId, bytes32 indexed hashId);
@@ -258,7 +306,8 @@ contract ERC721PhunksV67 is
         __ReentrancyGuard_init();
         _setDefaultRoyalty(treasury_, 670);
         merkleRoot               = merkleRoot_;
-        operatorWhitelistEnabled = true;
+        // Default OFF. Can be enabled later to restrict approvals to approvedOperators.
+        operatorWhitelistEnabled = false;
         canvasSize               = 24;
         defaultBackground        = "638596";
         maxSupply                = 10386;
@@ -312,6 +361,7 @@ contract ERC721PhunksV67 is
      *         After BRIDGE_COOLDOWN_BLOCKS blocks, call bridgeIn() to mint your ERC-721.
      */
     fallback() external payable {
+        if (bridgePaused) revert BridgePaused();
         if (msg.data.length == 32) {
             bytes32 hashId = abi.decode(msg.data, (bytes32));
             if (ethscriptionDepositor[hashId] != address(0)) revert AlreadyDeposited();
@@ -335,6 +385,7 @@ contract ERC721PhunksV67 is
         bytes32 hashId,
         bytes32 sha
     ) external nonReentrant {
+        if (bridgePaused) revert BridgePaused();
         if (ethscriptionDepositor[hashId] != msg.sender)              revert NotDepositor();
         if (minted[hashId])                                            revert AlreadyMinted();
         uint256 dep = depositBlockNumber[msg.sender][hashId];
@@ -353,67 +404,17 @@ contract ERC721PhunksV67 is
         emit BridgedIn(to, tokenId, hashId);
     }
 
-    // ========================================================
-    // Bridge in — merkle path (initial snapshot launch)
-    // ========================================================
-
-    /**
-     * @notice Mint via merkle proof (snapshot launch).
-     *         Contract does NOT hold the ethscription on this path.
-     *         unbridge() on a merkle-minted token burns the ERC-721 only.
-     *
-     *         The caller submits ALL token data — image, label, traits.
-     *         The merkle leaf commits to every field so nothing can be faked.
-     *         Caller pays 100% of on-chain storage gas. Owner pays nothing.
-     *
-     * Leaf = keccak256(bytes.concat(keccak256(abi.encode(
-     *            to, tokenId, hashId, sha, imageUri, label, traitKeys, traitValues
-     *        ))))
-     */
-    /**
-     * @notice Claim ERC721 via merkle proof.
-     *         Caller must first deposit their ethscription (proves current ownership).
-     *         Leaf: keccak256(keccak256(abi.encode(tokenId, hashId, sha, imageUri, label, traitKeys, traitValues)))
-     *         — no owner field, so the proof is transferable with the ethscription.
-     */
-    function mint(
-        uint256           tokenId,
-        bytes32           hashId,
-        bytes32           sha,
-        string  calldata  imageUri,
-        string  calldata  label,
-        string[] calldata traitKeys,
-        string[] calldata traitValues,
-        bytes32[] calldata proof
-    ) external nonReentrant {
-        if (minted[hashId])                                  revert AlreadyMinted();
-        if (merkleRoot == bytes32(0))                        revert MerkleRootNotSet();
-        if (traitKeys.length != traitValues.length)          revert TraitLengthMismatch();
-        // Must have deposited the ethscription — proves current ownership
-        if (ethscriptionDepositor[hashId] != msg.sender)     revert NotDepositor();
-        uint256 dep = depositBlockNumber[msg.sender][hashId];
-        if (dep == 0)                                        revert NotDeposited();
-        if (block.number - dep < BRIDGE_COOLDOWN_BLOCKS)     revert CooldownActive();
-        // Leaf excludes owner — valid for whoever currently holds the ethscription
-        bytes32 leaf = keccak256(bytes.concat(keccak256(
-            abi.encode(tokenId, hashId, sha, imageUri, label, traitKeys, traitValues)
-        )));
-        if (!MerkleProof.verify(proof, merkleRoot, leaf))    revert InvalidProof();
-        if (_totalSupply >= maxSupply)                       revert MaxSupplyExceeded();
-        minted[hashId]        = true;
-        tokenHashId[tokenId]  = hashId;
-        tokenSha[tokenId]     = sha;
-        hashToTokenId[hashId] = tokenId;
-        _tokenImage[tokenId]  = imageUri;
-        tokenLabel[tokenId]   = label;
-        _traitKeys[tokenId]   = traitKeys;
-        _traitValues[tokenId] = traitValues;
-        _safeMint(msg.sender, tokenId);
-        emit BridgedIn(msg.sender, tokenId, hashId);
-    }
-
     function setMerkleRoot(bytes32 root) external onlyOwner {
         merkleRoot = root; emit MerkleRootUpdated(root);
+    }
+
+    function setTraitsRoot(bytes32 root) external onlyOwner {
+        traitsRoot = root; emit TraitsRootUpdated(root);
+    }
+
+    function setPixelRenderer(address renderer) external onlyOwner {
+        pixelRenderer = renderer;
+        emit PixelRendererUpdated(renderer);
     }
 
     // [AUDIT FIX 1] pre-approve the exact tokenId each hashId may claim via bridgeIn
@@ -458,6 +459,7 @@ contract ERC721PhunksV67 is
         uint256 tokenId,
         bytes calldata
     ) external returns (bytes4) {
+        if (bridgePaused) revert BridgePaused();
         if (msg.sender != address(this)) revert NotOurToken();
         bytes32 hashId = tokenHashId[tokenId];
         if (hashId == bytes32(0)) revert NoHashId();
@@ -483,6 +485,7 @@ contract ERC721PhunksV67 is
      *         escrowed ERC721. You must be the same address that locked the ERC721.
      */
     function toggleToERC721(bytes32 hashId) external nonReentrant {
+        if (bridgePaused) revert BridgePaused();
         uint256 tokenId = hashToTokenId[hashId];
         if (erc721Depositor[tokenId] != msg.sender) revert ERC721NotEscrowed();
         if (ethscriptionDepositor[hashId] != msg.sender) revert NotDepositor();
@@ -500,6 +503,7 @@ contract ERC721PhunksV67 is
      * @notice Cancel a deposit before minting — returns ethscription to yourself.
      */
     function cancelDeposit(bytes32 hashId) external nonReentrant {
+        if (bridgePaused) revert BridgePaused();
         if (ethscriptionDepositor[hashId] != msg.sender) revert NotDepositor();
         if (minted[hashId])                              revert AlreadyMinted();
         uint256 dep = depositBlockNumber[msg.sender][hashId];
@@ -512,13 +516,13 @@ contract ERC721PhunksV67 is
         );
     }
 
-    function bridgeCooldownRemaining(address depositor, bytes32 hashId)
-        external view returns (uint256)
-    {
-        uint256 d = depositBlockNumber[depositor][hashId];
-        if (d == 0) return type(uint256).max;
-        uint256 elapsed = block.number - d;
-        return elapsed >= BRIDGE_COOLDOWN_BLOCKS ? 0 : BRIDGE_COOLDOWN_BLOCKS - elapsed;
+    // ========================================================
+    // Bridge pause
+    // ========================================================
+
+    function setBridgePaused(bool paused) external onlyOwner {
+        bridgePaused = paused;
+        emit BridgePauseUpdated(paused);
     }
 
     // ========================================================
@@ -527,6 +531,7 @@ contract ERC721PhunksV67 is
 
     function setApprovalForAll(address operator, bool approved) public override {
         if (approved) {
+            if (blockedOperators[operator]) revert OperatorBlocked();
             if (operatorWhitelistEnabled && !approvedOperators[operator])
                 revert OperatorNotWhitelisted();
             address _validator = transferValidator;
@@ -538,6 +543,7 @@ contract ERC721PhunksV67 is
 
     function approve(address to, uint256 tokenId) public override {
         if (to != address(0)) {
+            if (blockedOperators[to]) revert OperatorBlocked();
             if (operatorWhitelistEnabled && !approvedOperators[to])
                 revert OperatorNotWhitelisted();
             address _validator = transferValidator;
@@ -552,6 +558,11 @@ contract ERC721PhunksV67 is
         emit OperatorWhitelistUpdated(operator, approved);
     }
 
+    function setBlockedOperator(address operator, bool blocked) external onlyOwner {
+        blockedOperators[operator] = blocked;
+        emit OperatorBlockedUpdated(operator, blocked);
+    }
+
     function setOperatorWhitelistEnabled(bool enabled) external onlyOwner {
         operatorWhitelistEnabled = enabled;
         emit OperatorWhitelistToggled(enabled);
@@ -564,6 +575,91 @@ contract ERC721PhunksV67 is
     function setTokenImage(uint256 t, string calldata v) external onlyOwner {
         _tokenImage[t] = v; emit TokenImageSet(t);
     }
+    /// @notice Gas-optimized batch setter using a single packed calldata blob.
+    ///         Layout per item (fixed 384 bytes):
+    ///           - tokenId (uint256) 32 bytes
+    ///           - pal0    (bytes32) 32 bytes
+    ///           - pal1    (bytes32) 32 bytes
+    ///           - packedPixels      288 bytes (4bpp 24x24)
+    function batchSetTokenPixelsPacked(bytes calldata blob) external onlyOwner {
+        if (blob.length % 384 != 0) revert LengthMismatch();
+        uint256 count = blob.length / 384;
+        for (uint256 i; i < count; ++i) {
+            uint256 off = i * 384;
+            uint256 tokenId;
+            bytes32 pal0;
+            bytes32 pal1;
+            bytes memory pixels = new bytes(288);
+            assembly {
+                tokenId := calldataload(add(blob.offset, off))
+                pal0 := calldataload(add(blob.offset, add(off, 32)))
+                pal1 := calldataload(add(blob.offset, add(off, 64)))
+            }
+            // Copy 288 bytes of pixel data from calldata into memory.
+            for (uint256 j; j < 288; j += 32) {
+                bytes32 w;
+                assembly {
+                    w := calldataload(add(blob.offset, add(off, add(96, j))))
+                }
+                assembly {
+                    mstore(add(add(pixels, 32), j), w)
+                }
+            }
+
+            palettePart0[tokenId] = pal0;
+            palettePart1[tokenId] = pal1;
+            _storePackedPixels(tokenId, pixels);
+            hasPixels[tokenId] = true;
+            emit TokenPixelsSet(tokenId);
+        }
+    }
+
+    /**
+     * @notice Permissionless onchain pixel-image mint path.
+     *         Caller must first deposit the ethscription (proves current ownership),
+     *         wait cooldown, then provide a merkle proof that commits to the pixel data hash.
+     *
+     * Leaf: keccak256(keccak256(abi.encode(tokenId, hashId, sha, pal0, pal1, pixelsHash)))
+     * where pixelsHash = keccak256(packedPixels).
+     */
+    function mintPixels(
+        uint256 tokenId,
+        bytes32 hashId,
+        bytes32 sha,
+        bytes32 pal0,
+        bytes32 pal1,
+        bytes calldata packedPixels,
+        bytes32[] calldata proof
+    ) external nonReentrant {
+        if (bridgePaused) revert BridgePaused();
+        if (minted[hashId])                                  revert AlreadyMinted();
+        if (merkleRoot == bytes32(0))                        revert MerkleRootNotSet();
+        // Must have deposited the ethscription — proves current ownership
+        if (ethscriptionDepositor[hashId] != msg.sender)     revert NotDepositor();
+        uint256 dep = depositBlockNumber[msg.sender][hashId];
+        if (dep == 0)                                        revert NotDeposited();
+        if (block.number - dep < BRIDGE_COOLDOWN_BLOCKS)     revert CooldownActive();
+        if (packedPixels.length != 288)                      revert InvalidSize();
+
+        bytes32 pixelsHash = keccak256(packedPixels);
+        bytes32 leaf = keccak256(bytes.concat(keccak256(
+            abi.encode(tokenId, hashId, sha, pal0, pal1, pixelsHash)
+        )));
+        if (!MerkleProof.verify(proof, merkleRoot, leaf))    revert InvalidProof();
+        if (_totalSupply >= maxSupply)                       revert MaxSupplyExceeded();
+
+        minted[hashId]        = true;
+        tokenHashId[tokenId]  = hashId;
+        tokenSha[tokenId]     = sha;
+        hashToTokenId[hashId] = tokenId;
+        palettePart0[tokenId] = pal0;
+        palettePart1[tokenId] = pal1;
+        _storePackedPixels(tokenId, packedPixels);
+        hasPixels[tokenId] = true;
+        _safeMint(msg.sender, tokenId);
+        emit TokenPixelsSet(tokenId);
+        emit BridgedIn(msg.sender, tokenId, hashId);
+    }
     function setTokenBackground(uint256 t, string calldata v) external onlyOwner {
         _tokenBackground[t] = v; emit TokenBackgroundSet(t, v);
     }
@@ -573,15 +669,45 @@ contract ERC721PhunksV67 is
     function setDescription(string calldata v) external onlyOwner {
         description = v;
     }
-    function setSingleName(string calldata v) external onlyOwner {
-        singleName = v;
-    }
     function setCanvasSize(uint16 v) external onlyOwner {
         if (v == 0) revert InvalidSize(); canvasSize = v; emit CanvasSizeSet(v);
     }
     function setTraits(uint256 t, string[] memory keys, string[] memory vals) external onlyOwner {
         if (keys.length != vals.length) revert LengthMismatch();
         _traitKeys[t] = keys; _traitValues[t] = vals; emit TraitsSet(t);
+    }
+
+    /**
+     * @notice Permissionless merkle-gated traits setter for already-minted tokens.
+     *         Intended for "all merkle, user pays gas" pipelines when using mintPixels().
+     *
+     * Leaf: keccak256(bytes.concat(keccak256(abi.encode(tokenId, hashId, traitKeys, traitValues))))
+     * - excludes owner, so whoever currently holds the ethscription+token can apply traits.
+     */
+    function setTraitsWithProof(
+        uint256 tokenId,
+        bytes32 hashId,
+        string[] calldata traitKeys,
+        string[] calldata traitValues,
+        bytes32[] calldata proof
+    ) external nonReentrant {
+        if (bridgePaused) revert BridgePaused();
+        if (traitsRoot == bytes32(0))                        revert TraitsRootNotSet();
+        if (traitKeys.length != traitValues.length)          revert TraitLengthMismatch();
+        if (_ownerOf(tokenId) != msg.sender)                 revert NotOwner();
+        if (tokenHashId[tokenId] != hashId)                  revert TokenIdMismatch();
+        if (hasTraits[tokenId])                              revert TraitsAlreadySet();
+
+        bytes32 leaf = keccak256(bytes.concat(keccak256(
+            abi.encode(tokenId, hashId, traitKeys, traitValues)
+        )));
+        if (!MerkleProof.verify(proof, traitsRoot, leaf))    revert InvalidProof();
+
+        _traitKeys[tokenId] = traitKeys;
+        _traitValues[tokenId] = traitValues;
+        hasTraits[tokenId] = true;
+        emit TraitsSet(tokenId);
+        emit TokenTraitsSet(tokenId);
     }
     function setTokenHashId(uint256 t, bytes32 v) external onlyOwner {
         tokenHashId[t] = v; emit HashIdSet(t, v);
@@ -620,7 +746,10 @@ contract ERC721PhunksV67 is
 
     function _buildImageUri(uint256 tokenId) internal view returns (string memory) {
         string memory raw = _tokenImage[tokenId];
-        if (bytes(raw).length == 0) return "";
+        if (bytes(raw).length == 0) {
+            // Onchain-only: fall back to pixel/SVG rendering (only if pixels were set).
+            return _buildOnchainPixelImageUri(tokenId);
+        }
 
         // Resolve background: per-token override first, then collection default.
         string memory bg = bytes(_tokenBackground[tokenId]).length > 0
@@ -641,6 +770,34 @@ contract ERC721PhunksV67 is
             '" width="', cs, '" height="', cs, '"/></svg>'
         );
         return string(abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(svg)));
+    }
+
+    function _buildOnchainPixelImageUri(uint256 tokenId) internal view returns (string memory) {
+        if (!hasPixels[tokenId]) return "";
+        address renderer = pixelRenderer;
+        if (renderer == address(0)) return "";
+        string memory bg = bytes(_tokenBackground[tokenId]).length > 0
+            ? _tokenBackground[tokenId]
+            : defaultBackground;
+        return IV67PixelRenderer(renderer).render(_packedPixels[tokenId], palettePart0[tokenId], palettePart1[tokenId], bg);
+    }
+
+    function _storePackedPixels(uint256 tokenId, bytes memory packedPixels) internal {
+        // packedPixels length is checked by caller (must be 288)
+        bytes32[9] storage dst = _packedPixels[tokenId];
+        assembly {
+            let src := add(packedPixels, 0x20)
+            // Write 9 consecutive 32-byte chunks
+            sstore(dst.slot, mload(src))
+            sstore(add(dst.slot, 1), mload(add(src, 0x20)))
+            sstore(add(dst.slot, 2), mload(add(src, 0x40)))
+            sstore(add(dst.slot, 3), mload(add(src, 0x60)))
+            sstore(add(dst.slot, 4), mload(add(src, 0x80)))
+            sstore(add(dst.slot, 5), mload(add(src, 0xa0)))
+            sstore(add(dst.slot, 6), mload(add(src, 0xc0)))
+            sstore(add(dst.slot, 7), mload(add(src, 0xe0)))
+            sstore(add(dst.slot, 8), mload(add(src, 0x100)))
+        }
     }
 
     function _buildAttributes(uint256 tokenId) internal view returns (string memory) {
@@ -694,98 +851,11 @@ contract ERC721PhunksV67 is
         } else if (to == address(0)) {
             unchecked { --_totalSupply; }
         }
-        // Clear marketplace state on any transfer or burn
-        if (offersForSale[tokenId].isForSale) {
-            delete offersForSale[tokenId];
-            emit OfferCancelled(tokenId);
-        }
-        Bid storage bid = tokenBids[tokenId];
-        if (bid.bidder != address(0)) {
-            _creditPending(bid.bidder, bid.value);
-            emit BidWithdrawn(tokenId, bid.bidder, bid.value);
-            delete tokenBids[tokenId];
-        }
         return from;
     }
 
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
-    }
-
-    // ========================================================
-    // Marketplace — asks
-    // ========================================================
-
-    function offerForSale(uint256 tokenId, uint256 minPrice) external {
-        if (ownerOf(tokenId) != msg.sender)  revert NotOwner();
-        if (minPrice > type(uint96).max)      revert ValueExceedsMax(); // [AUDIT FIX 2]
-        offersForSale[tokenId] = Offer(true, msg.sender, uint96(minPrice), address(0));
-        emit OfferCreated(tokenId, minPrice, address(0));
-    }
-
-    function offerForSaleToAddress(uint256 tokenId, uint256 minPrice, address to) external {
-        if (ownerOf(tokenId) != msg.sender)  revert NotOwner();
-        if (minPrice > type(uint96).max)      revert ValueExceedsMax(); // [AUDIT FIX 2]
-        offersForSale[tokenId] = Offer(true, msg.sender, uint96(minPrice), to);
-        emit OfferCreated(tokenId, minPrice, to);
-    }
-
-    function cancelOffer(uint256 tokenId) external {
-        if (offersForSale[tokenId].seller != msg.sender) revert NotSeller();
-        delete offersForSale[tokenId];
-        emit OfferCancelled(tokenId);
-    }
-
-    /// @notice Buy a token listed for sale. 0% fee.
-    function buyToken(uint256 tokenId) external payable nonReentrant {
-        Offer memory o = offersForSale[tokenId];
-        if (!o.isForSale)                                              revert NotForSale();
-        if (o.onlySellTo != address(0) && o.onlySellTo != msg.sender) revert NotForYou();
-        if (msg.value < o.minPrice)                                    revert InsufficientETH();
-        if (o.seller != ownerOf(tokenId))                              revert SellerNoLongerOwns();
-        address seller = o.seller;
-        delete offersForSale[tokenId];
-        _creditPending(seller, msg.value);
-        _transfer(seller, msg.sender, tokenId);
-        emit Sale(tokenId, seller, msg.sender, msg.value);
-    }
-
-    // ========================================================
-    // Marketplace — individual bids (CryptoPunks-exact)
-    // ========================================================
-
-    function enterBid(uint256 tokenId) external payable nonReentrant {
-        if (msg.value == 0)                  revert ZeroBid();
-        if (msg.value > type(uint96).max)    revert ValueExceedsMax(); // [AUDIT FIX 2]
-        if (ownerOf(tokenId) == msg.sender)  revert OwnerCannotBid();
-        Bid storage e = tokenBids[tokenId];
-        if (e.bidder != address(0)) {
-            if (msg.value <= e.value) revert MustBeatExistingBid();
-            _creditPending(e.bidder, e.value);
-        }
-        tokenBids[tokenId] = Bid(msg.sender, uint96(msg.value));
-        emit BidEntered(tokenId, msg.sender, msg.value);
-    }
-
-    function withdrawBid(uint256 tokenId) external nonReentrant {
-        Bid storage b = tokenBids[tokenId];
-        if (b.bidder != msg.sender) revert NoBidFromCaller();
-        uint256 amount = b.value;
-        delete tokenBids[tokenId];
-        _creditPending(msg.sender, amount);
-        emit BidWithdrawn(tokenId, msg.sender, amount);
-    }
-
-    function acceptBid(uint256 tokenId, uint256 minPrice) external nonReentrant {
-        if (ownerOf(tokenId) != msg.sender) revert NotOwner();
-        Bid storage b = tokenBids[tokenId];
-        if (b.bidder == address(0)) revert NoBid();
-        if (b.value < minPrice)     revert BelowMinPrice();
-        address bidder = b.bidder; uint256 amount = b.value;
-        delete tokenBids[tokenId];
-        _creditPending(msg.sender, amount);
-        _transfer(msg.sender, bidder, tokenId);
-        emit BidAccepted(tokenId, msg.sender, bidder, amount);
     }
 
     // ========================================================

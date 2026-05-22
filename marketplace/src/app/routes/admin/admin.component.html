@@ -62,63 +62,9 @@
       <button [class.active]="activeTab() === 'lottery'" (click)="activeTab.set('lottery')">Lottery</button>
       <button [class.active]="activeTab() === 'evolve'" (click)="activeTab.set('evolve')">Evolve</button>
       <button [class.active]="activeTab() === 'visibility'" (click)="activeTab.set('visibility')">Visibility</button>
-      <button [class.active]="activeTab() === 'phunkquidity'" (click)="activeTab.set('phunkquidity')">Phunkquidity</button>
       <button [class.active]="activeTab() === 'transfer-all'" (click)="activeTab.set('transfer-all')">Transfer All</button>
       <button [class.active]="activeTab() === 'health'" (click)="activeTab.set('health'); checkHealth()">Health</button>
     </div>
-
-    <!-- ==================== PHUNKQUIDITY ==================== -->
-    @if (activeTab() === 'phunkquidity') {
-      <div class="tab-content">
-        <h3>Phunkquidity Collection Settings</h3>
-        <p style="font-size: 12px; opacity: 0.7;">Owner: {{ phunkquidityOwner() }}</p>
-        <p style="font-size: 12px; opacity: 0.7;">Edit point value (cost in pts) per item. V67 base = 300. Connected wallet must be the contract owner.</p>
-
-        <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
-          <thead>
-            <tr style="text-align: left;">
-              <th style="padding: 6px;">Collection</th>
-              <th style="padding: 6px;">Current pts</th>
-              <th style="padding: 6px;">New pts</th>
-              <th style="padding: 6px;">Enabled</th>
-              <th style="padding: 6px;">Input?</th>
-              <th style="padding: 6px;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of phunkquidityCollections(); track row.slugStr) {
-              <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
-                <td style="padding: 6px;">{{ row.name }}</td>
-                <td style="padding: 6px;">{{ row.pointValue }}</td>
-                <td style="padding: 6px;">
-                  <input type="number" min="1" [(ngModel)]="row.newPointValue" style="width: 80px;" />
-                </td>
-                <td style="padding: 6px;">{{ row.enabled ? '✓' : '✗' }}</td>
-                <td style="padding: 6px;">{{ row.inputDisabled ? 'output-only' : '✓' }}</td>
-                <td style="padding: 6px;">
-                  <button (click)="savePhunkquidityCollection(row)" [disabled]="txPending() || row.newPointValue === row.pointValue">Save pts</button>
-                  <button (click)="togglePhunkquidityEnabled(row)" [disabled]="txPending()" style="margin-left: 4px;">{{ row.enabled ? 'Disable' : 'Enable' }}</button>
-                  <button (click)="togglePhunkquidityInputDisabled(row)" [disabled]="txPending()" style="margin-left: 4px;">{{ row.inputDisabled ? 'Allow input' : 'Make output-only' }}</button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-
-        <h3 style="margin-top: 24px;">Withdraw Ethscription</h3>
-        <p style="font-size: 12px; opacity: 0.7;">Returns the Ethscription from the Phunkquidity pool to the contract owner (quantumphunks.eth).</p>
-        <div class="action">
-          <label>Slug</label>
-          <input type="text" [(ngModel)]="pqWithdrawSlug" placeholder="cryptophunksv67" />
-          <label style="margin-top: 8px;">HashId</label>
-          <input type="text" [(ngModel)]="pqWithdrawHashId" placeholder="0x..." />
-          <button (click)="phunkquidityWithdrawEthsc()" [disabled]="txPending()" style="margin-top: 8px;">Withdraw</button>
-        </div>
-
-        @if (txHash()) { <p class="tx-success">Tx: <a [href]="explorerUrl + '/tx/' + txHash()" target="_blank">{{ txHash() }}</a></p> }
-        @if (txError()) { <p class="tx-error">{{ txError() }}</p> }
-      </div>
-    }
 
     <!-- ==================== MARKET ==================== -->
     @if (activeTab() === 'market') {
@@ -457,9 +403,6 @@
           </button>
           <button class="pause-toggle" [class.paused]="!showPhunkSwap()" (click)="toggleVisibility('showPhunkSwap', showPhunkSwap())" [disabled]="txPending()">
             Phunk Swap: {{ showPhunkSwap() ? 'VISIBLE' : 'HIDDEN' }}
-          </button>
-          <button class="pause-toggle" [class.paused]="!showPhunkquidity()" (click)="toggleVisibility('showPhunkquidity', showPhunkquidity())" [disabled]="txPending()">
-            Phunkquidity: {{ showPhunkquidity() ? 'VISIBLE' : 'HIDDEN' }}
           </button>
         </div>
 
