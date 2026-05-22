@@ -148,8 +148,15 @@ export class EthscriptionsService {
       );
       if (auctionLogs.length) {
         Logger.debug(`Processing Auction event (L1)`, transaction.hash);
-        const eventArr = await this.processAuctionEvents(auctionLogs, transaction, createdAt);
-        if (eventArr?.length) events.push(...eventArr);
+        try {
+          const eventArr = await this.processAuctionEvents(auctionLogs, transaction, createdAt);
+          if (eventArr?.length) events.push(...eventArr);
+        } catch (error) {
+          Logger.error(
+            '❌',
+            `Auction event processing failed for tx ${transaction.hash}: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
       }
     }
 
@@ -163,18 +170,23 @@ export class EthscriptionsService {
         `Processing EtherPhunk Marketplace event (L1)`,
         transaction.hash
       );
-      const eventArr = await this.processEtherPhunkMarketplaceEvents(
-        marketplaceLogs,
-        transaction,
-        createdAt
-      );
-
-      // Check if there are any events
-      // If there aer no events, it means either:
-      // 1. The listing was not created by the previous owner
-      // 2. The listing was not removed
-      if (!eventArr?.length) return events;
-      events.push(...eventArr);
+      try {
+        const eventArr = await this.processEtherPhunkMarketplaceEvents(
+          marketplaceLogs,
+          transaction,
+          createdAt
+        );
+        // Empty eventArr means the marketplace logs were spurious (e.g. listing
+        // wasn't created by the previous owner). Continue to points/lottery
+        // processing — DO NOT early-return; that previously caused points
+        // and other downstream events to be silently dropped.
+        if (eventArr?.length) events.push(...eventArr);
+      } catch (error) {
+        Logger.error(
+          '❌',
+          `Marketplace event processing failed for tx ${transaction.hash}: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     }
 
     const pointsLogs = receipt.logs.filter(
@@ -185,7 +197,14 @@ export class EthscriptionsService {
         `Processing Points event (${chain})`,
         transaction.hash
       );
-      await this.processPointsEvent(pointsLogs);
+      try {
+        await this.processPointsEvent(pointsLogs);
+      } catch (error) {
+        Logger.error(
+          '❌',
+          `Points event processing failed for tx ${transaction.hash}: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     }
 
     return events;
@@ -360,13 +379,22 @@ export class EthscriptionsService {
     const isMatchedHashId = ethscript.hashId.toLowerCase() === hashId.toLowerCase();
     const transferrerIsOwner = ethscript.owner.toLowerCase() === from.toLowerCase();
 
-    // console.log({ isMatchedHashId, transferrerIsOwner, ethscript });
-
     const samePrevOwner = (ethscript.prevOwner && prevOwner)
       ? ethscript.prevOwner.toLowerCase() === prevOwner.toLowerCase()
       : true;
 
-    if (!isMatchedHashId || !transferrerIsOwner || !samePrevOwner) return null;
+    if (!isMatchedHashId || !transferrerIsOwner || !samePrevOwner) {
+      // Fake-deposit / spoofed-transfer guard: contract emitted a transfer event whose
+      // claimed previousOwner doesn't match the indexer's ground-truth owner history.
+      // Ownership is NOT updated; we just log so operators can audit.
+      Logger.warn(
+        `🚨 Rejected suspicious transfer for ${hashId} in tx ${txn.hash} — ` +
+        `claimed prevOwner=${prevOwner ?? '(none)'}, ` +
+        `actual owner=${ethscript.owner}, actual prevOwner=${ethscript.prevOwner ?? '(none)'}, ` +
+        `event sender=${from}, recipient=${to}`,
+      );
+      return null;
+    }
 
     // Update the eth phunk owner
     await this.storageSvc.updateEthscriptionOwner(ethscript.hashId, ethscript.owner, to);
@@ -611,6 +639,17 @@ export class EthscriptionsService {
 
     const phunk = await this.storageSvc.checkEthscriptionExistsByHashId(hashId);
     if (!phunk) return;
+
+    // Flat allowlist: only record marketplace events whose phunk belongs to one of our
+    // tracked collections — regardless of WHICH marketplace contract emitted the event.
+    // This way missing-phunks/dysto-phunks get indexed whether listed on the old
+    // DystoLabz market or on ours. Configure via TRACKED_MARKETPLACE_SLUGS env var.
+    const trackedSlugs = new Set(
+      (process.env.TRACKED_MARKETPLACE_SLUGS ||
+        'cryptophunksv67,ethsrocks,quantummissingphunksv67,quantumdystophunkzv67,og-missing-phunks,og-dysto-phunks')
+        .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean),
+    );
+    if (!trackedSlugs.has((phunk.slug || '').toLowerCase())) return;
 
     if (eventName === 'PhunkBought') {
       const { phunkId: hashId, fromAddress, toAddress, value } = args;
@@ -884,6 +923,11 @@ export class EthscriptionsService {
       // Use the address of the contract that emitted this log (supports multiple auction contracts)
       const auctionAddr = log.address?.toLowerCase();
 
+      // Wrap each handler so a single failed event (e.g. duplicate-key when
+      // backfilled rows exist, RPC hiccup, etc.) does NOT abort processing of
+      // the other events in the same transaction.
+      try {
+
       if (eventName === 'PoolDeposited') {
         const { hashId } = args;
 
@@ -1038,6 +1082,14 @@ export class EthscriptionsService {
           blockTimestamp: createdAt,
           value: amount.toString(),
         });
+      }
+
+      } catch (handlerError) {
+        Logger.error(
+          '❌',
+          `Auction handler '${eventName}' failed for tx ${transaction.hash} (log index ${log.logIndex}): ${handlerError instanceof Error ? handlerError.message : String(handlerError)}`
+        );
+        // Continue to next log — do not abort the whole batch.
       }
     }
 

@@ -67,6 +67,7 @@ export class Web3Service {
   l1Client!: PublicClient;
   l1PollingClient!: PublicClient;
   l1ReceiptClient!: PublicClient;
+  l1DedicatedClient!: PublicClient; // Lottery + auction reads — uses domain-locked jjWbKkRb first
   l2Client!: PublicClient;
 
   config!: Config;
@@ -117,6 +118,21 @@ export class Web3Service {
     this.l1ReceiptClient = createPublicClient({
       chain: this.chains[0],
       transport: http(frontendBackupRpcUrl || receiptRpcUrl),
+    });
+
+    // Dedicated client for lottery + auction state reads.
+    // jjWbKkRb is domain-locked to quantumphunks.com / .eth.limo so it gets its
+    // own per-user CU budget without burning the shared primary key (C2mkw).
+    // Falls back to C2mkw, Ankr, and the indexer /rpc proxy if jjWbKkRb fails.
+    this.l1DedicatedClient = createPublicClient({
+      chain: this.chains[0],
+      transport: fallback([
+        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
+        http(environment.rpcHttpProvider),
+        http(receiptRpcUrl),
+        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
+        http(relayRpcUrl),
+      ], { rank: false, retryCount: 0 }),
     });
 
     this.l2Client = createPublicClient({

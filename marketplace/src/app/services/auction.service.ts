@@ -96,7 +96,7 @@ export class AuctionService {
       }
     } catch {}
 
-    const results = await this.web3Svc.l1Client.multicall({
+    const results = await this.web3Svc.l1DedicatedClient.multicall({
       contracts: [
         { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'auction' },
         { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'poolSize' },
@@ -149,7 +149,7 @@ export class AuctionService {
   // =========================================================
 
   async getAuction(): Promise<AuctionData> {
-    const result = await this.web3Svc.l1Client.readContract({
+    const result = await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'auction',
@@ -167,7 +167,7 @@ export class AuctionService {
   }
 
   async getReservePrice(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'reservePrice',
@@ -175,7 +175,7 @@ export class AuctionService {
   }
 
   async getItemReservePrice(hashId: string): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'itemReservePrice',
@@ -184,7 +184,7 @@ export class AuctionService {
   }
 
   async getPoolSize(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'poolSize',
@@ -192,7 +192,7 @@ export class AuctionService {
   }
 
   async isPaused(): Promise<boolean> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'paused',
@@ -200,7 +200,7 @@ export class AuctionService {
   }
 
   async getMinBidIncrementPercentage(): Promise<number> {
-    const result = await this.web3Svc.l1Client.readContract({
+    const result = await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'minBidIncrementPercentage',
@@ -209,7 +209,7 @@ export class AuctionService {
   }
 
   async getPendingReturns(address: string): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'pendingReturns',
@@ -288,7 +288,7 @@ export class AuctionService {
   }
 
   async getOwner(): Promise<string> {
-    const result = await this.web3Svc.l1Client.readContract({
+    const result = await this.web3Svc.l1DedicatedClient.readContract({
       address: this.address,
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'owner',

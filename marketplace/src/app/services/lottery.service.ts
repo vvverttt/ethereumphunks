@@ -40,7 +40,7 @@ export class LotteryService {
   // =========================================================
 
   async getPlayPrice(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'playPrice',
@@ -53,7 +53,7 @@ export class LotteryService {
   }
 
   async isActive(): Promise<boolean> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'active',
@@ -61,7 +61,7 @@ export class LotteryService {
   }
 
   async getPoolSize(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'poolSize',
@@ -69,7 +69,7 @@ export class LotteryService {
   }
 
   async getPoolItems(offset: number, limit: number): Promise<string[]> {
-    const result = await this.web3Svc.l1Client.readContract({
+    const result = await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'getPoolItems',
@@ -79,7 +79,7 @@ export class LotteryService {
   }
 
   async getContractBalance(): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'getBalance',
@@ -87,7 +87,7 @@ export class LotteryService {
   }
 
   async getOwner(): Promise<string> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'owner',
@@ -181,7 +181,7 @@ export class LotteryService {
   }
 
   async getPendingReturns(address: string): Promise<bigint> {
-    return await this.web3Svc.l1Client.readContract({
+    return await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'pendingReturns',
@@ -206,7 +206,7 @@ export class LotteryService {
   }
 
   async getCommitment(address: string): Promise<{ commitBlock: bigint; priceLocked: bigint }> {
-    const result = await this.web3Svc.l1Client.readContract({
+    const result = await this.web3Svc.l1DedicatedClient.readContract({
       address: this._address,
       abi: PhilipLotteryV67ABI,
       functionName: 'getCommitment',
