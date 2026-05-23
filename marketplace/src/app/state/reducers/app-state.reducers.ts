@@ -49,7 +49,6 @@ export const initialState: AppState = {
     showLottery: true,
     showAuction: true,
     showPhunkSwap: true,
-    showPhunkquidity: true,
     hiddenSlugs: [],
   },
 

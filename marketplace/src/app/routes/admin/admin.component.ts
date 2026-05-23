@@ -926,6 +926,31 @@ export class AdminComponent implements OnInit {
       results.push({ name: 'Supabase', url: environment.supabaseUrl, status: 'error' as const, latency: 0, error: e?.message });
     }
 
+    // Indexer health (block-gap check)
+    try {
+      const start = Date.now();
+      const res = await fetch(`${environment.relayUrl}/admin/health`, { signal: AbortSignal.timeout(8000) });
+      const latency = Date.now() - start;
+      const data: any = await res.json().catch(() => ({}));
+      const gap = typeof data?.gap === 'number' ? data.gap : null;
+      const head = typeof data?.head === 'number' ? data.head : null;
+      const lastIndexed = typeof data?.lastIndexed === 'number' ? data.lastIndexed : null;
+      const status: 'ok' | 'error' = res.ok && data?.ok ? 'ok' : 'error';
+      const detail = gap !== null && head !== null
+        ? `head ${head} / indexed ${lastIndexed} (gap ${gap})`
+        : (data?.error || `HTTP ${res.status}`);
+      results.push({
+        name: 'Indexer',
+        url: `${environment.relayUrl}/admin/health`,
+        status,
+        latency,
+        blockNumber: head?.toString(),
+        error: status === 'ok' ? undefined : detail,
+      });
+    } catch (e: any) {
+      results.push({ name: 'Indexer', url: `${environment.relayUrl}/admin/health`, status: 'error' as const, latency: 0, error: e?.message || 'Timeout' });
+    }
+
     this.healthResults.set(results);
     this.healthChecking.set(false);
   }
