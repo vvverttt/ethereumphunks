@@ -31,10 +31,7 @@
       {{ t('mutation') }}: <a [href]="explorerUrl + '/address/' + mutation" target="_blank"><app-address [address]="mutation" /></a><br />
     }
     @if ((config$ | async)?.showPhunkSwap !== false) {
-      Phunk Swap: <a [href]="explorerUrl + '/address/' + vault" target="_blank"><app-address [address]="vault" /></a><br />
-    }
-    @if ((config$ | async)?.showPhunkquidity !== false) {
-      PhunkQuidity: <a [href]="explorerUrl + '/address/' + phunkquidity" target="_blank"><app-address [address]="phunkquidity" /></a>
+      Phunk Swap: <a [href]="explorerUrl + '/address/' + vault" target="_blank"><app-address [address]="vault" /></a>
     }
   </p>
 
