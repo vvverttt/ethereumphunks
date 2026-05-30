@@ -28,7 +28,7 @@
               <div class="img-placeholder"></div>
             }
             <div class="auction-details">
-              <div class="phunk-id" [style.color]="accentColors()[auction.auctionId]">#{{ auction.tokenId }}</div>
+              <div class="phunk-id" [style.color]="accentColors()[auction.auctionId]">#{{ auction.slug === 'ethsrocks' ? '-' + (auction.tokenId < 0 ? -auction.tokenId : auction.tokenId) : (auction.tokenId < 0 ? -auction.tokenId : auction.tokenId) }}</div>
               <div class="time-ago">{{ auction.settledTimestamp | timeAgo }}</div>
             </div>
           </div>

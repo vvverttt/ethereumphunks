@@ -250,6 +250,26 @@ section {
       }
     }
 
+    // Box-color overrides to match the prismatic text color of each action.
+    // Defined after the group loop so these win the cascade.
+    $prismatic-box-colors: (
+      auctionbid: #ff00cc,        // pink — matches prismatic-bid
+      auctionsettled: #00d4ff,    // cyan — matches prismatic-won
+      auctioncreated: #00d4ff,    // cyan
+      prizeawarded: #00d4ff,      // cyan — matches prismatic-won
+      phunkbought: #ffd700,       // gold — matches prismatic-bought
+      created: #00d4ff            // cyan — matches prismatic-created
+    );
+
+    @each $event, $color in $prismatic-box-colors {
+      &.#{$event} .image-wrapper {
+        background-color: $color;
+      }
+      &.#{$event}.background .labels-wrapper .token-id {
+        color: $color;
+      }
+    }
+
     &.view-more {
       display: flex;
       align-items: center;

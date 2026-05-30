@@ -132,8 +132,13 @@ export class CollectionStatsComponent implements OnChanges {
       this.collectionSlug.set(this.collection.slug);
       this.collectionSupply.set(this.collection.supply);
       this.loading.set(true);
-      await this.loadAttrs(this.collection.slug);
-      this.loading.set(false);
+      try {
+        await this.loadAttrs(this.collection.slug);
+      } catch (err) {
+        console.error('collection-stats loadAttrs failed for', this.collection.slug, err);
+      } finally {
+        this.loading.set(false);
+      }
     }
   }
 
@@ -152,9 +157,18 @@ export class CollectionStatsComponent implements OnChanges {
     } catch {}
 
     // Prefer cached/static attribute source first to minimize DB reads.
-    let attrs = await this.loadAttrsFromStatic(slug);
+    let attrs: { sha: string; values: Record<string, any> }[] = [];
+    try {
+      attrs = await this.loadAttrsFromStatic(slug);
+    } catch (e) {
+      console.warn('loadAttrsFromStatic failed', slug, e);
+    }
     if (!attrs.length) {
-      attrs = await this.loadAttrsFromSupabase(slug);
+      try {
+        attrs = await this.loadAttrsFromSupabase(slug);
+      } catch (e) {
+        console.warn('loadAttrsFromSupabase failed', slug, e);
+      }
     }
 
     const total = attrs.length;
