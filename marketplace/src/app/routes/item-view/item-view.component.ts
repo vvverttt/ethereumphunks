@@ -550,6 +550,26 @@ export class ItemViewComponent {
     return phunk.owner!;
   }
 
+  /** Role-aware "what happens next" guidance for the current bid, shown on the
+   *  item page so both the owner and the bidder always know the next step. */
+  bidNextStep(phunk: Phunk, address: string | null | undefined): string | null {
+    const bid = this.currentBid();
+    if (!bid || !address) return null;
+    const a = address.toLowerCase();
+    const isBidder = bid.bidder.toLowerCase() === a;
+    const isOwner = this.bidOwner(phunk).toLowerCase() === a;
+
+    if (!bid.accepted) {
+      if (isOwner) return 'Step 2 of 3: Accept this bid to start the sale (escrows + accepts in one tx).';
+      if (isBidder) return 'Step 1 of 3 done. Waiting for the owner to accept your bid.';
+      return null; // other viewers: the bid line + Place Bid (to outbid) is enough
+    }
+    // accepted — cooldown / confirm phase
+    if (isBidder) return 'Step 3 of 3: Your bid was accepted — confirm after the 5-block cooldown to complete your purchase.';
+    if (isOwner) return 'You accepted this bid. Waiting for the bidder to confirm — then claim your funds via Withdraw Funds.';
+    return 'Bid accepted — awaiting the bidder’s confirmation.';
+  }
+
   /** Blocks the bidder still has to wait before confirmBid will succeed.
    *  Returns 0 when the bid is confirmable now (or no accepted bid). */
   confirmBlocksRemaining(currentBlock: number): number {

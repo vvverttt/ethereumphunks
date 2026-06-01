@@ -84,6 +84,11 @@
                       <span class="bid-accepted"> Accepted — waiting for bidder confirmation (5-block cooldown).</span>
                     }
                   </p>
+
+                  <!-- Role-aware next step so both sides know what's needed -->
+                  @if (bidNextStep(phunk, (walletAddress$ | async)); as step) {
+                    <p class="bid-next-step">{{ step }}</p>
+                  }
                 }
               </div>
 

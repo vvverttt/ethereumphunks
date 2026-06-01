@@ -302,6 +302,16 @@ app-phunk-billboard {
 
   .market-status {
     padding-top: 4rem;
+
+    .bid-next-step {
+      margin-top: 1rem;
+      padding: 1rem 1.4rem;
+      border-left: .3rem solid rgba(var(--bid-color), 1);
+      background-color: rgba(var(--bid-color), .12);
+      color: rgba(var(--text-color), 1);
+      font-weight: 600;
+      font-size: 1.4rem;
+    }
   }
 
   .actions-wrapper {
