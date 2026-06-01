@@ -450,11 +450,42 @@ export class DataService {
       this.watchEthscriptionsBySlug(slug).pipe(
         tap(() => this.marketDataCache.delete(slug)),
         switchMap(() => rpcFetch$)
-      )
+      ),
+      this.watchBids().pipe(
+        tap(() => this.marketDataCache.delete(slug)),
+        switchMap(() => rpcFetch$),
+      ),
     ).pipe(shareReplay({ bufferSize: 1, refCount: true }));
 
     this.marketDataCache.set(slug, { data: result$, timestamp: Date.now() });
     return result$;
+  }
+
+  /**
+   * Watches the bids table for changes. The bids table isn't keyed by slug,
+   * so we watch all inserts/updates and let the per-slug cache invalidation
+   * upstream filter to the relevant collection. Bid activity is rare relative
+   * to ethscription events so this fan-out is cheap.
+   */
+  private bidsChannel$: Observable<void> | null = null;
+  private watchBids(): Observable<void> {
+    if (this.bidsChannel$) return this.bidsChannel$;
+    this.bidsChannel$ = new Observable<void>((subscriber) => {
+      const channel = supabase
+        .channel(`bids_changes${this.suffix}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bids' + this.suffix,
+          },
+          () => subscriber.next(),
+        )
+        .subscribe();
+      return () => channel.unsubscribe();
+    }).pipe(debounceTime(2000), share());
+    return this.bidsChannel$;
   }
 
   /**
