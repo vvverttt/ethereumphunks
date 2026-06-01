@@ -402,7 +402,7 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.enterBid(hashId, phunk.owner, value);
+      const hash = await this.web3Svc.enterBid(hashId, this.bidOwner(phunk), value);
 
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
@@ -437,7 +437,7 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.withdrawBid(hashId, phunk.owner);
+      const hash = await this.web3Svc.withdrawBid(hashId, this.bidOwner(phunk));
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
 
@@ -513,7 +513,7 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.confirmBid(hashId, phunk.owner);
+      const hash = await this.web3Svc.confirmBid(hashId, this.bidOwner(phunk));
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
 
@@ -527,6 +527,16 @@ export class ItemViewComponent {
     } finally {
       this.store.dispatch(upsertNotification({ notification }));
     }
+  }
+
+  /** The address a bid is keyed against. When a phunk is escrowed, the market
+   *  contract is `owner` and the real owner is `prevOwner` — bids must be keyed
+   *  to the real owner (the escrow depositor), since only they can acceptBid
+   *  and confirmBid transfers from them. When not escrowed, it's the owner. */
+  bidOwner(phunk: Phunk): string {
+    if (phunk.isEscrowed && phunk.prevOwner) return phunk.prevOwner;
+    if (phunk.nft?.owner) return phunk.nft.owner;
+    return phunk.owner!;
   }
 
   /** Blocks the bidder still has to wait before confirmBid will succeed.
@@ -543,7 +553,7 @@ export class ItemViewComponent {
       this.currentBid.set(null);
       return;
     }
-    const bid = await this.web3Svc.getBid(phunk.owner, phunk.hashId);
+    const bid = await this.web3Svc.getBid(this.bidOwner(phunk), phunk.hashId);
     if (bid && bid.hasBid) {
       const acceptedBlock = Number(bid.acceptedBlock);
       this.currentBid.set({
