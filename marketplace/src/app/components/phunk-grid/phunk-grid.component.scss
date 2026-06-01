@@ -105,6 +105,14 @@
       }
     }
 
+    &.bid {
+      .image-wrapper {
+        img {
+          background-color: rgba(var(--bid-color), 1);
+        }
+      }
+    }
+
     &.bridged {
       .image-wrapper {
         img {

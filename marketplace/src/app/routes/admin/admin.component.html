@@ -401,9 +401,6 @@
           <button class="pause-toggle" [class.paused]="!showAuction()" (click)="toggleVisibility('showAuction', showAuction())" [disabled]="txPending()">
             Auction House: {{ showAuction() ? 'VISIBLE' : 'HIDDEN' }}
           </button>
-          <button class="pause-toggle" [class.paused]="!showPhunkSwap()" (click)="toggleVisibility('showPhunkSwap', showPhunkSwap())" [disabled]="txPending()">
-            Phunk Swap: {{ showPhunkSwap() ? 'VISIBLE' : 'HIDDEN' }}
-          </button>
         </div>
 
         <div class="action-group">
