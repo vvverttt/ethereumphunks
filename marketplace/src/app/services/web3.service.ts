@@ -977,6 +977,19 @@ export class Web3Service {
     return this._writeMarketContractAt(marketAddress, 'acceptBid', [hashId, bidder, minValueWei], undefined, EtherPhunksMarketV3ABI as any);
   }
 
+  /**
+   * Step 2 (combined, V3_3): escrow the ethscription AND accept the bid in ONE tx.
+   * Builds the DEPOSIT_AND_ACCEPT_BID fallback calldata and sends the ethscription
+   * to the market contract. Layout: [phunkId][sig][bidder][minValue], each 32 bytes.
+   * Use this when the phunk is NOT already in escrow.
+   */
+  async escrowAndAcceptBid(hashId: string, bidder: string, minValueWei: string): Promise<string | undefined> {
+    const sig = keccak256(toHex(stringToBytes('DEPOSIT_AND_ACCEPT_BID_SIGNATURE')));
+    const bidderWord = bidder.toLowerCase().replace('0x', '').padStart(64, '0');
+    const minValueWord = BigInt(minValueWei).toString(16).padStart(64, '0');
+    return await this.batchTransferPhunks([hashId, sig, bidderWord, minValueWord], marketAddress);
+  }
+
   /** Step 3: bidder confirms after 5-block cooldown — atomic swap. */
   async confirmBid(hashId: string, currentOwner: string): Promise<string | undefined> {
     return this._writeMarketContractAt(marketAddress, 'confirmBid', [hashId, currentOwner], undefined, EtherPhunksMarketV3ABI as any);

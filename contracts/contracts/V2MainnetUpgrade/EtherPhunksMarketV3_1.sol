@@ -290,7 +290,7 @@ contract EtherPhunksMarketV3_1 is
         ][phunkId] = block.number;
     }
 
-    fallback() external {
+    fallback() external virtual {
         require(!paused(), "Contract is paused");
 
         bytes32 signature;

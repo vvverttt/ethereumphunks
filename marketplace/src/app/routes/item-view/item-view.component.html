@@ -153,12 +153,15 @@
                             }
                           }
 
-                          <!-- Accept Bid (visible to the OWNER when a bid exists + phunk is in escrow) -->
+                          <!-- Accept Bid (OWNER, bid exists & not yet accepted) -->
+                          <!-- One tx: if the phunk is already escrowed → acceptBid; -->
+                          <!-- if not → escrow+accept atomically (V3_3 combined path). -->
                           @if (
                             currentBid() &&
                             !currentBid()!.accepted &&
                             (
                               (phunk.isEscrowed && (phunk.prevOwner | lowercase) === (address | lowercase)) ||
+                              (!phunk.isEscrowed && (phunk.owner | lowercase) === (address | lowercase) && !phunk.nft) ||
                               (phunk.nft && phunk.nft.owner === address)
                             )
                           ) {
@@ -166,23 +169,11 @@
                               <span>Accept Bid</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'acceptBid' }" />
                             </button>
-                          }
-
-                          <!-- Bid waiting but phunk isn't escrowed yet — guide owner to escrow first -->
-                          @if (
-                            currentBid() &&
-                            !currentBid()!.accepted &&
-                            !phunk.isEscrowed &&
-                            (phunk.owner | lowercase) === (address | lowercase) &&
-                            !phunk.nft
-                          ) {
-                            <button class="accept-bid escrow-first" (click)="escrowPhunk()" [class.active]="actionsState().escrow">
-                              <span>Escrow to Accept Bid</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'sendToEscrow' }" />
-                            </button>
-                            <p class="small bid-escrow-hint">
-                              You have an open bid of Ξ{{ currentBid()!.value | weiToEth }}. Send the {{ phunk.collection?.singleName || 'item' }} to escrow to accept it.
-                            </p>
+                            @if (!phunk.isEscrowed && !phunk.nft) {
+                              <p class="small bid-escrow-hint">
+                                Accepting escrows your {{ phunk.collection?.singleName || 'item' }} and accepts the Ξ{{ currentBid()!.value | weiToEth }} bid in one transaction. The bidder then confirms after a 5-block cooldown.
+                              </p>
+                            }
                           }
 
                           <!-- Sell (Ownership actions) -->

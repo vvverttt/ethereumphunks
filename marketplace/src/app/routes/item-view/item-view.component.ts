@@ -466,7 +466,18 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.acceptBid(hashId, bid.bidder, bid.value);
+      // If the phunk isn't escrowed yet, escrow + accept in ONE tx (V3_3 combined path).
+      // If it's already escrowed, the plain acceptBid suffices.
+      let actuallyEscrowed = phunk.isEscrowed;
+      if (!actuallyEscrowed) {
+        // Indexed state can lag — confirm on-chain before deciding the path.
+        actuallyEscrowed = await this.web3Svc.isInEscrow(hashId);
+      }
+
+      const hash = actuallyEscrowed
+        ? await this.web3Svc.acceptBid(hashId, bid.bidder, bid.value)
+        : await this.web3Svc.escrowAndAcceptBid(hashId, bid.bidder, bid.value);
+
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
 
