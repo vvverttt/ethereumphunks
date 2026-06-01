@@ -468,7 +468,7 @@ export class DataService {
    * to ethscription events so this fan-out is cheap.
    */
   private bidsChannel$: Observable<void> | null = null;
-  private watchBids(): Observable<void> {
+  watchBids(): Observable<void> {
     if (this.bidsChannel$) return this.bidsChannel$;
     this.bidsChannel$ = new Observable<void>((subscriber) => {
       const channel = supabase
@@ -600,7 +600,14 @@ export class DataService {
       this.watchEthscriptionsBySlug(slug).pipe(
         tap(() => this.eventsCache.delete(cacheKey)),
         switchMap(() => rpcFetch$)
-      )
+      ),
+      // Bid lifecycle events (BidEntered/Accepted/Confirmed/Withdrawn/Refunded)
+      // land in the events/bids tables, not ethscriptions — so without this the
+      // Recent Activity feed wouldn't refresh live when a bid event arrives.
+      this.watchBids().pipe(
+        tap(() => this.eventsCache.delete(cacheKey)),
+        switchMap(() => rpcFetch$)
+      ),
     ).pipe(shareReplay({ bufferSize: 1, refCount: true }));
 
     this.eventsCache.set(cacheKey, { data: result$, timestamp: Date.now() });

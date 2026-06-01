@@ -157,7 +157,12 @@
         }
 
         &.phunkbidwithdrawn,
-        &.phunkbidentered {
+        &.phunkbidentered,
+        &.bidentered,
+        &.bidaccepted,
+        &.bidconfirmed,
+        &.bidwithdrawn,
+        &.bidrefunded {
           td {
             background-color: rgba(var(--bid-color), .5);
 

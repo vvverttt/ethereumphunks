@@ -8,7 +8,8 @@ import { HttpClient } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
-import { combineLatest, distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, take, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { PhunkBillboardComponent } from '@/components/phunk-billboard/phunk-billboard.component';
 import { TxHistoryComponent } from '@/components/tx-history/tx-history.component';
@@ -212,7 +213,17 @@ export class ItemViewComponent {
     private utilSvc: UtilService,
     private ethsrocksSvc: EthsRocksService,
     public preferences: PhunkPreferencesService,
-  ) {}
+  ) {
+    // Live-refresh the current bid status (Accepted → Confirm, withdrawn, etc.)
+    // when the bids table changes — so a bidder watching the item page sees the
+    // owner's accept land without a manual reload.
+    this.dataSvc.watchBids().pipe(
+      switchMap(() => this.singlePhunk$.pipe(take(1))),
+      takeUntilDestroyed(),
+    ).subscribe((phunk) => {
+      if (phunk?.hashId && phunk?.owner) this.loadCurrentBid(phunk);
+    });
+  }
 
   t(key: string): string {
     return this.preferences.t(key);
