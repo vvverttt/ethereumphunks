@@ -576,7 +576,7 @@ export class EthscriptionsService {
           topics: log.topics,
         });
         decodedLogs.push({ decoded, log });
-        if (decoded.eventName === 'PhunkBought') {
+        if (decoded.eventName === 'PhunkBought' || decoded.eventName === 'BidAccepted' || decoded.eventName === 'BidConfirmed') {
           const hashId = (decoded.args as any).phunkId;
           if (hashId) boughtHashIds.add(hashId.toLowerCase());
         }
@@ -693,6 +693,82 @@ export class EthscriptionsService {
           value: BigInt(0).toString(),
         };
       }
+    }
+
+    // ─── V3_2 bid events ─────────────────────────────────────────
+    if (eventName === 'BidEntered') {
+      const { phunkId: hashId, owner, bidder, value } = args;
+      await this.storageSvc.createBid(txn, createdAt, hashId, bidder, value, owner);
+      return {
+        txId: txn.hash + log.logIndex,
+        type: eventName,
+        hashId: hashId.toLowerCase(),
+        from: bidder?.toLowerCase(),
+        to: owner?.toLowerCase(),
+        blockHash: txn.blockHash,
+        txIndex: txn.transactionIndex,
+        txHash: txn.hash,
+        blockNumber: Number(txn.blockNumber),
+        blockTimestamp: createdAt,
+        value: value.toString(),
+      };
+    }
+
+    if (eventName === 'BidWithdrawn' || eventName === 'BidRefunded') {
+      const { phunkId: hashId, owner, bidder, value } = args;
+      await this.storageSvc.removeBid(hashId);
+      return {
+        txId: txn.hash + log.logIndex,
+        type: eventName,
+        hashId: hashId.toLowerCase(),
+        from: bidder?.toLowerCase(),
+        to: owner?.toLowerCase(),
+        blockHash: txn.blockHash,
+        txIndex: txn.transactionIndex,
+        txHash: txn.hash,
+        blockNumber: Number(txn.blockNumber),
+        blockTimestamp: createdAt,
+        value: value.toString(),
+      };
+    }
+
+    if (eventName === 'BidAccepted') {
+      const { phunkId: hashId, owner, bidder, value, acceptedBlock } = args;
+      // Listing auto-invalidated in the same tx by acceptBid; mirror that here.
+      await this.storageSvc.removeListing(hashId);
+      // Stamp the acceptedBlock so the UI / activity feed knows the 5-block confirm cooldown is running.
+      await this.storageSvc.setBidAccepted(hashId, Number(acceptedBlock));
+      return {
+        txId: txn.hash + log.logIndex,
+        type: eventName,
+        hashId: hashId.toLowerCase(),
+        from: owner?.toLowerCase(),
+        to: bidder?.toLowerCase(),
+        blockHash: txn.blockHash,
+        txIndex: txn.transactionIndex,
+        txHash: txn.hash,
+        blockNumber: Number(txn.blockNumber),
+        blockTimestamp: createdAt,
+        value: value.toString(),
+      };
+    }
+
+    if (eventName === 'BidConfirmed') {
+      const { phunkId: hashId, owner, bidder, value } = args;
+      await this.storageSvc.removeBid(hashId);
+      return {
+        txId: txn.hash + log.logIndex,
+        type: eventName,
+        hashId: hashId.toLowerCase(),
+        from: owner?.toLowerCase(),
+        to: bidder?.toLowerCase(),
+        blockHash: txn.blockHash,
+        txIndex: txn.transactionIndex,
+        txHash: txn.hash,
+        blockNumber: Number(txn.blockNumber),
+        blockTimestamp: createdAt,
+        value: value.toString(),
+      };
     }
 
     if (eventName === 'PhunkOffered') {

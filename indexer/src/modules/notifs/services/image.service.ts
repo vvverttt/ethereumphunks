@@ -36,7 +36,7 @@ export class ImageService {
       v: string,
       rarity: number,
     }[],
-  }): Promise<Buffer> {
+  }, variant: 'sale' | 'bidEntered' | 'bidAccepted' = 'sale'): Promise<Buffer> {
     const canvasMax = 800;
 
     const canvasWidth = canvasMax;
@@ -45,12 +45,19 @@ export class ImageService {
     // Register custom font
     registerFont(path.join(__dirname, '../../../_static/retro-computer.ttf'), { family: 'RetroComputer' });
 
-    // Define brand colors
-    const colors = {
-      base: '#C3FF00',
-      pink: '#FF03B4',
-      blue: '#00FFC9',
+    // Define brand colors. Variant swaps the bar colour so each notification
+    // is visually distinct at a glance — pink=sale, blue=bid placed, cyan=bid accepted.
+    const palette = {
+      sale:        { base: '#C3FF00', bar: '#FF03B4', accent: '#00FFC9', tag: null as string | null },
+      bidEntered:  { base: '#C3FF00', bar: '#00B8FF', accent: '#FF03B4', tag: 'NEW BID' },
+      bidAccepted: { base: '#C3FF00', bar: '#00FFC9', accent: '#FF03B4', tag: 'BID ACCEPTED' },
     };
+    const colors = {
+      base: palette[variant].base,
+      pink: palette[variant].bar,
+      blue: palette[variant].accent,
+    };
+    const variantTag = palette[variant].tag;
 
     // Initialize canvas
     const canvas = createCanvas(canvasWidth, canvasHeight);
@@ -70,6 +77,14 @@ export class ImageService {
     // Draw bottom bar
     ctx.fillStyle = colors.pink;
     ctx.fillRect(0, bottomBarPos, canvasWidth, 200);
+
+    // Variant tag in the top-right (only on bid variants)
+    if (variantTag) {
+      ctx.fillStyle = colors.base;
+      ctx.font = 'bold 22px RetroComputer';
+      const tagWidth = ctx.measureText(variantTag).width;
+      ctx.fillText(variantTag, canvasWidth - tagWidth - 40, 100);
+    }
 
     // Draw collection name
     ctx.fillStyle = colors.base;

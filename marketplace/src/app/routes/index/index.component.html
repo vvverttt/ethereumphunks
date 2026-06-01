@@ -93,31 +93,33 @@
           }
         }
 
-        <!-- <section>
-          <div class="inner">
-            <h3 i18n>Bids</h3>
+        @if ((bids$ | async); as bids) {
+          @if (bids.length) {
+            <section>
+              <div class="inner">
+                <h3>Bids</h3>
 
-            @if ((bids$ | async); as bids) {
-              <div class="section-stats-wrapper">
-                @if ((bids | calc : 'averageBidPrice'); as ethPrice) {
-                  <p i18n>The average currently open bid is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
-                }
-                @if ((bids | calc : 'totalBidsValue'); as ethPrice) {
-                  <p i18n>Total value of all current bids is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
-                }
-                <p i18n>Showing top bids, <a class="highlight" [routerLink]="['market', 'bids']">({{ bids.length | number }}) view all.</a></p>
+                <div class="section-stats-wrapper">
+                  @if ((bids | calc : 'averageBidPrice'); as ethPrice) {
+                    <p>The average open bid is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                  }
+                  @if ((bids | calc : 'totalBidsValue'); as ethPrice) {
+                    <p>Total value of all open bids is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                  }
+                  <p>Showing top bids, <a class="highlight" [routerLink]="['market', 'bids']" [relativeTo]="route">({{ bids.length | number }}) {{ t('viewAllLower') }}.</a></p>
+                </div>
+
+                <app-phunk-grid
+                  [phunkData]="bids"
+                  [viewType]="'compact'"
+                  [limit]="(isMobile$ | async) ? 100 : 110"
+                  [marketType]="'bids'"
+                  [activeSort]="'price-high'"
+                />
               </div>
-
-              <app-phunk-grid
-                [phunkData]="(bids$ | async) || []"
-                [viewType]="'compact'"
-                [limit]="(isMobile$ | async) ? 100 : 110"
-                [marketType]="'bids'"
-                [activeSort]="'price-high'"
-              />
-            }
-          </div>
-        </section> -->
+            </section>
+          }
+        }
 
         <section>
           <div class="inner">

@@ -85,7 +85,8 @@ export class StorageService implements OnModuleInit {
     createdAt: Date,
     hashId: string,
     fromAddress: string,
-    value: bigint
+    value: bigint,
+    ownerAddress?: string,
   ): Promise<void> {
     const response: db.ListingResponse = await this.supabase
       .from('bids' + this.suffix)
@@ -95,11 +96,26 @@ export class StorageService implements OnModuleInit {
         value: value.toString(),
         fromAddress: fromAddress.toLowerCase(),
         txHash: txn.hash.toLowerCase(),
+        ownerAddress: ownerAddress ? ownerAddress.toLowerCase() : null,
+        acceptedBlock: null,
       });
 
     const { error } = response;
     if (error) return Logger.error(error.details, error.message);
     Logger.log('Created bid', hashId);
+  }
+
+  /**
+   * Marks a bid as accepted (records the acceptedBlock for the 5-block confirm cooldown).
+   */
+  async setBidAccepted(hashId: string, blockNumber: number): Promise<void> {
+    const response: db.BidResponse = await this.supabase
+      .from('bids' + this.suffix)
+      .update({ acceptedBlock: blockNumber })
+      .eq('hashId', hashId);
+    const { error } = response;
+    if (error) return Logger.error(error.details, error.message);
+    Logger.log('Marked bid accepted', hashId, blockNumber);
   }
 
   /**
@@ -638,16 +654,26 @@ export class StorageService implements OnModuleInit {
     // Get or create the users
     await this.getOrCreateUser(newOwner);
 
-    const response: db.EthscriptionResponse = await this.supabase
+    // Conditional update: only succeeds if the row's current owner matches the
+    // expected prevOwner. Prevents out-of-order processing (e.g. admin reindex
+    // of a historical tx) from clobbering newer ownership state.
+    const response = await this.supabase
       .from('ethscriptions' + this.suffix)
       .update({
         owner: newOwner.toLowerCase(),
         prevOwner: prevOwner.toLowerCase(),
       })
-      .eq('hashId', hashId);
+      .eq('hashId', hashId)
+      .eq('owner', prevOwner.toLowerCase())
+      .select('hashId');
 
-    const { error } = response;
+    const { data, error } = response;
     if (error) throw error;
+    if (!data || data.length === 0) {
+      Logger.warn(
+        `Skipped owner update for ${hashId}: current owner did not match expected prevOwner=${prevOwner.toLowerCase()} (likely newer state already exists).`
+      );
+    }
   }
 
   /**
@@ -1082,6 +1108,41 @@ export class StorageService implements OnModuleInit {
       // Return cleanup function
       return () => {
         subscription.unsubscribe();
+      };
+    });
+  }
+
+  /**
+   * Listens for V3_2 bid lifecycle events (BidEntered + BidAccepted)
+   * from Supabase. We notify on these two — bid placed and bid accepted
+   * — and skip BidConfirmed/BidWithdrawn/BidRefunded since they are
+   * either redundant or noise.
+   */
+  listenBids(): Observable<db.Event> {
+    return new Observable(subscriber => {
+      const bidEntered = this.supabase
+        .channel(`bidsEntered${this.suffix}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: `events${this.suffix}`,
+          filter: 'type=eq.BidEntered'
+        }, payload => subscriber.next(payload.new as db.Event))
+        .subscribe();
+
+      const bidAccepted = this.supabase
+        .channel(`bidsAccepted${this.suffix}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: `events${this.suffix}`,
+          filter: 'type=eq.BidAccepted'
+        }, payload => subscriber.next(payload.new as db.Event))
+        .subscribe();
+
+      return () => {
+        bidEntered.unsubscribe();
+        bidAccepted.unsubscribe();
       };
     });
   }

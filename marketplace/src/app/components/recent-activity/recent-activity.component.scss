@@ -142,7 +142,10 @@ section {
         &.prismatic-bought { color: #ffd700; -webkit-text-fill-color: #ffd700; background: none; }
         &.prismatic-won    { color: #00d4ff; -webkit-text-fill-color: #00d4ff; background: none; }
         &.prismatic-bid    { color: #ff00cc; -webkit-text-fill-color: #ff00cc; background: none; }
+        &.prismatic-marketbid { color: #9e03ff; -webkit-text-fill-color: #9e03ff; background: none; }
         &.prismatic-created { color: #00d4ff; -webkit-text-fill-color: #00d4ff; background: none; }
+        &.prismatic-transfer { color: #02ff64; -webkit-text-fill-color: #02ff64; background: none; }
+        &.prismatic-offered  { color: #00ffc8; -webkit-text-fill-color: #00ffc8; background: none; }
       }
 
       .label {
@@ -150,6 +153,17 @@ section {
         font-size: 1.4rem;
         font-weight: 500;
         max-width: 12rem;
+        overflow: hidden;
+        word-break: break-word;
+
+        app-address {
+          display: inline-block;
+          max-width: 12rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          vertical-align: bottom;
+        }
 
         .prismatic-bought {
           display: inline-block;
@@ -185,6 +199,12 @@ section {
           display: inline-block;
           font: inherit;
           color: #ff00cc;
+        }
+
+        .prismatic-marketbid {
+          display: inline-block;
+          font: inherit;
+          color: #9e03ff;
         }
 
         .prismatic-created {
@@ -226,7 +246,8 @@ section {
       (prizeawarded): var(--won-color),
       (evolved): var(--mutated-color),
       (devolved): var(--devolved-color),
-      (auctioncreated auctionbid auctionsettled): var(--auction-color)
+      (auctioncreated auctionbid auctionsettled): var(--auction-color),
+      (bidentered bidaccepted bidconfirmed bidwithdrawn bidrefunded): var(--auction-color)
     );
 
     @each $events, $color in $event-color-groups {
@@ -258,7 +279,14 @@ section {
       auctioncreated: #00d4ff,    // cyan
       prizeawarded: #00d4ff,      // cyan — matches prismatic-won
       phunkbought: #ffd700,       // gold — matches prismatic-bought
-      created: #00d4ff            // cyan — matches prismatic-created
+      created: #00d4ff,           // cyan — matches prismatic-created
+      bidentered: #9e03ff,        // purple — distinct from AuctionBid pink
+      bidaccepted: #9e03ff,
+      bidconfirmed: #9e03ff,
+      bidwithdrawn: #9e03ff,
+      bidrefunded: #9e03ff,
+      transfer: #02ff64,          // green — matches box --transferred-color
+      phunkoffered: #00ffc8       // cyan — matches box --listed-color
     );
 
     @each $event, $color in $prismatic-box-colors {

@@ -70,6 +70,14 @@
                   {{ t('auctionEndedNoBids') }}
                 } @else if (event.type === 'AuctionBid') {
                   {{ t('auction') }} <span class="prismatic-bid">{{ t('bid') }}</span> {{ t('of') }}
+                } @else if (event.type === 'BidEntered') {
+                  <span class="prismatic-marketbid">{{ t('bid') }}</span> {{ t('from') }}
+                } @else if (event.type === 'BidAccepted') {
+                  <span class="prismatic-marketbid">{{ t('bid') }}</span> accepted from
+                } @else if (event.type === 'BidConfirmed') {
+                  <span class="prismatic-marketbid">{{ t('bid') }}</span> confirmed by
+                } @else if (event.type === 'BidWithdrawn' || event.type === 'BidRefunded') {
+                  <span class="prismatic-marketbid">{{ t('bid') }}</span> withdrawn by
                 } @else {
                   {{ eventLabel(event.type) }}
                 }
@@ -90,6 +98,14 @@
             } @else if (event.type === 'bridgeOut' || event.type === 'escrow') {
               <app-address [address]="event.from" />
             } @else if (event.type === 'Evolved' || event.type === 'Devolved') {
+              <app-address [address]="event.from" />
+            } @else if (
+              event.type === 'BidEntered' ||
+              event.type === 'BidAccepted' ||
+              event.type === 'BidConfirmed' ||
+              event.type === 'BidWithdrawn' ||
+              event.type === 'BidRefunded'
+            ) {
               <app-address [address]="event.from" />
             }
 

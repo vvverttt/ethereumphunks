@@ -56,6 +56,8 @@ export interface Bid {
   createdAt: Date;
   value: string;
   fromAddress: string;
+  ownerAddress?: string | null;
+  acceptedBlock?: number | null;
 }
 
 export interface Ethscription {
@@ -124,4 +126,4 @@ export interface EthscriptionWithCollectionAndAttributes {
   attributes: AttributeItem;
 }
 
-export type EventType = 'transfer' | 'sale' | 'created' | 'burned' | 'PhunkOffered' | 'PhunkBidEntered' | 'PhunkBought' | 'PhunkBidWithdrawn' | 'PhunkDeposited' | 'PhunkWithdrawn' | 'PhunkNoLongerForSale' | 'PrizeAwarded' | 'Evolved' | 'Devolved' | 'AuctionCreated' | 'AuctionBid' | 'AuctionSettled';
+export type EventType = 'transfer' | 'sale' | 'created' | 'burned' | 'PhunkOffered' | 'PhunkBidEntered' | 'PhunkBought' | 'PhunkBidWithdrawn' | 'PhunkDeposited' | 'PhunkWithdrawn' | 'PhunkNoLongerForSale' | 'PrizeAwarded' | 'Evolved' | 'Devolved' | 'AuctionCreated' | 'AuctionBid' | 'AuctionSettled' | 'BidEntered' | 'BidWithdrawn' | 'BidAccepted' | 'BidConfirmed' | 'BidRefunded';

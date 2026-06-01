@@ -341,4 +341,118 @@ export const EtherPhunksMarketV3ABI = [
     type: 'function',
   },
   { stateMutability: 'payable', type: 'receive' },
+
+  // ─── V3_2 bid functions ─────────────────────────────────────────
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'bidder', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'value', type: 'uint256' },
+    ],
+    name: 'BidEntered',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'bidder', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'value', type: 'uint256' },
+    ],
+    name: 'BidWithdrawn',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'bidder', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'value', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'acceptedBlock', type: 'uint256' },
+    ],
+    name: 'BidAccepted',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'bidder', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'value', type: 'uint256' },
+    ],
+    name: 'BidConfirmed',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'bidder', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'value', type: 'uint256' },
+    ],
+    name: 'BidRefunded',
+    type: 'event',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: '', type: 'address' },
+      { internalType: 'bytes32', name: '', type: 'bytes32' },
+    ],
+    name: 'bids',
+    outputs: [
+      { internalType: 'bool', name: 'hasBid', type: 'bool' },
+      { internalType: 'address', name: 'bidder', type: 'address' },
+      { internalType: 'uint256', name: 'value', type: 'uint256' },
+      { internalType: 'uint256', name: 'acceptedBlock', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { internalType: 'address', name: 'currentOwner', type: 'address' },
+    ],
+    name: 'enterBid',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { internalType: 'address', name: 'currentOwner', type: 'address' },
+    ],
+    name: 'withdrawBid',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { internalType: 'address', name: 'bidder', type: 'address' },
+      { internalType: 'uint256', name: 'minValue', type: 'uint256' },
+    ],
+    name: 'acceptBid',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'phunkId', type: 'bytes32' },
+      { internalType: 'address', name: 'currentOwner', type: 'address' },
+    ],
+    name: 'confirmBid',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
 ] as const;

@@ -96,6 +96,8 @@ export class Web3Service {
         http(environment.rpcHttpProvider),
         http(receiptRpcUrl),
         ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
+        http('https://eth.llamarpc.com'),
+        http('https://1rpc.io/eth'),
         http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
         http(relayRpcUrl),
@@ -108,6 +110,8 @@ export class Web3Service {
         http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
         http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
+        http('https://eth.llamarpc.com'),
+        http('https://1rpc.io/eth'),
         http(receiptRpcUrl),
         http(environment.rpcHttpProvider),
       ], { rank: false, retryCount: 0 }),
@@ -128,6 +132,8 @@ export class Web3Service {
       chain: this.chains[0],
       transport: fallback([
         ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
+        http('https://eth.llamarpc.com'),
+        http('https://1rpc.io/eth'),
         http(environment.rpcHttpProvider),
         http(receiptRpcUrl),
         http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
@@ -147,6 +153,8 @@ export class Web3Service {
           http(environment.rpcHttpProvider),
           http(receiptRpcUrl),
           ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
+          http('https://eth.llamarpc.com'),
+          http('https://1rpc.io/eth'),
           http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
           http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
           http(relayRpcUrl),
@@ -950,6 +958,50 @@ export class Web3Service {
    * @returns Promise resolving to the transaction hash if successful
    * @throws Error if user is banned or no phunks are selected
    */
+  // ─── V3_2 Bid functions ─────────────────────────────────────────
+
+  /** Step 1: bidder locks ETH against (currentOwner, hashId). */
+  async enterBid(hashId: string, currentOwner: string, valueEth: number): Promise<string | undefined> {
+    const weiValue = this.ethToWei(valueEth).toString();
+    return this._writeMarketContractAt(marketAddress, 'enterBid', [hashId, currentOwner], weiValue);
+  }
+
+  /** Bidder cancels their bid (only if not yet accepted). */
+  async withdrawBid(hashId: string, currentOwner: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(marketAddress, 'withdrawBid', [hashId, currentOwner]);
+  }
+
+  /** Step 2: owner accepts bid (ethscription must be escrowed already). */
+  async acceptBid(hashId: string, bidder: string, minValueWei: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(marketAddress, 'acceptBid', [hashId, bidder, minValueWei]);
+  }
+
+  /** Step 3: bidder confirms after 5-block cooldown — atomic swap. */
+  async confirmBid(hashId: string, currentOwner: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(marketAddress, 'confirmBid', [hashId, currentOwner]);
+  }
+
+  /** Read the current bid for (owner, hashId). Returns Bid struct or null if no bid. */
+  async getBid(owner: string, hashId: string): Promise<{
+    hasBid: boolean;
+    bidder: string;
+    value: bigint;
+    acceptedBlock: bigint;
+  } | null> {
+    try {
+      const result: any = await this.l1Client.readContract({
+        address: marketAddress as `0x${string}`,
+        abi: EtherPhunksMarketABI as any,
+        functionName: 'bids',
+        args: [owner, hashId],
+      });
+      if (!result || !result[0]) return null;
+      return { hasBid: result[0], bidder: result[1], value: result[2], acceptedBlock: result[3] };
+    } catch {
+      return null;
+    }
+  }
+
   async batchBuyPhunks(
     phunks: Phunk[],
     contractAddress: string = marketAddress

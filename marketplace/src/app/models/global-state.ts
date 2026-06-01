@@ -119,6 +119,10 @@ export type TxFunction =
   | 'acceptBidForPhunk'
   | 'buyPhunk'
   | 'enterBidForPhunk'
+  | 'enterBid'
+  | 'withdrawBid'
+  | 'acceptBid'
+  | 'confirmBid'
   | 'transferPhunk'
   | 'withdrawPhunk'
   | 'purchased'
@@ -159,4 +163,10 @@ export type EventType =
   | 'AuctionCreated'
   | 'AuctionBid'
   | 'AuctionSettled'
-  | 'Won';
+  | 'Won'
+  | 'Bids'
+  | 'BidEntered'
+  | 'BidWithdrawn'
+  | 'BidAccepted'
+  | 'BidConfirmed'
+  | 'BidRefunded';

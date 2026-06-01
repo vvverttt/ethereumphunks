@@ -519,13 +519,15 @@ export class DataService {
     }
 
     const isWonFilter = type === 'Won';
+    // Bids filter is a composite of marketplace V3_2 BidEntered + auction-house AuctionBid
+    const isBidsFilter = (type as string) === 'Bids';
     const query = supabase.rpc(
       'fetch_events' + this.suffix,
       {
-        p_limit: isWonFilter ? 500 : limit,
-        p_type: (type && type !== 'All' && !isWonFilter) ? type : null,
+        p_limit: (isWonFilter || isBidsFilter) ? 500 : limit,
+        p_type: (type && type !== 'All' && !isWonFilter && !isBidsFilter) ? type : null,
         p_collection_slug: slug,
-        p_offset: isWonFilter ? 0 : offset,
+        p_offset: (isWonFilter || isBidsFilter) ? 0 : offset,
       }
     );
 
@@ -549,6 +551,14 @@ export class DataService {
         });
         if (isWonFilter) {
           result = result?.filter((e: any) => e.type === 'PrizeAwarded' || e.type === 'AuctionSettled');
+        }
+        if (isBidsFilter) {
+          result = result?.filter((e: any) =>
+            e.type === 'AuctionBid' ||
+            e.type === 'BidEntered' ||
+            e.type === 'BidAccepted' ||
+            e.type === 'BidConfirmed'
+          );
         }
         return result;
       }),

@@ -56,6 +56,7 @@ interface ActionsState {
   privateSale: boolean;
   evolve: boolean;
   devolve: boolean;
+  bid: boolean;
 };
 
 @Component({
@@ -108,12 +109,16 @@ export class ItemViewComponent {
     privateSale: false,
     evolve: false,
     devolve: false,
+    bid: false,
   });
 
   transferAddress = new FormControl<string | null>('');
   listPrice = new FormControl<number | undefined>(undefined);
   // revShare = new FormControl<number | undefined>(undefined);
   listToAddress = new FormControl<string | null>('');
+  bidPrice = new FormControl<number | undefined>(undefined);
+
+  currentBid = signal<{ bidder: string; value: string; valueWei: bigint; acceptedBlock: number; accepted: boolean } | null>(null);
 
   singlePhunk$ = this.route.params.pipe(
     filter((params: any) => !!params.hashId),
@@ -138,6 +143,10 @@ export class ItemViewComponent {
       this.freeClaims.set(0);
       if (phunk?.slug && this.web3Svc.isOgEvolveSlug(phunk.slug)) {
         this.loadFreeClaims();
+      }
+      this.currentBid.set(null);
+      if (phunk?.hashId && phunk?.owner) {
+        this.loadCurrentBid(phunk);
       }
     }),
     shareReplay(1),
@@ -211,6 +220,16 @@ export class ItemViewComponent {
     setTimeout(() => this.sellPriceInput?.nativeElement.focus(), 0);
   }
 
+  bidPhunk(): void {
+    this.closeAll();
+    this.actionsState.update((state) => ({ ...state, bid: true }));
+  }
+
+  closeBid(): void {
+    this.actionsState.update((state) => ({ ...state, bid: false }));
+    this.bidPrice.setValue(undefined);
+  }
+
   escrowPhunk(): void {
     this.closeAll();
     this.actionsState.update((state) => ({ ...state, escrow: true }));
@@ -249,12 +268,14 @@ export class ItemViewComponent {
     this.listPrice.setValue(undefined);
     this.listToAddress.setValue('');
     this.transferAddress.setValue('');
+    this.bidPrice.setValue(undefined);
   }
 
   closeAll(): void {
     this.closeListing();
     this.closeTransfer();
     this.closeEscrow();
+    this.closeBid();
   }
 
   async submitListing(phunk: Phunk): Promise<void> {
@@ -352,6 +373,164 @@ export class ItemViewComponent {
     } finally {
       this.store.dispatch(upsertNotification({ notification }));
       this.clearAll();
+    }
+  }
+
+  async submitBid(phunk: Phunk): Promise<void> {
+    const hashId = phunk.hashId;
+    if (!hashId) throw new Error('Invalid hashId');
+    if (!this.bidPrice.value || this.bidPrice.value <= 0) return;
+    if (!phunk.owner) throw new Error('Phunk has no owner');
+
+    const value = this.bidPrice.value;
+
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('enterBid' + hashId),
+      timestamp: Date.now(),
+      slug: phunk.slug,
+      type: 'wallet',
+      function: 'enterBid',
+      hashId,
+      tokenId: phunk.tokenId,
+      value,
+    };
+
+    this.store.dispatch(upsertNotification({ notification }));
+
+    try {
+      const hash = await this.web3Svc.enterBid(hashId, phunk.owner, value);
+
+      notification = { ...notification, type: 'pending', hash };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+
+      notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+      await this.loadCurrentBid(phunk);
+      this.store.dispatch(appStateActions.checkHasWithdrawal());
+    } catch (err) {
+      console.log(err);
+      notification = { ...notification, type: 'error', detail: err };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
+      this.closeBid();
+    }
+  }
+
+  async withdrawBidAction(phunk: Phunk): Promise<void> {
+    const hashId = phunk.hashId;
+    if (!hashId || !phunk.owner) throw new Error('Invalid bid context');
+
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('withdrawBid' + hashId),
+      timestamp: Date.now(),
+      slug: phunk.slug,
+      type: 'wallet',
+      function: 'withdrawBid',
+      hashId,
+      tokenId: phunk.tokenId,
+    };
+    this.store.dispatch(upsertNotification({ notification }));
+
+    try {
+      const hash = await this.web3Svc.withdrawBid(hashId, phunk.owner);
+      notification = { ...notification, type: 'pending', hash };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+      notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+      await this.loadCurrentBid(phunk);
+      this.store.dispatch(appStateActions.checkHasWithdrawal());
+    } catch (err) {
+      console.log(err);
+      notification = { ...notification, type: 'error', detail: err };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
+    }
+  }
+
+  async acceptBidAction(phunk: Phunk): Promise<void> {
+    const hashId = phunk.hashId;
+    const bid = this.currentBid();
+    if (!hashId || !bid) throw new Error('No bid to accept');
+
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('acceptBid' + hashId),
+      timestamp: Date.now(),
+      slug: phunk.slug,
+      type: 'wallet',
+      function: 'acceptBid',
+      hashId,
+      tokenId: phunk.tokenId,
+    };
+    this.store.dispatch(upsertNotification({ notification }));
+
+    try {
+      const hash = await this.web3Svc.acceptBid(hashId, bid.bidder, bid.value);
+      notification = { ...notification, type: 'pending', hash };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+      notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+      await this.loadCurrentBid(phunk);
+      this.store.dispatch(appStateActions.checkHasWithdrawal());
+    } catch (err) {
+      console.log(err);
+      notification = { ...notification, type: 'error', detail: err };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
+    }
+  }
+
+  async confirmBidAction(phunk: Phunk): Promise<void> {
+    const hashId = phunk.hashId;
+    if (!hashId || !phunk.owner) throw new Error('Invalid bid context');
+
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('confirmBid' + hashId),
+      timestamp: Date.now(),
+      slug: phunk.slug,
+      type: 'wallet',
+      function: 'confirmBid',
+      hashId,
+      tokenId: phunk.tokenId,
+    };
+    this.store.dispatch(upsertNotification({ notification }));
+
+    try {
+      const hash = await this.web3Svc.confirmBid(hashId, phunk.owner);
+      notification = { ...notification, type: 'pending', hash };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+      notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+      await this.loadCurrentBid(phunk);
+      this.store.dispatch(appStateActions.checkHasWithdrawal());
+    } catch (err) {
+      console.log(err);
+      notification = { ...notification, type: 'error', detail: err };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
+    }
+  }
+
+  async loadCurrentBid(phunk: Phunk): Promise<void> {
+    if (!phunk?.hashId || !phunk?.owner) {
+      this.currentBid.set(null);
+      return;
+    }
+    const bid = await this.web3Svc.getBid(phunk.owner, phunk.hashId);
+    if (bid && bid.hasBid) {
+      const acceptedBlock = Number(bid.acceptedBlock);
+      this.currentBid.set({
+        bidder: bid.bidder,
+        value: bid.value.toString(),
+        valueWei: bid.value,
+        acceptedBlock,
+        accepted: acceptedBlock > 0,
+      });
+    } else {
+      this.currentBid.set(null);
     }
   }
 

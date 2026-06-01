@@ -72,6 +72,19 @@
                 } @else {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotForSale') }}</p>
                 }
+
+                <!-- Current Bid -->
+                @if (currentBid(); as bid) {
+                  <p class="bid-status">
+                    <span>Current bid:</span>
+                    <span class="highlight">{{ (bid.value | weiToEth) }} ETH</span>
+                    <span class="bold"> (${{ ((bid.value | weiToEth) * ((usd$ | async) || 0)) | formatCash }})</span>
+                    by <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: bid.bidder }"><app-address [address]="bid.bidder" /></a>.
+                    @if (bid.accepted) {
+                      <span class="bid-accepted"> Accepted — waiting for bidder confirmation (5-block cooldown).</span>
+                    }
+                  </p>
+                }
               </div>
 
               <!-- Actions -->
@@ -98,6 +111,60 @@
                             <button class="buy" (click)="buyPhunk(phunk)">
                               <span>{{ t('buy') }}</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
+                            </button>
+                          }
+
+                          <!-- Bid button (visible to anyone who is NOT the owner) -->
+                          @if (
+                            (phunk.prevOwner | lowercase) !== (address | lowercase) &&
+                            (phunk.owner | lowercase) !== (address | lowercase)
+                          ) {
+                            <button class="bid" (click)="bidPhunk()" [class.active]="actionsState().bid">
+                              <span>{{ t('placeBid') || 'Place Bid' }}</span>
+                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'enterBid' }" />
+                            </button>
+
+                            @if (actionsState().bid) {
+                              <ng-container *ngTemplateOutlet="bidForm; context:{ $implicit: phunk }" />
+                            }
+
+                            <!-- Confirm Bid (visible to the bidder once their bid is accepted) -->
+                            @if (
+                              currentBid() &&
+                              (currentBid()!.bidder | lowercase) === (address | lowercase) &&
+                              currentBid()!.accepted
+                            ) {
+                              <button class="confirm-bid" (click)="confirmBidAction(phunk)">
+                                <span>Confirm Bid</span>
+                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'confirmBid' }" />
+                              </button>
+                            }
+
+                            <!-- Withdraw Bid (visible to the bidder while their bid is open + not accepted) -->
+                            @if (
+                              currentBid() &&
+                              (currentBid()!.bidder | lowercase) === (address | lowercase) &&
+                              !currentBid()!.accepted
+                            ) {
+                              <button class="withdraw-bid" (click)="withdrawBidAction(phunk)">
+                                <span>Withdraw Bid</span>
+                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawBid' }" />
+                              </button>
+                            }
+                          }
+
+                          <!-- Accept Bid (visible to the OWNER when a bid exists) -->
+                          @if (
+                            currentBid() &&
+                            !currentBid()!.accepted &&
+                            (
+                              (phunk.isEscrowed && (phunk.prevOwner | lowercase) === (address | lowercase)) ||
+                              (phunk.nft && phunk.nft.owner === address)
+                            )
+                          ) {
+                            <button class="accept-bid" (click)="acceptBidAction(phunk)">
+                              <span>Accept Bid</span>
+                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'acceptBid' }" />
                             </button>
                           }
 
@@ -425,6 +492,36 @@
     @if (!phunk.isEscrowed && !phunk.nft) {
       <p class="small">{{ t('escrowSaleNotice') }}</p>
     }
+  </form>
+</ng-template>
+
+<!-- Bid Form -->
+<ng-template #bidForm let-phunk>
+  <form class="form-wrapper">
+    <div class="form-group">
+      <label for="bid-price">Bid Amount (ETH)</label>
+      <input
+        type="number"
+        id="bid-price"
+        step="0.001"
+        min="0"
+        [formControl]="bidPrice"
+        [placeholder]="currentBid() ? ('Must exceed ' + (currentBid()!.value | weiToEth) + ' ETH') : 'Bid amount in ETH'" />
+    </div>
+
+    @if (currentBid()) {
+      <p class="small">
+        Current bid: Ξ{{ currentBid()!.value | weiToEth }} by
+        <app-address [address]="currentBid()!.bidder"></app-address>
+      </p>
+    }
+
+    <div class="form-actions">
+      <button type="reset" class="cancel" (click)="closeBid()">{{ t('cancel') }}</button>
+      <button type="button" class="submit" (click)="submitBid(phunk)">Place Bid</button>
+    </div>
+
+    <p class="small">Bids are non-custodial: your ETH stays locked in the marketplace contract until the owner accepts and you confirm after a 5-block cooldown.</p>
   </form>
 </ng-template>
 

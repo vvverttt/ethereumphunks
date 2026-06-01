@@ -62,6 +62,7 @@ export class RecentActivityComponent {
       { label: this.t('transferred'), value: 'transfer' },
       { label: this.t('created'), value: 'created' },
       { label: this.t('won'), value: 'Won' },
+      { label: 'Bids', value: 'Bids' },
       { label: this.t('auction'), value: 'AuctionBid' },
     ];
 
@@ -129,6 +130,9 @@ export class RecentActivityComponent {
     if (t === 'created') return 'prismatic-created';
     if (t === 'PrizeAwarded') return 'prismatic-won';
     if (t === 'AuctionBid') return 'prismatic-bid';
+    if (t === 'BidEntered' || t === 'BidAccepted' || t === 'BidConfirmed' || t === 'BidWithdrawn' || t === 'BidRefunded') return 'prismatic-marketbid';
+    if (t === 'transfer' || t === 'bridgeIn' || t === 'bridgeOut') return 'prismatic-transfer';
+    if (t === 'PhunkOffered') return 'prismatic-offered';
     if (t === 'AuctionSettled' && event.to && event.to !== '0x0000000000000000000000000000000000000000') {
       return 'prismatic-won';
     }

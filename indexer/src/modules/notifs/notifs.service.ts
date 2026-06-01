@@ -35,6 +35,10 @@ export class NotifsService implements OnModuleInit {
       this.handleNotification(event);
     });
 
+    this.storageSvc.listenBids().subscribe(event => {
+      this.handleBidNotification(event);
+    });
+
     // Fetch USD price every 10 minutes
     this.fetchUSDPrice().then(price => {
       this.usdPrice = price;
@@ -42,6 +46,73 @@ export class NotifsService implements OnModuleInit {
         this.usdPrice = await this.fetchUSDPrice();
       }, 10 * 60 * 1000);
     });
+  }
+
+  /**
+   * Handles notification for a bid lifecycle event (BidEntered, BidAccepted).
+   */
+  async handleBidNotification(event: Event): Promise<void> {
+    if (!event?.hashId) return;
+    const ethscriptionData = await this.getEthscriptionWithCollectionAndAttributes(event.hashId);
+    if (!ethscriptionData) return;
+
+    const message = await this.createBidMessage(event, ethscriptionData);
+    if (!message) return;
+
+    await this.twitterSvc.sendTweet(message);
+    await this.discordSvc.postMessage(message);
+  }
+
+  /**
+   * Builds a Twitter/Discord message for a bid lifecycle event.
+   */
+  async createBidMessage(
+    event: Event,
+    ethscriptionData: NotifItemData,
+  ): Promise<NotificationMessage> {
+    const { ethscription, collection } = ethscriptionData;
+
+    const chainId = Number(process.env.CHAIN_ID);
+    const baseUrl = chainId === 1 ? 'https://etherphunks.eth.limo' : 'https://sepolia.etherphunks.eth.limo';
+
+    const variant = event.type === 'BidAccepted' ? 'bidAccepted' : 'bidEntered';
+    const imageBuffer = await this.imgSvc.generateImage(ethscriptionData, variant);
+
+    const weiValue = BigInt(event.value || '0');
+    if (!weiValue) return null;
+    const value = formatUnits(weiValue, 18);
+
+    // For BidEntered: from = bidder, to = owner.
+    // For BidAccepted: from = owner,  to = bidder.
+    const [fromAddress, toAddress] = await Promise.all([
+      this.formatAddress(event.from),
+      this.formatAddress(event.to),
+    ]);
+
+    const filename = `${new Date().getTime().toString()}.png`;
+    const link = `${baseUrl}/details/${ethscription.hashId}`;
+
+    if (event.type === 'BidEntered') {
+      return {
+        title: `New bid on ${collection.singleName} #${ethscription.tokenId}`,
+        message: `Bidder: ${fromAddress}\nOwner: ${toAddress}\n\nBid: ${value} ETH ($${this.formatCash(Number(value) * this.usdPrice)})`,
+        link,
+        imageBuffer,
+        filename,
+      };
+    }
+
+    if (event.type === 'BidAccepted') {
+      return {
+        title: `Bid accepted on ${collection.singleName} #${ethscription.tokenId}`,
+        message: `Owner: ${fromAddress}\nBidder: ${toAddress}\n\nAmount: ${value} ETH ($${this.formatCash(Number(value) * this.usdPrice)})\nBidder has 5 blocks to confirm the sale.`,
+        link,
+        imageBuffer,
+        filename,
+      };
+    }
+
+    return null;
   }
 
   /**
