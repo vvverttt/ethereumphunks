@@ -94,19 +94,6 @@
       </a>
     }
 
-    @if ((config$ | async)?.showPhunkSwap !== false) {
-    <a
-      class="vault-button"
-      routerLink="/vault"
-      (click)="goToVault()">
-
-      <span>{{ t('phunkSwap') }}</span>
-
-      <div class="arrow">
-        <ng-template [ngTemplateOutlet]="arrowIcon" />
-      </div>
-    </a>
-    }
 
     <a
       class="owners-button"

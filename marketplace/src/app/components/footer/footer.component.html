@@ -30,9 +30,6 @@
     @if ((config$ | async)?.showMutate !== false || (config$ | async)?.showDevolve !== false) {
       {{ t('mutation') }}: <a [href]="explorerUrl + '/address/' + mutation" target="_blank"><app-address [address]="mutation" /></a><br />
     }
-    @if ((config$ | async)?.showPhunkSwap !== false) {
-      Phunk Swap: <a [href]="explorerUrl + '/address/' + vault" target="_blank"><app-address [address]="vault" /></a>
-    }
   </p>
 
   <p>{{ t('riskDisclaimer') }}</p>
