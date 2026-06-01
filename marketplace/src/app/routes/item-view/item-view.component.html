@@ -134,10 +134,16 @@
                               (currentBid()!.bidder | lowercase) === (address | lowercase) &&
                               currentBid()!.accepted
                             ) {
-                              <button class="confirm-bid" (click)="confirmBidAction(phunk)">
-                                <span>Confirm Bid</span>
-                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'confirmBid' }" />
-                              </button>
+                              @if (confirmBlocksRemaining((currentBlock$ | async) || 0); as remaining) {
+                                <button class="confirm-bid disabled" disabled>
+                                  <span>Confirm in {{ remaining }} block{{ remaining === 1 ? '' : 's' }}…</span>
+                                </button>
+                              } @else {
+                                <button class="confirm-bid" (click)="confirmBidAction(phunk)">
+                                  <span>Confirm Bid</span>
+                                  <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'confirmBid' }" />
+                                </button>
+                              }
                             }
 
                             <!-- Withdraw Bid (visible to the bidder while their bid is open + not accepted) -->

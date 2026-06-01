@@ -184,6 +184,10 @@ export class ItemViewComponent {
   connected$ = this.store.select(appStateSelectors.selectConnected);
   theme$ = this.store.select(appStateSelectors.selectTheme);
   usd$ = this.store.select(dataStateSelectors.selectUsd);
+  currentBlock$ = this.store.select(appStateSelectors.selectCurrentBlock);
+
+  /** Contract's confirmBid cooldown (ETHSCRIPTION_TRANSFER_COOLDOWN_BLOCKS). */
+  readonly BID_CONFIRM_COOLDOWN = 5;
 
   scrollY$ = fromEvent(document, 'scroll').pipe(
     map(() => (window.scrollY / 2) * -1),
@@ -523,6 +527,15 @@ export class ItemViewComponent {
     } finally {
       this.store.dispatch(upsertNotification({ notification }));
     }
+  }
+
+  /** Blocks the bidder still has to wait before confirmBid will succeed.
+   *  Returns 0 when the bid is confirmable now (or no accepted bid). */
+  confirmBlocksRemaining(currentBlock: number): number {
+    const bid = this.currentBid();
+    if (!bid || !bid.accepted || !bid.acceptedBlock) return 0;
+    const ready = bid.acceptedBlock + this.BID_CONFIRM_COOLDOWN;
+    return currentBlock > 0 && currentBlock < ready ? ready - currentBlock : 0;
   }
 
   async loadCurrentBid(phunk: Phunk): Promise<void> {
