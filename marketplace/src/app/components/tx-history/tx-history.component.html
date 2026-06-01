@@ -31,6 +31,16 @@
                       {{ t('auction') }} <span class="prismatic-won">{{ t('won') }}</span>
                     } @else if (event.type === 'AuctionBid') {
                       {{ t('auction') }} <span class="prismatic-bid">{{ t('bid') }}</span>
+                    } @else if (event.type === 'BidEntered') {
+                      <span class="prismatic-marketbid">Bid Entered</span>
+                    } @else if (event.type === 'BidAccepted') {
+                      <span class="prismatic-marketbid">Bid Accepted</span>
+                    } @else if (event.type === 'BidConfirmed') {
+                      <span class="prismatic-marketbid">Bid Confirmed</span>
+                    } @else if (event.type === 'BidWithdrawn') {
+                      <span class="prismatic-marketbid">Bid Withdrawn</span>
+                    } @else if (event.type === 'BidRefunded') {
+                      <span class="prismatic-marketbid">Bid Refunded</span>
                     } @else {
                       {{ eventLabel(event.type) }}
                     }

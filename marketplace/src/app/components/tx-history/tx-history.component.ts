@@ -80,6 +80,11 @@ export class TxHistoryComponent implements OnChanges {
     AuctionCreated: 'auctionStart',
     AuctionBid: 'auctionBidOf',
     AuctionSettled: 'auctionWonBy',
+    BidEntered: 'bidEntered',
+    BidWithdrawn: 'bidWithdrawn',
+    BidAccepted: 'bidEntered',
+    BidConfirmed: 'bidEntered',
+    BidRefunded: 'bidWithdrawn',
   };
 
   constructor(
