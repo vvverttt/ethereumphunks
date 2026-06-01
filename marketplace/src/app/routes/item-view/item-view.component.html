@@ -153,7 +153,7 @@
                             }
                           }
 
-                          <!-- Accept Bid (visible to the OWNER when a bid exists) -->
+                          <!-- Accept Bid (visible to the OWNER when a bid exists + phunk is in escrow) -->
                           @if (
                             currentBid() &&
                             !currentBid()!.accepted &&
@@ -166,6 +166,23 @@
                               <span>Accept Bid</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'acceptBid' }" />
                             </button>
+                          }
+
+                          <!-- Bid waiting but phunk isn't escrowed yet — guide owner to escrow first -->
+                          @if (
+                            currentBid() &&
+                            !currentBid()!.accepted &&
+                            !phunk.isEscrowed &&
+                            (phunk.owner | lowercase) === (address | lowercase) &&
+                            !phunk.nft
+                          ) {
+                            <button class="accept-bid escrow-first" (click)="escrowPhunk()" [class.active]="actionsState().escrow">
+                              <span>Escrow to Accept Bid</span>
+                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'sendToEscrow' }" />
+                            </button>
+                            <p class="small bid-escrow-hint">
+                              You have an open bid of Ξ{{ currentBid()!.value | weiToEth }}. Send the {{ phunk.collection?.singleName || 'item' }} to escrow to accept it.
+                            </p>
                           }
 
                           <!-- Sell (Ownership actions) -->
