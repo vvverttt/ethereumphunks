@@ -97,7 +97,7 @@ export class IndexComponent {
     { q: 'Where are the images stored?', a: 'All images are stored fully on-chain as Ethscriptions, encoded directly into the calldata of Ethereum transactions by us. No IPFS, no servers, no external hosting.' },
     { q: 'Where does the market data on this site come from?', a: 'The prices and sales you see on this site are loaded from the marketplace contracts on the Ethereum blockchain.' },
     { q: 'Are they an ERC-721 token?', a: 'No. They are Ethscriptions, not ERC-721 tokens. Ownership is managed on-chain through our smart contracts and Ethereum transfer history.' },
-    { q: 'Do you charge any fees for transactions?', a: 'No. There are zero fees and zero royalties on all marketplace transactions.' },
+    { q: 'Do you charge any fees for transactions?', a: 'There are no marketplace fees. A 5% royalty applies on sales, routed on-chain to the QuantumPhunks treasury (quantumphunks.eth).' },
   ];
 
   collectionFaqs: Record<string, { q: string; a: string }[]> = {
