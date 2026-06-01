@@ -119,13 +119,19 @@
                             (phunk.prevOwner | lowercase) !== (address | lowercase) &&
                             (phunk.owner | lowercase) !== (address | lowercase)
                           ) {
-                            <button class="bid" (click)="bidPhunk()" [class.active]="actionsState().bid">
-                              <span>{{ t('placeBid') || 'Place Bid' }}</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'enterBid' }" />
-                            </button>
+                            <!-- Place Bid: hidden if you're already the current bidder, or if a bid is accepted/locked -->
+                            @if (
+                              !(currentBid() && (currentBid()!.bidder | lowercase) === (address | lowercase)) &&
+                              !(currentBid() && currentBid()!.accepted)
+                            ) {
+                              <button class="bid" (click)="bidPhunk()" [class.active]="actionsState().bid">
+                                <span>{{ t('placeBid') || 'Place Bid' }}</span>
+                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'enterBid' }" />
+                              </button>
 
-                            @if (actionsState().bid) {
-                              <ng-container *ngTemplateOutlet="bidForm; context:{ $implicit: phunk }" />
+                              @if (actionsState().bid) {
+                                <ng-container *ngTemplateOutlet="bidForm; context:{ $implicit: phunk }" />
+                              }
                             }
 
                             <!-- Confirm Bid (visible to the bidder once their bid is accepted) -->
