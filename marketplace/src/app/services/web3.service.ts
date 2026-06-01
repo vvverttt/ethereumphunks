@@ -11,6 +11,7 @@ import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 
 // L1
 import { DystoLabzMarketABI as EtherPhunksMarketABI } from '@/abi/DystoLabzMarket';
+import { EtherPhunksMarketV3ABI } from '@/abi/EtherPhunksMarketV3';
 import { PointsABI } from '@/abi/Points';
 
 // Evolve
@@ -963,22 +964,22 @@ export class Web3Service {
   /** Step 1: bidder locks ETH against (currentOwner, hashId). */
   async enterBid(hashId: string, currentOwner: string, valueEth: number): Promise<string | undefined> {
     const weiValue = this.ethToWei(valueEth).toString();
-    return this._writeMarketContractAt(marketAddress, 'enterBid', [hashId, currentOwner], weiValue);
+    return this._writeMarketContractAt(marketAddress, 'enterBid', [hashId, currentOwner], weiValue, EtherPhunksMarketV3ABI as any);
   }
 
   /** Bidder cancels their bid (only if not yet accepted). */
   async withdrawBid(hashId: string, currentOwner: string): Promise<string | undefined> {
-    return this._writeMarketContractAt(marketAddress, 'withdrawBid', [hashId, currentOwner]);
+    return this._writeMarketContractAt(marketAddress, 'withdrawBid', [hashId, currentOwner], undefined, EtherPhunksMarketV3ABI as any);
   }
 
   /** Step 2: owner accepts bid (ethscription must be escrowed already). */
   async acceptBid(hashId: string, bidder: string, minValueWei: string): Promise<string | undefined> {
-    return this._writeMarketContractAt(marketAddress, 'acceptBid', [hashId, bidder, minValueWei]);
+    return this._writeMarketContractAt(marketAddress, 'acceptBid', [hashId, bidder, minValueWei], undefined, EtherPhunksMarketV3ABI as any);
   }
 
   /** Step 3: bidder confirms after 5-block cooldown — atomic swap. */
   async confirmBid(hashId: string, currentOwner: string): Promise<string | undefined> {
-    return this._writeMarketContractAt(marketAddress, 'confirmBid', [hashId, currentOwner]);
+    return this._writeMarketContractAt(marketAddress, 'confirmBid', [hashId, currentOwner], undefined, EtherPhunksMarketV3ABI as any);
   }
 
   /** Read the current bid for (owner, hashId). Returns Bid struct or null if no bid. */
@@ -991,7 +992,7 @@ export class Web3Service {
     try {
       const result: any = await this.l1Client.readContract({
         address: marketAddress as `0x${string}`,
-        abi: EtherPhunksMarketABI as any,
+        abi: EtherPhunksMarketV3ABI as any,
         functionName: 'bids',
         args: [owner, hashId],
       });
