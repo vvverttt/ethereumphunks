@@ -38,8 +38,6 @@ const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; value: number }
   'cryptophunksv67': [
     { label: 'Lottery', value: 2367 },
     { label: 'Lottery Pro', value: 535 },
-    { label: 'Swap (Locked)', value: 1003 },
-    { label: 'Auction (Swap)', value: 264 },
     { label: 'Auction Pro', value: 45 },
   ],
 };

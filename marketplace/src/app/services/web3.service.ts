@@ -1764,6 +1764,15 @@ export class Web3Service {
     return ogSlugs.includes(slug);
   }
 
+  /**
+   * Whether a 5% royalty applies to sales of this collection. The OG collections
+   * (ogSlugs) trade through the legacy EtherPhunks market and carry no royalty;
+   * everything else (ethsrocks + QuantumPhunks collections) does.
+   */
+  slugHasRoyalty(slug?: string | null): boolean {
+    return !!slug && !ogSlugs.includes(slug);
+  }
+
   private isOldMarketAddress(address?: string | null): boolean {
     if (!address) return false;
     return oldMarketAddressSet.has(address.toLowerCase());

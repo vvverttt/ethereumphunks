@@ -514,6 +514,10 @@
       <button type="button" class="submit" (click)="submitListing(phunk)">{{ t('offer') }} {{ phunk.singleName }}</button>
     </div>
 
+    @if (web3Svc.slugHasRoyalty(phunk.slug)) {
+      <p class="small">{{ t('royaltyNotice') }}</p>
+    }
+
     @if (!phunk.isEscrowed && !phunk.nft) {
       <p class="small">{{ t('escrowSaleNotice') }}</p>
     }
