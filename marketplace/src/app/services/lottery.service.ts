@@ -94,9 +94,75 @@ export class LotteryService {
     });
   }
 
+  /** V67_VRF: current Chainlink VRF fee (native ETH), read fresh before a play. */
+  async getVRFCost(): Promise<bigint> {
+    return await this.web3Svc.l1DedicatedClient.readContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'getVRFCost',
+    }) as bigint;
+  }
+
+  /** V67_VRF: total cost the player must send = playPrice + current VRF fee. */
+  async getTotalPlayCost(): Promise<{ playPrice: bigint; vrfCost: bigint; total: bigint }> {
+    const [playPrice, vrfCost] = await Promise.all([this.getPlayPrice(), this.getVRFCost()]);
+    return { playPrice, vrfCost, total: playPrice + vrfCost };
+  }
+
   // =========================================================
   // Contract Writes
   // =========================================================
+
+  /**
+   * V67_VRF single-tx play: sends playPrice + VRF fee (+ small buffer for VRF
+   * gas-price drift). Overpayment is refunded by the contract. The prize is
+   * assigned later by the Chainlink callback — watch PrizeAwarded / Supabase.
+   */
+  async play(): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+    const chainId = environment.chainId;
+    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    if (!walletClient) throw new Error('No wallet connected');
+
+    const { playPrice, vrfCost } = await this.getTotalPlayCost();
+    // 25% buffer on the VRF fee to absorb gas-price drift between read and mine;
+    // the contract refunds any unused overpayment.
+    const value = playPrice + vrfCost + (vrfCost / 4n);
+
+    const feeData = await this.web3Svc.l1Client.estimateFeesPerGas();
+    const minPriority = parseGwei('0.1');
+    const priority = feeData.maxPriorityFeePerGas && feeData.maxPriorityFeePerGas > minPriority
+      ? feeData.maxPriorityFeePerGas : minPriority;
+
+    const hash = await walletClient.writeContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'play',
+      value,
+      chain: walletClient.chain,
+      account: walletClient.account,
+      maxPriorityFeePerGas: priority,
+    });
+    console.log('[Lottery] play tx hash:', hash);
+    return hash;
+  }
+
+  /** V67_VRF: recover a stuck play (VRF never landed). Player can self-refund
+   *  after the on-chain delay; owner anytime. */
+  async refundStuckSpin(requestId: bigint): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+    const chainId = environment.chainId;
+    const walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    if (!walletClient) throw new Error('No wallet connected');
+    return await walletClient.writeContract({
+      address: this._address,
+      abi: PhilipLotteryV67ABI,
+      functionName: 'refundStuckSpin',
+      args: [requestId],
+      chain: walletClient.chain,
+      account: walletClient.account,
+    });
+  }
 
   async commitPlay(): Promise<string | undefined> {
     await this.web3Svc.switchNetwork();
@@ -410,6 +476,95 @@ export class LotteryService {
           done(data[0] as LotteryWin);
         }
       }, 1500);
+    });
+  }
+
+  /**
+   * V67_VRF result watcher. The prize is assigned by Chainlink's callback tx
+   * (not the player's play tx), so we can't match on the play tx hash. Instead
+   * we watch for a NEW win row for this winner on THIS contract created after
+   * the play started, racing Supabase realtime + a 1.5s poll + on-chain
+   * PrizeAwarded(winner) logs. `sinceMs` should be ~the play timestamp.
+   */
+  watchForWinByAddress(winner: string, sinceMs: number, fromBlock: bigint): Promise<LotteryWin> {
+    const w = winner.toLowerCase();
+    const contract = this._address.toLowerCase();
+    return new Promise((resolve) => {
+      let resolved = false;
+      const done = (win: LotteryWin) => {
+        if (resolved) return;
+        resolved = true;
+        supabase.removeChannel(channel);
+        clearInterval(pollTimer);
+        clearInterval(logTimer);
+        resolve(win);
+      };
+      const matches = (row: LotteryWin) =>
+        row.winner?.toLowerCase() === w &&
+        row.contract_address?.toLowerCase() === contract &&
+        new Date(row.created_at).getTime() >= sinceMs - 5000;
+
+      const channel = supabase
+        .channel(`lottery_win_addr_${w.slice(0, 10)}_${sinceMs}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'lottery_wins' + suffix,
+        }, (payload: any) => {
+          const row = payload.new as LotteryWin;
+          if (matches(row)) done(row);
+        })
+        .subscribe();
+
+      // Supabase poll fallback
+      const pollTimer = setInterval(async () => {
+        const { data } = await supabase
+          .from('lottery_wins' + suffix)
+          .select('id,contract_address,play_id,winner,hash_id,sha,token_id,collection_slug,transfer_status,tx_hash,created_at')
+          .eq('winner', w)
+          .eq('contract_address', contract)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (data && data.length > 0 && matches(data[0] as LotteryWin)) {
+          done(data[0] as LotteryWin);
+        }
+      }, 1500);
+
+      // On-chain fallback: watch PrizeAwarded(winner) logs (indexer-independent)
+      const logTimer = setInterval(async () => {
+        try {
+          const logs = await this.web3Svc.l1DedicatedClient.getLogs({
+            address: this._address,
+            event: {
+              type: 'event',
+              name: 'PrizeAwarded',
+              inputs: [
+                { indexed: true, name: 'playId', type: 'uint256' },
+                { indexed: true, name: 'winner', type: 'address' },
+                { indexed: true, name: 'hashId', type: 'bytes32' },
+              ],
+            },
+            args: { winner: winner as `0x${string}` },
+            fromBlock,
+          });
+          if (logs && logs.length > 0) {
+            const l: any = logs[logs.length - 1];
+            done({
+              id: 0,
+              contract_address: contract,
+              play_id: Number(l.args.playId),
+              winner: w,
+              hash_id: l.args.hashId,
+              sha: '',
+              token_id: 0,
+              collection_slug: '',
+              transfer_status: 'transferred',
+              tx_hash: l.transactionHash,
+              created_at: new Date().toISOString(),
+            } as LotteryWin);
+          }
+        } catch {}
+      }, 3000);
     });
   }
 

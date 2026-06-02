@@ -237,11 +237,39 @@ export class LotteryComponent implements OnInit, OnDestroy {
     if (!stored) return;
 
     try {
-      const { txHash, address: storedAddress, contractAddress } = JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      const { txHash, address: storedAddress, contractAddress } = parsed;
       // Only resume if same wallet + same lottery contract
       const address = await firstValueFrom(this.address$);
       if (!address || address.toLowerCase() !== storedAddress?.toLowerCase()) return;
       if (contractAddress && contractAddress.toLowerCase() !== this.lotterySvc.address.toLowerCase()) return;
+
+      // ─── V67_VRF resume: a play tx is in flight / awaiting the VRF callback ──
+      if (parsed.vrf) {
+        try {
+          this.spinPhase.set('waiting');
+          const sinceMs = Number(parsed.sinceMs) || (Date.now() - 600000);
+          const fromBlock = parsed.fromBlock ? BigInt(parsed.fromBlock) : await this.lotterySvc.getBlockNumber();
+          const win = await this.lotterySvc.watchForWinByAddress(address, sinceMs, fromBlock);
+          localStorage.removeItem(this.PENDING_COMMIT_KEY);
+          // Show the result (no live spin — the window was missed on refresh)
+          if (win?.hash_id) {
+            let record = win;
+            if (!win.sha) {
+              const e = await this.lotterySvc.getEthscriptionsByHashIds([win.hash_id.toLowerCase()]);
+              if (e[0]) record = { ...win, sha: e[0].sha, token_id: e[0].tokenId, collection_slug: e[0].slug };
+            }
+            this.wonPrize.set(record);
+            this.spinPhase.set('won');
+          } else {
+            this.spinPhase.set('idle');
+          }
+        } catch {
+          localStorage.removeItem(this.PENDING_COMMIT_KEY);
+          this.spinPhase.set('idle');
+        }
+        return;
+      }
 
       // Check if commitment already exists on-chain (tx already mined)
       const commitment = await this.lotterySvc.getCommitment(address);
@@ -449,17 +477,18 @@ export class LotteryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Check if user has enough ETH for play price + gas (2 txs)
+    // Check if user has enough ETH for play price + VRF fee + gas (single tx)
     try {
       const address = await firstValueFrom(this.address$);
       if (address) {
-        const [balance, playPrice, block] = await Promise.all([
+        const [balance, costs, block] = await Promise.all([
           this.web3Svc.l1Client.getBalance({ address: address as `0x${string}` }),
-          this.lotterySvc.getPlayPrice(),
+          this.lotterySvc.getTotalPlayCost(),
           this.web3Svc.l1Client.getBlock(),
         ]);
+        const playPrice = costs.total; // playPrice + VRF fee
         const baseFee = block.baseFeePerGas ?? 1000000000n;
-        const gasBuffer = 300000n * baseFee * 3n; // 300k gas for 2 txs
+        const gasBuffer = 300000n * baseFee * 2n; // single play tx
         if (balance < playPrice + gasBuffer) {
           this.errorMessage.set('Insufficient ETH for play + gas');
           return;
@@ -480,167 +509,49 @@ export class LotteryComponent implements OnInit, OnDestroy {
     );
 
     try {
-      // ─── Step 1: Commit ───────────────────────────────────
-      const commitHash = await this.lotterySvc.commitPlay();
-      if (!commitHash) throw new Error('Commit transaction failed');
-
-      // Save to localStorage so we can resume on page refresh
       const address = await firstValueFrom(this.address$);
+      const fromBlock = await this.lotterySvc.getBlockNumber();
+      const sinceMs = Date.now();
+
+      // ─── Single tx: play() requests Chainlink VRF ────────
+      const playHash = await this.lotterySvc.play();
+      if (!playHash) throw new Error('Play transaction failed');
+
+      // Persist so we can resume the result-watch if the user refreshes
       localStorage.setItem(this.PENDING_COMMIT_KEY, JSON.stringify({
-        txHash: commitHash,
+        txHash: playHash,
         address,
         contractAddress: this.lotterySvc.address,
+        vrf: true,
+        sinceMs,
+        fromBlock: fromBlock.toString(),
       }));
 
+      // Submitting the play tx
       this.spinPhase.set('committing');
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
-
-      // Race: receipt polling vs on-chain commitment check (whichever confirms first)
-      type CommitResult = { source: 'receipt'; receipt: any } | { source: 'onchain'; commitBlock: bigint };
-      const commitConfirmation = await Promise.race([
-        this.pollReceipt(commitHash).then(receipt => ({ source: 'receipt' as const, receipt })),
-        this.pollCommitmentOnChain(address!).then(commitBlock => ({ source: 'onchain' as const, commitBlock })),
-      ]) as CommitResult;
-
+      await this.pollReceipt(playHash);
       clearInterval(this.confirmTimer);
-      localStorage.removeItem(this.PENDING_COMMIT_KEY);
 
-      // Extract commitBlock from whichever source responded first
-      let commitBlock = 0n;
-      if (commitConfirmation.source === 'onchain') {
-        commitBlock = commitConfirmation.commitBlock;
-      } else {
-        const commitReceipt = commitConfirmation.receipt;
-        if (!commitReceipt) throw new Error('Commit confirmation timed out');
-
-        // Extract commitBlock from PlayCommitted event
-        for (const log of commitReceipt.logs) {
-          try {
-            const decoded = decodeEventLog({
-              abi: PhilipLotteryV67ABI,
-              data: log.data,
-              topics: log.topics,
-            });
-            if (decoded.eventName === 'PlayCommitted') {
-              const args = decoded.args as any;
-              commitBlock = BigInt(args.commitBlock);
-            }
-          } catch {}
-        }
-      }
-      if (commitBlock === 0n) {
-        // Fallback: read commitment from contract
-        const addr = await firstValueFrom(this.address$);
-        if (addr) {
-          const commitment = await this.lotterySvc.getCommitment(addr);
-          commitBlock = commitment.commitBlock;
-        }
-      }
-      if (commitBlock === 0n) throw new Error('Failed to read commitment');
-
-      // ─── Step 2: Wait for blocks ─────────────────────────
+      // ─── Wait for the VRF callback to assign the prize ───
+      // (the callback is Chainlink's tx — we watch PrizeAwarded(winner=you)
+      //  + the Supabase win row; both keyed by address, not the play tx)
       this.spinPhase.set('waiting');
-      this.waitingBlocks.set(0);
-      const targetBlock = commitBlock + 2n;
-
-      await new Promise<void>((resolve, reject) => {
-        let blockAttempts = 0;
-        let blockErrors = 0;
-        console.log(`[Lottery] Waiting for blocks: commitBlock=${commitBlock}, target=${targetBlock}`);
-        const blockPoll = setInterval(async () => {
-          blockAttempts++;
-          try {
-            const currentBlock = await this.lotterySvc.getBlockNumber();
-            blockErrors = 0;
-            const elapsed = Number(currentBlock - commitBlock);
-            this.waitingBlocks.set(Math.min(elapsed, 2));
-            if (blockAttempts <= 3 || blockAttempts % 10 === 0) {
-              console.log(`[Lottery] Block wait #${blockAttempts}: current=${currentBlock}, target=${targetBlock}, elapsed=${elapsed}`);
-            }
-            if (currentBlock > targetBlock) {
-              clearInterval(blockPoll);
-              console.log(`[Lottery] Block target reached after ${blockAttempts * 2}s`);
-              resolve();
-            }
-          } catch (err: any) {
-            blockErrors++;
-            if (blockAttempts <= 3 || blockAttempts % 5 === 0) {
-              console.warn(`[Lottery] Block wait #${blockAttempts} error:`, err?.message?.slice(0, 80));
-            }
-          }
-          if (blockAttempts >= 45) { // 45 * 2s = 90s timeout
-            clearInterval(blockPoll);
-            // Force proceed to reveal — block target is likely already met
-            console.warn(`[Lottery] Block wait timed out after ${blockAttempts * 2}s, proceeding to reveal`);
-            resolve();
-          }
-        }, 2000);
-      });
-
-      // ─── Step 3: Reveal ───────────────────────────────────
-      this.spinPhase.set('revealing');
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
 
-      const revealHash = await this.lotterySvc.revealPlay();
-      if (!revealHash) throw new Error('Reveal transaction failed');
-
-      // Race: receipt vs Supabase vs on-chain commitment cleared
-      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin } | { source: 'onchain' };
-      const confirmation = await Promise.race([
-        this.pollReceipt(revealHash).then(receipt => ({ source: 'receipt' as const, receipt })),
-        this.lotterySvc.watchForWinByTxHash(revealHash).then(win => ({ source: 'supabase' as const, win })),
-        this.pollCommitmentCleared(address!).then(() => ({ source: 'onchain' as const })),
-      ]) as ConfirmResult;
+      const win = await this.lotterySvc.watchForWinByAddress(address!, sinceMs, fromBlock);
 
       clearInterval(this.confirmTimer);
+      localStorage.removeItem(this.PENDING_COMMIT_KEY);
       this.hasPendingCommitment.set(false);
 
-      // Extract win data from whichever source responded first
-      let wonHashId = '';
-      let playId = 0;
-      let winRecord: LotteryWin | null = null;
-
-      if (confirmation.source === 'supabase') {
-        const win = confirmation.win;
-        wonHashId = win.hash_id;
-        playId = win.play_id;
-        winRecord = win;
-      } else if (confirmation.source === 'receipt') {
-        // Parse PrizeAwarded event from receipt
-        for (const log of confirmation.receipt.logs) {
-          try {
-            const decoded = decodeEventLog({
-              abi: PhilipLotteryV67ABI,
-              data: log.data,
-              topics: log.topics,
-            });
-            if (decoded.eventName === 'PrizeAwarded') {
-              const args = decoded.args as any;
-              wonHashId = args.hashId;
-              playId = Number(args.playId);
-            }
-          } catch {}
-        }
-      } else {
-        // On-chain commitment cleared — reveal succeeded, try to get receipt now
-        try {
-          const receipt = await this.web3Svc.l1Client.getTransactionReceipt({ hash: revealHash as `0x${string}` });
-          if (receipt) {
-            for (const log of receipt.logs) {
-              try {
-                const decoded = decodeEventLog({ abi: PhilipLotteryV67ABI, data: log.data, topics: log.topics });
-                if (decoded.eventName === 'PrizeAwarded') {
-                  const args = decoded.args as any;
-                  wonHashId = args.hashId;
-                  playId = Number(args.playId);
-                }
-              } catch {}
-            }
-          }
-        } catch {}
-      }
+      let wonHashId = win.hash_id;
+      let playId = win.play_id;
+      let winRecord: LotteryWin | null = win;
+      // tail uses `revealHash` as the result tx for the win record
+      const revealHash = win.tx_hash || playHash;
 
       // Resolve winner details BEFORE starting spin
       let winCellIndex = this.spinPath[
