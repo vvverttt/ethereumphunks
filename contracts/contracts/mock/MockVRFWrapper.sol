@@ -34,8 +34,12 @@ contract MockVRFWrapper {
         return requestPriceNative;
     }
 
-    function requestRandomWordsInNative(uint32, uint16, uint32, bytes calldata) external payable returns (uint256 requestId) {
+    function requestRandomWordsInNative(uint32, uint16, uint32, bytes calldata extraArgs) external payable returns (uint256 requestId) {
         require(msg.value >= requestPriceNative, "insufficient vrf fee");
+        // Mimic the real wrapper: the native function requires extraArgs that
+        // flag nativePayment=true, else it reverts LINKPaymentInRequestRandomWordsInNative.
+        require(extraArgs.length >= 36, "LINKPaymentInRequestRandomWordsInNative");
+        require(extraArgs[extraArgs.length - 1] != 0, "LINKPaymentInRequestRandomWordsInNative");
         requestId = ++lastRequestId;
         requester[requestId] = msg.sender;
     }

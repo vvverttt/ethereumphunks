@@ -33,6 +33,7 @@ pragma solidity 0.8.20;
 import "./EthscriptionsEscrower.sol";
 import "./interfaces/IPoints.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFV2PlusWrapper.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -185,11 +186,16 @@ contract PhilipLotteryV67_VRF is
         uint256 vrfCost = vrfWrapper.calculateRequestPriceNative(vrfCallbackGasLimit, 1);
         require(msg.value >= playPrice + vrfCost, "Insufficient payment");
 
+        // extraArgs MUST flag native payment, or the wrapper reverts
+        // LINKPaymentInRequestRandomWordsInNative() (empty bytes = LINK mode).
+        bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
+            VRFV2PlusClient.ExtraArgsV1({ nativePayment: true })
+        );
         uint256 requestId = vrfWrapper.requestRandomWordsInNative{value: vrfCost}(
             vrfCallbackGasLimit,
             vrfRequestConfirmations,
             1,
-            ""
+            extraArgs
         );
 
         pendingSpins[requestId] = PendingSpin({ player: msg.sender, pricePaid: playPrice, requestBlock: block.number });
