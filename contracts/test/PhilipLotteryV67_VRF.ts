@@ -139,6 +139,37 @@ describe('PhilipLotteryV67_VRF — VRF upgrade over live V67', function () {
     });
   });
 
+  describe('stuck-spin recovery (VRF never lands / reverts)', () => {
+    it('owner can refund a stuck spin anytime; late callback then reverts', async () => {
+      await lottery.connect(player).play({ value: playPrice + vrfCost });
+      const reqId = await vrf.lastRequestId();
+      const p0 = await ethers.provider.getBalance(player.address);
+      await expect(lottery.refundStuckSpin(reqId)).to.emit(lottery, 'SpinRefunded');
+      const p1 = await ethers.provider.getBalance(player.address);
+      expect(p1 - p0).to.equal(playPrice);
+      expect(await lottery.totalCommittedETH()).to.equal(0);
+      // pool untouched
+      expect(await lottery.poolSize()).to.equal(5);
+      // a late callback for the refunded spin is rejected
+      await expect(vrf.fulfill(reqId, 1)).to.be.reverted;
+    });
+
+    it('player can self-refund only after the delay', async () => {
+      await lottery.connect(player).play({ value: playPrice + vrfCost });
+      const reqId = await vrf.lastRequestId();
+      await expect(lottery.connect(player).refundStuckSpin(reqId)).to.be.revertedWith('Too early');
+      // mine past the delay
+      await ethers.provider.send('hardhat_mine', ['0x12d']); // 301 blocks
+      await expect(lottery.connect(player).refundStuckSpin(reqId)).to.emit(lottery, 'SpinRefunded');
+    });
+
+    it('non-owner non-player cannot refund', async () => {
+      await lottery.connect(player).play({ value: playPrice + vrfCost });
+      const reqId = await vrf.lastRequestId();
+      await expect(lottery.connect(other).refundStuckSpin(reqId)).to.be.revertedWith('Not authorized');
+    });
+  });
+
   describe('owner withdrawETH respects in-flight play funds', () => {
     it('cannot withdraw ETH committed to a pending spin', async () => {
       await lottery.connect(player).play({ value: playPrice + vrfCost });

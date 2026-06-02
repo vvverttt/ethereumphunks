@@ -86,8 +86,13 @@ contract PhilipLotteryV67_VRF is
     struct PendingSpin {
         address player;
         uint256 pricePaid;
+        uint256 requestBlock;
     }
     mapping(uint256 => PendingSpin) public pendingSpins; // requestId → spin
+
+    // Player can self-recover a stuck spin after this many blocks (~1h) if the
+    // VRF callback never lands; the owner can recover one at any time.
+    uint256 public constant STUCK_SPIN_REFUND_DELAY = 300;
 
     // ─── Events ──────────────────────────────────────────────
     event LotteryPlayed(uint256 indexed playId, address indexed player, uint256 price);
@@ -100,6 +105,7 @@ contract PhilipLotteryV67_VRF is
     event PointsAddressChanged(address indexed oldAddress, address indexed newAddress);
     event RefundEscrowed(address indexed recipient, uint256 amount);
     event SpinRequested(uint256 indexed requestId, address indexed player, uint256 price);
+    event SpinRefunded(uint256 indexed requestId, address indexed player, uint256 price);
     event VRFConfigUpdated(address wrapper, uint32 callbackGasLimit, uint16 confirmations);
 
     // initialize() is NOT redeclared — this is an UPGRADE over already-initialized
@@ -172,7 +178,7 @@ contract PhilipLotteryV67_VRF is
             ""
         );
 
-        pendingSpins[requestId] = PendingSpin({ player: msg.sender, pricePaid: playPrice });
+        pendingSpins[requestId] = PendingSpin({ player: msg.sender, pricePaid: playPrice, requestBlock: block.number });
         totalCommittedETH += playPrice; // protect this ETH from owner withdrawETH until settled
 
         uint256 totalCost = playPrice + vrfCost;
@@ -248,6 +254,40 @@ contract PhilipLotteryV67_VRF is
             pendingReturns[treasuryAddress] += spin.pricePaid;
             emit RefundEscrowed(treasuryAddress, spin.pricePaid);
         }
+    }
+
+    // =========================================================
+    // Stuck-spin recovery — if the VRF callback never lands (or
+    // reverted), the player's play price would otherwise be locked.
+    // Owner can refund at any time; the player can self-refund after
+    // STUCK_SPIN_REFUND_DELAY blocks. The ethscription is untouched
+    // (it stays in the pool); only the held play price is returned.
+    // A late callback for a refunded spin reverts ("Unknown request"),
+    // so there is no double-refund / double-award.
+    // =========================================================
+
+    function refundStuckSpin(uint256 requestId) external nonReentrant {
+        PendingSpin memory spin = pendingSpins[requestId];
+        require(spin.player != address(0), "No such spin");
+
+        if (msg.sender != owner()) {
+            require(msg.sender == spin.player, "Not authorized");
+            require(block.number > spin.requestBlock + STUCK_SPIN_REFUND_DELAY, "Too early");
+        }
+
+        delete pendingSpins[requestId];
+        if (totalCommittedETH >= spin.pricePaid) {
+            totalCommittedETH -= spin.pricePaid;
+        } else {
+            totalCommittedETH = 0;
+        }
+
+        (bool sent, ) = payable(spin.player).call{value: spin.pricePaid}("");
+        if (!sent) {
+            pendingReturns[spin.player] += spin.pricePaid;
+            emit RefundEscrowed(spin.player, spin.pricePaid);
+        }
+        emit SpinRefunded(requestId, spin.player, spin.pricePaid);
     }
 
     // =========================================================
