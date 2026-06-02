@@ -94,6 +94,11 @@ contract PhilipLotteryV67_VRF is
     bool public whitelistEnabled;
     mapping(address => bool) public whitelisted;
 
+    // ─── Optional per-wallet play cap (0 = unlimited). Counts in-flight +
+    // completed plays via playerPlays; refunded plays are decremented so they
+    // don't count against the cap. ───
+    uint256 public maxPlaysPerWallet;
+
     // Player can self-recover a stuck spin after this many blocks (~1h) if the
     // VRF callback never lands; the owner can recover one at any time.
     uint256 public constant STUCK_SPIN_REFUND_DELAY = 300;
@@ -113,6 +118,7 @@ contract PhilipLotteryV67_VRF is
     event VRFConfigUpdated(address wrapper, uint32 callbackGasLimit, uint16 confirmations);
     event WhitelistToggled(bool enabled);
     event WhitelistUpdated(address indexed account, bool allowed);
+    event MaxPlaysPerWalletSet(uint256 max);
 
     // initialize() is NOT redeclared — this is an UPGRADE over already-initialized
     // V67 proxies. State is preserved. The original V67 initializer already ran.
@@ -172,6 +178,7 @@ contract PhilipLotteryV67_VRF is
         require(msg.sender == tx.origin, "No contracts");
         require(active, "Lottery inactive");
         if (whitelistEnabled) require(whitelisted[msg.sender], "Not whitelisted");
+        if (maxPlaysPerWallet != 0) require(playerPlays[msg.sender] < maxPlaysPerWallet, "Wallet play limit reached");
         require(address(vrfWrapper) != address(0), "VRF not configured");
         require(_prizePool.length > 0, "No prizes available");
 
@@ -187,6 +194,7 @@ contract PhilipLotteryV67_VRF is
 
         pendingSpins[requestId] = PendingSpin({ player: msg.sender, pricePaid: playPrice, requestBlock: block.number });
         totalCommittedETH += playPrice; // protect this ETH from owner withdrawETH until settled
+        playerPlays[msg.sender]++;      // counts toward maxPlaysPerWallet (decremented on refund)
 
         uint256 totalCost = playPrice + vrfCost;
         if (msg.value > totalCost) {
@@ -213,7 +221,7 @@ contract PhilipLotteryV67_VRF is
 
         delete pendingSpins[_requestId];
         totalPlays++;
-        playerPlays[spin.player]++;
+        // (playerPlays was incremented at play() start — it's the per-wallet cap counter)
 
         // settle the held ETH bookkeeping
         if (totalCommittedETH >= spin.pricePaid) {
@@ -224,6 +232,7 @@ contract PhilipLotteryV67_VRF is
 
         // Defensive: if the pool emptied between request and callback, refund the player.
         if (_prizePool.length == 0) {
+            if (playerPlays[spin.player] > 0) playerPlays[spin.player]--; // refunded play frees a cap slot
             (bool r, ) = payable(spin.player).call{value: spin.pricePaid}("");
             if (!r) {
                 pendingReturns[spin.player] += spin.pricePaid;
@@ -288,6 +297,7 @@ contract PhilipLotteryV67_VRF is
         } else {
             totalCommittedETH = 0;
         }
+        if (playerPlays[spin.player] > 0) playerPlays[spin.player]--; // refunded play frees a cap slot
 
         (bool sent, ) = payable(spin.player).call{value: spin.pricePaid}("");
         if (!sent) {
@@ -390,6 +400,13 @@ contract PhilipLotteryV67_VRF is
         }
     }
 
+    /// @notice Cap total plays per wallet (0 = unlimited). Counts in-flight +
+    /// completed plays; refunded plays are not counted.
+    function setMaxPlaysPerWallet(uint256 _max) external onlyOwner {
+        maxPlaysPerWallet = _max;
+        emit MaxPlaysPerWalletSet(_max);
+    }
+
     function withdrawETH(uint256 amount, address payable to) external onlyOwner nonReentrant {
         require(to != address(0), "Invalid address");
         require(amount <= address(this).balance - totalCommittedETH, "Exceeds available balance");
@@ -476,7 +493,7 @@ contract PhilipLotteryV67_VRF is
 
     receive() external payable {}
 
-    // ─── Storage gap (V67 had [45]; VRF state = 2 slots, whitelist = 2 slots) ──
+    // ─── Storage gap (V67 had [45]; VRF = 2 slots, whitelist = 2, maxPlays = 1) ──
     // Validated SAFE by OZ validateUpgrade(V67 → V67_VRF) for both proxies.
-    uint256[41] private __gap;
+    uint256[40] private __gap;
 }

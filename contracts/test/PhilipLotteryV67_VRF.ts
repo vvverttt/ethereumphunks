@@ -207,6 +207,40 @@ describe('PhilipLotteryV67_VRF — VRF upgrade over live V67', function () {
     });
   });
 
+  describe('max plays per wallet', () => {
+    it('unlimited by default (0)', async () => {
+      expect(await lottery.maxPlaysPerWallet()).to.equal(0);
+    });
+
+    it('caps a wallet at the configured limit (in-flight counts)', async () => {
+      await lottery.setMaxPlaysPerWallet(2);
+      // two plays allowed (in-flight, before any callback)
+      await lottery.connect(player).play({ value: playPrice + vrfCost });
+      await lottery.connect(player).play({ value: playPrice + vrfCost });
+      // third blocked even though none settled yet (hard cap)
+      await expect(lottery.connect(player).play({ value: playPrice + vrfCost }))
+        .to.be.revertedWith('Wallet play limit reached');
+    });
+
+    it('a refunded play frees a cap slot', async () => {
+      await lottery.setMaxPlaysPerWallet(1);
+      await lottery.connect(player).play({ value: playPrice + vrfCost });
+      const reqId = await vrf.lastRequestId();
+      // at cap now
+      await expect(lottery.connect(player).play({ value: playPrice + vrfCost }))
+        .to.be.revertedWith('Wallet play limit reached');
+      // owner refunds the stuck spin -> frees the slot
+      await lottery.refundStuckSpin(reqId);
+      await expect(lottery.connect(player).play({ value: playPrice + vrfCost }))
+        .to.emit(lottery, 'SpinRequested');
+    });
+
+    it('setMaxPlaysPerWallet is owner-only', async () => {
+      await expect(lottery.connect(player).setMaxPlaysPerWallet(67))
+        .to.be.revertedWithCustomError(lottery, 'OwnableUnauthorizedAccount');
+    });
+  });
+
   describe('access control', () => {
     it('prize + ETH withdrawals are owner-only', async () => {
       await expect(lottery.connect(player).withdrawPrize(prizes[0]))
