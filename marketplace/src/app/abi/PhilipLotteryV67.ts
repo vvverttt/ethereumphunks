@@ -331,4 +331,76 @@ export const PhilipLotteryV67ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
+
+  // ─── V67_VRF (Chainlink VRF) additions ───────────────────
+  {
+    inputs: [],
+    name: 'play',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getVRFCost',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'vrfWrapper',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'pendingSpins',
+    outputs: [
+      { internalType: 'address', name: 'player', type: 'address' },
+      { internalType: 'uint256', name: 'pricePaid', type: 'uint256' },
+      { internalType: 'uint256', name: 'requestBlock', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: 'requestId', type: 'uint256' }],
+    name: 'refundStuckSpin',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: '_vrfWrapper', type: 'address' },
+      { internalType: 'uint32', name: '_callbackGasLimit', type: 'uint32' },
+      { internalType: 'uint16', name: '_requestConfirmations', type: 'uint16' },
+    ],
+    name: 'setVRFConfig',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'uint256', name: 'requestId', type: 'uint256' },
+      { indexed: true, internalType: 'address', name: 'player', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'price', type: 'uint256' },
+    ],
+    name: 'SpinRequested',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'uint256', name: 'requestId', type: 'uint256' },
+      { indexed: true, internalType: 'address', name: 'player', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'price', type: 'uint256' },
+    ],
+    name: 'SpinRefunded',
+    type: 'event',
+  },
 ] as const;

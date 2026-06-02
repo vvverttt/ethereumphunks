@@ -88,11 +88,11 @@
       @if (spinPhase() === 'loading') {
         Confirm in wallet...
       } @else if (spinPhase() === 'committing') {
-        Committing... {{ confirmElapsed() }}s
+        Submitting play... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'waiting') {
-        Waiting for blocks... ({{ waitingBlocks() }}/2)
+        Drawing your prize... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'revealing') {
-        Revealing... {{ confirmElapsed() }}s
+        Drawing your prize... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'confirming') {
         Confirming... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'spinning') {
