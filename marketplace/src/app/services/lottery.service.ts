@@ -103,9 +103,21 @@ export class LotteryService {
     }) as bigint;
   }
 
-  /** V67_VRF: total cost the player must send = playPrice + current VRF fee. */
+  /** V67_VRF: total cost = playPrice + estimated VRF fee.
+   *  NOTE: the wrapper prices VRF from `tx.gasprice`, which is 0 in an eth_call,
+   *  so getVRFCost() reads ~0. We therefore ESTIMATE the fee client-side:
+   *  (callbackGas + overheads) × gasPrice × (1 + 24% native premium), and take
+   *  the max of that and the on-chain read. The contract refunds any overpayment
+   *  in the same tx, so padding generously costs the player nothing. */
   async getTotalPlayCost(): Promise<{ playPrice: bigint; vrfCost: bigint; total: bigint }> {
-    const [playPrice, vrfCost] = await Promise.all([this.getPlayPrice(), this.getVRFCost()]);
+    const playPrice = await this.getPlayPrice();
+    const fee = await this.web3Svc.l1Client.estimateFeesPerGas();
+    const gasBasis = (fee.maxFeePerGas && fee.maxFeePerGas > 0n) ? fee.maxFeePerGas : parseGwei('20');
+    // 500k callback + ~105k wrapper/coordinator overhead + margin ≈ 700k gas; 24% native premium
+    const vrfEstimate = (700000n * gasBasis * 124n) / 100n;
+    let onchain = 0n;
+    try { onchain = await this.getVRFCost(); } catch {}
+    const vrfCost = onchain > vrfEstimate ? onchain : vrfEstimate;
     return { playPrice, vrfCost, total: playPrice + vrfCost };
   }
 
