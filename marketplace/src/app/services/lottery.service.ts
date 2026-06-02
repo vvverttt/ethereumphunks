@@ -561,15 +561,23 @@ export class LotteryService {
           });
           if (logs && logs.length > 0) {
             const l: any = logs[logs.length - 1];
+            const hashId = l.args.hashId as string;
+            // Resolve the real token (sha/tokenId/slug) by hashId so the win
+            // shows the correct phunk + image (not #0 / broken image).
+            let sha = '', tokenId = 0, slug = '';
+            try {
+              const eth = await this.getEthscriptionsByHashIds([hashId.toLowerCase()]);
+              if (eth[0]) { sha = eth[0].sha; tokenId = eth[0].tokenId; slug = eth[0].slug; }
+            } catch {}
             done({
               id: 0,
               contract_address: contract,
               play_id: Number(l.args.playId),
               winner: w,
-              hash_id: l.args.hashId,
-              sha: '',
-              token_id: 0,
-              collection_slug: '',
+              hash_id: hashId,
+              sha,
+              token_id: tokenId,
+              collection_slug: slug,
               transfer_status: 'transferred',
               tx_hash: l.transactionHash,
               created_at: new Date().toISOString(),
