@@ -5,11 +5,15 @@
       {{ collectionName() }}
     </a>
     <h1>{{ ownerLabel() }} {{ t('owners') }}</h1>
-    <h3><span class="highlight">{{ owners().length }}</span> {{ t('uniqueOwners') }}</h3>
+    @if (viewable()) {
+      <h3><span class="highlight">{{ owners().length }}</span> {{ t('uniqueOwners') }}</h3>
+    }
   </div>
 
   @if (loading()) {
     <p class="status">{{ t('loading') }}</p>
+  } @else if (!viewable()) {
+    <p class="status">Coming soon.</p>
   } @else {
     <div class="table-wrapper">
       <table>

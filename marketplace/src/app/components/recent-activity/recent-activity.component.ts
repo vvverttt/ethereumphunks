@@ -66,13 +66,8 @@ export class RecentActivityComponent {
       { label: this.t('auction'), value: 'AuctionBid' },
     ];
 
-    const slug = this.collection()?.slug;
-    if (!slug || this.web3Svc.isEvolveSlug(slug)) {
-      filters.push(
-        { label: this.t('mutated'), value: 'Evolved' },
-        { label: this.t('devolved'), value: 'Devolved' },
-      );
-    }
+    // Mutation/Evolve retired — does not work with the ownership model, so the
+    // Mutated/Devolved filters are no longer offered.
 
     return filters;
   });
@@ -98,8 +93,12 @@ export class RecentActivityComponent {
   };
 
   usd$ = this.store.select(dataStateSelectors.selectUsd);
-  events$ = this.store.select(dataStateSelectors.selectEvents);
-  hasMore$ = this.events$.pipe(map(events => !!events && events.length > 0 && events.length % 48 === 0));
+  private rawEvents$ = this.store.select(dataStateSelectors.selectEvents);
+  // Mutation/Evolve retired — hide Evolved/Devolved events everywhere.
+  events$ = this.rawEvents$.pipe(
+    map(events => (events ?? []).filter(e => e.type !== 'Evolved' && e.type !== 'Devolved')),
+  );
+  hasMore$ = this.rawEvents$.pipe(map(events => !!events && events.length > 0 && events.length % 48 === 0));
 
   constructor(
     private store: Store<GlobalState>,

@@ -15,10 +15,13 @@ const frontendBackupRpcUrl = (environment as any).frontendBackupRpcUrl || '';
 const receiptRpcUrl = (environment as any).receiptRpcUrl || environment.rpcHttpProvider;
 
 const RPCS: { label: string; url: string }[] = [
+  { label: 'Primary',   url: environment.rpcHttpProvider },
   { label: 'Ankr A',    url: 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8' },
   { label: 'Ankr B',    url: 'https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f' },
   { label: 'Alchemy A', url: frontendBackupRpcUrl },
   { label: 'Alchemy B', url: receiptRpcUrl },
+  { label: 'LlamaRPC',  url: 'https://eth.llamarpc.com' },
+  { label: '1rpc',      url: 'https://1rpc.io/eth' },
   { label: 'Relay',     url: `${environment.relayUrl}/rpc` },
 ].filter(r => r.url);
 

@@ -41,7 +41,7 @@ export class OwnersPageComponent implements OnInit {
     '0xd3418772623be1a3cc6b6d45cb46420cedd9154a': 'EthereumPhunks Market',
     '0xa48a43186612b179c0bc68ea34b4932549a70bfa': 'QuantumPhunks Market',
     '0x0b4a5c756c4df0a6fb399bf73ce5667a746dbfba': 'Evolve',
-    '0xb69d359eaf0db03372a587d9db6f75b0a92cb218': 'Phunk Swap',
+    '0xb69d359eaf0db03372a587d9db6f75b0a92cb218': 'Phunk Swap (discontinued)',
     '0x29b0d38112e8e743b63eb463f3351ab0f1e15977': 'Lottery',
     '0x298771ecc338de242ada11e49e2b8224c33bf620': 'Lottery 2',
     '0xc1fa86b53e8e101c93c570f276bc5177832bd031': 'Auction House',
@@ -71,7 +71,8 @@ export class OwnersPageComponent implements OnInit {
 
     const cached = this.getCache();
     if (cached) {
-      this.collections.set(cached.filter(c => !hiddenSlugs.has(c.slug)));
+      // Only ethsrocks owners are viewable for now.
+      this.collections.set(cached.filter(c => c.slug === 'ethsrocks' && !hiddenSlugs.has(c.slug)));
       this.loading.set(false);
       return;
     }
@@ -98,7 +99,8 @@ export class OwnersPageComponent implements OnInit {
       '0x0000000000000000000000000000000000000000',
     ]);
 
-    const slugs = Object.keys(this.collectionNames).filter(s => !hiddenSlugs.has(s));
+    // Only ethsrocks owners are viewable for now — don't fetch the others.
+    const slugs = Object.keys(this.collectionNames).filter(s => !hiddenSlugs.has(s) && s === 'ethsrocks');
     const result: CollectionOwners[] = [];
 
     for (const slug of slugs) {

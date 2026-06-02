@@ -57,6 +57,8 @@ export class TxHistoryComponent implements OnChanges {
   tokenSales$ = this.fetchTxHistory$.pipe(
     filter((hashId) => !!hashId),
     switchMap((hashId) => this.dataSvc.fetchSingleTokenEvents(hashId!)),
+    // Mutation/Evolve retired — hide Evolved/Devolved rows.
+    map((events) => events ? events.filter((e: any) => e.type !== 'Evolved' && e.type !== 'Devolved') : events),
     catchError(error => {
       console.error('Error fetching transaction history', error);
       return of(null);

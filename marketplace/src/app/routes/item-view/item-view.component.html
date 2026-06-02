@@ -271,34 +271,7 @@
                         }
                       }
 
-                      <!-- Evolve button (OG items) -->
-                      @if (
-                        (globalConfig$ | async)?.showMutate !== false &&
-                        web3Svc.isOgEvolveSlug(phunk.slug) &&
-                        isRegisteredPair() &&
-                        !phunk.isEscrowed &&
-                        (owner | lowercase) === (address | lowercase)
-                      ) {
-                        <button class="evolve" (click)="submitEvolve(phunk)">
-                          <span>{{ t('mutate') }} @if (evolveCost() !== null && evolveCost() !== '0') { ({{ evolveCost() }} ETH) }</span>
-                          <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'evolvePhunk' }" />
-                        </button>
-                      }
-
-                      <!-- Devolve button (Quantum items) -->
-                      @if (
-                        (globalConfig$ | async)?.showDevolve !== false &&
-                        web3Svc.isEvolveSlug(phunk.slug) &&
-                        !web3Svc.isOgEvolveSlug(phunk.slug) &&
-                        isRegisteredPair() &&
-                        !phunk.isEscrowed &&
-                        (owner | lowercase) === (address | lowercase)
-                      ) {
-                        <button class="devolve" (click)="submitDevolve(phunk)">
-                          <span>{{ t('devolve') }}</span>
-                          <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'devolvePhunk' }" />
-                        </button>
-                      }
+                      <!-- Mutate/Devolve retired: does not work with the ownership model -->
                     }
                   } @else {
                     <!-- Connect wallet -->

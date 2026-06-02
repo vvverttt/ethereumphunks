@@ -27,9 +27,6 @@
     @if ((config$ | async)?.showAuction !== false) {
       {{ t('auction') }}: <a [href]="explorerUrl + '/address/' + auction" target="_blank"><app-address [address]="auction" /></a><br />
     }
-    @if ((config$ | async)?.showMutate !== false || (config$ | async)?.showDevolve !== false) {
-      {{ t('mutation') }}: <a [href]="explorerUrl + '/address/' + mutation" target="_blank"><app-address [address]="mutation" /></a><br />
-    }
   </p>
 
   <p>{{ t('riskDisclaimer') }}</p>

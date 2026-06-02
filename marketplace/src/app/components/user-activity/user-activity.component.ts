@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { TimeagoModule } from 'ngx-timeago';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
-import { switchMap } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -38,7 +38,9 @@ export class UserActivityComponent {
 
   address = input.required<string>();
   events$ = toObservable(this.address).pipe(
-    switchMap((address: string) => this.dataSvc.fetchUserEvents(address, 10))
+    switchMap((address: string) => this.dataSvc.fetchUserEvents(address, 10)),
+    // Mutation/Evolve retired — hide Evolved/Devolved events.
+    map((events: any) => events ? events.filter((e: any) => e.type !== 'Evolved' && e.type !== 'Devolved') : events),
   )
 
   labels: any = {

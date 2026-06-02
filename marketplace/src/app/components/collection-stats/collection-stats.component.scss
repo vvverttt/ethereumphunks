@@ -79,4 +79,10 @@
   &:hover {
     background: rgba(var(--pink), .85);
   }
+
+  &.disabled {
+    opacity: .4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }

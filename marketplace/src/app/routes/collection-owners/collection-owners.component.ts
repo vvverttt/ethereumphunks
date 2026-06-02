@@ -22,7 +22,7 @@ const CONTRACT_NAMES: Record<string, string> = {
   '0xd3418772623be1a3cc6b6d45cb46420cedd9154a': 'EtherPhunks Market',
   '0xa48a43186612b179c0bc68ea34b4932549a70bfa': 'QuantumPhunks Market',
   '0x0b4a5c756c4df0a6fb399bf73ce5667a746dbfba': 'Evolve',
-  '0xb69d359eaf0db03372a587d9db6f75b0a92cb218': 'Phunk Swap',
+  '0xb69d359eaf0db03372a587d9db6f75b0a92cb218': 'Phunk Swap (discontinued)',
   '0x29b0d38112e8e743b63eb463f3351ab0f1e15977': 'Lottery',
   '0x298771ecc338de242ada11e49e2b8224c33bf620': 'Lottery 2',
   '0xc1fa86b53e8e101c93c570f276bc5177832bd031': 'Auction House',
@@ -49,6 +49,7 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
 export class CollectionOwnersComponent implements OnInit {
   owners = signal<OwnerRow[]>([]);
   loading = signal(true);
+  viewable = signal(true);
   collectionName = signal('');
   ownerLabel = signal('Phunk');
   slug = '';
@@ -83,6 +84,16 @@ export class CollectionOwnersComponent implements OnInit {
     const collections = await firstValueFrom(this.store.select(dataStateSelectors.selectCollections));
     const col = collections?.find(c => c.slug === this.slug);
     this.collectionName.set(col?.name || this.slug);
+
+    // Owners list is only viewable for ethsrocks for now; never fetch the
+    // breakdown for other collections so the data is not exposed client-side.
+    if (this.slug !== 'ethsrocks') {
+      this.viewable.set(false);
+      this.owners.set([]);
+      this.loading.set(false);
+      return;
+    }
+    this.viewable.set(true);
 
     const items: { owner: string }[] = [];
     let offset = 0;
