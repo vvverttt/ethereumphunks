@@ -90,6 +90,10 @@ contract PhilipLotteryV67_VRF is
     }
     mapping(uint256 => PendingSpin) public pendingSpins; // requestId → spin
 
+    // ─── Optional whitelist (owner-toggled; off by default) ───
+    bool public whitelistEnabled;
+    mapping(address => bool) public whitelisted;
+
     // Player can self-recover a stuck spin after this many blocks (~1h) if the
     // VRF callback never lands; the owner can recover one at any time.
     uint256 public constant STUCK_SPIN_REFUND_DELAY = 300;
@@ -107,6 +111,8 @@ contract PhilipLotteryV67_VRF is
     event SpinRequested(uint256 indexed requestId, address indexed player, uint256 price);
     event SpinRefunded(uint256 indexed requestId, address indexed player, uint256 price);
     event VRFConfigUpdated(address wrapper, uint32 callbackGasLimit, uint16 confirmations);
+    event WhitelistToggled(bool enabled);
+    event WhitelistUpdated(address indexed account, bool allowed);
 
     // initialize() is NOT redeclared — this is an UPGRADE over already-initialized
     // V67 proxies. State is preserved. The original V67 initializer already ran.
@@ -165,6 +171,7 @@ contract PhilipLotteryV67_VRF is
     function play() external payable nonReentrant whenNotPaused {
         require(msg.sender == tx.origin, "No contracts");
         require(active, "Lottery inactive");
+        if (whitelistEnabled) require(whitelisted[msg.sender], "Not whitelisted");
         require(address(vrfWrapper) != address(0), "VRF not configured");
         require(_prizePool.length > 0, "No prizes available");
 
@@ -370,6 +377,19 @@ contract PhilipLotteryV67_VRF is
         emit VRFConfigUpdated(_vrfWrapper, _callbackGasLimit, _requestConfirmations);
     }
 
+    // ─── Whitelist controls (optional gating; off by default) ───
+    function setWhitelistEnabled(bool _enabled) external onlyOwner {
+        whitelistEnabled = _enabled;
+        emit WhitelistToggled(_enabled);
+    }
+
+    function setWhitelist(address[] calldata accounts, bool allowed) external onlyOwner {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            whitelisted[accounts[i]] = allowed;
+            emit WhitelistUpdated(accounts[i], allowed);
+        }
+    }
+
     function withdrawETH(uint256 amount, address payable to) external onlyOwner nonReentrant {
         require(to != address(0), "Invalid address");
         require(amount <= address(this).balance - totalCommittedETH, "Exceeds available balance");
@@ -456,7 +476,7 @@ contract PhilipLotteryV67_VRF is
 
     receive() external payable {}
 
-    // ─── Storage gap (V67 had [45]; new VRF state consumes slots) ──
-    // Adjust this number until OZ validateUpgrade(V67 → V67_VRF) passes.
-    uint256[43] private __gap;
+    // ─── Storage gap (V67 had [45]; VRF state = 2 slots, whitelist = 2 slots) ──
+    // Validated SAFE by OZ validateUpgrade(V67 → V67_VRF) for both proxies.
+    uint256[41] private __gap;
 }

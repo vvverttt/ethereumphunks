@@ -179,6 +179,34 @@ describe('PhilipLotteryV67_VRF — VRF upgrade over live V67', function () {
     });
   });
 
+  describe('whitelist toggle', () => {
+    it('off by default — anyone can play', async () => {
+      expect(await lottery.whitelistEnabled()).to.equal(false);
+      await expect(lottery.connect(player).play({ value: playPrice + vrfCost }))
+        .to.emit(lottery, 'SpinRequested');
+    });
+
+    it('when enabled, only whitelisted addresses can play', async () => {
+      await lottery.setWhitelistEnabled(true);
+      await expect(lottery.connect(player).play({ value: playPrice + vrfCost }))
+        .to.be.revertedWith('Not whitelisted');
+      await lottery.setWhitelist([player.address], true);
+      await expect(lottery.connect(player).play({ value: playPrice + vrfCost }))
+        .to.emit(lottery, 'SpinRequested');
+      // removing from whitelist blocks again
+      await lottery.setWhitelist([player.address], false);
+      await expect(lottery.connect(other).play({ value: playPrice + vrfCost }))
+        .to.be.revertedWith('Not whitelisted');
+    });
+
+    it('whitelist controls are owner-only', async () => {
+      await expect(lottery.connect(player).setWhitelistEnabled(true))
+        .to.be.revertedWithCustomError(lottery, 'OwnableUnauthorizedAccount');
+      await expect(lottery.connect(player).setWhitelist([player.address], true))
+        .to.be.revertedWithCustomError(lottery, 'OwnableUnauthorizedAccount');
+    });
+  });
+
   describe('access control', () => {
     it('prize + ETH withdrawals are owner-only', async () => {
       await expect(lottery.connect(player).withdrawPrize(prizes[0]))
