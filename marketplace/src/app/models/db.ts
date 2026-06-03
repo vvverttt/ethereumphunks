@@ -61,6 +61,8 @@ export interface Bid {
   hashId: string
   value: string
   txHash?: string
+  ownerAddress?: string | null
+  acceptedBlock?: number | null
 }
 export interface Event {
   blockHash: string

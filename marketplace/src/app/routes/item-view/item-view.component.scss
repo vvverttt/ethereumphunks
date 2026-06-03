@@ -312,6 +312,14 @@ app-phunk-billboard {
       font-weight: 600;
       font-size: 1.4rem;
     }
+
+    // Subtle, low-emphasis flow note so it informs without overpowering the UI.
+    .bid-flow-note {
+      margin-top: .8rem;
+      font-size: 1.1rem;
+      line-height: 1.45;
+      color: rgba(var(--text-color), .5);
+    }
   }
 
   .actions-wrapper {

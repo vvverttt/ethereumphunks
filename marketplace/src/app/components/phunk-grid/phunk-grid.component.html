@@ -62,6 +62,12 @@
           marketType === 'bids' ||
           ((marketType === 'owned' || marketType === 'all') && (viewType === 'market' || viewType === 'owned'))
         ) && phunk.bid
+      "
+      [class.dead-bid]="
+        (
+          marketType === 'bids' ||
+          ((marketType === 'owned' || marketType === 'all') && (viewType === 'market' || viewType === 'owned'))
+        ) && phunk.bid && isDeadBid(phunk)
       ">
 
       @if (selectable) {
@@ -120,6 +126,9 @@
                   {{ (bid.value | weiToEth) }}Ξ<br />
                   ${{ ((bid.value | weiToEth) * ((usd$ | async) || 0)) | formatCash }}
                 </p>
+                @if (isDeadBid(phunk)) {
+                  <p class="dead-bid-label">Dead bid</p>
+                }
               }
             }
           </div>

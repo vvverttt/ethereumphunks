@@ -151,6 +151,25 @@ export class PhunkGridComponent implements OnChanges {
     this.selectedChange.emit(this.selected);
   }
 
+  /**
+   * A bid is "dead" when it was placed against an owner who no longer holds the item
+   * (the item was sold/transferred after the bid). It can no longer be accepted — the
+   * bidder can only withdraw it — so it's shown greyed-out in the bids grid.
+   */
+  isDeadBid(phunk: Phunk): boolean {
+    const bid = phunk?.bid;
+    if (!bid || !bid.ownerAddress) return false;
+    // When the item sits in the market escrow, owner == market address and the true
+    // owner is prevOwner. Detect escrow by address directly (the bids grid data doesn't
+    // always set phunk.isEscrowed) to avoid false "dead" flags on live escrowed bids.
+    const owner = (phunk.owner || '').toLowerCase();
+    const market = (this.escrowAddress || '').toLowerCase();
+    const isEscrowed = phunk.isEscrowed === true || (!!market && owner === market);
+    const effectiveOwner = (isEscrowed ? (phunk.prevOwner || '') : (phunk.owner || '')).toLowerCase();
+    if (!effectiveOwner) return false;
+    return effectiveOwner !== bid.ownerAddress.toLowerCase();
+  }
+
   onIntersection($event: IntersectionObserverEntry[]): void {
     if (!this.observe || !this.phunkData) return;
   }

@@ -165,7 +165,7 @@ contract EtherPhunksMarketV3_1 is
     function _buyPhunk(
         bytes32 phunkId,
         uint minSalePriceInWei
-    ) internal {
+    ) internal virtual {
         Offer memory offer = phunksOfferedForSale[phunkId];
 
         require(

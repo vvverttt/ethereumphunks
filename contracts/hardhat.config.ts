@@ -6,6 +6,10 @@ import '@openzeppelin/hardhat-upgrades';
 
 import dotenv from 'dotenv';
 dotenv.config();
+import path from 'path';
+
+const WIN_TMP = process.env.TEMP || process.env.TMP || 'C:\\\\tmp';
+const HH_WORKDIR = path.join(WIN_TMP, 'ethereumphunks-hardhat');
 
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
@@ -30,13 +34,32 @@ const config: HardhatUserConfig = {
           viaIR: true,
         },
       },
+      'contracts/QuantumPhunks.sol': {
+        version: '0.8.20',
+        settings: {
+          evmVersion: 'paris',
+          optimizer: { enabled: true, runs: 1 },
+          viaIR: true,
+        },
+      },
+      'contracts/QuantumPhunksLaunch.sol': {
+        version: '0.8.20',
+        settings: {
+          evmVersion: 'paris',
+          optimizer: { enabled: true, runs: 1 },
+          viaIR: true,
+        },
+      },
     },
   },
   paths: {
-    sources: './contracts/V2MainnetUpgrade',
+    // Compile all contracts (including new CARL core contracts under `contracts/`),
+    // while keeping existing V2MainnetUpgrade paths intact.
+    sources: './contracts',
     tests: './test',
-    cache: './cache',
-    artifacts: './artifacts',
+    // Avoid OneDrive/Windows file-lock issues (OZ upgrades writes a validations lockfile).
+    cache: path.join(HH_WORKDIR, 'cache'),
+    artifacts: path.join(HH_WORKDIR, 'artifacts'),
   },
   networks: {
     // hardhat: {
@@ -48,11 +71,22 @@ const config: HardhatUserConfig = {
     //   },
     // },
     mainnet: {
-      url: 'https://ethereum-rpc.publicnode.com',
+      url: process.env.MAINNET_RPC_URL || 'https://ethereum-rpc.publicnode.com',
       chainId: 1,
-      from: process.env.MAINNET_ADDRESS as string,
-      accounts: [`0x${process.env.MAINNET_PK}`],
-      gasPrice: 1_000_000_000, // 1 gwei
+      from: (process.env.MAINNET_ADDRESS || undefined) as any,
+      // Allow `npx hardhat compile` to run even when no deploy key is configured.
+      accounts:
+        process.env.MAINNET_PK && process.env.MAINNET_PK.length === 64
+          ? [`0x${process.env.MAINNET_PK}`]
+          : [],
+      gasPrice: 500_000_000, // 0.5 gwei (well above current base fee; keeps deploy cost low)
+    },
+    // Frame.sh local RPC — signs via MetaMask/Ledger connected to Frame.
+    // No private key ever touches this machine's disk or shell.
+    // Use:  npx hardhat run scripts/deploy-quantumphunks-launch.ts --network mainnetFrame
+    mainnetFrame: {
+      url: 'http://127.0.0.1:1248',
+      chainId: 1,
     },
     ...(process.env.TREASURY_PK ? {
       treasury: {

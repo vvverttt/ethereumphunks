@@ -89,6 +89,11 @@
                   @if (bidNextStep(phunk, (walletAddress$ | async)); as step) {
                     <p class="bid-next-step">{{ step }}</p>
                   }
+
+                  <!-- Subtle, always-visible flow so the bidder knows their funds are safe -->
+                  <p class="bid-flow-note">
+                    Bid ETH is held in the marketplace contract — auto-refunded if the item sells, and withdrawable anytime if it's transferred away or before the bid is accepted.
+                  </p>
                 }
               </div>
 
@@ -523,7 +528,7 @@
       <button type="button" class="submit" (click)="submitBid(phunk)">Place Bid</button>
     </div>
 
-    <p class="small">Bids are non-custodial: your ETH stays locked in the marketplace contract until the owner accepts and you confirm after a 5-block cooldown.</p>
+    <p class="small">Bids are non-custodial: your ETH stays locked in the marketplace contract until the owner accepts and you confirm (5-block cooldown). If the item sells, you're auto-refunded; if it's transferred away, you can withdraw anytime.</p>
   </form>
 </ng-template>
 
