@@ -697,13 +697,30 @@ export class StorageService implements OnModuleInit {
    * @param points - The new points value
    */
   async updateUserPoints(address: string, points: number): Promise<void> {
-    const response: db.UserResponse = await this.supabase
-      .from('users' + this.suffix)
-      .update({ points })
-      .eq('address', address.toLowerCase());
+    const addr = address.toLowerCase();
 
-    const { error } = response;
-    if (error) throw error;
+    // Insert-if-missing (was UPDATE-only). Wallets with no prior row — e.g. buyers
+    // who only used external markets — never appeared on the leaderboard before.
+    // Select first so we don't reset createdAt on existing rows.
+    const { data: existing, error: selErr } = await this.supabase
+      .from('users' + this.suffix)
+      .select('address')
+      .eq('address', addr)
+      .maybeSingle();
+    if (selErr) throw selErr;
+
+    if (existing) {
+      const { error } = await this.supabase
+        .from('users' + this.suffix)
+        .update({ points })
+        .eq('address', addr);
+      if (error) throw error;
+    } else {
+      const { error } = await this.supabase
+        .from('users' + this.suffix)
+        .insert({ address: addr, points, createdAt: new Date() });
+      if (error) throw error;
+    }
   }
 
   /**
