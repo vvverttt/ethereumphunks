@@ -71,8 +71,7 @@ export class OwnersPageComponent implements OnInit {
 
     const cached = this.getCache();
     if (cached) {
-      // Only ethsrocks owners are viewable for now.
-      this.collections.set(cached.filter(c => c.slug === 'ethsrocks' && !hiddenSlugs.has(c.slug)));
+      this.collections.set(cached.filter(c => !hiddenSlugs.has(c.slug)));
       this.loading.set(false);
       return;
     }
@@ -99,8 +98,7 @@ export class OwnersPageComponent implements OnInit {
       '0x0000000000000000000000000000000000000000',
     ]);
 
-    // Only ethsrocks owners are viewable for now — don't fetch the others.
-    const slugs = Object.keys(this.collectionNames).filter(s => !hiddenSlugs.has(s) && s === 'ethsrocks');
+    const slugs = Object.keys(this.collectionNames).filter(s => !hiddenSlugs.has(s));
     const result: CollectionOwners[] = [];
 
     for (const slug of slugs) {

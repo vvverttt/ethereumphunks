@@ -49,7 +49,6 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
 export class CollectionOwnersComponent implements OnInit {
   owners = signal<OwnerRow[]>([]);
   loading = signal(true);
-  viewable = signal(true);
   collectionName = signal('');
   ownerLabel = signal('Phunk');
   slug = '';
@@ -84,16 +83,6 @@ export class CollectionOwnersComponent implements OnInit {
     const collections = await firstValueFrom(this.store.select(dataStateSelectors.selectCollections));
     const col = collections?.find(c => c.slug === this.slug);
     this.collectionName.set(col?.name || this.slug);
-
-    // Owners list is only viewable for ethsrocks for now; never fetch the
-    // breakdown for other collections so the data is not exposed client-side.
-    if (this.slug !== 'ethsrocks') {
-      this.viewable.set(false);
-      this.owners.set([]);
-      this.loading.set(false);
-      return;
-    }
-    this.viewable.set(true);
 
     const items: { owner: string }[] = [];
     let offset = 0;
