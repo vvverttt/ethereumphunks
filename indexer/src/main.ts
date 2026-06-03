@@ -67,6 +67,20 @@ import { AppModule } from '@/app.module';
 
 import { CustomLogger } from '@/modules/shared/services/logger.service';
 
+// Global safety net: a long-running indexer must never be killed by a single stray
+// promise rejection / async throw (Node 22 exits the process on unhandled rejections by
+// default — that was the recurring "Exited with status 1" restart loop on Render). Log and
+// keep going; the block watcher is idempotent and will continue with the next block.
+process.on('unhandledRejection', (reason: any) => {
+  Logger.error(
+    `Unhandled promise rejection: ${reason?.stack || reason?.message || JSON.stringify(reason)}`,
+    'Process',
+  );
+});
+process.on('uncaughtException', (err: any) => {
+  Logger.error(`Uncaught exception: ${err?.stack || err?.message || err}`, 'Process');
+});
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 

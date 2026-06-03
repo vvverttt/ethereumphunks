@@ -39,13 +39,18 @@ export class NotifsService implements OnModuleInit {
       this.handleBidNotification(event);
     });
 
-    // Fetch USD price every 10 minutes
-    this.fetchUSDPrice().then(price => {
-      this.usdPrice = price;
-      setInterval(async () => {
+    // Fetch USD price every 10 minutes. Price-API rate limits (429) must NOT crash the
+    // indexer — tolerate failures and keep the last known price.
+    this.fetchUSDPrice()
+      .then(price => { this.usdPrice = price; })
+      .catch(() => {});
+    setInterval(async () => {
+      try {
         this.usdPrice = await this.fetchUSDPrice();
-      }, 10 * 60 * 1000);
-    });
+      } catch {
+        // keep previous usdPrice on transient API failure
+      }
+    }, 10 * 60 * 1000);
   }
 
   /**
