@@ -32,11 +32,16 @@ export class NotifsService implements OnModuleInit {
 
   async onModuleInit() {
     this.storageSvc.listenSales().subscribe(event => {
-      this.handleNotification(event);
+      // Notifications must never crash the indexer or spam unhandled rejections.
+      this.handleNotification(event).catch(err =>
+        console.log('[Notifs] sale notification failed (ignored):', err?.message || err)
+      );
     });
 
     this.storageSvc.listenBids().subscribe(event => {
-      this.handleBidNotification(event);
+      this.handleBidNotification(event).catch(err =>
+        console.log('[Notifs] bid notification failed (ignored):', err?.message || err)
+      );
     });
 
     // Fetch USD price every 10 minutes. Price-API rate limits (429) must NOT crash the

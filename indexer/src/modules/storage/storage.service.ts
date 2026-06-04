@@ -1080,9 +1080,6 @@ export class StorageService implements OnModuleInit {
           name,
           singleName,
           notifications
-        ),
-        attributes_new!inner(
-          values
         )
       `)
       .eq('hashId', hashId)
@@ -1094,7 +1091,24 @@ export class StorageService implements OnModuleInit {
     if (!data) return null;
 
     const collection = data[`collections${this.suffix}`];
-    const attributes = data['attributes_new'];
+
+    // Attributes live in attributes_new keyed by (slug, sha). There is no PostgREST
+    // foreign-key relationship between ethscriptions and attributes_new, so embedding
+    // it errors with "Could not find a relationship ... in the schema cache". Fetch it
+    // separately; a missing row just means no attributes (notification is skipped).
+    let attributes = null;
+    const sha = (data as any).sha;
+    const slug = (data as any).slug;
+    if (sha) {
+      let attrQuery = this.supabase
+        .from('attributes_new')
+        .select('values')
+        .eq('sha', sha);
+      if (slug) attrQuery = attrQuery.eq('slug', slug);
+
+      const { data: attrData } = await attrQuery.limit(1);
+      attributes = attrData?.[0] || null;
+    }
 
     return {
       ethscription: data as unknown as db.Ethscription,
