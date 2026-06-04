@@ -55,6 +55,12 @@ export class PhunkGridComponent implements OnChanges {
   @ViewChildren('phunkCheck') phunkCheck!: QueryList<ElementRef<HTMLInputElement>>;
 
   escrowAddress = environment.marketAddress;
+  // Any marketplace contract that holds escrowed items (real owner = prevOwner):
+  // our V3 market AND the old EtherPhunks market (where OG items get listed).
+  private escrowAddresses = new Set<string>(
+    [environment.marketAddress, ...(((environment as any).oldMarketAddresses) || [])]
+      .filter(Boolean).map((a: string) => a.toLowerCase())
+  );
 
   @Input() marketType!: MarketType;
   @Input() activeSort!: Sort['value'];
@@ -163,8 +169,9 @@ export class PhunkGridComponent implements OnChanges {
     // owner is prevOwner. Detect escrow by address directly (the bids grid data doesn't
     // always set phunk.isEscrowed) to avoid false "dead" flags on live escrowed bids.
     const owner = (phunk.owner || '').toLowerCase();
-    const market = (this.escrowAddress || '').toLowerCase();
-    const isEscrowed = phunk.isEscrowed === true || (!!market && owner === market);
+    // Escrowed (real owner = prevOwner) if held by any marketplace contract — our V3
+    // market OR the old EtherPhunks market (OG items list there).
+    const isEscrowed = phunk.isEscrowed === true || this.escrowAddresses.has(owner);
     const effectiveOwner = (isEscrowed ? (phunk.prevOwner || '') : (phunk.owner || '')).toLowerCase();
     if (!effectiveOwner) return false;
     return effectiveOwner !== bid.ownerAddress.toLowerCase();
