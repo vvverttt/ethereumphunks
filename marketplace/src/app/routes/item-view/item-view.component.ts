@@ -101,6 +101,7 @@ export class ItemViewComponent {
   explorerUrl = environment.explorerUrl;
   externalMarketUrl = environment.externalMarketUrl;
   escrowAddress = environment.marketAddress;
+  oldMarketAddresses: string[] = (((environment as any).oldMarketAddresses) || []).map((a: string) => a.toLowerCase());
 
   actionsState = signal<ActionsState>({
     sell: false,
@@ -550,6 +551,12 @@ export class ItemViewComponent {
     return phunk.owner!;
   }
 
+  /** True if the item is currently held by the old EtherPhunks market (listed there) —
+   *  the owner must withdraw it from there before they can accept a bid on this market. */
+  isOnOldMarket(phunk: Phunk): boolean {
+    return this.oldMarketAddresses.includes((phunk?.owner || '').toLowerCase());
+  }
+
   /** Role-aware "what happens next" guidance for the current bid, shown on the
    *  item page so both the owner and the bidder always know the next step. */
   bidNextStep(phunk: Phunk, address: string | null | undefined): string | null {
@@ -560,7 +567,12 @@ export class ItemViewComponent {
     const isOwner = this.bidOwner(phunk).toLowerCase() === a;
 
     if (!bid.accepted) {
-      if (isOwner) return 'Step 2 of 3: Accept this bid to start the sale (escrows + accepts in one tx).';
+      if (isOwner) {
+        if (this.isOnOldMarket(phunk)) {
+          return 'Step 2 of 3: This item is listed on the EtherPhunks market — withdraw it from there first, then accept the bid here (that escrows it and accepts in one tx).';
+        }
+        return 'Step 2 of 3: Accept this bid to start the sale (escrows + accepts in one tx).';
+      }
       if (isBidder) return 'Step 1 of 3 done. Waiting for the owner to accept your bid.';
       return null; // other viewers: the bid line + Place Bid (to outbid) is enough
     }
