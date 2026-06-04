@@ -62,6 +62,7 @@ export class HeaderComponent {
   toggleMenu$ = new Subject<void>();
 
   isStandaloneMarket = environment.standalone;
+  defaultCollection = environment.defaultCollection || 'cryptophunksv67';
 
   async openDystolabz(event: Event): Promise<void> {
     event.stopPropagation();

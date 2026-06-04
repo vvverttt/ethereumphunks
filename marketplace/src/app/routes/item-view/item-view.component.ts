@@ -573,7 +573,12 @@ export class ItemViewComponent {
         }
         return 'Step 2 of 3: Accept this bid to start the sale (escrows + accepts in one tx).';
       }
-      if (isBidder) return 'Step 1 of 3 done. Waiting for the owner to accept your bid.';
+      if (isBidder) {
+        if (this.isOnOldMarket(phunk)) {
+          return 'Step 1 of 3 done. This item is on the EtherPhunks market — the owner withdraws it there first, then accepts your bid here. Your ETH stays locked until then (withdrawable anytime).';
+        }
+        return 'Step 1 of 3 done. Waiting for the owner to accept your bid.';
+      }
       return null; // other viewers: the bid line + Place Bid (to outbid) is enough
     }
     // accepted — cooldown / confirm phase

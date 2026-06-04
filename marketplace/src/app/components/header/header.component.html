@@ -1,14 +1,14 @@
 <div class="inner" [class.menu-active]="menuActive$ | async" [class.connected]="connected$ | async">
 
   @if (isStandaloneMarket) {
-    <a [routerLink]="['/ethsrocks']" class="logo standalone">
+    <a [routerLink]="['/' + defaultCollection]" class="logo standalone">
       <img
         [lazyLoad]="(activeCollection$ | async)?.image || 'assets/loadingphunk.png'"
         [defaultImage]="'assets/loadingphunk.png'"
         alt="logo" />
     </a>
   } @else {
-    <a [routerLink]="['/ethsrocks']" class="logo">
+    <a [routerLink]="['/' + defaultCollection]" class="logo">
       <ng-template [ngTemplateOutlet]="logo" />
     </a>
   }

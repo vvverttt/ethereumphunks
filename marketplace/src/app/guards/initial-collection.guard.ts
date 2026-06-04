@@ -3,6 +3,8 @@ import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTr
 
 import { Observable, of } from 'rxjs';
 
+import { environment } from 'src/environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -16,11 +18,12 @@ export class InitialCollectionGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<boolean | UrlTree> {
     const marketType = route.paramMap.get('marketType');
+    const slug = environment.defaultCollection || 'cryptophunksv67';
 
     return of(
       marketType
-        ? this.router.createUrlTree(['/ethsrocks/market', marketType])
-        : this.router.createUrlTree(['/ethsrocks'])
+        ? this.router.createUrlTree(['/' + slug + '/market', marketType])
+        : this.router.createUrlTree(['/' + slug])
     );
   }
 }
