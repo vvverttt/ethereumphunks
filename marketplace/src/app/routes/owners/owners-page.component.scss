@@ -110,6 +110,13 @@ tbody {
   color: rgba(var(--text-color), 1);
 }
 
+// Obscure contract names for non-ethsrocks collections (hide the flow until release).
+.blurred {
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+}
+
 .count {
   font-weight: 700;
 }

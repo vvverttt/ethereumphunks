@@ -30,7 +30,7 @@
                   <app-address [address]="owner.address" />
                 </a>
               </td>
-              <td class="contract">{{ getContractName(owner.address) }}</td>
+              <td class="contract" [class.blurred]="slug !== 'ethsrocks'">{{ getContractName(owner.address) }}</td>
               <td class="count">{{ owner.count }}</td>
             </tr>
           }
