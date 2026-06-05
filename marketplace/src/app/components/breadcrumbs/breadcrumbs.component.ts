@@ -9,6 +9,7 @@ import { Phunk } from '@/models/db';
 
 import { filter, tap } from 'rxjs';
 import { EthscriptionService } from '@/services/ethscription.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   standalone: true,
@@ -49,7 +50,8 @@ export class BreadcrumbsComponent {
   constructor(
     private ethscriptionSvc: EthscriptionService,
     public location: Location,
-    public dataSvc: DataService
+    public dataSvc: DataService,
+    public preferences: PhunkPreferencesService,
   ) {
     effect(() => {
       if (!this.phunk()) return;
@@ -68,6 +70,10 @@ export class BreadcrumbsComponent {
       tap((v) => { if (v) this.transparentCheck.setValue(false, { emitEvent: false }); }),
       tap(() => this.paintCanvas(this.phunk()!))
     ).subscribe();
+  }
+
+  t(key: string): string {
+    return this.preferences.t(key);
   }
 
   async paintCanvas(phunk: Phunk): Promise<void> {
@@ -161,59 +167,129 @@ export class BreadcrumbsComponent {
 
     const phunk = this.phunk()!;
     const displayId = phunk.slug === 'ethsrocks' ? '-' + Math.abs(phunk.tokenId) : Math.abs(phunk.tokenId);
-    const name = phunk.collection?.singleName?.replace(' ', '-') + '#' + displayId;
-    const link = document.createElement('a');
+    const name = (phunk.collection?.singleName?.replace(/ /g, '-') || 'item') + '#' + displayId;
 
-    // Check if the original image is animated (GIF or APNG) — canvas loses animation
+    // Get the original (decoded) image so we can detect animation / true aspect ratio.
     const decodedData = await this.getPunkImage(phunk);
-    const isGif = decodedData?.startsWith('data:image/gif');
+    const isGif = !!decodedData?.startsWith('data:image/gif');
     const isAnimatedPng = this.isApng(decodedData);
+    // EthsRocks (and any non-phunk item) aren't square and aren't customizable —
+    // they must keep their native aspect ratio instead of the square 24x24 canvas.
+    const keepAspect = !phunk.isSupported || phunk.slug === 'ethsrocks';
 
-    if (isAnimatedPng && decodedData) {
-      // Upscale APNG with background to match normal download size
-      const { upscaleApng } = await import('@/utils/apng');
-      const base64 = decodedData.split(',')[1];
-      const binary = atob(base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    let blob: Blob | null = null;
+    let ext = 'png';
 
-      const transparent = this.transparentCheck.value;
-      const gba = this.gbaCheck.value;
-      const theme = localStorage.getItem('EtherPhunks_theme');
-      const bgColor = gba ? '#9bbc0f' : transparent ? null : (theme === 'light' ? '#FFDF00' : '#C3FF00');
+    try {
+      if (isAnimatedPng && decodedData) {
+        // Animated PNG: upscale while keeping every frame (stays animated).
+        const { upscaleApng } = await import('@/utils/apng');
+        const base64 = decodedData.split(',')[1];
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-      const blobUrl = await upscaleApng(bytes.buffer, this.width, this.height, bgColor);
-      if (window.innerWidth > 800) link.download = name + '.png';
-      link.target = '_blank';
-      link.href = blobUrl;
-    } else if (isGif && decodedData) {
-      if (window.innerWidth > 800) link.download = name + '.gif';
-      link.target = '_blank';
-      link.href = decodedData;
-    } else {
-      if (window.innerWidth > 800) link.download = name + '.png';
-      link.target = '_blank';
-      link.href = this.pfp.nativeElement.toDataURL('image/png;base64');
+        const transparent = this.transparentCheck.value;
+        const gba = this.gbaCheck.value;
+        const theme = localStorage.getItem('EtherPhunks_theme');
+        const bgColor = gba ? '#9bbc0f' : transparent ? null : (theme === 'light' ? '#FFDF00' : '#C3FF00');
+
+        const blobUrl = await upscaleApng(bytes.buffer, this.width, this.height, bgColor);
+        blob = await (await fetch(blobUrl)).blob();
+        ext = 'png';
+      } else if (isGif && decodedData) {
+        // GIF: download the original bytes untouched so it stays animated.
+        blob = await (await fetch(decodedData)).blob();
+        ext = 'gif';
+      } else if (keepAspect && decodedData) {
+        // Rocks etc.: redraw preserving the source aspect ratio (no squish).
+        blob = await this.aspectCorrectBlob(decodedData);
+        ext = 'png';
+      } else {
+        // Standard square phunk: use the customized canvas (bg / gba / transparent).
+        blob = await this.canvasToBlob(this.pfp.nativeElement);
+        ext = 'png';
+      }
+    } catch {
+      blob = null;
     }
 
-    // iOS/mobile: use native share sheet if available (supports Save to Photos)
+    // Fallback: if anything above failed, at least export the current canvas.
+    if (!blob) {
+      try { blob = await this.canvasToBlob(this.pfp.nativeElement); ext = 'png'; } catch {}
+    }
+    if (!blob) return;
+
+    const fileName = `${name}.${ext}`;
+    const mime = blob.type || (ext === 'gif' ? 'image/gif' : 'image/png');
+
+    // Mobile: prefer the native share sheet (lets iOS/Android Save to Photos/Files,
+    // and keeps GIF/APNG animation intact). Desktop downloads directly below.
     const isMobile = window.innerWidth <= 800;
-    if (isMobile && navigator.canShare) {
+    if (isMobile) {
       try {
-        const res = await fetch(link.href);
-        const blob = await res.blob();
-        const ext = isGif ? 'gif' : 'png';
-        const file = new File([blob], `${name}.${ext}`, { type: blob.type });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: name });
+        const file = new File([blob], fileName, { type: mime });
+        const nav = navigator as any;
+        if (nav.canShare && nav.canShare({ files: [file] })) {
+          await nav.share({ files: [file], title: name });
           this.pfpOptionsActive.set(false);
           return;
         }
-      } catch {}
+      } catch {
+        // user cancelled or share unsupported — fall through to a direct download
+      }
     }
 
+    // Direct download — works on desktop and Android. `download` is ALWAYS set now
+    // (it was previously gated to wide screens, which broke narrow/mobile saves).
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+
     this.pfpOptionsActive.set(false);
+  }
+
+  /** Export a canvas to a PNG blob (promise wrapper around toBlob). */
+  private canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
+    });
+  }
+
+  /**
+   * Redraws a data-URL image onto a canvas that matches its native aspect ratio,
+   * upscaled so the long edge is `this.width`. Prevents non-square items (EthsRocks)
+   * from being squished into the square phunk canvas. Nearest-neighbour (no blur).
+   */
+  private aspectCorrectBlob(dataUrl: string): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const iw = img.naturalWidth || img.width;
+        const ih = img.naturalHeight || img.height;
+        const target = this.width;
+        let w = target, h = target;
+        if (iw && ih) {
+          if (iw >= ih) { w = target; h = Math.round(target * ih / iw); }
+          else { h = target; w = Math.round(target * iw / ih); }
+        }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const cx = c.getContext('2d');
+        if (!cx) { reject(new Error('no 2d context')); return; }
+        cx.imageSmoothingEnabled = false;
+        cx.drawImage(img, 0, 0, w, h);
+        c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
+      };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
   }
 
   /** Detect APNG by looking for the acTL chunk in the PNG data */

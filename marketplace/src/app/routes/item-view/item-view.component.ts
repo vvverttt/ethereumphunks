@@ -230,6 +230,22 @@ export class ItemViewComponent {
     return this.preferences.t(key);
   }
 
+  private weiToEthPipe = new WeiToEthPipe();
+
+  /** Translated "Accepting escrows your X and accepts the ΞY bid…" hint (interpolated). */
+  bidEscrowHintText(phunk: Phunk): string {
+    const name = phunk.collection?.singleName || 'item';
+    const value = this.weiToEthPipe.transform(this.currentBid()?.value ?? null);
+    return this.t('bidEscrowHint').replace('%name%', name).replace('%value%', String(value));
+  }
+
+  /** Translated placeholder for the bid input ("Must exceed Y ETH" / "Bid amount in ETH"). */
+  bidAmountPlaceholderText(): string {
+    const bid = this.currentBid();
+    if (!bid) return this.t('bidAmountPlaceholder');
+    return this.t('mustExceedEth').replace('%v%', String(this.weiToEthPipe.transform(bid.value)));
+  }
+
   sellPhunk(): void {
     this.closeAll();
     this.actionsState.update((state) => ({ ...state, sell: true }));
@@ -568,23 +584,21 @@ export class ItemViewComponent {
 
     if (!bid.accepted) {
       if (isOwner) {
-        if (this.isOnOldMarket(phunk)) {
-          return 'Step 2 of 3: This item is listed on the EtherPhunks market — withdraw it from there first, then accept the bid here (that escrows it and accepts in one tx).';
-        }
-        return 'Step 2 of 3: Accept this bid to start the sale (escrows + accepts in one tx).';
+        return this.isOnOldMarket(phunk)
+          ? this.t('bidStep2WithdrawFirst')
+          : this.t('bidStep2Accept');
       }
       if (isBidder) {
-        if (this.isOnOldMarket(phunk)) {
-          return 'Step 1 of 3 done. This item is on the EtherPhunks market — the owner withdraws it there first, then accepts your bid here. Your ETH stays locked until then (withdrawable anytime).';
-        }
-        return 'Step 1 of 3 done. Waiting for the owner to accept your bid.';
+        return this.isOnOldMarket(phunk)
+          ? this.t('bidStep1OnOldMarket')
+          : this.t('bidStep1Waiting');
       }
       return null; // other viewers: the bid line + Place Bid (to outbid) is enough
     }
     // accepted — cooldown / confirm phase
-    if (isBidder) return 'Step 3 of 3: Your bid was accepted — confirm after the 5-block cooldown to complete your purchase.';
-    if (isOwner) return 'You accepted this bid. Waiting for the bidder to confirm — then claim your funds via Withdraw Funds.';
-    return 'Bid accepted — awaiting the bidder’s confirmation.';
+    if (isBidder) return this.t('bidStep3Confirm');
+    if (isOwner) return this.t('bidAcceptedOwnerWaiting');
+    return this.t('bidAcceptedAwaitingConfirm');
   }
 
   /** Blocks the bidder still has to wait before confirmBid will succeed.

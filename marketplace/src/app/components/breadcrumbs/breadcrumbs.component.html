@@ -18,7 +18,7 @@
               [class.active]="pfpOptionsActive()"
               [class.disabled]="!downloadEnabled()">
 
-              {{ pfpOptionsActive() ? 'Cancel' : 'Download PFP' }}
+              {{ pfpOptionsActive() ? t('cancel') : t('downloadPfp') }}
             </button>
           </div>
         </div>
@@ -38,28 +38,12 @@
                   value="transparent"
                   [formControl]="transparentCheck"
                 />
-                <label i18n for="transparent">Transparent</label>
+                <label for="transparent">{{ t('transparent') }}</label>
               </div>
-
-              @if (phunk?.slug !== 'ethsrocks') {
-                <div
-                  class="shape-select"
-                  [class.disabled]="!customizeEnabled()">
-
-                  <input
-                    type="checkbox"
-                    id="gba"
-                    name="gba"
-                    value="gba"
-                    [formControl]="gbaCheck"
-                  />
-                  <label for="gba">GBA</label>
-                </div>
-              }
             </div>
 
             <div class="actions-wrapper">
-              <button (click)="downloadCanvas()">Save</button>
+              <button (click)="downloadCanvas()">{{ t('save') }}</button>
             </div>
           </div>
         }
@@ -68,13 +52,13 @@
     } @else {
       <div class="crumbs-wrapper">
         <div class="crumbs">
-          <button>Loading...</button>
+          <button>{{ t('loading') }}</button>
           <span class="divider">&nbsp;</span>
           <span class="number">&nbsp;</span>
         </div>
 
         <div class="save-pfp">
-          <button class="disabled">Download PFP</button>
+          <button class="disabled">{{ t('downloadPfp') }}</button>
         </div>
       </div>
     }
