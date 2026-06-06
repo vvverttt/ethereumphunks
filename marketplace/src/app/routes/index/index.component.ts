@@ -112,6 +112,15 @@ export class IndexComponent {
       { q: 'Do you charge any fees for transactions?', a: 'DystoPhunks buy and sell on the EtherPhunks market, so those fees follow that marketplace — not our 5% royalty. Bids run through the QuantumPhunks market, so an accepted bid does carry the 5% royalty.' },
       { q: 'How do bids work?', a: 'Place a bid and your ETH locks in the QuantumPhunks marketplace contract. Because DystoPhunks are listed on the EtherPhunks market, the owner first withdraws the item from there, then accepts your bid here; you confirm after a short 5-block cooldown to complete the purchase. Your ETH stays safe and is withdrawable anytime before the bid is accepted.' },
     ],
+    'phikings': [
+      { q: 'What are Phikings?', a: 'Coming soon.' },
+      { q: 'What exactly is going on here?', a: 'This is the home of DystoLabz collections. A marketplace for buying, selling, and exploring QuantumPhunks and related collections. All transactions happen on-chain through smart contracts originally forked from Chopperdad\'s EtherPhunks Market and Phunks Auction House, built upon and evolved by DystoLabz.' },
+      { q: 'Where are the images stored?', a: 'All images are stored fully on-chain as Ethscriptions, encoded directly into the calldata of Ethereum transactions. No IPFS, no servers, no external hosting.' },
+      { q: 'Where does the market data on this site come from?', a: 'The prices and sales you see on this site are loaded from the marketplace contracts on the Ethereum blockchain.' },
+      { q: 'Are they an ERC-721 token?', a: 'No. They are Ethscriptions, not ERC-721 tokens. Ownership is managed on-chain through our smart contracts and Ethereum transfer history.' },
+      { q: 'Do you charge any fees for transactions?', a: 'Yes, there is a 5% royalty on every sale.' },
+      { q: 'How do bids work?', a: 'Place a bid and your ETH locks in the marketplace contract. The owner accepts your bid, then you confirm after a short 5-block cooldown to complete the purchase. Your ETH stays safe the whole time — you can withdraw it anytime before it\'s accepted, and it\'s auto-refunded if the item sells to someone else.' },
+    ],
     'ethsrocks': [],
   };
 

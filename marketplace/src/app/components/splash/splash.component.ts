@@ -165,7 +165,17 @@ export class SplashComponent {
             return null;
           }
 
-          if (image.byteLength > this.MAX_IMAGE_SIZE) {
+          // Real PNG dimensions: metadata-bloated pixel art (EXIF/XMP) can exceed the
+          // byte threshold while still being a small 24x24 image. Only treat it as a
+          // "photo" (smooth rendering) if it's NOT small pixel art — otherwise small
+          // art that happens to be a heavy file renders blurry.
+          let pngWidth = 0;
+          if (header[0] === 0x89 && header[1] === 0x50) { // PNG signature
+            pngWidth = ((bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19]) >>> 0;
+          }
+          const isSmallPixelArt = pngWidth > 0 && pngWidth <= 64;
+
+          if (!isSmallPixelArt && image.byteLength > this.MAX_IMAGE_SIZE) {
             // Non-pixel-art image (e.g. photos/rocks) — use direct URL
             return {
               src: `${environment.staticUrl}/static/images/${sha}`,
