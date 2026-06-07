@@ -202,9 +202,12 @@
     margin-top: 0;
     transform: translateY(6rem);
 
+    // Column layout on tablet/phones: keep it horizontally centered, but still
+    // drop the phunk onto the divider line (gap below = inner 2rem + hero 6rem
+    // minus the -.5rem nudge). iPhone / iPad / Android match desktop now.
     @media (max-width: $tablet) {
       align-self: center;
-      transform: none;
+      transform: translateY(7.5rem);
     }
   }
 

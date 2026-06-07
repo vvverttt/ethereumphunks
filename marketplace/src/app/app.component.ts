@@ -27,9 +27,8 @@ import { selectIsMobile } from '@/state/selectors/app-state.selectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as dataStateActions from '@/state/actions/data-state.actions';
-import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
-import { asyncScheduler, fromEvent, debounceTime, distinctUntilChanged, filter, map, observeOn, scan, tap, withLatestFrom } from 'rxjs';
+import { asyncScheduler, fromEvent, debounceTime, distinctUntilChanged, filter, map, observeOn, scan, startWith, tap, withLatestFrom } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -155,17 +154,28 @@ export class AppComponent implements OnInit {
     this.setIsMobile();
     this.pwaUpdateSvc.checkForUpdate();
 
-    // Intro notice: show every time the user opens a notice collection (each
-    // re-entry re-shows it). The three QuantumPhunks (V67) collections show the
-    // view-only message; EthsRocks shows its own note. distinctUntilChanged so it
-    // fires only when the active collection actually changes.
-    this.store.select(dataStateSelectors.selectActiveCollection).pipe(
-      map((c: any) => c?.slug || ''),
+    // Intro notice: driven by the actual ROUTE, not the global activeCollection
+    // (which defaults to cryptophunksv67 and leaks onto pages like /auction).
+    // The collection page URL is always `/{slug}` or `/{slug}/market/...` after
+    // the initial-collection guard redirects, so the first path segment is the
+    // collection slug. Show the notice only when that segment is a notice
+    // collection; hide it on any other page (auction, details, lottery, etc.).
+    // distinctUntilChanged on the segment means each re-entry re-shows it.
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects),
+      startWith(this.router.url),
+      map((url) => url.split(/[?#]/)[0].split('/').filter(Boolean)[0] || ''),
       distinctUntilChanged(),
-      filter((slug: string) => this.noticeSlugs.has(slug)),
-    ).subscribe((slug: string) => {
-      this.introSlug.set(slug);
-      this.showIntro.set(true);
+    ).subscribe((firstSegment: string) => {
+      if (this.noticeSlugs.has(firstSegment)) {
+        this.introSlug.set(firstSegment);
+        this.showIntro.set(true);
+      } else {
+        // Left the collection page (e.g. went to the auction house) — make sure
+        // a notice from the previous page doesn't linger.
+        this.showIntro.set(false);
+      }
     });
   }
 
