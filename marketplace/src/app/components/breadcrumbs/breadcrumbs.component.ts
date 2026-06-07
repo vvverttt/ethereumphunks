@@ -173,9 +173,6 @@ export class BreadcrumbsComponent {
     const decodedData = await this.getPunkImage(phunk);
     const isGif = !!decodedData?.startsWith('data:image/gif');
     const isAnimatedPng = this.isApng(decodedData);
-    // EthsRocks (and any non-phunk item) aren't square and aren't customizable —
-    // they must keep their native aspect ratio instead of the square 24x24 canvas.
-    const keepAspect = !phunk.isSupported || phunk.slug === 'ethsrocks';
 
     let blob: Blob | null = null;
     let ext = 'png';
@@ -189,10 +186,7 @@ export class BreadcrumbsComponent {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-        const transparent = this.transparentCheck.value;
-        const gba = this.gbaCheck.value;
-        const theme = localStorage.getItem('EtherPhunks_theme');
-        const bgColor = gba ? '#9bbc0f' : transparent ? null : (theme === 'light' ? '#FFDF00' : '#C3FF00');
+        const bgColor = this.transparentCheck.value ? null : '#C3FF00';
 
         const blobUrl = await upscaleApng(bytes.buffer, this.width, this.height, bgColor);
         blob = await (await fetch(blobUrl)).blob();
@@ -201,13 +195,11 @@ export class BreadcrumbsComponent {
         // GIF: download the original bytes untouched so it stays animated.
         blob = await (await fetch(decodedData)).blob();
         ext = 'gif';
-      } else if (keepAspect && decodedData) {
-        // Rocks etc.: redraw preserving the source aspect ratio (no squish).
-        blob = await this.aspectCorrectBlob(decodedData);
-        ext = 'png';
-      } else {
-        // Standard square phunk: use the customized canvas (bg / gba / transparent).
-        blob = await this.canvasToBlob(this.pfp.nativeElement);
+      } else if (decodedData) {
+        // Any static item (phunk or rock): preserve aspect ratio (no squish or
+        // crop) and place it on the C3FF00 background unless "transparent" is on.
+        const bg = this.transparentCheck.value ? null : '#C3FF00';
+        blob = await this.aspectCorrectBlob(decodedData, bg);
         ext = 'png';
       }
     } catch {
@@ -267,7 +259,7 @@ export class BreadcrumbsComponent {
    * upscaled so the long edge is `this.width`. Prevents non-square items (EthsRocks)
    * from being squished into the square phunk canvas. Nearest-neighbour (no blur).
    */
-  private aspectCorrectBlob(dataUrl: string): Promise<Blob> {
+  private aspectCorrectBlob(dataUrl: string, bgColor: string | null = null): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
@@ -284,6 +276,7 @@ export class BreadcrumbsComponent {
         const cx = c.getContext('2d');
         if (!cx) { reject(new Error('no 2d context')); return; }
         cx.imageSmoothingEnabled = false;
+        if (bgColor) { cx.fillStyle = bgColor; cx.fillRect(0, 0, w, h); }
         cx.drawImage(img, 0, 0, w, h);
         c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
       };
