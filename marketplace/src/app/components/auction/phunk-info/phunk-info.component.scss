@@ -127,6 +127,21 @@ h2 {
   h2 {
     font-size: 7rem;
   }
+
+  // Tighten the vertical spread on iPhone/iPad so the info block isn't so tall.
+  .one-of-label,
+  .trait-count-label,
+  .trait-wrapper {
+    padding-top: 1rem;
+  }
+
+  .trait-wrapper .trait {
+    padding-bottom: .2rem;
+  }
+
+  .pool-label {
+    padding-top: .6rem;
+  }
 }
 
 @media (max-width: $mobile) {

@@ -21,6 +21,13 @@
     line-height: 1.5;
     color: rgba(var(--black), 1);
   }
+
+  // On phones/tablets the lime banner sat above the dark hero; the entry popup
+  // carries this same note there, so drop the banner and let the dark hero sit
+  // flush under the fixed header (no lime strip to scroll above). Desktop keeps it.
+  @media (max-width: $tablet) {
+    display: none;
+  }
 }
 
 .auction-house-header {
