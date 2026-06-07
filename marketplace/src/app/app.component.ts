@@ -84,10 +84,11 @@ export class AppComponent implements OnInit {
 
   // Pages (by first URL segment) that show an intro notice on entry: the three
   // QuantumPhunks (V67) collections (view-only / not live), EthsRocks (its own
-  // testing note), and the auction house (auction / auction2).
+  // testing note), the two OG collections (EtherPhunks-market trading note), and
+  // the auction house (auction / auction2).
   private readonly noticeSlugs = new Set([
     'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67', 'ethsrocks',
-    'auction', 'auction2',
+    'og-missing-phunks', 'og-dysto-phunks', 'auction', 'auction2',
   ]);
 
   // The collection slug that triggered the currently-shown notice.

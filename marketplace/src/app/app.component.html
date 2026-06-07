@@ -4,8 +4,13 @@
       @if (introSlug() === 'ethsrocks') {
         <h2>EthsRocks</h2>
         <p>EthsRocks are live, and the first collection we brought to our auction house and market, forked from Chopperdad. So far, so good.</p>
-        <p>Most of the 100 normal EthsRocks were airdropped to 77 unique wallets that never sold or listed their Missing Phunks or DystoPhunks under 0.67 ETH, with some receiving two, and are now in their holders' hands. The rest went to test our auction house, with a total of 8 going to auction at zero reserve.</p>
+        <p>Most of the 100 normal EthsRocks were airdropped to 77 unique wallets that never sold or listed their Missing Phunks or DystoPhunks under 0.67 ETH, with some receiving two, and are now in their holders' hands. The rest went to test our auction house, with a total of 8 that went to auction at zero reserve.</p>
         <p>We hold 6 infinity stones, to be distributed at a later time.</p>
+      } @else if (introSlug() === 'og-missing-phunks' || introSlug() === 'og-dysto-phunks') {
+        <h2>{{ introSlug() === 'og-missing-phunks' ? 'Missing Phunks' : 'DystoPhunks' }}</h2>
+        <p>These trade on the EtherPhunks market, so listings and sales run there, with funds escrowed in their contract.</p>
+        <p>EtherPhunks has no bidding, so bids run through our marketplace contract instead. Your bid ETH is locked and stored safely on our contract, and you can withdraw it anytime before it's accepted.</p>
+        <p>To accept a bid, the owner first withdraws the item from EtherPhunks escrow, then accepts it here. You confirm after a short cooldown to complete the purchase.</p>
       } @else if (introSlug() === 'auction' || introSlug() === 'auction2') {
         <h2>Auction House</h2>
         <p>Forked from Chopperdad. Auction testing with EthsRocks at 0 reserve was a success. Auctions now move to the rarest items in the V67 collections, with reserve prices set.</p>
