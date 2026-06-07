@@ -27,6 +27,7 @@ import { selectIsMobile } from '@/state/selectors/app-state.selectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as dataStateActions from '@/state/actions/data-state.actions';
+import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
 import { asyncScheduler, fromEvent, debounceTime, filter, map, observeOn, scan, tap, withLatestFrom } from 'rxjs';
 
@@ -61,6 +62,9 @@ export class AppComponent implements OnInit {
 
   statusBarVisible = signal(true);
 
+  // One-time "collections are view-only / not live yet" notice on first load.
+  showIntro = signal(false);
+
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private store: Store<GlobalState>,
@@ -77,6 +81,19 @@ export class AppComponent implements OnInit {
     this.store.dispatch(appStateActions.fetchActiveMultiplier());
 
     this.setStatusBarVisible();
+  }
+
+  // The QuantumPhunks (V67) collections that are view-only / not live yet.
+  private readonly viewOnlySlugs = new Set([
+    'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67',
+  ]);
+
+  // The collection slug that triggered the currently-shown notice.
+  private introSlug = '';
+
+  dismissIntro(): void {
+    try { if (this.introSlug) sessionStorage.setItem('qp-intro-' + this.introSlug, '1'); } catch {}
+    this.showIntro.set(false);
   }
 
   ngOnInit(): void {
@@ -137,6 +154,22 @@ export class AppComponent implements OnInit {
 
     this.setIsMobile();
     this.pwaUpdateSvc.checkForUpdate();
+
+    // View-only notice: show the first time per session the user opens EACH
+    // QuantumPhunks (V67) collection, so it appears on all three pages
+    // (QuantumPhunks, Quantum Missing, Quantum Dysto), not just the landing one.
+    // The live collections (OG Missing/Dysto, EthsRocks) never trigger it.
+    this.store.select(dataStateSelectors.selectActiveCollection).pipe(
+      filter((c: any) => !!c && this.viewOnlySlugs.has(c.slug)),
+    ).subscribe((c: any) => {
+      if (this.showIntro()) return;
+      try {
+        if (!sessionStorage.getItem('qp-intro-' + c.slug)) {
+          this.introSlug = c.slug;
+          this.showIntro.set(true);
+        }
+      } catch {}
+    });
   }
 
   setIsMobile(): void {

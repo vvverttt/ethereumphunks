@@ -1,6 +1,62 @@
 @use 'abstracts/variables' as *;
 @use 'abstracts/mixins' as *;
 
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.9);
+
+  .intro-box {
+    width: 100%;
+    max-width: 44rem;
+    padding: 3.5rem 3rem;
+    text-align: center;
+    background-color: rgba(var(--base-color), 1);
+    box-shadow: -.6rem .6rem 0 0 rgba(var(--pink), 1);
+
+    h2 {
+      margin: 0 0 1.6rem;
+      font-family: var(--secondary-font-stack);
+      font-size: 2.2rem;
+      text-transform: uppercase;
+      color: rgba(var(--pink), 1);
+    }
+
+    p {
+      margin: 0 0 1.5rem;
+      font-size: 1.4rem;
+      line-height: 1.55;
+      color: rgba(var(--black), 1);
+
+      &:last-of-type { margin-bottom: 2.4rem; }
+
+      a {
+        color: rgba(var(--pink), 1);
+        font-weight: 700;
+        text-decoration: underline;
+      }
+    }
+
+    button {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      color: rgba(var(--base-color), 1);
+      background-color: rgba(var(--pink), 1);
+      border: none;
+      padding: 1.1rem 4rem;
+      cursor: pointer;
+
+      &:active { transform: translate(0, 1px); }
+    }
+  }
+}
+
 main {
   min-height: calc(100vh - 21rem);
   padding-bottom: 8rem;

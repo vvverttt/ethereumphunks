@@ -506,17 +506,14 @@
 <ng-template #bidForm let-phunk>
   <form class="form-wrapper">
     <div class="form-group">
-      <label for="bid-price">{{ t('bidAmountEth') }} ({{ t('minimum') }} 0.0167 ETH)</label>
+      <label for="bid-price">{{ t('bidAmountEth') }}</label>
       <input
         type="number"
         id="bid-price"
         step="0.001"
-        min="0.0167"
+        min="0"
         [formControl]="bidPrice"
         [placeholder]="bidAmountPlaceholderText()" />
-      @if (bidPrice.value && bidPrice.value < MIN_BID_ETH) {
-        <span class="small bid-min-warning">{{ t('minimum') }} 0.0167 ETH</span>
-      }
     </div>
 
     @if (currentBid()) {
@@ -528,12 +525,7 @@
 
     <div class="form-actions">
       <button type="reset" class="cancel" (click)="closeBid()">{{ t('cancel') }}</button>
-      <button
-        type="button"
-        class="submit"
-        [class.disabled]="!bidPrice.value || bidPrice.value < MIN_BID_ETH"
-        [disabled]="!bidPrice.value || bidPrice.value < MIN_BID_ETH"
-        (click)="submitBid(phunk)">{{ t('placeBid') }}</button>
+      <button type="button" class="submit" (click)="submitBid(phunk)">{{ t('placeBid') }}</button>
     </div>
 
     <p class="small">{{ t('bidNonCustodialNote') }}</p>

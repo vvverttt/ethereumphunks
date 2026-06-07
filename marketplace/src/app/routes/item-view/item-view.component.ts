@@ -119,7 +119,6 @@ export class ItemViewComponent {
   // revShare = new FormControl<number | undefined>(undefined);
   listToAddress = new FormControl<string | null>('');
   bidPrice = new FormControl<number | undefined>(undefined);
-  readonly MIN_BID_ETH = 0.0167;
 
   currentBid = signal<{ bidder: string; value: string; valueWei: bigint; acceptedBlock: number; accepted: boolean } | null>(null);
 
@@ -243,7 +242,7 @@ export class ItemViewComponent {
   /** Translated placeholder for the bid input ("Must exceed Y ETH" / "Bid amount in ETH"). */
   bidAmountPlaceholderText(): string {
     const bid = this.currentBid();
-    if (!bid) return `${this.t('minimum')} ${this.MIN_BID_ETH} ETH`;
+    if (!bid) return this.t('bidAmountPlaceholder');
     return this.t('mustExceedEth').replace('%v%', String(this.weiToEthPipe.transform(bid.value)));
   }
 
@@ -416,24 +415,6 @@ export class ItemViewComponent {
     if (!phunk.owner) throw new Error('Phunk has no owner');
 
     const value = this.bidPrice.value;
-
-    // Enforce a marketplace minimum bid.
-    if (value < this.MIN_BID_ETH) {
-      this.store.dispatch(upsertNotification({
-        notification: {
-          id: this.utilSvc.createIdFromString('minBid' + hashId),
-          timestamp: Date.now(),
-          slug: phunk.slug,
-          type: 'error',
-          function: 'enterBid',
-          hashId,
-          tokenId: phunk.tokenId,
-          value,
-          detail: `Minimum bid is ${this.MIN_BID_ETH} ETH`,
-        } as Notification
-      }));
-      return;
-    }
 
     let notification: Notification = {
       id: this.utilSvc.createIdFromString('enterBid' + hashId),

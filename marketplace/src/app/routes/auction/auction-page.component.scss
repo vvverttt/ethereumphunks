@@ -160,8 +160,9 @@
 
 .phunk-image-wrapper {
   flex-shrink: 0;
-  align-self: center;
-  margin-top: 7rem;
+  align-self: flex-end;
+  margin-top: 0;
+  margin-bottom: 0;
   margin-left: 0;
 
   .phunk-fallback {
