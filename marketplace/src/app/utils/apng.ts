@@ -4,6 +4,8 @@
  * then re-encodes everything back into a valid APNG.
  */
 
+import { GIFEncoder, quantize, applyPalette } from './gifenc.vendor';
+
 interface ApngFrame {
   width: number;
   height: number;
@@ -346,4 +348,85 @@ async function encodeApng(
 
   const blob = new Blob([result], { type: 'image/png' });
   return URL.createObjectURL(blob);
+}
+
+function blobToImage(blob: Blob): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+    img.src = url;
+  });
+}
+
+/**
+ * Converts an APNG to an animated GIF at the target size. GIFs animate
+ * everywhere (including iOS Photos), unlike APNG. Uses a regular <canvas> +
+ * getImageData (no OffscreenCanvas) so it also works on iOS Safari. When
+ * `bgColor` is set (e.g. '#C3FF00') every frame is composited onto it; when
+ * null the GIF uses 1-bit transparency.
+ */
+export async function apngToGif(
+  buffer: ArrayBuffer,
+  targetWidth: number,
+  targetHeight: number,
+  bgColor: string | null,
+): Promise<Blob> {
+  const parsed = parseApng(buffer);
+  if (!parsed || parsed.frames.length === 0) throw new Error('Not a valid APNG');
+
+  const scaleX = targetWidth / parsed.width;
+  const scaleY = targetHeight / parsed.height;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D | null;
+  if (!ctx) throw new Error('no 2d context');
+  ctx.imageSmoothingEnabled = false;
+
+  const paint = (x: number, y: number, w: number, h: number) => {
+    if (bgColor) { ctx.fillStyle = bgColor; ctx.fillRect(x, y, w, h); }
+    else { ctx.clearRect(x, y, w, h); }
+  };
+  paint(0, 0, targetWidth, targetHeight);
+
+  const gif = GIFEncoder();
+  const format = bgColor ? 'rgb565' : 'rgba4444';
+
+  for (let i = 0; i < parsed.frames.length; i++) {
+    const frame = parsed.frames[i];
+    const fx = Math.round(frame.xOffset * scaleX);
+    const fy = Math.round(frame.yOffset * scaleY);
+    const fw = Math.round(frame.width * scaleX);
+    const fh = Math.round(frame.height * scaleY);
+
+    const img = await blobToImage(await frameToPngBlob(parsed, i));
+
+    // blendOp 0 (SOURCE) replaces the region; 1 (OVER) composites on top.
+    if (frame.blendOp === 0) paint(fx, fy, fw, fh);
+    ctx.drawImage(img, fx, fy, fw, fh);
+
+    const { data } = ctx.getImageData(0, 0, targetWidth, targetHeight);
+    const palette = quantize(data, 256, { format, oneBitAlpha: !bgColor });
+    const index = applyPalette(data, palette, format);
+
+    const den = frame.delayDen || 100;
+    const delay = Math.max(20, Math.round((frame.delayNum / den) * 1000)) || 100;
+
+    const opts: any = { palette, delay };
+    if (i === 0) opts.repeat = 0; // loop forever
+    if (!bgColor) {
+      const ti = (palette as number[][]).findIndex((c) => c.length >= 4 && c[3] === 0);
+      if (ti >= 0) { opts.transparent = true; opts.transparentIndex = ti; }
+    }
+    gif.writeFrame(index, targetWidth, targetHeight, opts);
+
+    // disposeOp for the NEXT frame: 2 (background) / 1 (previous) → clear region.
+    if (frame.disposeOp === 2 || frame.disposeOp === 1) paint(fx, fy, fw, fh);
+  }
+
+  gif.finish();
+  return new Blob([gif.bytes()], { type: 'image/gif' });
 }

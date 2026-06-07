@@ -179,24 +179,25 @@ export class BreadcrumbsComponent {
 
     try {
       if (isAnimatedPng && decodedData) {
-        // Animated PNG: try to upscale + add background while keeping every frame.
-        // If the re-encode isn't supported (e.g. older iOS Safari OffscreenCanvas),
-        // fall back to the ORIGINAL animated bytes so it never flattens to a still.
+        // Animated PNG -> convert to an animated GIF (animates everywhere incl.
+        // iOS Photos, unlike APNG), composited onto the C3FF00 background unless
+        // "transparent" is on. If conversion fails, fall back to the original
+        // animated bytes so it never flattens to a still.
+        const base64 = decodedData.split(',')[1];
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+        const bgColor = this.transparentCheck.value ? null : '#C3FF00';
+
         try {
-          const { upscaleApng } = await import('@/utils/apng');
-          const base64 = decodedData.split(',')[1];
-          const binary = atob(base64);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-
-          const bgColor = this.transparentCheck.value ? null : '#C3FF00';
-
-          const blobUrl = await upscaleApng(bytes.buffer, this.width, this.height, bgColor);
-          blob = await (await fetch(blobUrl)).blob();
+          const { apngToGif } = await import('@/utils/apng');
+          blob = await apngToGif(bytes.buffer, this.width, this.height, bgColor);
+          ext = 'gif';
         } catch {
           blob = await (await fetch(decodedData)).blob();
+          ext = 'png';
         }
-        ext = 'png';
       } else if (isGif && decodedData) {
         // GIF: download the original bytes untouched so it stays animated.
         blob = await (await fetch(decodedData)).blob();
