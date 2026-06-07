@@ -94,7 +94,7 @@ export class IndexComponent {
     { q: 'Are these collections live?', a: 'Not yet. QuantumPhunks, Quantum Missing Phunks, and Quantum DystoPhunkz are for viewing only right now. Distributions, mechanics, and price have not been announced, and they will not be free. We retain full control over everything we do, including the price and mechanics, and may update or change anything as we see fit.' },
     { q: 'What\'s the total supply and mechanics?', a: 'Coming soon.' },
     { q: 'What exactly is going on here?', a: 'This is the home of DystoLabz collections. A marketplace for buying, selling, and exploring QuantumPhunks and related collections. All transactions happen on-chain through smart contracts originally forked from Chopperdad\'s EtherPhunks Market and Phunks Auction House, built upon and evolved by DystoLabz.' },
-    { q: 'How do I get one?', a: 'You can buy one from the marketplace listings, win one through the lottery, or through our auction house.' },
+    { q: 'How do I get one?', a: 'Secondary marketplace listings are not live yet. For now, our auction house is live with the rarest items. Lottery mint coming soon.' },
     { q: 'Where are the images stored?', a: 'All images are stored fully on-chain as Ethscriptions, encoded directly into the calldata of Ethereum transactions by us. No IPFS, no servers, no external hosting.' },
     { q: 'Where does the market data on this site come from?', a: 'The prices and sales you see on this site are loaded from the marketplace contracts on the Ethereum blockchain.' },
     { q: 'Are they an ERC-721 token?', a: 'No. They are Ethscriptions, not ERC-721 tokens. Ownership is managed on-chain through our smart contracts and Ethereum transfer history.' },
