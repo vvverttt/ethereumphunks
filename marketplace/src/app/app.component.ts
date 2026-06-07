@@ -29,7 +29,7 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import * as dataStateActions from '@/state/actions/data-state.actions';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
-import { asyncScheduler, fromEvent, debounceTime, filter, map, observeOn, scan, tap, withLatestFrom } from 'rxjs';
+import { asyncScheduler, fromEvent, debounceTime, distinctUntilChanged, filter, map, observeOn, scan, tap, withLatestFrom } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -83,16 +83,16 @@ export class AppComponent implements OnInit {
     this.setStatusBarVisible();
   }
 
-  // The QuantumPhunks (V67) collections that are view-only / not live yet.
-  private readonly viewOnlySlugs = new Set([
-    'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67',
+  // Collections that show an intro notice: the QuantumPhunks (V67) collections
+  // (view-only / not live) plus EthsRocks (its own testing note).
+  private readonly noticeSlugs = new Set([
+    'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67', 'ethsrocks',
   ]);
 
   // The collection slug that triggered the currently-shown notice.
-  private introSlug = '';
+  introSlug = signal('');
 
   dismissIntro(): void {
-    try { if (this.introSlug) sessionStorage.setItem('qp-intro-' + this.introSlug, '1'); } catch {}
     this.showIntro.set(false);
   }
 
@@ -155,20 +155,17 @@ export class AppComponent implements OnInit {
     this.setIsMobile();
     this.pwaUpdateSvc.checkForUpdate();
 
-    // View-only notice: show the first time per session the user opens EACH
-    // QuantumPhunks (V67) collection, so it appears on all three pages
-    // (QuantumPhunks, Quantum Missing, Quantum Dysto), not just the landing one.
-    // The live collections (OG Missing/Dysto, EthsRocks) never trigger it.
+    // Intro notice: show every time the user opens a notice collection (each
+    // re-entry re-shows it). The three QuantumPhunks (V67) collections show the
+    // view-only message; EthsRocks shows its own note. distinctUntilChanged so it
+    // fires only when the active collection actually changes.
     this.store.select(dataStateSelectors.selectActiveCollection).pipe(
-      filter((c: any) => !!c && this.viewOnlySlugs.has(c.slug)),
-    ).subscribe((c: any) => {
-      if (this.showIntro()) return;
-      try {
-        if (!sessionStorage.getItem('qp-intro-' + c.slug)) {
-          this.introSlug = c.slug;
-          this.showIntro.set(true);
-        }
-      } catch {}
+      map((c: any) => c?.slug || ''),
+      distinctUntilChanged(),
+      filter((slug: string) => this.noticeSlugs.has(slug)),
+    ).subscribe((slug: string) => {
+      this.introSlug.set(slug);
+      this.showIntro.set(true);
     });
   }
 
