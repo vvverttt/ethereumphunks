@@ -194,6 +194,20 @@
     height: 42rem;
   }
 
+  // QuantumPhunks only: drop them down so their feet sit on the divider line
+  // above Auction History. Rocks (no .is-phunk) stay exactly where they were.
+  // Transform is visual-only, so it doesn't reflow or squish anything else.
+  &.is-phunk {
+    align-self: flex-end;
+    margin-top: 0;
+    transform: translateY(6rem);
+
+    @media (max-width: $tablet) {
+      align-self: center;
+      transform: none;
+    }
+  }
+
   @media (max-width: $tablet) {
     transform: none;
     margin-left: 0;

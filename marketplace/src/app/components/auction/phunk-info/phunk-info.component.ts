@@ -27,6 +27,16 @@ export class PhunkInfoComponent implements OnChanges {
 
   attributes = signal<Attribute[]>([]);
 
+  /**
+   * Big token-id shown next to the collection name. EthsRocks use the "-N"
+   * convention (e.g. "-0", "-77") to match the auction slider and breadcrumbs;
+   * every other collection shows the plain (absolute) id.
+   */
+  get displayTokenId(): string {
+    const abs = this.tokenId < 0 ? -this.tokenId : this.tokenId;
+    return this.slug === 'ethsrocks' ? '-' + abs : String(abs);
+  }
+
   constructor(private dataSvc: DataService) {}
 
   ngOnChanges() {

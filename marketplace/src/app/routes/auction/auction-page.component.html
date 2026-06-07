@@ -24,7 +24,7 @@
         </div>
 
         <!-- Phunk Image (left) -->
-        <div class="phunk-image-wrapper">
+        <div class="phunk-image-wrapper" [class.is-phunk]="phunkSlug() !== 'ethsrocks'">
           @if (phunkImage()) {
             <img [src]="phunkImage()" class="phunk-fallback" crossorigin="anonymous" (load)="onMainImageLoad($event)" />
           } @else {
