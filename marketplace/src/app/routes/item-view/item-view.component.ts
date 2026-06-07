@@ -103,6 +103,16 @@ export class ItemViewComponent {
   escrowAddress = environment.marketAddress;
   oldMarketAddresses: string[] = (((environment as any).oldMarketAddresses) || []).map((a: string) => a.toLowerCase());
 
+  // QuantumPhunks (V67) collections are viewing-only / not live yet, so the UI
+  // does not allow placing bids on them. EthsRocks and everything else stay live.
+  private readonly viewOnlySlugs = new Set([
+    'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67',
+  ]);
+
+  isViewOnly(phunk: Phunk | null | undefined): boolean {
+    return !!phunk?.slug && this.viewOnlySlugs.has(phunk.slug);
+  }
+
   actionsState = signal<ActionsState>({
     sell: false,
     withdraw: false,
@@ -409,6 +419,7 @@ export class ItemViewComponent {
   }
 
   async submitBid(phunk: Phunk): Promise<void> {
+    if (this.isViewOnly(phunk)) return; // viewing-only collection: bidding disabled
     const hashId = phunk.hashId;
     if (!hashId) throw new Error('Invalid hashId');
     if (!this.bidPrice.value || this.bidPrice.value <= 0) return;
