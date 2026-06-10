@@ -10,13 +10,11 @@ import { GlobalState, Notification } from '@/models/global-state';
 
 import { Web3Service } from '@/services/web3.service';
 import { AdminService } from '@/services/admin.service';
-import { LikesService, TopLikedItem } from '@/services/likes.service';
 import { MenuFont, MenuLanguage, PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 import { NotificationComponent } from '@/components/notifications/notification/notification.component';
 import { LeaderboardComponent } from '@/components/leaderboard/leaderboard.component';
-import { MostLikesComponent } from '@/routes/most-likes/most-likes.component';
 import { CollectionsComponent } from '@/components/collections/collections.component';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
@@ -48,7 +46,6 @@ import { environment } from '@/../environments/environment';
     PhunkGridComponent,
     NotificationComponent,
     LeaderboardComponent,
-    MostLikesComponent,
     CollectionsComponent,
     FormatCashPipe,
 
@@ -64,7 +61,6 @@ export class MenuComponent {
 
   @ViewChild('menuMain') menuMain!: ElementRef;
   @ViewChild('menuLeaderboard') menuLeaderboard!: ElementRef;
-  @ViewChild('menuMostLikes') menuMostLikes!: ElementRef;
   @ViewChild('menuCurated') menuCurated!: ElementRef;
 
   address$ = this.store.select(appStateSelectors.selectWalletAddress);
@@ -72,13 +68,10 @@ export class MenuComponent {
   menuActive$ = this.store.select(appStateSelectors.selectMenuActive).pipe(
     tap((active) => {
       active && this.store.dispatch(dataStateActions.fetchLeaderboard());
-      active && this.loadTopLiked();
       !active && this.store.dispatch(appStateActions.setActiveMenuNav({ activeMenuNav: 'main' }));
     }),
   );
 
-  // #1 most-liked item shown on the MOST LIKES menu button.
-  topLikedItem = signal<TopLikedItem | null>(null);
   activeMenuNav$ = this.store.select(appStateSelectors.selectActiveMenuNav);
   activeCollection$ = this.store.select(dataStateSelectors.selectActiveCollection);
 
@@ -121,7 +114,6 @@ export class MenuComponent {
     private store: Store<GlobalState>,
     private web3Svc: Web3Service,
     private adminSvc: AdminService,
-    private likesSvc: LikesService,
     private el: ElementRef,
   ) {
     this.menuActive$.pipe(
@@ -146,10 +138,6 @@ export class MenuComponent {
               opacity: menuNav === 'leaderboard' ? 1 : 0,
               translateX: menuNav === 'leaderboard' ? '0' : '100%',
             }, '-=400').add({
-              targets: this.menuMostLikes?.nativeElement,
-              opacity: menuNav === 'mostLikes' ? 1 : 0,
-              translateX: menuNav === 'mostLikes' ? '0' : '100%',
-            }, '-=400').add({
               targets: this.menuCurated?.nativeElement,
               opacity: menuNav === 'curated' ? 1 : 0,
               translateX: menuNav === 'curated' ? '0' : '100%',
@@ -160,13 +148,6 @@ export class MenuComponent {
         );
       }),
     ).subscribe();
-  }
-
-  private async loadTopLiked(): Promise<void> {
-    try {
-      const items = await this.likesSvc.topLiked(1);
-      this.topLikedItem.set(items[0] ?? null);
-    } catch {}
   }
 
   private async checkOwner(): Promise<void> {

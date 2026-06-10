@@ -23,7 +23,7 @@ export interface AppState {
 
   isMobile: boolean;
   menuActive: boolean;
-  activeMenuNav: 'main' | 'leaderboard' | 'curated' | 'mostLikes';
+  activeMenuNav: 'main' | 'leaderboard' | 'curated';
   slideoutActive: boolean;
 
   eventTypeFilter: EventType;
