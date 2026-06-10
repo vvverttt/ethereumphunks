@@ -18,7 +18,9 @@
 @if (attributes().length) {
   <div class="one-of-label">
     One of {{ attributes()[0] | traitCount : slug }}
-    <span class="type-name">{{ attributes()[0].v }}</span>
+    <span
+      class="type-name"
+      [ngClass]="'rarity-' + ((attributes()[0] | traitCount : slug) | rarityTier : 0 : attributes()[0].v)">{{ attributes()[0].v }}</span>
   </div>
   <div class="trait-count-label">
     {{ attributes().length - 1 }} trait{{ attributes().length - 1 !== 1 ? 's' : '' }}
@@ -27,7 +29,9 @@
     @for (attr of attributes(); track attr.k; let i = $index) {
       @if (i > 0) {
         <div class="trait">
-          <span class="trait-name">{{ attr.v }}</span>
+          <span
+            class="trait-name"
+            [ngClass]="'rarity-' + ((attr | traitCount : slug) | rarityTier : 0 : attr.v)">{{ attr.v }}</span>
         </div>
       }
     }

@@ -45,6 +45,33 @@
       </div>
     </div>
 
+    <div (click)="navigateMenu('mostLikes')" class="leaderboard-button most-likes-button">
+
+      <div class="logo-wrapper">
+        @if (topLikedItem()?.image) {
+          <img [src]="topLikedItem()!.image" alt="Most Thumbs Up" />
+        }
+      </div>
+
+      <div class="button-content">
+        <h4>Most Thumbs Up</h4>
+        @if (topLikedItem(); as top) {
+          <span class="top-points">
+            <div class="value">{{ top.likes | formatCash }}</div>
+            <div class="label">thumbs up</div>
+          </span>
+          <div class="top-holder">
+            <span>{{ top.name }}</span>
+            <div class="label">#1 Phunk</div>
+          </div>
+        }
+      </div>
+
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </div>
+
     @if (!isStandaloneMarket) {
       <div
         class="curated-button"
@@ -240,6 +267,11 @@
 <section #menuLeaderboard class="leaderboard" [style]="{ 'opacity': '0' }">
   <ng-template [ngTemplateOutlet]="sectionHeader" />
   <app-leaderboard />
+</section>
+
+<section #menuMostLikes class="leaderboard" [style]="{ 'opacity': '0' }">
+  <ng-template [ngTemplateOutlet]="sectionHeader" />
+  <app-most-likes />
 </section>
 
 <section

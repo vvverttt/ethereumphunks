@@ -106,6 +106,37 @@ h2 {
   }
 }
 
+// Rarity-tiered trait colors — same palette as the item detail page, so each
+// trait shows its real rarity color instead of the flat image-accent color.
+.one-of-label .type-name,
+.trait-wrapper .trait .trait-name {
+  &[class*="rarity-"] {
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  &.rarity-one-of-one    { background-image: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); }
+  &.rarity-divine        { background-image: linear-gradient(90deg, #00eeff, #e9ffff, #00bcd4); text-shadow: 0 0 6px rgba(0, 238, 255, .35); }
+  &.rarity-ancient       { background-image: linear-gradient(90deg, #ff2222, #ff8a00, #ff2222); }
+  &.rarity-god           { background-image: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); }
+  &.rarity-mythic        { background-image: linear-gradient(90deg, #ff8c00, #ffd36a, #ff6a00); }
+  &.rarity-exotic        { background-image: linear-gradient(90deg, #ff00cc, #ff7af0, #9b00ff); }
+  &.rarity-legendary     { background-image: linear-gradient(90deg, #ffcc00, #fff2a0, #ff9d00); }
+  &.rarity-ultra         { background-image: linear-gradient(90deg, #ff4500, #ff9b37, #ff2a00); }
+  &.rarity-ultra-rare    { background-image: linear-gradient(90deg, #ff6a00, #ffc16a, #ff3300); }
+  &.rarity-epic          { background-image: linear-gradient(90deg, #b44fff, #df9cff, #7c3cff); }
+  &.rarity-elite         { background-image: linear-gradient(90deg, #8a7aff, #c8c0ff, #6454ff); }
+  &.rarity-rare          { background-image: linear-gradient(90deg, #4fa8ff, #a7d7ff, #1f7cff); }
+  &.rarity-uncommon      { background-image: linear-gradient(90deg, #4ddd7a, #b7ffcb, #20b957); }
+  &.rarity-common        { background-image: linear-gradient(90deg, #c3ff00, #efff87, #8fd600); }
+  &.rarity-cosmic        { background-image: linear-gradient(90deg, #00d4ff, #f953c6); }
+  &.rarity-power-ranger  { background-image: linear-gradient(90deg, #ff4da6, #ffd700, #888888, #4fa8ff, #4ddd7a, #ff2222); }
+  &.rarity-xcopy         { background-image: linear-gradient(90deg, #89f7fe, #e0c3fc, #ffffff, #e0c3fc, #89f7fe); }
+  &.rarity-phunkism      { background-image: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0, #89f7fe, #e0c3fc, #ffd700); }
+  &.rarity-character-trait { background-image: linear-gradient(90deg, #ff2222, #4fa8ff, #4ddd7a); }
+  &.rarity-alien-invasion  { background-image: linear-gradient(90deg, #00d4ff, #4ddd7a, #ffd700, #ff9100, #ff2222, #ff4da6); }
+}
+
 .pool-label {
   font-family: var(--secondary-font-stack);
   font-size: 1.4rem;

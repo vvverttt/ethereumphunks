@@ -1,0 +1,125 @@
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
+
+:host {
+  display: block;
+  font-family: var(--secondary-font-stack);
+  font-weight: normal;
+}
+
+.most-likes {
+  .inner {
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+}
+
+.leaderboard-header {
+  display: flex;
+  height: 7rem;
+  padding: 0 0 1rem 0;
+  border-bottom: .3rem solid rgba(var(--white), .1);
+
+  h3 { font-weight: normal; padding: 0; margin: 0; font-size: 2rem; }
+  p {
+    font-size: .9rem;
+    padding: .5rem 0 0 0;
+    margin: 0;
+    line-height: 1.2rem;
+  }
+
+  .logo-wrapper {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    margin-right: 1rem;
+
+    img {
+      width: 4rem;
+      height: 4rem;
+      image-rendering: pixelated;
+      object-fit: contain;
+      transform: scale(1.6);
+      transform-origin: center;
+    }
+  }
+
+  @media (max-width: $mobile) { p { font-size: .8rem; } }
+}
+
+.grid-header,
+.leaderboard-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem auto 8rem 8rem;
+  padding: 1rem;
+  align-items: center;
+  font-size: 1.2rem;
+  color: rgba(var(--white), 1);
+  text-decoration: none;
+}
+
+.grid-header {
+  font-size: 1rem;
+  .col-phunk { text-align: center; justify-self: center; }
+}
+
+.leaderboard-item {
+  .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 1rem;
+  }
+
+  .image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 4rem;
+      height: 4rem;
+      image-rendering: pixelated;
+      object-fit: contain;
+      background: rgba(var(--highlight), 1);
+    }
+  }
+
+  .likes {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 700;
+
+    .thumb { width: 1.5rem; height: 1.5rem; }
+  }
+
+  .rank {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    text-align: center;
+
+    &.highlight { border: .2rem solid rgba(var(--white), 1); }
+    &.top { background-color: rgba(var(--pink), 1); border: none; }
+  }
+
+  &.i0 {
+    background-color: rgba(var(--highlight), 1);
+    color: rgba(var(--black), 1);
+    .image img { background: rgba(var(--black), .15); }
+  }
+  &.i1 { background-color: rgba(var(--highlight), .5); }
+  &.i2 { background-color: rgba(var(--highlight), .25); }
+}
+
+.no-results {
+  padding: 2rem 1rem;
+  p { font-size: 1.2rem; color: rgba(var(--white), .6); }
+}

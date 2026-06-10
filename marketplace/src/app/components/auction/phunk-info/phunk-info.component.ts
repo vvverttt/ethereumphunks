@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 
 import { DataService } from '@/services/data.service';
 import { TraitCountPipe } from '@/pipes/trait-count.pipe';
+import { RarityTierPipe } from '@/pipes/rarity-tier.pipe';
 import { Attribute } from '@/models/attributes';
 
 @Component({
   selector: 'app-phunk-info',
   standalone: true,
-  imports: [CommonModule, TraitCountPipe],
+  imports: [CommonModule, TraitCountPipe, RarityTierPipe],
   templateUrl: './phunk-info.component.html',
   styleUrls: ['./phunk-info.component.scss'],
 })

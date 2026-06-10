@@ -16,6 +16,8 @@ import { AppService } from '@/app.service';
 import { AppController } from '@/app.controller';
 import { AppGateway } from '@/app.gateway';
 import { RpcController } from '@/rpc.controller';
+import { LikesController } from '@/modules/likes/likes.controller';
+import { LikesService } from '@/modules/likes/likes.service';
 
 import { DataService } from '@/services/data.service';
 import { ProcessingService } from '@/services/processing.service';
@@ -39,12 +41,13 @@ import { ApiKeyMiddleware } from '@/middleware/api-key.middleware';
     CommentsModule,
     StorageModule,
   ],
-  controllers: [AppController, RpcController],
+  controllers: [AppController, RpcController, LikesController],
   providers: [
     AppService,
     AppGateway,
     ProcessingService,
     DataService,
+    LikesService,
   ],
 })
 

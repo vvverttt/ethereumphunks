@@ -10,6 +10,7 @@ import { Phunk } from '@/models/db';
 import { filter, tap } from 'rxjs';
 import { EthscriptionService } from '@/services/ethscription.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { LikesService } from '@/services/likes.service';
 
 @Component({
   standalone: true,
@@ -40,6 +41,10 @@ export class BreadcrumbsComponent {
   downloadEnabled = signal(false);
   customizeEnabled = signal(false);
 
+  likeCount = signal(0);
+  liked = signal(false);
+  likeBusy = signal(false);
+
   private readonly gbaPalette = [
     [155, 188, 15],
     [139, 172, 15],
@@ -52,11 +57,22 @@ export class BreadcrumbsComponent {
     public location: Location,
     public dataSvc: DataService,
     public preferences: PhunkPreferencesService,
+    private likesSvc: LikesService,
   ) {
     effect(() => {
       if (!this.phunk()) return;
       const phunk = this.phunk()!;
       this.paintCanvas(phunk);
+    });
+
+    // Load like state whenever the item changes (reads are direct Supabase).
+    let lastHashId: string | null = null;
+    effect(() => {
+      const phunk = this.phunk();
+      const hashId = phunk?.hashId ?? null;
+      if (!hashId || hashId === lastHashId) return;
+      lastHashId = hashId;
+      this.loadLikes(hashId);
     });
 
     this.transparentCheck.valueChanges.pipe(
@@ -74,6 +90,40 @@ export class BreadcrumbsComponent {
 
   t(key: string): string {
     return this.preferences.t(key);
+  }
+
+  private async loadLikes(hashId: string): Promise<void> {
+    try {
+      const [count, mine] = await Promise.all([
+        this.likesSvc.count(hashId),
+        this.likesSvc.likedByMe(hashId),
+      ]);
+      if (this.phunk()?.hashId !== hashId) return; // item changed mid-load
+      this.likeCount.set(count);
+      this.liked.set(mine);
+    } catch {}
+  }
+
+  async toggleLike(): Promise<void> {
+    const phunk = this.phunk();
+    if (!phunk?.hashId || this.likeBusy()) return;
+    this.likeBusy.set(true);
+
+    // optimistic update
+    const wasLiked = this.liked();
+    this.liked.set(!wasLiked);
+    this.likeCount.update((n) => Math.max(0, n + (wasLiked ? -1 : 1)));
+
+    try {
+      const res = await this.likesSvc.toggle(phunk.hashId);
+      this.liked.set(res.liked);
+      this.likeCount.set(res.count);
+    } catch {
+      this.liked.set(wasLiked); // revert
+      this.likeCount.update((n) => Math.max(0, n + (wasLiked ? 1 : -1)));
+    } finally {
+      this.likeBusy.set(false);
+    }
   }
 
   async paintCanvas(phunk: Phunk): Promise<void> {
