@@ -1232,13 +1232,18 @@ export class DataService {
    * Fetches current USD price of ETH
    */
   fetchUSDPrice(): Observable<number> {
-    return this.http.get('https://min-api.cryptocompare.com/data/price', {
-      params: {
-        fsym: 'ETH',
-        tsyms: 'USD'
-      }
-    }).pipe(
-      map((res: any) => res?.USD || 0)
+    // CryptoCompare's free min-api now requires a key (401), zeroing out USD.
+    // Use Coinbase (no key, CORS-enabled), falling back to CoinGecko, then 0.
+    return this.http.get<any>('https://api.coinbase.com/v2/prices/ETH-USD/spot').pipe(
+      map((res) => Number(res?.data?.amount) || 0),
+      catchError(() =>
+        this.http
+          .get<any>('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd')
+          .pipe(
+            map((res) => Number(res?.ethereum?.usd) || 0),
+            catchError(() => of(0)),
+          ),
+      ),
     );
   }
 
