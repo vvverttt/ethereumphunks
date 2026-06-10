@@ -124,9 +124,11 @@
                             </button>
                           }
 
-                          <!-- Bid button (visible to anyone who is NOT the owner) -->
+                          <!-- Bid button (visible to anyone who is NOT the current owner). -->
+                          <!-- prevOwner is excluded ONLY when escrowed (there prevOwner = the beneficial owner who deposited it). -->
+                          <!-- For non-escrowed items prevOwner is just a past owner (e.g. airdropped/transferred away) and may bid to buy it back. -->
                           @if (
-                            (phunk.prevOwner | lowercase) !== (address | lowercase) &&
+                            (!phunk.isEscrowed || (phunk.prevOwner | lowercase) !== (address | lowercase)) &&
                             (phunk.owner | lowercase) !== (address | lowercase)
                           ) {
                             <!-- Place Bid: shown ONLY on bid-enabled collections (OG Missing/Dysto, EthsRocks), and hidden if you're already the current bidder or a bid is accepted/locked. Withdraw/confirm of an existing bid is never gated. -->
