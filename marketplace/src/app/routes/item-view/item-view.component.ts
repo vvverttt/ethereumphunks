@@ -103,14 +103,16 @@ export class ItemViewComponent {
   escrowAddress = environment.marketAddress;
   oldMarketAddresses: string[] = (((environment as any).oldMarketAddresses) || []).map((a: string) => a.toLowerCase());
 
-  // QuantumPhunks (V67) collections are viewing-only / not live yet, so the UI
-  // does not allow placing bids on them. EthsRocks and everything else stay live.
-  private readonly viewOnlySlugs = new Set([
-    'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67',
+  // Placing bids is enabled in the UI ONLY for these collections. Every other
+  // collection hides the Place Bid button (e.g. the viewing-only V67 collections,
+  // Phikings, etc.). NOTE: withdrawing/confirming an EXISTING bid is never gated,
+  // so anyone with an open bid can always pull it back, on any collection.
+  private readonly bidsEnabledSlugs = new Set([
+    'og-missing-phunks', 'og-dysto-phunks', 'ethsrocks',
   ]);
 
-  isViewOnly(phunk: Phunk | null | undefined): boolean {
-    return !!phunk?.slug && this.viewOnlySlugs.has(phunk.slug);
+  bidsEnabled(phunk: Phunk | null | undefined): boolean {
+    return !!phunk?.slug && this.bidsEnabledSlugs.has(phunk.slug);
   }
 
   actionsState = signal<ActionsState>({
@@ -419,7 +421,7 @@ export class ItemViewComponent {
   }
 
   async submitBid(phunk: Phunk): Promise<void> {
-    if (this.isViewOnly(phunk)) return; // viewing-only collection: bidding disabled
+    if (!this.bidsEnabled(phunk)) return; // bids only enabled on allowlisted collections
     const hashId = phunk.hashId;
     if (!hashId) throw new Error('Invalid hashId');
     if (!this.bidPrice.value || this.bidPrice.value <= 0) return;

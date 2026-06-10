@@ -129,9 +129,9 @@
                             (phunk.prevOwner | lowercase) !== (address | lowercase) &&
                             (phunk.owner | lowercase) !== (address | lowercase)
                           ) {
-                            <!-- Place Bid: hidden if you're already the current bidder, if a bid is accepted/locked, or on viewing-only (V67) collections -->
+                            <!-- Place Bid: shown ONLY on bid-enabled collections (OG Missing/Dysto, EthsRocks), and hidden if you're already the current bidder or a bid is accepted/locked. Withdraw/confirm of an existing bid is never gated. -->
                             @if (
-                              !isViewOnly(phunk) &&
+                              bidsEnabled(phunk) &&
                               !(currentBid() && (currentBid()!.bidder | lowercase) === (address | lowercase)) &&
                               !(currentBid() && currentBid()!.accepted)
                             ) {
