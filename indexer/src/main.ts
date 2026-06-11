@@ -47,10 +47,10 @@ const requiredMainnetContractEnvs = [
   'POINTS_ADDRESS_MAINNET',
   'LOTTERY_ADDRESS_MAINNET',
   'LOTTERY2_ADDRESS_MAINNET',
-  'EVOLVE_ADDRESS_MAINNET',
   'AUCTION_ADDRESS_MAINNET',
-  // AUCTION2_ADDRESS_MAINNET is optional — the indexer already filters out a
-  // missing/empty auction2 address (auctionAddressesL1 .filter(Boolean)).
+  // AUCTION2_ADDRESS_MAINNET and EVOLVE_ADDRESS_MAINNET are optional — the indexer
+  // already filters out missing/empty addresses (Set([...]).filter(Boolean)), so a
+  // retired auction2/evolve contract simply isn't watched instead of crashing boot.
 ] as const;
 
 for (const envName of requiredMainnetContractEnvs) {
