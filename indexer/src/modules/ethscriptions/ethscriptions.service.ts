@@ -1116,7 +1116,8 @@ export class EthscriptionsService {
         const zeroAddress = '0x0000000000000000000000000000000000000000';
 
         await this.storageSvc.settleAuction(
-          { hashId, auctionId, winner, amount, contractAddress: auctionAddr }
+          { hashId, auctionId, winner, amount, contractAddress: auctionAddr },
+          createdAt
         );
 
         // Only update ownership and create events if there was a winner

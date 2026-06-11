@@ -834,17 +834,47 @@ export class StorageService implements OnModuleInit {
       winner: string,
       amount: bigint,
       contractAddress: string,
-    }
+    },
+    createdAt?: Date,
   ): Promise<void> {
-    const { data, error } = await this.supabase
-      .from('auctions' + this.suffix)
-      .update({
-        settled: true,
-      })
-      .eq('hashId', args.hashId.toLowerCase())
-      .eq('contractAddress', args.contractAddress.toLowerCase());
+    const table = 'auctions' + this.suffix;
 
-    if (error) throw error;
+    // First, mark any existing row(s) for this item as settled. This preserves
+    // the create-time fields (startTime/endTime) and bid amount written earlier.
+    const { data: updated, error: updErr } = await this.supabase
+      .from(table)
+      .update({ settled: true })
+      .eq('hashId', args.hashId.toLowerCase())
+      .eq('contractAddress', args.contractAddress.toLowerCase())
+      .select('auctionId');
+
+    if (updErr) throw updErr;
+
+    // Self-heal: if no row existed (a missed AuctionCreated, or a wiped/partial
+    // auctions table), create a complete settled row from the settle args so the
+    // item still shows in Auction History. settleAuction already receives
+    // auctionId, winner, and amount — everything the frontend needs.
+    if (!updated || updated.length === 0) {
+      const ts = createdAt ?? new Date();
+      const { error: insErr } = await this.supabase
+        .from(table)
+        .upsert({
+          auctionId: Number(args.auctionId),
+          contractAddress: args.contractAddress.toLowerCase(),
+          hashId: args.hashId.toLowerCase(),
+          amount: args.amount.toString(),
+          bidder: args.winner.toLowerCase(),
+          startTime: ts,
+          endTime: ts,
+          createdAt: ts,
+          settled: true,
+        }, { onConflict: 'auctionId,contractAddress' });
+
+      if (insErr) throw insErr;
+      Logger.log(`Auction settled (self-healed missing row)`, args.hashId);
+      return;
+    }
+
     Logger.log(`Auction settled`, args.hashId);
   }
 
