@@ -49,7 +49,8 @@ const requiredMainnetContractEnvs = [
   'LOTTERY2_ADDRESS_MAINNET',
   'EVOLVE_ADDRESS_MAINNET',
   'AUCTION_ADDRESS_MAINNET',
-  'AUCTION2_ADDRESS_MAINNET',
+  // AUCTION2_ADDRESS_MAINNET is optional — the indexer already filters out a
+  // missing/empty auction2 address (auctionAddressesL1 .filter(Boolean)).
 ] as const;
 
 for (const envName of requiredMainnetContractEnvs) {
