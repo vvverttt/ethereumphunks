@@ -278,8 +278,8 @@
                         }
                       }
 
-                      <!-- Transfer -->
-                      @if ((owner | lowercase) === (address | lowercase)) {
+                      <!-- Transfer (hidden when the item fails consensus — owner can't validly move it anyway) -->
+                      @if ((owner | lowercase) === (address | lowercase) && phunk.consensus) {
 
                         <button class="transfer" [class.active]="actionsState().transfer" (click)="transferPhunkAction()">
                           <span>{{ t('transfer') }}</span>
