@@ -197,6 +197,31 @@ export class StorageService implements OnModuleInit {
   }
 
   /**
+   * Returns the owner (per our indexer) of every item currently listed for sale.
+   * Used by the consensus reconciler to cross-check listings against the protocol.
+   */
+  async getActiveListingOwners(): Promise<{ hashId: string; owner: string }[]> {
+    const { data: listings, error } = await this.supabase
+      .from('listings' + this.suffix)
+      .select('hashId')
+      .eq('listed', true);
+    if (error) throw error;
+    const hashIds = (listings || []).map((l: any) => l.hashId);
+    if (!hashIds.length) return [];
+
+    const out: { hashId: string; owner: string }[] = [];
+    for (let i = 0; i < hashIds.length; i += 200) {
+      const chunk = hashIds.slice(i, i + 200);
+      const { data: eths } = await this.supabase
+        .from('ethscriptions' + this.suffix)
+        .select('hashId, owner')
+        .in('hashId', chunk);
+      for (const e of (eths || [])) out.push({ hashId: e.hashId, owner: (e.owner || '').toLowerCase() });
+    }
+    return out;
+  }
+
+  /**
    * Updates a listing in the database
    */
   async updateListing() {}
