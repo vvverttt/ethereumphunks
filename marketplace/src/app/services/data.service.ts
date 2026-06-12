@@ -16,7 +16,7 @@ import { AttributeItem } from '@/models/attributes';
 
 import { RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
-import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, tap, shareReplay } from 'rxjs';
+import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, tap, shareReplay, timeout } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { supabase } from './supabase';
@@ -821,11 +821,14 @@ export class DataService {
           catchError(() => of(null)),
         );
 
-        // Emit base immediately, then hydrate with attributes + listing in parallel
-        return forkJoin([attributes$, listing$]).pipe(
-          map(([attributes, listing]) => ({
+        // Cross-check ownership against the canonical ethscriptions protocol indexer.
+        const consensus$ = this.checkProtocolConsensus(phunk.hashId, phunk.owner);
+
+        // Emit base immediately, then hydrate with attributes + listing + consensus in parallel
+        return forkJoin([attributes$, listing$, consensus$]).pipe(
+          map(([attributes, listing, consensus]) => ({
             ...phunk,
-            consensus: true,
+            consensus,
             attributes,
             listing,
             loading: false,
@@ -850,6 +853,30 @@ export class DataService {
 
     this.phunkCache.set(hashId, { data: result$, timestamp: Date.now() });
     return result$;
+  }
+
+  /**
+   * Cross-checks an item's ownership against the canonical ethscriptions protocol
+   * indexer (api.ethscriptions.com) — the source of truth that enforces transfer
+   * validity. Returns false when our indexed owner disagrees with the protocol's
+   * current owner, which (a) shows the "no consensus" notice and (b) gates trading,
+   * since the buy/bid/sell actions are wrapped in @if (phunk.consensus).
+   *
+   * Any API error/timeout resolves to true, so an external outage never falsely
+   * blocks trading on otherwise-fine items.
+   */
+  private checkProtocolConsensus(hashId: string, indexerOwner: string): Observable<boolean> {
+    if (!hashId || !indexerOwner) return of(true);
+    return this.http.get<any>(`https://api.ethscriptions.com/v2/ethscriptions/${hashId}`).pipe(
+      timeout(6000),
+      map((res) => {
+        const r = res?.result ?? res;
+        const protocolOwner = (r?.current_owner || '').toLowerCase();
+        if (!protocolOwner) return true; // can't determine → don't block
+        return protocolOwner === indexerOwner.toLowerCase();
+      }),
+      catchError(() => of(true)), // API down/slow → allow, never false-block
+    );
   }
 
   /**
