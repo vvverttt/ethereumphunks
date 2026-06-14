@@ -175,7 +175,7 @@ contract PhilipLotteryV67_VRF is
     // player has irrevocably paid; there is no cancel/refund path.
     // =========================================================
 
-    function play() external payable nonReentrant whenNotPaused {
+    function play() external payable nonReentrant whenNotPaused notBlacklisted {
         require(msg.sender == tx.origin, "No contracts");
         require(active, "Lottery inactive");
         if (whitelistEnabled) require(whitelisted[msg.sender], "Not whitelisted");
@@ -288,7 +288,7 @@ contract PhilipLotteryV67_VRF is
     // so there is no double-refund / double-award.
     // =========================================================
 
-    function refundStuckSpin(uint256 requestId) external nonReentrant {
+    function refundStuckSpin(uint256 requestId) external nonReentrant notBlacklisted {
         PendingSpin memory spin = pendingSpins[requestId];
         require(spin.player != address(0), "No such spin");
 
@@ -317,7 +317,7 @@ contract PhilipLotteryV67_VRF is
     // Pull payment (withdraw failed refunds)
     // =========================================================
 
-    function withdraw() external nonReentrant {
+    function withdraw() external nonReentrant notBlacklisted {
         uint256 amount = pendingReturns[msg.sender];
         require(amount > 0, "Nothing to withdraw");
         pendingReturns[msg.sender] = 0;
@@ -499,7 +499,22 @@ contract PhilipLotteryV67_VRF is
 
     receive() external payable {}
 
-    // ─── Storage gap (V67 had [45]; VRF = 2 slots, whitelist = 2, maxPlays = 1) ──
-    // Validated SAFE by OZ validateUpgrade(V67 → V67_VRF) for both proxies.
-    uint256[40] private __gap;
+    // ─── Blacklist (incident response: lock out a compromised wallet) ──
+    // NOTE: must remain the LAST storage var before __gap (consumes 1 gap slot).
+    mapping(address => bool) public blacklisted;
+
+    event Blacklisted(address indexed account, bool status);
+
+    modifier notBlacklisted() {
+        require(!blacklisted[msg.sender], "Blacklisted");
+        _;
+    }
+
+    function setBlacklist(address account, bool status) external onlyOwner {
+        blacklisted[account] = status;
+        emit Blacklisted(account, status);
+    }
+
+    // ─── Storage gap (was [40]; -1 for blacklisted = 39) ──
+    uint256[39] private __gap;
 }

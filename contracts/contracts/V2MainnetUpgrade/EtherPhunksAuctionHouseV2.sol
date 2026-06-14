@@ -153,7 +153,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     // ─── Settle + Create (anyone, when not paused) ───────────
 
-    function settleAndCreate() external nonReentrant whenNotPaused {
+    function settleAndCreate() external nonReentrant whenNotPaused notBlacklisted {
         if (auction.startTime != 0 && !auction.settled) {
             _settleAuction();
         }
@@ -164,13 +164,13 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     // ─── Standalone settle (always works, even when paused) ──
 
-    function settleAuction() external nonReentrant {
+    function settleAuction() external nonReentrant notBlacklisted {
         _settleAuction();
     }
 
     // ─── Create bid ──────────────────────────────────────────
 
-    function createBid() external payable nonReentrant {
+    function createBid() external payable nonReentrant notBlacklisted {
         require(block.timestamp < auction.endTime, "Auction expired");
         require(!auction.settled, "Auction settled");
         require(msg.sender == tx.origin, "No contracts");
@@ -217,7 +217,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     // ─── Withdraw pending returns ────────────────────────────
 
-    function withdraw() external nonReentrant {
+    function withdraw() external nonReentrant notBlacklisted {
         uint256 amount = pendingReturns[msg.sender];
         require(amount > 0, "Nothing to withdraw");
         pendingReturns[msg.sender] = 0;
@@ -546,7 +546,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     event Swapped(bytes32 indexed sentHashId, bytes32 indexed receivedHashId, address indexed swapper, uint256 swapNumber);
 
-    function swap(bytes32 sendHashId, bytes32 receiveHashId, bytes32[] calldata proof) external payable nonReentrant whenNotPaused {
+    function swap(bytes32 sendHashId, bytes32 receiveHashId, bytes32[] calldata proof) external payable nonReentrant whenNotPaused notBlacklisted {
         require(swapEnabled, "Swaps disabled");
         require(_pool.length > 0, "Pool empty");
         require(msg.value >= swapFee, "Insufficient fee");
@@ -596,7 +596,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         emit Swapped(sendHashId, receiveHashId, msg.sender, totalSwapped);
     }
 
-    function cancelSwapDeposit(bytes32 hashId) external nonReentrant {
+    function cancelSwapDeposit(bytes32 hashId) external nonReentrant notBlacklisted {
         require(
             EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][hashId] > 0,
             "Not deposited"
@@ -629,7 +629,48 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         return hash == root;
     }
 
-    // ─── Storage gap for future upgrades (49 - 4 swap slots - 1 orderQueue = 44) ──
+    // ─── Blacklist (incident response: lock out a compromised wallet) ──
+    // NOTE: must remain the LAST storage var before __gap (consumes 1 gap slot).
+    mapping(address => bool) public blacklisted;
 
-    uint256[44] private __gap;
+    event Blacklisted(address indexed account, bool status);
+
+    modifier notBlacklisted() {
+        require(!blacklisted[msg.sender], "Blacklisted");
+        _;
+    }
+
+    function setBlacklist(address account, bool status) external onlyOwner {
+        blacklisted[account] = status;
+        emit Blacklisted(account, status);
+    }
+
+    /// @notice Owner-only recovery. Emits the escrow transfer with the REAL
+    /// depositor as previousOwner so the ethscriptions protocol accepts it,
+    /// and sends the item to a safe wallet. Cleans pool state if still pooled.
+    function adminWithdraw(
+        address previousOwner,
+        bytes32[] calldata hashIds,
+        address to
+    ) external onlyOwner nonReentrant {
+        require(to != address(0), "Invalid recipient");
+        for (uint256 i = 0; i < hashIds.length; i++) {
+            bytes32 hashId = hashIds[i];
+            if (inPool[hashId]) {
+                uint256 idx = _poolIndex[hashId];
+                bytes32 lastHash = _pool[_pool.length - 1];
+                _pool[idx] = lastHash;
+                _poolIndex[lastHash] = idx;
+                _pool.pop();
+                inPool[hashId] = false;
+                delete _poolIndex[hashId];
+                delete depositor[hashId];
+            }
+            _transferEthscription(previousOwner, to, hashId);
+        }
+    }
+
+    // ─── Storage gap for future upgrades (was 44; -1 for blacklisted = 43) ──
+
+    uint256[43] private __gap;
 }
