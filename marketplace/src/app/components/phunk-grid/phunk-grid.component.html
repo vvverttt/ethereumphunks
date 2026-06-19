@@ -111,8 +111,7 @@
             ) {
               @if (phunk.listing; as listing) {
                 <p i18n>
-                  {{ (listing.minValue | weiToEth) | number : '1.0-5' }}Ξ<br />
-                  ${{ ((listing.minValue | weiToEth) * ((usd$ | async) || 0)) | formatCash }}
+                  {{ (listing.minValue | weiToEth) | number : '1.0-5' }}Ξ@if (usd$ | async; as usd) {<br />${{ ((listing.minValue | weiToEth) * usd) | formatCash }}}
                 </p>
               }
             }
@@ -123,8 +122,7 @@
             ) {
               @if (phunk.bid; as bid) {
                 <p i18n>
-                  {{ (bid.value | weiToEth) }}Ξ<br />
-                  ${{ ((bid.value | weiToEth) * ((usd$ | async) || 0)) | formatCash }}
+                  {{ (bid.value | weiToEth) }}Ξ@if (usd$ | async; as usd) {<br />${{ ((bid.value | weiToEth) * usd) | formatCash }}}
                 </p>
                 @if (isDeadBid(phunk)) {
                   <p class="dead-bid-label">Dead bid</p>

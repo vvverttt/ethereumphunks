@@ -130,6 +130,7 @@ export class AdminComponent implements OnInit {
   showLottery = signal(true);
   showAuction = signal(true);
   showPhunkSwap = signal(true);
+  hideUsd = signal(false);
   hiddenSlugs = signal<string[]>([]);
   visHiddenSlugsInput = '';
 
@@ -487,6 +488,7 @@ export class AdminComponent implements OnInit {
         this.showLottery.set(config.showLottery ?? true);
         this.showAuction.set(config.showAuction ?? true);
         this.showPhunkSwap.set(config.showPhunkSwap ?? true);
+        this.hideUsd.set(config.hideUsd ?? false);
         this.hiddenSlugs.set(hiddenSlugs);
         this.visHiddenSlugsInput = hiddenSlugs.join(', ');
         const sel: { [slug: string]: { [k: string]: string } } = {};
@@ -515,6 +517,7 @@ export class AdminComponent implements OnInit {
         case 'showLottery': this.showLottery.set(newValue); break;
         case 'showAuction': this.showAuction.set(newValue); break;
         case 'showPhunkSwap': this.showPhunkSwap.set(newValue); break;
+        case 'hideUsd': this.hideUsd.set(newValue); break;
       }
       const config = await firstValueFrom(this.store.select(appStateSelectors.selectConfig));
       this.store.dispatch(appStateActions.setGlobalConfig({ config: { ...config, [field]: newValue } }));

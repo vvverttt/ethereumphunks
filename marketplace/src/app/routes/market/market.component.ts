@@ -158,7 +158,7 @@ export class MarketComponent {
   objectKeys = Object.keys;
   objectValues = Object.values;
 
-  usd$ = this.store.select(dataStateSelectors.selectUsd);
+  usd$ = this.store.select(dataStateSelectors.selectDisplayUsd);
   globalConfig$ = this.store.select(appStateSelectors.selectConfig);
 
   // Admin preset merged with user's active filters

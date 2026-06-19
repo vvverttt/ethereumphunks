@@ -362,9 +362,11 @@
             <span class="eth">
               {{ (item.value.listing?.minValue | weiToEth) | number }}Ξ
             </span>
-            <span class="usd">
-              ${{ ((item.value.listing?.minValue | weiToEth) * ((usd$ | async) || 0)) | formatCash }}
-            </span>
+            @if (usd$ | async; as usd) {
+              <span class="usd">
+                ${{ ((item.value.listing?.minValue | weiToEth) * usd) | formatCash }}
+              </span>
+            }
           </div>
         }
       </div>
@@ -375,12 +377,16 @@
             <span class="eth">
               {{ (totalValue) | number : '1.0-5' }}Ξ
             </span>
-            <span class="usd">
-              ${{ (totalValue * ((usd$ | async) || 0)) | formatCash }}
-            </span>
+            @if (usd$ | async; as usd) {
+              <span class="usd">
+                ${{ (totalValue * usd) | formatCash }}
+              </span>
+            }
           } @else {
             <span class="eth">0Ξ</span>
-            <span class="usd">$0</span>
+            @if (usd$ | async) {
+              <span class="usd">$0</span>
+            }
           }
         </div>
       </div>

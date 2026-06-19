@@ -394,6 +394,13 @@
         </div>
 
         <div class="action-group">
+          <h3>Display</h3>
+          <button class="pause-toggle" [class.paused]="hideUsd()" (click)="toggleVisibility('hideUsd', hideUsd())" [disabled]="txPending()">
+            USD Prices: {{ hideUsd() ? 'HIDDEN (Ξ only)' : 'VISIBLE' }}
+          </button>
+        </div>
+
+        <div class="action-group">
           <h3>Menu Items</h3>
           <button class="pause-toggle" [class.paused]="!showLottery()" (click)="toggleVisibility('showLottery', showLottery())" [disabled]="txPending()">
             Lottery: {{ showLottery() ? 'VISIBLE' : 'HIDDEN' }}

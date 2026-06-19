@@ -82,6 +82,7 @@ export class DataService {
         if (config.showLottery === undefined) config.showLottery = true;
         if (config.showAuction === undefined) config.showAuction = true;
         if (config.showPhunkSwap === undefined) config.showPhunkSwap = true;
+        if (config.hideUsd === undefined) config.hideUsd = false;
         // hiddenSlugs: stored inside collectionTraitFilters jsonb under __hiddenSlugs key
         // (avoids needing a separate DB column — collectionTraitFilters is a real existing column)
         if (!config.collectionTraitFilters) config.collectionTraitFilters = {};
@@ -110,6 +111,7 @@ export class DataService {
           config.showLottery = true;
           config.showAuction = true;
           config.showPhunkSwap = true;
+          config.hideUsd = false;
           config.hiddenSlugs = [];
         }
         return config;

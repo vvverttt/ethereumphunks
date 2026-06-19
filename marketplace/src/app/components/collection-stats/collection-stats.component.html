@@ -1,33 +1,30 @@
 <div class="inner">
-  <!-- Overall Stats numbers hidden for now for non-ethsrocks; buttons kept below -->
-  @if (collection.slug === 'ethsrocks') {
-    <h3>{{ t('overallStats') }}</h3>
+  <h3>{{ t('overallStats') }}</h3>
 
-    <div class="stats-grid">
-      <div class="stat-item">
-        <span class="stat-value">{{ totalSupplyDisplay() }}</span>
-        <span class="stat-label">{{ t('totalArtifacts') }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value">{{ loading() ? '-' : (uniqueTraitValues() | number) }}</span>
-        <span class="stat-label">{{ t('uniqueTraitValues') }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value">{{ loading() ? '-' : (traitTypes() | number) }}</span>
-        <span class="stat-label">{{ t('uniqueTraitTypes') }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value">{{ loading() ? '-' : (oneOfOnes() | number) }}</span>
-        <span class="stat-label">{{ t('totalOneOfOnes') }}</span>
-      </div>
-      @for (stat of extraStats(); track stat.label) {
-        <div class="stat-item">
-          <span class="stat-value">{{ stat.value | number }}</span>
-          <span class="stat-label">{{ stat.label }}</span>
-        </div>
-      }
+  <div class="stats-grid">
+    <div class="stat-item">
+      <span class="stat-value">{{ totalSupplyDisplay() }}</span>
+      <span class="stat-label">{{ t('totalArtifacts') }}</span>
     </div>
-  }
+    <div class="stat-item">
+      <span class="stat-value">{{ loading() ? '-' : (uniqueTraitValues() | number) }}</span>
+      <span class="stat-label">{{ t('uniqueTraitValues') }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{ loading() ? '-' : (traitTypes() | number) }}</span>
+      <span class="stat-label">{{ t('uniqueTraitTypes') }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{ loading() ? '-' : (oneOfOnes() | number) }}</span>
+      <span class="stat-label">{{ t('totalOneOfOnes') }}</span>
+    </div>
+    @for (stat of extraStats(); track stat.label) {
+      <div class="stat-item">
+        <span class="stat-value">{{ stat.display }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+      </div>
+    }
+  </div>
 
   <div class="stat-buttons">
     <a class="stat-btn" [routerLink]="['/' + collection.slug + '/owners']">

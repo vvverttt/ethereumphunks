@@ -64,6 +64,7 @@ export interface GlobalConfig {
   showLottery: boolean;
   showAuction: boolean;
   showPhunkSwap: boolean;
+  hideUsd: boolean;
   hiddenSlugs: string[];
   collectionTraitFilters?: { [slug: string]: TraitFilter };
 };

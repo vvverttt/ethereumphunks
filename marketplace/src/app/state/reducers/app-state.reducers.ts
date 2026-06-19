@@ -49,6 +49,7 @@ export const initialState: AppState = {
     showLottery: true,
     showAuction: true,
     showPhunkSwap: true,
+    hideUsd: false,
     hiddenSlugs: [],
   },
 

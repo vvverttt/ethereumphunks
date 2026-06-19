@@ -58,7 +58,7 @@ export class UserActivityComponent {
     // PhunkNoLongerForSale: 'Offer withdrawn',
   };
 
-  usd$ = this.store.select(dataStateSelectors.selectUsd);
+  usd$ = this.store.select(dataStateSelectors.selectDisplayUsd);
 
   constructor(
     private store: Store<GlobalState>,

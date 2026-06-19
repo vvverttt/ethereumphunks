@@ -21,24 +21,41 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'og-dysto-phunks': 'DystoPhunks',
   'quantumdystophunkzv67': 'DystoPhunkz',
 };
-const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; uniqueTraitValues?: number; oneOfOnes?: number }> = {
+const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSupplyDisplay?: string; uniqueTraitValues?: number; oneOfOnes?: number }> = {
   'cryptophunksv67': {
     totalSupply: 4251,
-    uniqueTraitValues: 1481,
-    oneOfOnes: 648,
+    totalSupplyDisplay: '4,251 / 10,000',
+    uniqueTraitValues: 1526,
+    oneOfOnes: 675,
   },
   'quantummissingphunksv67': {
+    totalSupplyDisplay: '17 / 250',
     oneOfOnes: 2,
   },
   'quantumdystophunkzv67': {
     oneOfOnes: 69,
   },
 };
-const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; value: number }>> = {
+const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string }>> = {
   'cryptophunksv67': [
-    { label: 'Lottery', value: 2367 },
-    { label: 'Lottery Pro', value: 535 },
-    { label: 'Auction Pro', value: 45 },
+    { label: 'Unique Colors', display: '28,835' },
+    { label: 'Colored Pixels', display: '1,274,270 / 2,447,424' },
+  ],
+  'quantummissingphunksv67': [
+    { label: 'Unique Colors', display: '93' },
+    { label: 'Colored Pixels', display: '4,278 / 9,792' },
+  ],
+  'quantumdystophunkzv67': [
+    { label: 'Unique Colors', display: '456' },
+    { label: 'Colored Pixels', display: '20,507 / 39,744' },
+  ],
+  'og-missing-phunks': [
+    { label: 'Unique Colors', display: '220' },
+    { label: 'Colored Pixels', display: '56,712 / 144,000' },
+  ],
+  'og-dysto-phunks': [
+    { label: 'Unique Colors', display: '154' },
+    { label: 'Colored Pixels', display: '15,475 / 39,744' },
   ],
 };
 
@@ -103,7 +120,8 @@ export class CollectionStatsComponent implements OnChanges {
   });
 
   totalSupplyDisplay = computed<string>(() => {
-    if (this.collectionSlug() === 'cryptophunksv67') return '4,251 / 10,000';
+    const override = STATS_OVERRIDES_BY_SLUG[this.collectionSlug()]?.totalSupplyDisplay;
+    if (override) return override;
     return new Intl.NumberFormat('en-US').format(this.totalSupply());
   });
 

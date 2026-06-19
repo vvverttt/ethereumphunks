@@ -75,7 +75,7 @@
 
                 <div class="section-stats-wrapper">
                   @if ((listings | calc : 'lowestListingPrice'); as ethPrice) {
-                    <p>{{ t('lowestPricePrefix') }} {{ activeCollection.singleName }} {{ t('currentlyForSaleIs') }} <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                    <p>{{ t('lowestPricePrefix') }} {{ activeCollection.singleName }} {{ t('currentlyForSaleIs') }} <span class="bold">Ξ{{ ethPrice | number }}@if (usd$ | async; as usd) { ({{ (ethPrice * usd) | currency }} USD)}</span>.</p>
                   }
 
                   <p>{{ t('showingLowestOffers') }}, <a class="highlight" [routerLink]="['market', 'listings']" [relativeTo]="route">({{ listings.length | number }}) {{ t('viewAllLower') }}.</a></p>
@@ -101,10 +101,10 @@
 
                 <div class="section-stats-wrapper">
                   @if ((bids | calc : 'averageBidPrice'); as ethPrice) {
-                    <p>The average open bid is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                    <p>The average open bid is <span class="bold">Ξ{{ ethPrice | number }}@if (usd$ | async; as usd) { ({{ (ethPrice * usd) | currency }} USD)}</span>.</p>
                   }
                   @if ((bids | calc : 'totalBidsValue'); as ethPrice) {
-                    <p>Total value of all open bids is <span class="bold">Ξ{{ ethPrice | number }} ({{ (ethPrice * ((usd$ | async) || 0)) | currency }} USD)</span>.</p>
+                    <p>Total value of all open bids is <span class="bold">Ξ{{ ethPrice | number }}@if (usd$ | async; as usd) { ({{ (ethPrice * usd) | currency }} USD)}</span>.</p>
                   }
                   <p>Showing top bids, <a class="highlight" [routerLink]="['market', 'bids']" [relativeTo]="route">({{ bids.length | number }}) {{ t('viewAllLower') }}.</a></p>
                 </div>

@@ -92,7 +92,7 @@ export class RecentActivityComponent {
     AuctionSettled: 'auctionWonBy',
   };
 
-  usd$ = this.store.select(dataStateSelectors.selectUsd);
+  usd$ = this.store.select(dataStateSelectors.selectDisplayUsd);
   private rawEvents$ = this.store.select(dataStateSelectors.selectEvents);
   // Mutation/Evolve retired — hide Evolved/Devolved events everywhere.
   events$ = this.rawEvents$.pipe(

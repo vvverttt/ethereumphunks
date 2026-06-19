@@ -197,7 +197,7 @@ export class ItemViewComponent {
   walletAddress$ = this.store.select(appStateSelectors.selectWalletAddress);
   connected$ = this.store.select(appStateSelectors.selectConnected);
   theme$ = this.store.select(appStateSelectors.selectTheme);
-  usd$ = this.store.select(dataStateSelectors.selectUsd);
+  usd$ = this.store.select(dataStateSelectors.selectDisplayUsd);
   currentBlock$ = this.store.select(appStateSelectors.selectCurrentBlock);
 
   /** Contract's confirmBid cooldown (ETHSCRIPTION_TRANSFER_COOLDOWN_BLOCKS). */

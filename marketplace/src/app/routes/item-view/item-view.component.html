@@ -66,7 +66,7 @@
 
                 <!-- Value (Listing) -->
                 @if (phunk.listing?.listed && phunk.listing?.minValue; as value) {
-                  <p>{{ phunk.collection?.singleName }} {{ t('isForSaleFor') }} <span class="highlight">{{ (value | weiToEth) }} ETH</span><span class="bold"> (${{ ((value | weiToEth) * ((usd$ | async) || 0)) | formatCash }})</span>.</p>
+                  <p>{{ phunk.collection?.singleName }} {{ t('isForSaleFor') }} <span class="highlight">{{ (value | weiToEth) }} ETH</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ ((value | weiToEth) * usd) | formatCash }})</span>}.</p>
                 } @else if (!phunk.isSupported) {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotSupported') }}</p>
                 } @else {
@@ -78,7 +78,7 @@
                   <p class="bid-status">
                     <span>{{ t('currentBidColon') }}</span>
                     <span class="highlight">{{ (bid.value | weiToEth) }} ETH</span>
-                    <span class="bold"> (${{ ((bid.value | weiToEth) * ((usd$ | async) || 0)) | formatCash }})</span>
+                    @if (usd$ | async; as usd) {<span class="bold"> (${{ ((bid.value | weiToEth) * usd) | formatCash }})</span>}
                     {{ t('by') }} <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: bid.bidder }"><app-address [address]="bid.bidder" /></a>.
                     @if (bid.accepted) {
                       <span class="bid-accepted"> {{ t('bidAcceptedWaitingShort') }}</span>

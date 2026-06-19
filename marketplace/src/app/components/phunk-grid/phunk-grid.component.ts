@@ -84,7 +84,7 @@ export class PhunkGridComponent implements OnChanges {
 
   limitArr = Array.from({length: this.limit}, (_, i) => i);
 
-  usd$ = this.store.select(dataStateSelectors.selectUsd);
+  usd$ = this.store.select(dataStateSelectors.selectDisplayUsd);
 
   showLoadMore: boolean = false;
 

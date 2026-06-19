@@ -70,7 +70,7 @@ export class IndexComponent {
   all$ = this.store.select(marketStateSelectors.selectAll);
 
   isMobile$ = this.store.select(appStateSelectors.selectIsMobile);
-  usd$ = this.store.select(dataStateSelectors.selectUsd);
+  usd$ = this.store.select(dataStateSelectors.selectDisplayUsd);
 
   config$ = this.store.select(appStateSelectors.selectConfig);
 
