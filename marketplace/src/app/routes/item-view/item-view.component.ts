@@ -134,6 +134,12 @@ export class ItemViewComponent {
 
   currentBid = signal<{ bidder: string; value: string; valueWei: bigint; acceptedBlock: number; accepted: boolean } | null>(null);
 
+  // The owner-key the loaded currentBid is actually stored under on-chain. Usually
+  // this equals bidOwner(phunk), but for an "orphaned" bid (item changed hands after
+  // the bid was placed) it's the previous owner recovered from the indexer. Withdraw/
+  // confirm must use THIS key, not the current owner, or the tx reverts ("No bid").
+  private bidKeyOwner: string | null = null;
+
   singlePhunk$ = this.route.params.pipe(
     filter((params: any) => !!params.hashId),
     distinctUntilChanged((prev, curr) => prev.hashId === curr.hashId),
@@ -478,7 +484,7 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.withdrawBid(hashId, this.bidOwner(phunk));
+      const hash = await this.web3Svc.withdrawBid(hashId, this.bidKeyOwner ?? this.bidOwner(phunk));
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
 
@@ -554,7 +560,7 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.confirmBid(hashId, this.bidOwner(phunk));
+      const hash = await this.web3Svc.confirmBid(hashId, this.bidKeyOwner ?? this.bidOwner(phunk));
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
 
@@ -624,12 +630,31 @@ export class ItemViewComponent {
   }
 
   async loadCurrentBid(phunk: Phunk): Promise<void> {
+    this.bidKeyOwner = null;
     if (!phunk?.hashId || !phunk?.owner) {
       this.currentBid.set(null);
       return;
     }
-    const bid = await this.web3Svc.getBid(this.bidOwner(phunk), phunk.hashId);
+    let keyOwner = this.bidOwner(phunk);
+    let bid = await this.web3Svc.getBid(keyOwner, phunk.hashId);
+
+    // Fallback for "orphaned" bids: if the item changed hands after the bid was
+    // placed, the bid is keyed to a previous owner and a lookup by the current
+    // owner finds nothing. Recover the original key from the indexer so the bidder
+    // can still see — and withdraw — their locked ETH.
+    if (!(bid && bid.hasBid)) {
+      const storedKey = await this.dataSvc.getBidOwnerKey(phunk.hashId);
+      if (storedKey && storedKey.toLowerCase() !== keyOwner.toLowerCase()) {
+        const recovered = await this.web3Svc.getBid(storedKey, phunk.hashId);
+        if (recovered && recovered.hasBid) {
+          bid = recovered;
+          keyOwner = storedKey;
+        }
+      }
+    }
+
     if (bid && bid.hasBid) {
+      this.bidKeyOwner = keyOwner;
       const acceptedBlock = Number(bid.acceptedBlock);
       this.currentBid.set({
         bidder: bid.bidder,

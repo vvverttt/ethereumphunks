@@ -491,6 +491,25 @@ export class DataService {
   }
 
   /**
+   * Recover the owner-key a bid is stored under on-chain. V3_4 bids are keyed by
+   * (ownerAtBidTime, hashId), so if an item changes hands after a bid is placed
+   * the bid becomes "orphaned": it still exists (and is withdrawable) but a lookup
+   * by the item's CURRENT owner finds nothing. The indexer records the original
+   * key in bids.ownerAddress, so we use it as a fallback to surface the bid.
+   * @param hashId The ethscription hashId
+   * @returns The ownerAddress the open bid is keyed under, or null if none.
+   */
+  async getBidOwnerKey(hashId: string): Promise<string | null> {
+    const { data } = await supabase
+      .from('bids' + this.suffix)
+      .select('ownerAddress')
+      .eq('hashId', hashId)
+      .limit(1)
+      .maybeSingle();
+    return (data?.['ownerAddress'] as string) ?? null;
+  }
+
+  /**
    * Watches for changes to ethscriptions by slug
    * @param slug Collection slug
    */
