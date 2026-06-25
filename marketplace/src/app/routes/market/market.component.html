@@ -65,6 +65,17 @@
               </div>
 
               <div class="right">
+                @if (marketType === 'listings') {
+                  <button
+                    class="sweep-button"
+                    [class.active]="selectMultipleActive"
+                    (click)="setSelectActive()">
+
+                    <ng-template [ngTemplateOutlet]="broomIcon" />
+                    {{ t('sweep') }}
+                  </button>
+                }
+
                 <button
                   class="filters-button"
                   [class.active]="filtersVisible"
@@ -109,42 +120,41 @@
               </div>
             </div>
 
-            @if ((walletAddress$ | async); as walletAddress) {
-              @if (
-                selectMultipleActive
-                && (((marketType === 'owned')
-                && (route.snapshot.queryParams.address | lowercase) === walletAddress) || marketType === 'listings')
-              ) {
-                <div class="selection-toolbar">
-                  <div class="selected-label">
-                    <span>{{ objectKeys(selected).length }}</span> {{ t('selected') }}
-                  </div>
-
-                  <div class="actions" [class.disabled]="!objectKeys(selected).length">
-                    @if (marketType === 'owned') {
-                      <div class="actions-group">
-                        <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">{{ t('list') }}</button>
-                        <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">{{ t('transfer') }}</button>
-                        <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">{{ t('escrow') }}</button>
-                        <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">{{ t('withdraw') }}</button>
-                      </div>
-                    } @else if (marketType === 'listings') {
-                      <div class="actions-group buy-side">
-                        <div class="total-value">
-                          <span class="label">{{ t('totalCost') }}: </span>
-                          <span class="value">
-                            {{ (objectValues(selected) | calc : 'totalListingsValue') | number : '1.0-5' }}Ξ
-                          </span>
-                          <!-- {{ (selectedValue | weiToEth) | number }}Ξ</span> -->
-                        </div>
-                        <button (click)="batchAction('sweep')">
-                          {{ t('buySelected') }}
-                        </button>
-                      </div>
-                    }
-                  </div>
+            @if (
+              marketType === 'listings'
+                ? selectMultipleActive
+                : (selectMultipleActive
+                    && marketType === 'owned'
+                    && (route.snapshot.queryParams.address | lowercase) === (walletAddress$ | async))
+            ) {
+              <div class="selection-toolbar">
+                <div class="selected-label">
+                  <span>{{ objectKeys(selected).length }}</span> {{ t('selected') }}
                 </div>
-              }
+
+                <div class="actions" [class.disabled]="!objectKeys(selected).length">
+                  @if (marketType === 'owned') {
+                    <div class="actions-group">
+                      <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">{{ t('list') }}</button>
+                      <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">{{ t('transfer') }}</button>
+                      <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">{{ t('escrow') }}</button>
+                      <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">{{ t('withdraw') }}</button>
+                    </div>
+                  } @else if (marketType === 'listings') {
+                    <div class="actions-group buy-side">
+                      <div class="total-value">
+                        <span class="label">{{ t('totalCost') }}: </span>
+                        <span class="value">
+                          {{ (objectValues(selected) | calc : 'totalListingsValue') | number : '1.0-5' }}Ξ
+                        </span>
+                      </div>
+                      <button (click)="batchAction('sweep')">
+                        {{ t('buySelected') }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
             }
           </div>
 
@@ -419,4 +429,38 @@
 
 <ng-template #backIcon>
   <svg height="13" viewBox="0 0 13 13" width="13" xmlns="http://www.w3.org/2000/svg"><path d="m12.5 6.5h-11v-1h11zm-11-2h11v1h-11zm11 4h-11v1h11zm-11-2h11v1h-11z" fill="rgba(var(--text-color), 1)" /></svg>
+</ng-template>
+
+<ng-template #broomIcon>
+  <svg height="14" viewBox="0 0 10 14" width="10" xmlns="http://www.w3.org/2000/svg">
+    <path d="m5 0h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m5 1h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m4 2h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m5 2h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m4 3h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m5 3h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m3 4h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m4 4h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m5 4h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m1 5h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m2 5h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m3 5h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m4 5h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m5 5h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m6 5h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m1 6h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m2 6h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m3 6h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m4 6h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m5 6h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m6 6h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m0 7h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m2 7h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m4 7h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m6 7h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m0 8h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m2 8h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m4 8h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+    <path d="m6 8h1v1h-1z" fill="rgba(var(--text-color), 1)" />
+  </svg>
 </ng-template>

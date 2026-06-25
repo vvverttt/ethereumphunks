@@ -592,6 +592,23 @@ export class ItemViewComponent {
     return this.oldMarketAddresses.includes((phunk?.owner || '').toLowerCase());
   }
 
+  /** A bid is "orphaned" when the item changed hands after the bid was placed:
+   *  it's keyed on-chain to a previous owner (bidKeyOwner) that is no longer the
+   *  current owner, so the current owner CANNOT accept it (only the bidder can
+   *  withdraw). Detected by bidKeyOwner != the current bid owner. */
+  isOrphanedBid(phunk: Phunk): boolean {
+    if (!this.currentBid() || !this.bidKeyOwner) return false;
+    return this.bidKeyOwner.toLowerCase() !== this.bidOwner(phunk).toLowerCase();
+  }
+
+  /** True only if the connected wallet is the address the bid is actually keyed to
+   *  on-chain (bidKeyOwner) and the bid is still open — i.e. it can really be accepted. */
+  canAcceptBid(address: string | null | undefined): boolean {
+    const bid = this.currentBid();
+    if (!bid || bid.accepted || !address || !this.bidKeyOwner) return false;
+    return this.bidKeyOwner.toLowerCase() === address.toLowerCase();
+  }
+
   /** Role-aware "what happens next" guidance for the current bid, shown on the
    *  item page so both the owner and the bidder always know the next step. */
   bidNextStep(phunk: Phunk, address: string | null | undefined): string | null {
@@ -602,6 +619,12 @@ export class ItemViewComponent {
     const isOwner = this.bidOwner(phunk).toLowerCase() === a;
 
     if (!bid.accepted) {
+      // Orphaned/dead bid — keyed to a past owner; not acceptable from here.
+      if (this.isOrphanedBid(phunk)) {
+        if (isBidder) return this.t('bidOrphanedBidder');
+        if (isOwner) return this.t('bidOrphanedOwner');
+        return null;
+      }
       if (isOwner) {
         return this.isOnOldMarket(phunk)
           ? this.t('bidStep2WithdrawFirst')

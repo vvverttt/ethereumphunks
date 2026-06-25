@@ -71,19 +71,12 @@
       ">
 
       @if (selectable) {
-        <div class="selector">
-          <input
-            #phunkCheck
-            type="checkbox"
-            [id]="'checkbox-' + phunk.tokenId"
-            [checked]="selected[phunk.hashId]"
-            [attr.data-hash-id]="phunk.hashId"
-            (change)="selectPhunk(phunk)"
-          />
-
-          <label [for]="'checkbox-' + phunk.tokenId">
-            <div class="check"></div>
-          </label>
+        <div
+          class="selector"
+          [attr.data-hash-id]="phunk.hashId"
+          [class.checked]="selected[phunk.hashId]"
+          (click)="selectPhunk(phunk)">
+          <div class="check"></div>
         </div>
       }
 

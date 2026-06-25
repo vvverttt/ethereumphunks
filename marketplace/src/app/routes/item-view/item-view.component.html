@@ -181,15 +181,7 @@
                           <!-- Accept Bid (OWNER, bid exists & not yet accepted) -->
                           <!-- One tx: if the phunk is already escrowed → acceptBid; -->
                           <!-- if not → escrow+accept atomically (V3_3 combined path). -->
-                          @if (
-                            currentBid() &&
-                            !currentBid()!.accepted &&
-                            (
-                              (phunk.isEscrowed && (phunk.prevOwner | lowercase) === (address | lowercase)) ||
-                              (!phunk.isEscrowed && (phunk.owner | lowercase) === (address | lowercase) && !phunk.nft) ||
-                              (phunk.nft && phunk.nft.owner === address)
-                            )
-                          ) {
+                          @if (canAcceptBid(address)) {
                             <button class="accept-bid" (click)="acceptBidAction(phunk)">
                               <span>{{ t('acceptBidButton') }}</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'acceptBid' }" />
@@ -275,6 +267,19 @@
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawBid' }" />
                             </button>
                           }
+                        }
+                      } @else {
+                        <!-- Item not "supported": trading UI is hidden, but a bidder must
+                             still be able to reclaim their own deposited ETH. Withdraw stays. -->
+                        @if (
+                          currentBid() &&
+                          (currentBid()!.bidder | lowercase) === (address | lowercase) &&
+                          !currentBid()!.accepted
+                        ) {
+                          <button class="withdraw-bid" (click)="withdrawBidAction(phunk)">
+                            <span>{{ t('withdrawBidButton') }}</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawBid' }" />
+                          </button>
                         }
                       }
 

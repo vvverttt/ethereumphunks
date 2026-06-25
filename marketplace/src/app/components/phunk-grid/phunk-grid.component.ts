@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -52,8 +52,6 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
 
 export class PhunkGridComponent implements OnChanges {
 
-  @ViewChildren('phunkCheck') phunkCheck!: QueryList<ElementRef<HTMLInputElement>>;
-
   escrowAddress = environment.marketAddress;
   // Any marketplace contract that holds escrowed items (real owner = prevOwner):
   // our V3 market AND the old EtherPhunks market (where OG items get listed).
@@ -97,26 +95,12 @@ export class PhunkGridComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.selected && !changes.selected.firstChange) {
-      this.phunkCheck?.forEach((checkbox) => {
-        const hashId = checkbox.nativeElement.dataset.hashId;
-        if (!hashId) return;
-        checkbox.nativeElement.checked = !!this.selected[hashId];
-      });
-    }
+    // Selected state is reflected reactively via [class.checked]; no DOM work needed.
 
-    if (changes.selectAll) {
-      this.phunkCheck?.forEach((checkbox) => {
-        if (!this.phunkData) return;
-        checkbox.nativeElement.checked = this.selectAll;
-
-        const hashId = checkbox.nativeElement.dataset.hashId;
-        if (!hashId) return;
-
-        const phunk = this.phunkData.find((phunk) => phunk.hashId === hashId);
-        if (!phunk) return;
+    if (changes.selectAll && this.phunkData) {
+      for (const phunk of this.phunkData) {
         this.selectPhunk(phunk, true, !this.selectAll);
-      });
+      }
     }
 
     if (changes.traitFilters && !changes.traitFilters.firstChange) {
