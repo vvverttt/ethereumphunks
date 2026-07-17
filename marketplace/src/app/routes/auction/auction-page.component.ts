@@ -12,6 +12,7 @@ import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
 import { AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
+import { BuyNowWhitelistService } from '@/services/buy-now-whitelist.service';
 
 const AUCTION_SWAP_ABI = [
   { inputs: [{ name: 'sendHashId', type: 'bytes32' }, { name: 'receiveHashId', type: 'bytes32' }, { name: 'proof', type: 'bytes32[]' }], name: 'swap', outputs: [], stateMutability: 'payable', type: 'function' },
@@ -42,6 +43,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 export class AuctionPageComponent implements OnInit, OnDestroy {
 
   connected$ = this.store.select(appStateSelectors.selectConnected);
+  walletAddress$ = this.store.select(appStateSelectors.selectWalletAddress);
 
   auction = signal<AuctionData | null>(null);
   phunkImage = signal<string>('');
@@ -58,6 +60,16 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   errorMessage = signal('');
   txPending = signal(false);
   txHash = signal<string>('');
+
+  // ─── Buy-now (V3) ──────────────────────────────────────────────────────────
+  /** buyNowEnabled() on-chain AND the bundled snapshot still matches the live merkle root. */
+  buyNowLive = signal(false);
+  buyNowPriceEth = signal<string>('0');
+  /** Merkle proof for the connected wallet; null => not on the whitelist. */
+  buyNowProof = signal<string[] | null>(null);
+  buyNowEligible = computed(() => !!this.buyNowProof());
+  /** ?buynow=preview — renders the control read-only so it can be reviewed pre-launch. */
+  buyNowPreview = signal(false);
   updating = signal(false);
 
   settledAuctions = signal<SettledAuction[]>([]);
@@ -333,13 +345,16 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
   private pollInterval: any;
   private realtimeChannel: any;
+  private walletSub?: { unsubscribe(): void };
 
   constructor(
     private store: Store<GlobalState>,
     private auctionSvc: AuctionService,
     public web3Svc: Web3Service,
     private route: ActivatedRoute,
+    private buyNowWl: BuyNowWhitelistService,
   ) {
+    this.buyNowPreview.set(this.route.snapshot.queryParamMap.get('buynow') === 'preview');
     // Check for address override from route data (auction house 2)
     const overrideAddress = this.route.snapshot.data['auctionAddress'];
     if (overrideAddress) {
@@ -419,11 +434,15 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     try {
       await this.loadAuction();
       this.loadSettledAuctions();
+      await this.refreshBuyNow();
     } catch (err) {
       console.error('Auction init failed:', err);
     } finally {
       this.loading.set(false);
     }
+
+    // Eligibility is per-wallet, so re-resolve the proof whenever the connected account changes.
+    this.walletSub = this.walletAddress$.subscribe(() => { this.refreshBuyNow(); });
 
     // Realtime: refresh from DB immediately when a new bid lands
     this.realtimeChannel = supabase
@@ -436,6 +455,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         if (!this.isHistorical()) {
           this.updating.set(true);
           this.refreshAuctionFromDB().finally(() => this.updating.set(false));
+          // A bid closes the buy-now window on-chain — reflect that immediately.
+          this.refreshBuyNow();
         }
       })
       .subscribe();
@@ -463,6 +484,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     clearTimeout(this.pollInterval);
     if (this.realtimeChannel) supabase.removeChannel(this.realtimeChannel);
+    this.walletSub?.unsubscribe();
   }
 
   async loadAuction() {
@@ -666,6 +688,63 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       }
     } catch (err: any) {
       this.errorMessage.set(err?.shortMessage || err?.message || 'Bid failed');
+    } finally {
+      this.txPending.set(false);
+    }
+  }
+
+  /**
+   * Refresh buy-now state. Gate on the CONTRACT's config, not the bundled snapshot: the owner can
+   * flip buyNowEnabled or rotate the root at any time, and a stale bundle would otherwise offer a
+   * button whose transaction is guaranteed to revert.
+   */
+  async refreshBuyNow() {
+    try {
+      const cfg = await this.auctionSvc.getBuyNowConfig();
+      const rootMatches = await this.buyNowWl.matchesRoot(cfg.root);
+      this.buyNowLive.set(cfg.enabled && rootMatches);
+      this.buyNowPriceEth.set(formatEther(cfg.price));
+
+      const address = await firstValueFrom(this.walletAddress$);
+      this.buyNowProof.set(rootMatches ? await this.buyNowWl.proofFor(address) : null);
+    } catch {
+      this.buyNowLive.set(false);
+      this.buyNowProof.set(null);
+    }
+  }
+
+  async onBuyNow() {
+    const connected = await firstValueFrom(this.connected$);
+    if (!connected) {
+      this.web3Svc.connect();
+      return;
+    }
+
+    // Re-read on-chain immediately before sending: a bid landing in the interim closes the
+    // buy-now window, and the contract would revert with "Auction already has a bid".
+    await this.refreshBuyNow();
+    const proof = this.buyNowProof();
+    if (!this.buyNowLive() || !proof) {
+      this.errorMessage.set('Buy Now is not available for this wallet');
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.txPending.set(true);
+    this.txHash.set('');
+
+    try {
+      const cfg = await this.auctionSvc.getBuyNowConfig();
+      const hash = await this.auctionSvc.buyNow(proof, cfg.price);
+      if (hash) {
+        this.txHash.set(hash);
+        await this.web3Svc.pollReceipt(hash);
+        this.txHash.set('');
+        await this.loadAuction();
+        await this.refreshBuyNow();
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Buy Now failed');
     } finally {
       this.txPending.set(false);
     }

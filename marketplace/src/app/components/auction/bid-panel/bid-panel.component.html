@@ -33,6 +33,29 @@
   </div>
 </div>
 
+<!-- Buy Now (V3) — ethsrocks holders only, and only while the live item has no bids.
+     Sits directly under the stats row. Hidden entirely unless the connected wallet is in the
+     current on-chain merkle root; ?buynow=preview renders it read-only for review. -->
+@if (showBuyNow) {
+  <div class="buy-now" [class.preview]="buyNowPreview">
+    <button (click)="buyNow.emit()" [disabled]="!canBuyNow">
+      @if (txPending && !buyNowPreview) {
+        {{ t('pending') }}
+      } @else {
+        <span class="buy-now-label">{{ t('buyNow') }}</span>
+        <span class="buy-now-price"><span class="eth-symbol">&Xi;</span>{{ buyNowPriceEth }}</span>
+      }
+    </button>
+    <p class="buy-now-note">
+      @if (buyNowPreview) {
+        {{ t('buyNowPreview') }}
+      } @else {
+        {{ t('buyNowNote') }}
+      }
+    </p>
+  </div>
+}
+
 <!-- Form Wrapper with Overlays -->
 <div
   class="form-wrapper"

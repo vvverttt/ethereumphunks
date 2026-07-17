@@ -270,6 +270,65 @@ export class AuctionService {
     return hash;
   }
 
+  // ─── Buy-now (V3) ────────────────────────────────────────────────────────────
+
+  /**
+   * On-chain buy-now config. The contract is the source of truth for whether buy-now is live —
+   * never gate the UI on the bundled whitelist alone, since the owner can disable buy-now or
+   * rotate the merkle root at any time via setBuyNow().
+   */
+  async getBuyNowConfig(): Promise<{ enabled: boolean; price: bigint; root: string }> {
+    const client = getPublicClient(this.web3Svc.config, { chainId: environment.chainId as 1 });
+    try {
+      const results = await (client as any).multicall({
+        contracts: [
+          { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNowEnabled' },
+          { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNowPrice' },
+          { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNowMerkleRoot' },
+        ],
+        allowFailure: true,
+      });
+      return {
+        // A pre-V3 implementation simply has no these selectors — treat that as "off", not an error.
+        enabled: (results[0]?.result as boolean) ?? false,
+        price: (results[1]?.result as bigint) ?? 0n,
+        root: (results[2]?.result as string) ?? '0x',
+      };
+    } catch {
+      return { enabled: false, price: 0n, root: '0x' };
+    }
+  }
+
+  /**
+   * Take the live auction item at buyNowPrice. Reverts on-chain if the auction already has a bid,
+   * is settled/expired, or the proof isn't in the current root — the contract re-checks all of it,
+   * so the UI gate is convenience only, never the security boundary.
+   */
+  async buyNow(proof: string[], priceWei: bigint): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+
+    const chainId = environment.chainId;
+    let walletClient;
+    try {
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    } catch {
+      await reconnect(this.web3Svc.config);
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    }
+    if (!walletClient) throw new Error('No wallet connected');
+
+    const hash = await walletClient.writeContract({
+      address: this.address,
+      abi: EtherPhunksAuctionHouseV2ABI,
+      functionName: 'buyNow',
+      args: [proof as `0x${string}`[]],
+      value: priceWei,
+      chain: walletClient.chain,
+      account: walletClient.account,
+    });
+    return hash;
+  }
+
   async settleAuction(): Promise<string | undefined> {
     await this.web3Svc.switchNetwork();
 

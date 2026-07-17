@@ -43,6 +43,44 @@ export const EtherPhunksAuctionHouseV2ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  // ─── V3 (buyNow) ─────────────────────────────────────────
+  // Live impl 0x579ccf18bdB09e48982F8578887Eb3bcb39a9f59. buyNow takes the CURRENT auction item
+  // at buyNowPrice, and only while it has no bids — it reverts once anyone bids.
+  {
+    inputs: [{ internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' }],
+    name: 'buyNow',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNowEnabled',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNowPrice',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNowMerkleRoot',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    name: 'itemReservePrice',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
   {
     inputs: [],
     name: 'auctionId',
