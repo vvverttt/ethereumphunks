@@ -9,6 +9,7 @@ import { TimeService } from '@/modules/shared/services/time.service';
 import { EthscriptionsService } from '@/modules/ethscriptions/ethscriptions.service';
 import { LotteryService } from '@/modules/lottery/lottery.service';
 import { CommentsService } from '@/modules/comments/comments.service';
+import { NftService } from '@/modules/nft/nft.service';
 
 import { chain } from '@/constants/ethereum';
 
@@ -41,6 +42,7 @@ export class ProcessingService {
     private readonly ethsSvc: EthscriptionsService,
     private readonly lotterySvc: LotteryService,
     private readonly commentsSvc: CommentsService,
+    private readonly nftSvc: NftService,
     private readonly telegramSvc: TelegramService
   ) {}
 
@@ -235,13 +237,13 @@ export class ProcessingService {
       createdAt
     );
 
-    // Process nft events
-    // const nftEvents = await this.nftSvc.processNftEvents(
-    //   transaction,
-    //   receipt,
-    //   createdAt
-    // );
-    // if (nftEvents?.length) events.push(...nftEvents);
+    // Process nft events (ERC-721C v67 ownership + QuantumPhunks market)
+    const nftEvents = await this.nftSvc.processNftEvents(
+      transaction,
+      receipt,
+      createdAt
+    );
+    if (nftEvents?.length) events.push(...nftEvents);
 
     return events;
   }

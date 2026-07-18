@@ -949,6 +949,26 @@ export class StorageService implements OnModuleInit {
   }
 
   /**
+   * Gets an ethscription/NFT row by slug + tokenId. tokenId alone is not unique
+   * across collections, so ERC-721C indexing must scope by slug.
+   * @param slug - The collection slug
+   * @param tokenId - The token id
+   * @returns The row if found, undefined otherwise
+   */
+  async getEthscriptionBySlugAndTokenId(slug: string, tokenId: number | string): Promise<db.Ethscription> {
+    const response: db.EthscriptionResponse = await this.supabase
+      .from('ethscriptions' + this.suffix)
+      .select('*')
+      .eq('slug', slug)
+      .eq('tokenId', Number(tokenId));
+
+    const { data, error } = response;
+
+    if (error) throw error;
+    if (data?.length) return data[0];
+  }
+
+  /**
    * Gets a listing by its hash ID
    * @param hashId - The hash ID to look up
    * @returns The listing if found, null otherwise

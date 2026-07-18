@@ -14,6 +14,10 @@ import mutation from '@/abi/Mutation.json';
 
 import auctionV2 from '@/abi/EtherPhunksAuctionHouseV2.json';
 
+import qpMarketMulti from '@/abi/QuantumPhunksMarketMulti.json';
+
+import cryptoPhunksV67 from '@/abi/CryptoPhunksV67.json';
+
 export const pointsAbiL1 = pointsL1;
 
 export const marketAbiL1 = marketL1;
@@ -23,6 +27,10 @@ export const lotteryAbi = lottery;
 export const mutationAbi = mutation;
 
 export const auctionAbiV2 = auctionV2;
+
+export const qpMarketAbi = qpMarketMulti;
+
+export const v67NftAbi = cryptoPhunksV67;
 
 export const chain: 'mainnet' | 'sepolia' =
   process.env.CHAIN_ID === '1' ? 'mainnet' : 'sepolia';
@@ -92,6 +100,28 @@ export const auction2AddressL1: string =
 
 export const auctionAddressesL1 = new Set(
   [auctionAddressL1, auction2AddressL1].filter(Boolean)
+);
+
+// ── ERC-721C v67 (on-chain NFT) + QuantumPhunks market ──────────────────────
+// cryptophunksv67 is tracked as an on-chain ERC-721C collection: ownership via the
+// NFT contract's Transfer events, market activity via QuantumPhunksMarketMulti
+// (collection-aware; every event carries `address indexed collection`).
+export const v67NftAddress: string =
+  (chain === 'mainnet'
+    ? process.env.V67_NFT_ADDRESS_MAINNET
+    : process.env.V67_NFT_ADDRESS_SEPOLIA)?.toLowerCase() || '';
+
+export const qpMarketAddress: string =
+  (chain === 'mainnet'
+    ? process.env.QP_MARKET_ADDRESS_MAINNET
+    : process.env.QP_MARKET_ADDRESS_SEPOLIA)?.toLowerCase() || '';
+
+// The slug backing the ERC-721C NFT contract (so market events for other
+// collections on the same market are ignored by the v67 owner-transfer path).
+export const v67Slug: string = process.env.V67_SLUG || 'cryptophunksv67';
+
+export const nftAddressesL1 = new Set(
+  [v67NftAddress, qpMarketAddress].filter(Boolean)
 );
 
 const backupUrls = (l1RpcURL_BACKUP || '').split(',').filter(Boolean);
