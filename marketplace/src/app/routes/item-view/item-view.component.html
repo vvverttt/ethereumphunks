@@ -26,10 +26,17 @@
             <h1 i18n>{{ phunk.collection?.singleName }} {{ phunk.slug === 'ethsrocks' ? '-' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) : (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) }}</h1>
 
             <div class="hash-id">
-              <span>{{ t('provenanceHash') }}: </span>
-              <a [href]="explorerUrl + '/tx/' + phunk.hashId" target="_blank">
-                <app-address [address]="phunk.hashId" />
-              </a>
+              @if (phunk.slug && erc721cContracts[phunk.slug]) {
+                <span i18n>Contract: </span>
+                <a [href]="explorerUrl + '/nft/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)" target="_blank">
+                  <app-address [address]="erc721cContracts[phunk.slug]" /> #{{ phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId }}
+                </a>
+              } @else {
+                <span>{{ t('provenanceHash') }}: </span>
+                <a [href]="explorerUrl + '/tx/' + phunk.hashId" target="_blank">
+                  <app-address [address]="phunk.hashId" />
+                </a>
+              }
             </div>
 
             @if (phunk.attributes && phunk.attributes.length) {
@@ -307,7 +314,15 @@
                   }
 
                   <!-- Out links -->
-                  @if (!phunk.isSupported) {
+                  @if (phunk.slug && erc721cContracts[phunk.slug]) {
+                    <!-- ERC-721C: link to the NFT on OpenSea (contract + tokenId), not ethscriptions -->
+                    <a
+                      class="button external"
+                      [href]="'https://opensea.io/item/ethereum/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)"
+                      target="_blank">
+                      <span i18n>View on OpenSea</span>
+                    </a>
+                  } @else if (!phunk.isSupported) {
                     <a
                       class="button external"
                       [href]="externalMarketUrl + '/ethscriptions/' + phunk.hashId"
@@ -390,10 +405,17 @@
           <div class="title-wrapper">
             <h1>{{ phunk.collection?.singleName }} {{ t('doesNotExist') }} 👎</h1>
             <div class="hash-id">
-              <span>{{ t('provenanceHash') }}: </span>
-              <a [href]="explorerUrl + '/tx/' + phunk.hashId" target="_blank">
-                <app-address [address]="phunk.hashId" />
-              </a>
+              @if (phunk.slug && erc721cContracts[phunk.slug]) {
+                <span i18n>Contract: </span>
+                <a [href]="explorerUrl + '/nft/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)" target="_blank">
+                  <app-address [address]="erc721cContracts[phunk.slug]" /> #{{ phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId }}
+                </a>
+              } @else {
+                <span>{{ t('provenanceHash') }}: </span>
+                <a [href]="explorerUrl + '/tx/' + phunk.hashId" target="_blank">
+                  <app-address [address]="phunk.hashId" />
+                </a>
+              }
             </div>
           </div>
         }

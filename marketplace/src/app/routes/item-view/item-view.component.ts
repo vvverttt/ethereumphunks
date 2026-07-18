@@ -101,6 +101,13 @@ export class ItemViewComponent {
   explorerUrl = environment.explorerUrl;
   externalMarketUrl = environment.externalMarketUrl;
   escrowAddress = environment.marketAddress;
+
+  // Collections that are pure on-chain ERC-721C (not ethscriptions): link items to
+  // the NFT (contract + tokenId) rather than an inscription tx, which no longer
+  // reflects the token and would be misleading.
+  readonly erc721cContracts: { [slug: string]: string } = {
+    cryptophunksv67: '0x67b850c3c8790cc7ec76261b65fde60eFb6F1fe3',
+  };
   oldMarketAddresses: string[] = (((environment as any).oldMarketAddresses) || []).map((a: string) => a.toLowerCase());
 
   // Placing bids is enabled in the UI ONLY for these collections. Every other
