@@ -1,11 +1,14 @@
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+import { selectMarketSlug } from '@/state/selectors/market-state.selectors';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { ERC721C_CONTRACT_SETS } from '@/constants/erc721c';
 
 @Component({
   standalone: true,
@@ -23,15 +26,23 @@ export class FooterComponent {
   explorerUrl = environment.explorerUrl;
 
   version = environment.version;
-  marketAddress = environment.marketAddress;
-  points = environment.pointsAddress;
-  lottery = (environment as any).lotteryAddress;
-  lottery2 = (environment as any).lottery2Address;
-  auction = (environment as any).auctionAddress;
-  mutation = (environment as any).evolveAddress;
-  ethsrocks = (environment as any).ethsrocksAddress;
-  auction2 = '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630';
-  vault = '0xB69d359Eaf0db03372a587d9dB6f75B0A92CB218';
+
+  // Contract set shown in the footer — overridden per ERC-721C collection (e.g. cryptophunksv67
+  // shows the QuantumPhunks market/lottery + the NFT contract) based on the current collection.
+  contracts$ = this.store.select(selectMarketSlug).pipe(
+    map((slug) => {
+      const o = ERC721C_CONTRACT_SETS[slug || ''];
+      return {
+        nft: o?.nft || null,
+        marketplace: o?.marketplace || environment.marketAddress,
+        points: environment.pointsAddress,
+        lottery: o?.lottery || (environment as any).lotteryAddress,
+        // ERC-721C collections have a single lottery — hide "Lottery 2" for them
+        lottery2: o ? null : (environment as any).lottery2Address,
+        auction: (environment as any).auctionAddress,
+      };
+    }),
+  );
 
   constructor(
     private store: Store<GlobalState>,

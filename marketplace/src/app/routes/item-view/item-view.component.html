@@ -256,7 +256,7 @@
                           }
 
                         } @else {
-                          @if (!phunk.loading && !(isCooling$ | async)) {
+                          @if (!phunk.loading && !(isCooling$ | async) && !(phunk.slug && erc721cContracts[phunk.slug])) {
                             <div class="notice">
                               <div class="consensus">{{ phunk.collection?.singleName }} {{ t('noConsensus') }} <a (click)="setChat()">{{ t('contactSupport') }}</a> {{ t('resolveIssue') }}</div>
                             </div>

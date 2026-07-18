@@ -11,6 +11,25 @@ export function isErc721c(slug?: string | null): boolean {
   return !!slug && !!ERC721C_CONTRACTS[slug];
 }
 
+/**
+ * Per-collection contract set for ERC-721C collections — used to show the correct
+ * contracts (footer, etc.) when viewing this collection instead of the default
+ * EtherPhunks ones.
+ */
+export interface CollectionContracts {
+  nft: string;
+  marketplace: string;
+  lottery?: string;
+}
+
+export const ERC721C_CONTRACT_SETS: { [slug: string]: CollectionContracts } = {
+  cryptophunksv67: {
+    nft: '0x67b850c3c8790cc7ec76261b65fde60eFb6F1fe3',
+    marketplace: '0xe977EaD9f08cC450FBb54B8f80D2E92b27714b44',
+    lottery: '0x702862d4cb2E55452170814AAb9117cDE8287e61',
+  },
+};
+
 /** Reverse lookup: NFT contract address (any case) -> collection slug. */
 export function slugFromContract(contract?: string | null): string | undefined {
   if (!contract) return undefined;
