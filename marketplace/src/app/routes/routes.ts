@@ -65,6 +65,11 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/item-view/item-view.component').then(mod => mod.ItemViewComponent)
   },
   {
+    // ERC-721C collections are routed by contract/collection + tokenId (e.g. /details/cryptophunksv67/587)
+    path: 'details/:slug/:tokenId',
+    loadComponent: () => import('@/routes/item-view/item-view.component').then(mod => mod.ItemViewComponent)
+  },
+  {
     path: ':slug/owners',
     loadComponent: () => import('@/routes/collection-owners/collection-owners.component').then(mod => mod.CollectionOwnersComponent)
   },

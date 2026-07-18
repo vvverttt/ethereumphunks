@@ -15,6 +15,8 @@ import { Sort } from '@/models/pipes';
 
 import { DataService } from '@/services/data.service';
 
+import { ItemLinkPipe } from '@/pipes/item-link.pipe';
+
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
 import { SortPipe } from '@/pipes/sort.pipe';
@@ -40,6 +42,7 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
     FormatCashPipe,
     SortPipe,
     AttributeFilterPipe,
+    ItemLinkPipe,
     ImageUrlPipe,
   ],
   host:  {

@@ -785,6 +785,28 @@ export class DataService {
    * Fetches data for a single Phunk
    * @param hashId Token hash ID
    */
+  /**
+   * Resolve an ERC-721C item by slug + tokenId (its route key), then hydrate via
+   * fetchSinglePhunk. The data model still keys on hashId internally.
+   */
+  fetchSinglePhunkByTokenId(slug: string, tokenId: string | number): Observable<Phunk> {
+    if (!slug || tokenId == null) return of({} as Phunk);
+    return from(
+      supabase
+        .from('ethscriptions' + this.suffix)
+        .select('hashId')
+        .eq('slug', slug)
+        .eq('tokenId', Number(tokenId))
+        .limit(1)
+    ).pipe(
+      switchMap(({ data }: any) => {
+        const hashId = data?.[0]?.hashId;
+        if (!hashId) return of({ slug, tokenId: Number(tokenId), loading: false } as any as Phunk);
+        return this.fetchSinglePhunk(hashId);
+      }),
+    );
+  }
+
   fetchSinglePhunk(hashId: string): Observable<Phunk> {
     if (!hashId) return of({} as Phunk);
 

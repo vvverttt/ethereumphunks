@@ -313,16 +313,8 @@
                     </button>
                   }
 
-                  <!-- Out links -->
-                  @if (phunk.slug && erc721cContracts[phunk.slug]) {
-                    <!-- ERC-721C: link to the NFT on OpenSea (contract + tokenId), not ethscriptions -->
-                    <a
-                      class="button external"
-                      [href]="'https://opensea.io/item/ethereum/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)"
-                      target="_blank">
-                      <span i18n>View on OpenSea</span>
-                    </a>
-                  } @else if (!phunk.isSupported) {
+                  <!-- Out links: ethscription collections only. ERC-721C (e.g. v67) trades on our own market — no external link. -->
+                  @if (!(phunk.slug && erc721cContracts[phunk.slug]) && !phunk.isSupported) {
                     <a
                       class="button external"
                       [href]="externalMarketUrl + '/ethscriptions/' + phunk.hashId"

@@ -49,6 +49,8 @@ import { setChat } from '@/state/actions/chat.actions';
 
 import { environment } from 'src/environments/environment';
 
+import { ERC721C_CONTRACTS } from '@/constants/erc721c';
+
 interface ActionsState {
   sell: boolean;
   withdraw: boolean;
@@ -102,12 +104,8 @@ export class ItemViewComponent {
   externalMarketUrl = environment.externalMarketUrl;
   escrowAddress = environment.marketAddress;
 
-  // Collections that are pure on-chain ERC-721C (not ethscriptions): link items to
-  // the NFT (contract + tokenId) rather than an inscription tx, which no longer
-  // reflects the token and would be misleading.
-  readonly erc721cContracts: { [slug: string]: string } = {
-    cryptophunksv67: '0x67b850c3c8790cc7ec76261b65fde60eFb6F1fe3',
-  };
+  // ERC-721C collections (slug -> NFT contract). Shared with routing + the item-link pipe.
+  readonly erc721cContracts = ERC721C_CONTRACTS;
   oldMarketAddresses: string[] = (((environment as any).oldMarketAddresses) || []).map((a: string) => a.toLowerCase());
 
   // Placing bids is enabled in the UI ONLY for these collections. Every other
@@ -148,9 +146,12 @@ export class ItemViewComponent {
   private bidKeyOwner: string | null = null;
 
   singlePhunk$ = this.route.params.pipe(
-    filter((params: any) => !!params.hashId),
-    distinctUntilChanged((prev, curr) => prev.hashId === curr.hashId),
-    switchMap((params: any) => this.dataSvc.fetchSinglePhunk(params.hashId)),
+    filter((params: any) => !!params.hashId || (!!params.slug && !!params.tokenId)),
+    distinctUntilChanged((prev, curr) =>
+      prev.hashId === curr.hashId && prev.slug === curr.slug && prev.tokenId === curr.tokenId),
+    switchMap((params: any) => params.hashId
+      ? this.dataSvc.fetchSinglePhunk(params.hashId)
+      : this.dataSvc.fetchSinglePhunkByTokenId(params.slug, params.tokenId)),
     tap((phunk: any) => {
       if (phunk?.slug) {
         this.store.dispatch(marketStateActions.setMarketSlug({ marketSlug: phunk.slug }));
