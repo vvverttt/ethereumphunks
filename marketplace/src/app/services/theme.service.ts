@@ -51,6 +51,23 @@ export class ThemeService {
   }
 
   /**
+   * Per-collection CSS-var overrides applied on top of the base (dark/light) theme.
+   * Only collections listed here deviate from the default c3ff00 lime — everything else
+   * stays exactly as-is. cryptophunksv67 is an ERC-721C (not Ethscriptions) so it gets its
+   * own #648595 scheme to signal that difference.
+   */
+  collectionOverrides: Record<string, Record<string, string>> = {
+    cryptophunksv67: {
+      '--base-color': '100, 133, 149',      // #648595 — backgrounds (header, grid tiles, dropdown box)
+      '--highlight': '255, 255, 255',       // white — text/links/labels (readable on both the blue bg and dark bg)
+      '--header-highlight': '255, 255, 255',
+      '--background': '12, 20, 26',          // #0c141a — dark blue-grey page bg (replaces the green-tinted 17,26,0)
+    },
+  };
+  private activeSlug = '';
+  private currentTheme: Theme = 'dark';
+
+  /**
    * Initializes theme service and sets up system theme change listener
    * @param document Injected Document object for DOM manipulation
    */
@@ -67,8 +84,12 @@ export class ThemeService {
    * @param theme Theme to apply ('dark' or 'light')
    */
   setThemeStyles(theme: Theme) {
+    this.currentTheme = theme;
     const previousTheme = localStorage.getItem('EtherPhunks_theme');
-    const themeStyles = this.themeStyles[theme as keyof ThemeStyles];
+    const themeStyles = {
+      ...this.themeStyles[theme as keyof ThemeStyles],
+      ...(this.collectionOverrides[this.activeSlug] || {}),
+    } as ThemeProperties;
     Object.keys(themeStyles).map((property: string) => {
       this.document.documentElement.style.setProperty(
         property as string,
@@ -89,6 +110,20 @@ export class ThemeService {
     if (previousTheme && previousTheme !== theme && window.innerWidth <= 800) {
       window.location.reload();
     }
+  }
+
+  /**
+   * Sets the active collection slug and re-applies the theme so per-collection overrides
+   * (e.g. cryptophunksv67 -> #648595) take effect. No-op cost when the slug has no override.
+   */
+  setActiveCollection(slug: string) {
+    if (slug === this.activeSlug) return;
+    this.activeSlug = slug || '';
+    // data-collection lets scoped global CSS (event colors, logo filter, non-variable spots) target
+    // a specific collection without touching the others.
+    if (this.activeSlug) this.document.documentElement.dataset['collection'] = this.activeSlug;
+    else delete this.document.documentElement.dataset['collection'];
+    this.setThemeStyles(this.currentTheme);
   }
 
   /**

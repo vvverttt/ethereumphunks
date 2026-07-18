@@ -106,7 +106,7 @@
         height: 3.6rem;
         margin-right: .65rem;
 
-        background-color: rgba(var(--base-color), 1);
+        background-color: #c3ff00;
 
         img {
           display: block;
@@ -122,11 +122,23 @@
       }
 
       &.active {
-        background-color: rgba(var(--base-color), 1);
+        background-color: #c3ff00;
         box-shadow: inset -.3rem .3rem 0 0 rgba(var(--black), 1);
 
         .image-wrapper {
           background: none;
+        }
+      }
+
+      // QuantumPhunks (cryptophunksv67) is the ERC-721C collection — its dropdown row is always
+      // #648595 blue-grey; every other row stays lime, on every page (independent of active theme).
+      &[data-slug='cryptophunksv67'] {
+        .image-wrapper { background-color: #648595; }
+
+        &.active {
+          background-color: #648595;
+
+          .image-wrapper { background: none; }
         }
       }
 

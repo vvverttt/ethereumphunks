@@ -81,7 +81,10 @@
 </div>
 
 <ng-template #logo>
-  @if ((theme$ | async) === 'dark') {
+  @if ((activeCollection$ | async)?.slug === 'cryptophunksv67') {
+    <!-- Pre-coloured (white wordmark, pink smiley) — no CSS filter, so the smiley keeps its own colour. -->
+    <img src="assets/quantumphunks-logo.svg" alt="QuantumPhunks" width="250" height="38" />
+  } @else if ((theme$ | async) === 'dark') {
     <img src="assets/etherphunks-logo-pink.svg" alt="EtherPhunks" width="250" height="38" />
   } @else {
     <img src="assets/etherphunks-logo.svg" alt="EtherPhunks" width="250" height="38" />

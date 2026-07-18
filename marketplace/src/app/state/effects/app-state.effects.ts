@@ -16,6 +16,7 @@ import { catchError, EMPTY, filter, from, map, merge, mergeMap, of, switchMap, t
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+import * as marketStateActions from '@/state/actions/market-state.actions';
 
 import { ChatService } from '@/services/chat.service';
 
@@ -147,6 +148,13 @@ export class AppStateEffects {
       //   menuActive ? '255, 255, 255' : (this.themeSvc.themeStyles as any)[theme]['--header-text']
       // );
     }),
+  ), { dispatch: false });
+
+  // Re-apply the theme when the active collection changes so per-collection overrides
+  // (e.g. cryptophunksv67 -> #648595) take effect; all other collections keep the default.
+  onCollectionThemeSlug$ = createEffect(() => this.actions$.pipe(
+    ofType(marketStateActions.setMarketSlug),
+    tap((action) => this.themeSvc.setActiveCollection((action as any).marketSlug || '')),
   ), { dispatch: false });
 
   onNewBlockCheckCooldown$ = createEffect(() => this.actions$.pipe(

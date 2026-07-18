@@ -116,3 +116,45 @@
     background-position: 200% 50%;
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// cryptophunksv67 (ERC-721C) — scoped #648595 blue-grey scheme. Applied only when
+// documentElement has data-collection="cryptophunksv67" (set by ThemeService), so every
+// other collection keeps its default lime/pink theme untouched.
+:root[data-collection='cryptophunksv67'] {
+  // market / event colors retuned to blues that sit with #648595
+  --transferred-color: 100, 133, 149;   // #648595 — transfers match the base
+  --bid-color: 0, 171, 255;             // #00abff
+  --sale-color: 102, 205, 255;          // #66cdff
+  --listed-color: 84, 199, 255;         // #54c7ff
+  --claimed-color: 121, 250, 230;       // #79fae6
+  --escrow-color: 121, 250, 230;        // #79fae6
+
+  // The collections dropdown button defaults to --transferred-color, which here is the same
+  // #648595 as the header — it disappeared into it. Pin it to the palette's cyan instead so the
+  // control stays visible (black button text keeps AA contrast on this).
+  .curated-button { background-color: #79fae6; }
+
+  // The wordmark/smiley are one <img>, so a filter can't colour them separately. Under this
+  // collection the template swaps in assets/quantumphunks-logo.svg, which already bakes in the
+  // white wordmark + #FF04B4 smiley — hence no filter here.
+
+  // recent-activity prismatic event text -> blue palette (overrides the gold/cyan/lime globals above)
+  .prismatic-bought {
+    background: linear-gradient(90deg, #66cdff, #54c7ff, #66cdff, #54c7ff, #66cdff);
+    background-size: 200% 100%; -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .25rem rgba(102, 205, 255, .55));
+  }
+  .prismatic-won {
+    background: linear-gradient(90deg, #79fae6, #66cdff, #79fae6, #66cdff, #79fae6);
+    background-size: 200% 100%; -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .24rem rgba(121, 250, 230, .7));
+  }
+  .prismatic-created {
+    background: linear-gradient(90deg, #79fae6, #00abff, #54c7ff, #79fae6, #00abff, #79fae6);
+    background-size: 200% 100%; -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .22rem rgba(0, 171, 255, .6));
+  }
+  .prismatic-bid, .prismatic-marketbid { color: #00abff !important; -webkit-text-fill-color: #00abff !important; background: none !important; }
+  .prismatic-transfer { color: #79fae6 !important; -webkit-text-fill-color: #79fae6 !important; background: none !important; }
+}

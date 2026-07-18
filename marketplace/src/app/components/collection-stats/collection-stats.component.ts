@@ -35,6 +35,9 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
   'quantumdystophunkzv67': {
     oneOfOnes: 69,
   },
+  'phikings': {
+    oneOfOnes: 67,
+  },
 };
 const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string }>> = {
   'cryptophunksv67': [
@@ -56,6 +59,10 @@ const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string
   'og-dysto-phunks': [
     { label: 'Unique Colors', display: '154' },
     { label: 'Colored Pixels', display: '15,475 / 39,744' },
+  ],
+  'phikings': [
+    { label: 'Unique Colors', display: '1,031' },
+    { label: 'Colored Pixels', display: '26,779 / 38,592' },
   ],
 };
 

@@ -12,6 +12,7 @@ import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 // L1
 import { DystoLabzMarketABI as EtherPhunksMarketABI } from '@/abi/DystoLabzMarket';
 import { EtherPhunksMarketV3ABI } from '@/abi/EtherPhunksMarketV3';
+import { QuantumPhunksMarketABI } from '@/abi/QuantumPhunksMarket';
 import { PointsABI } from '@/abi/Points';
 
 // Evolve
@@ -33,6 +34,12 @@ import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPub
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 const marketAddress = environment.marketAddress;
+
+// Minimal ERC-721 approval ABI (QuantumPhunks market is approval-based, not escrow).
+const ERC721_APPROVAL_ABI = [
+  { type: 'function', name: 'setApprovalForAll', stateMutability: 'nonpayable', inputs: [{ name: 'operator', type: 'address' }, { name: 'approved', type: 'bool' }], outputs: [] },
+  { type: 'function', name: 'isApprovedForAll', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }, { name: 'operator', type: 'address' }], outputs: [{ type: 'bool' }] },
+] as const;
 const oldMarketAddresses: string[] = (environment as any).oldMarketAddresses || [];
 const oldMarketAddressSet = new Set(oldMarketAddresses.map((a) => a.toLowerCase()));
 const ogSlugs: string[] = (environment as any).ogSlugs || [];
@@ -1014,6 +1021,58 @@ export class Web3Service {
     } catch {
       return null;
     }
+  }
+
+  // ─── QuantumPhunks market (ERC-721C collections, e.g. cryptophunksv67) ────────
+  // Approval-based (no escrow). Keyed by (collection contract, tokenId).
+
+  /** Read the current bid for (collection, tokenId) on the QP market. */
+  async qpGetBid(market: string, collection: string, tokenId: number | string): Promise<{ hasBid: boolean; bidder: string; value: bigint } | null> {
+    try {
+      const r: any = await this.l1Client.readContract({ address: market as `0x${string}`, abi: QuantumPhunksMarketABI as any, functionName: 'bids', args: [collection as `0x${string}`, BigInt(tokenId)] });
+      if (!r || !r[0]) return null;
+      return { hasBid: r[0], bidder: r[1], value: r[2] };
+    } catch { return null; }
+  }
+
+  /** Read the current sale offer for (collection, tokenId). */
+  async qpGetOffer(market: string, collection: string, tokenId: number | string): Promise<{ isForSale: boolean; seller: string; minValue: bigint; onlySellTo: string } | null> {
+    try {
+      const r: any = await this.l1Client.readContract({ address: market as `0x${string}`, abi: QuantumPhunksMarketABI as any, functionName: 'offers', args: [collection as `0x${string}`, BigInt(tokenId)] });
+      if (!r || !r[0]) return null;
+      return { isForSale: r[0], seller: r[1], minValue: r[2], onlySellTo: r[3] };
+    } catch { return null; }
+  }
+
+  /** Is the QP market approved to move this collection's NFTs for `owner`? */
+  async qpIsApproved(collection: string, owner: string, market: string): Promise<boolean> {
+    try {
+      return await this.l1Client.readContract({ address: collection as `0x${string}`, abi: ERC721_APPROVAL_ABI as any, functionName: 'isApprovedForAll', args: [owner as `0x${string}`, market as `0x${string}`] }) as boolean;
+    } catch { return false; }
+  }
+
+  /** One-time approval so the QP market can transfer the seller's NFT on buy/accept-bid. */
+  async qpSetApproval(collection: string, market: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(collection, 'setApprovalForAll', [market, true], undefined, ERC721_APPROVAL_ABI as any);
+  }
+
+  async qpEnterBid(market: string, collection: string, tokenId: number | string, valueEth: number): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'enterBidForPhunk', [collection, BigInt(tokenId)], this.ethToWei(valueEth).toString(), QuantumPhunksMarketABI as any);
+  }
+  async qpWithdrawBid(market: string, collection: string, tokenId: number | string): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'withdrawBidForPhunk', [collection, BigInt(tokenId)], undefined, QuantumPhunksMarketABI as any);
+  }
+  async qpAcceptBid(market: string, collection: string, tokenId: number | string, minPriceWei: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'acceptBidForPhunk', [collection, BigInt(tokenId), minPriceWei], undefined, QuantumPhunksMarketABI as any);
+  }
+  async qpOfferForSale(market: string, collection: string, tokenId: number | string, minPriceWei: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'offerPhunkForSale', [collection, BigInt(tokenId), minPriceWei], undefined, QuantumPhunksMarketABI as any);
+  }
+  async qpNoLongerForSale(market: string, collection: string, tokenId: number | string): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'phunkNoLongerForSale', [collection, BigInt(tokenId)], undefined, QuantumPhunksMarketABI as any);
+  }
+  async qpBuy(market: string, collection: string, tokenId: number | string, valueWei: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'buyPhunk', [collection, BigInt(tokenId)], valueWei, QuantumPhunksMarketABI as any);
   }
 
   async batchBuyPhunks(

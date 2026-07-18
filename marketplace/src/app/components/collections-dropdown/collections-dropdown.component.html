@@ -23,6 +23,7 @@
     @for (item of (collections$ | async); track item.slug) {
       <a
         [routerLink]="['/curated', item.slug]"
+        [attr.data-slug]="item.slug"
         [class.active]="(activeCollection$ | async)?.slug === item.slug">
 
         <div class="image-wrapper">
