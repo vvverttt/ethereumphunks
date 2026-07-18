@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { formatEther, parseEther, decodeEventLog, createPublicClient, http, fallback } from 'viem';
 import { mainnet } from 'viem/chains';
-import { getWalletClient, getChainId, getPublicClient, reconnect } from '@wagmi/core';
+import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 
 import { environment } from 'src/environments/environment';
 import { supabase } from './supabase';
@@ -278,9 +278,14 @@ export class AuctionService {
    * rotate the merkle root at any time via setBuyNow().
    */
   async getBuyNowConfig(): Promise<{ enabled: boolean; price: bigint; root: string }> {
-    const client = getPublicClient(this.web3Svc.config, { chainId: environment.chainId as 1 });
-    try {
-      const results = await (client as any).multicall({
+    const OFF = { enabled: false, price: 0n, root: '0x' };
+    // Read via the resilient fallback client (the same one every other auction read uses), NOT
+    // wagmi's single-transport public client. On a flaky gateway (e.g. eth.limo) the wagmi read
+    // could hang, and because this sits on the Buy Now click path it wedged txPending=true, which
+    // disables the button — so the button rendered but clicking did nothing. A hard timeout
+    // guarantees the read can never block that path: on hang we resolve to "off" instead.
+    const read = (async () => {
+      const results = await (this.web3Svc.l1DedicatedClient as any).multicall({
         contracts: [
           { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNowEnabled' },
           { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNowPrice' },
@@ -289,13 +294,17 @@ export class AuctionService {
         allowFailure: true,
       });
       return {
-        // A pre-V3 implementation simply has no these selectors — treat that as "off", not an error.
+        // A pre-V3 implementation simply lacks these selectors — treat that as "off", not an error.
         enabled: (results[0]?.result as boolean) ?? false,
         price: (results[1]?.result as bigint) ?? 0n,
         root: (results[2]?.result as string) ?? '0x',
       };
+    })();
+    const timeout = new Promise<typeof OFF>((resolve) => setTimeout(() => resolve(OFF), 8000));
+    try {
+      return await Promise.race([read, timeout]);
     } catch {
-      return { enabled: false, price: 0n, root: '0x' };
+      return OFF;
     }
   }
 

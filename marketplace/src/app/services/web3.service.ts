@@ -1044,11 +1044,24 @@ export class Web3Service {
     } catch { return null; }
   }
 
-  /** Is the QP market approved to move this collection's NFTs for `owner`? */
-  async qpIsApproved(collection: string, owner: string, market: string): Promise<boolean> {
-    try {
-      return await this.l1Client.readContract({ address: collection as `0x${string}`, abi: ERC721_APPROVAL_ABI as any, functionName: 'isApprovedForAll', args: [owner as `0x${string}`, market as `0x${string}`] }) as boolean;
-    } catch { return false; }
+  /**
+   * Is the QP market approved to move this collection's NFTs for `owner`?
+   * Returns true/false when the read succeeds, or `null` when it could NOT be
+   * determined (all RPCs errored). Callers must never treat `null` as "not
+   * approved" — doing so previously caused an endless re-approval loop when the
+   * isApprovedForAll read hit a transient RPC/CORS error. Tries several clients
+   * before giving up so one flaky endpoint doesn't mask a valid approval.
+   */
+  async qpIsApproved(collection: string, owner: string, market: string): Promise<boolean | null> {
+    const clients = [this.l1Client, this.l1DedicatedClient, this.l1PollingClient].filter(Boolean) as PublicClient[];
+    for (const client of clients) {
+      try {
+        return await client.readContract({ address: collection as `0x${string}`, abi: ERC721_APPROVAL_ABI as any, functionName: 'isApprovedForAll', args: [owner as `0x${string}`, market as `0x${string}`] }) as boolean;
+      } catch {
+        // fall through to the next client
+      }
+    }
+    return null; // could not determine — do NOT assume "not approved"
   }
 
   /** One-time approval so the QP market can transfer the seller's NFT on buy/accept-bid. */
@@ -1056,11 +1069,19 @@ export class Web3Service {
     return this._writeMarketContractAt(collection, 'setApprovalForAll', [market, true], undefined, ERC721_APPROVAL_ABI as any);
   }
 
-  /** Ensure the connected wallet has approved the QP market for this collection (before list/accept). */
+  /**
+   * Ensure the connected wallet has approved the QP market for this collection.
+   * Listing itself does NOT need approval (offerPhunkForSale only checks ownerOf),
+   * so we send an approval tx only when we can POSITIVELY confirm it's missing.
+   * If the check can't be read (returns null), we skip it rather than re-firing
+   * approval forever — the listing still works and the (likely already-present)
+   * approval isn't disturbed.
+   */
   async qpEnsureApproval(collection: string, market: string): Promise<void> {
     const address = getAccount(this.config).address;
     if (!address) throw new Error('No wallet connected');
-    if (await this.qpIsApproved(collection, address, market)) return;
+    const approved = await this.qpIsApproved(collection, address, market);
+    if (approved !== false) return; // already approved, or couldn't confirm → don't spam approvals
     const hash = await this.qpSetApproval(collection, market);
     if (hash) await this.pollReceipt(hash);
   }
