@@ -106,6 +106,9 @@ export class ItemViewComponent {
 
   // ERC-721C collections (slug -> NFT contract). Shared with routing + the item-link pipe.
   readonly erc721cContracts = ERC721C_CONTRACTS;
+
+  // Temporary: only quantumphunks.eth may place bids on ERC-721C collections for now.
+  readonly qpBidderAllowed = '0x19d57a31b982d3d75c16358795a4d19c803e4a72';
   oldMarketAddresses: string[] = (((environment as any).oldMarketAddresses) || []).map((a: string) => a.toLowerCase());
 
   // Placing bids is enabled in the UI ONLY for these collections. Every other
@@ -452,6 +455,11 @@ export class ItemViewComponent {
 
   async submitBid(phunk: Phunk): Promise<void> {
     if (!this.bidsEnabled(phunk)) return; // bids only enabled on allowlisted collections
+    // Temporary gate: only quantumphunks.eth may bid on ERC-721C collections right now.
+    if (isErc721c(phunk.slug)) {
+      const addr = (await firstValueFrom(this.walletAddress$))?.toLowerCase();
+      if (addr !== this.qpBidderAllowed) throw new Error('Bidding on this collection is restricted right now.');
+    }
     const hashId = phunk.hashId;
     if (!hashId) throw new Error('Invalid hashId');
     if (!this.bidPrice.value || this.bidPrice.value <= 0) return;

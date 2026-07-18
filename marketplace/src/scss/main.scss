@@ -122,6 +122,8 @@
 // documentElement has data-collection="cryptophunksv67" (set by ThemeService), so every
 // other collection keeps its default lime/pink theme untouched.
 :root[data-collection='cryptophunksv67'] {
+  // The global accent is lime (#c3ff00); retune it to the palette cyan so no lime leaks here.
+  --highlight: 121, 250, 230;            // #79fae6
   // market / event colors retuned to blues that sit with #648595
   --transferred-color: 100, 133, 149;   // #648595 — transfers match the base
   --bid-color: 0, 171, 255;             // #00abff

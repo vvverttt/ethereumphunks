@@ -208,7 +208,7 @@
     object-fit: contain;
     display: block;
     cursor: pointer;
-    background-color: #c3ff00;
+    background-color: rgba(var(--highlight), 1);
 
     &:hover { opacity: .75; }
   }

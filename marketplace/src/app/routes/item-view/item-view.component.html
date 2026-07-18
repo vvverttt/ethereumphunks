@@ -144,6 +144,7 @@
                             <!-- Place Bid: shown ONLY on bid-enabled collections (OG Missing/Dysto, EthsRocks), and hidden if you're already the current bidder or a bid is accepted/locked. Withdraw/confirm of an existing bid is never gated. -->
                             @if (
                               bidsEnabled(phunk) &&
+                              (!(phunk.slug && erc721cContracts[phunk.slug]) || (address | lowercase) === qpBidderAllowed) &&
                               !(currentBid() && (currentBid()!.bidder | lowercase) === (address | lowercase)) &&
                               !(currentBid() && currentBid()!.accepted)
                             ) {
@@ -539,7 +540,11 @@
     }
 
     @if (!phunk.isEscrowed && !phunk.nft) {
-      <p class="small">{{ t('escrowSaleNotice') }}</p>
+      @if (phunk.slug && erc721cContracts[phunk.slug]) {
+        <p class="small">Listing approves the QuantumPhunks market to transfer this NFT only if it sells — it stays in your wallet until then (no escrow). Delist anytime.</p>
+      } @else {
+        <p class="small">{{ t('escrowSaleNotice') }}</p>
+      }
     }
   </form>
 </ng-template>
@@ -570,7 +575,11 @@
       <button type="button" class="submit" (click)="submitBid(phunk)">{{ t('placeBid') }}</button>
     </div>
 
-    <p class="small">{{ t('bidNonCustodialNote') }}</p>
+    @if (phunk.slug && erc721cContracts[phunk.slug]) {
+      <p class="small">Bids are non-custodial: your ETH stays locked in the QuantumPhunks market until the owner accepts (a single transaction — no confirmation step or cooldown). If it sells you're auto-refunded; you can withdraw your bid anytime before it's accepted.</p>
+    } @else {
+      <p class="small">{{ t('bidNonCustodialNote') }}</p>
+    }
   </form>
 </ng-template>
 
