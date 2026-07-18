@@ -65,8 +65,8 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/item-view/item-view.component').then(mod => mod.ItemViewComponent)
   },
   {
-    // ERC-721C collections are routed by contract/collection + tokenId (e.g. /details/cryptophunksv67/587)
-    path: 'details/:slug/:tokenId',
+    // ERC-721C collections are routed by NFT contract address + tokenId, OpenSea-style (e.g. /details/0x67b850…/587)
+    path: 'details/:contract/:tokenId',
     loadComponent: () => import('@/routes/item-view/item-view.component').then(mod => mod.ItemViewComponent)
   },
   {

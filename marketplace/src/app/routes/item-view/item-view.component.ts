@@ -49,7 +49,7 @@ import { setChat } from '@/state/actions/chat.actions';
 
 import { environment } from 'src/environments/environment';
 
-import { ERC721C_CONTRACTS } from '@/constants/erc721c';
+import { ERC721C_CONTRACTS, slugFromContract } from '@/constants/erc721c';
 
 interface ActionsState {
   sell: boolean;
@@ -146,12 +146,12 @@ export class ItemViewComponent {
   private bidKeyOwner: string | null = null;
 
   singlePhunk$ = this.route.params.pipe(
-    filter((params: any) => !!params.hashId || (!!params.slug && !!params.tokenId)),
+    filter((params: any) => !!params.hashId || (!!params.contract && !!params.tokenId)),
     distinctUntilChanged((prev, curr) =>
-      prev.hashId === curr.hashId && prev.slug === curr.slug && prev.tokenId === curr.tokenId),
+      prev.hashId === curr.hashId && prev.contract === curr.contract && prev.tokenId === curr.tokenId),
     switchMap((params: any) => params.hashId
       ? this.dataSvc.fetchSinglePhunk(params.hashId)
-      : this.dataSvc.fetchSinglePhunkByTokenId(params.slug, params.tokenId)),
+      : this.dataSvc.fetchSinglePhunkByTokenId(slugFromContract(params.contract) || '', params.tokenId)),
     tap((phunk: any) => {
       if (phunk?.slug) {
         this.store.dispatch(marketStateActions.setMarketSlug({ marketSlug: phunk.slug }));
