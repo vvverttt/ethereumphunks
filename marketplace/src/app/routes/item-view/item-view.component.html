@@ -123,6 +123,9 @@
                             ) || (
                               phunk.nft &&
                               phunk.nft.owner !== address
+                            ) || (
+                              (phunk.slug && erc721cContracts[phunk.slug]) &&
+                              (owner | lowercase) !== (address | lowercase)
                             ))
                           ) {
                             <button class="buy" (click)="buyPhunk(phunk)">
@@ -193,7 +196,7 @@
                               <span>{{ t('acceptBidButton') }}</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'acceptBid' }" />
                             </button>
-                            @if (!phunk.isEscrowed && !phunk.nft) {
+                            @if (!phunk.isEscrowed && !phunk.nft && !(phunk.slug && erc721cContracts[phunk.slug])) {
                               <p class="small bid-escrow-hint">
                                 {{ bidEscrowHintText(phunk) }}
                               </p>
@@ -204,7 +207,8 @@
                           @if (
                             (phunk.isEscrowed &&
                             (phunk.prevOwner | lowercase) === (address | lowercase)) ||
-                            (phunk.nft && phunk.nft.owner === address)
+                            (phunk.nft && phunk.nft.owner === address) ||
+                            ((phunk.slug && erc721cContracts[phunk.slug]) && (owner | lowercase) === (address | lowercase))
                           ) {
                             <button class="sell" (click)="sellPhunk()" [class.active]="actionsState().sell">
                               <span>{{ t('sell') }}</span>
@@ -217,8 +221,8 @@
                             }
                           }
 
-                          <!-- Escrow actions (Send) -->
-                          @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase)) {
+                          <!-- Escrow actions (Send) — ethscription-only; ERC-721C is approval-based -->
+                          @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && !(phunk.slug && erc721cContracts[phunk.slug])) {
                             <button class="send-to-escrow" (click)="escrowPhunk()" [class.active]="actionsState().escrow">
                               <span>{{ t('sendToEscrow') }}</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'sendToEscrow' }" />
@@ -247,6 +251,9 @@
                             ) || (
                               phunk.nft &&
                               phunk.nft.owner === address
+                            ) || (
+                              (phunk.slug && erc721cContracts[phunk.slug]) &&
+                              (owner | lowercase) === (address | lowercase)
                             ))
                           ) {
                             <button class="sell" (click)="phunkNoLongerForSale(phunk)">

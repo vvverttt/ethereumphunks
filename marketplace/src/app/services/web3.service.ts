@@ -1056,6 +1056,15 @@ export class Web3Service {
     return this._writeMarketContractAt(collection, 'setApprovalForAll', [market, true], undefined, ERC721_APPROVAL_ABI as any);
   }
 
+  /** Ensure the connected wallet has approved the QP market for this collection (before list/accept). */
+  async qpEnsureApproval(collection: string, market: string): Promise<void> {
+    const address = getAccount(this.config).address;
+    if (!address) throw new Error('No wallet connected');
+    if (await this.qpIsApproved(collection, address, market)) return;
+    const hash = await this.qpSetApproval(collection, market);
+    if (hash) await this.pollReceipt(hash);
+  }
+
   async qpEnterBid(market: string, collection: string, tokenId: number | string, valueEth: number): Promise<string | undefined> {
     return this._writeMarketContractAt(market, 'enterBidForPhunk', [collection, BigInt(tokenId)], this.ethToWei(valueEth).toString(), QuantumPhunksMarketABI as any);
   }
@@ -1063,10 +1072,10 @@ export class Web3Service {
     return this._writeMarketContractAt(market, 'withdrawBidForPhunk', [collection, BigInt(tokenId)], undefined, QuantumPhunksMarketABI as any);
   }
   async qpAcceptBid(market: string, collection: string, tokenId: number | string, minPriceWei: string): Promise<string | undefined> {
-    return this._writeMarketContractAt(market, 'acceptBidForPhunk', [collection, BigInt(tokenId), minPriceWei], undefined, QuantumPhunksMarketABI as any);
+    return this._writeMarketContractAt(market, 'acceptBidForPhunk', [collection, BigInt(tokenId), BigInt(minPriceWei)], undefined, QuantumPhunksMarketABI as any);
   }
-  async qpOfferForSale(market: string, collection: string, tokenId: number | string, minPriceWei: string): Promise<string | undefined> {
-    return this._writeMarketContractAt(market, 'offerPhunkForSale', [collection, BigInt(tokenId), minPriceWei], undefined, QuantumPhunksMarketABI as any);
+  async qpOfferForSale(market: string, collection: string, tokenId: number | string, valueEth: number): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'offerPhunkForSale', [collection, BigInt(tokenId), parseEther(valueEth.toString())], undefined, QuantumPhunksMarketABI as any);
   }
   async qpNoLongerForSale(market: string, collection: string, tokenId: number | string): Promise<string | undefined> {
     return this._writeMarketContractAt(market, 'phunkNoLongerForSale', [collection, BigInt(tokenId)], undefined, QuantumPhunksMarketABI as any);

@@ -49,7 +49,7 @@ import { setChat } from '@/state/actions/chat.actions';
 
 import { environment } from 'src/environments/environment';
 
-import { ERC721C_CONTRACTS, slugFromContract } from '@/constants/erc721c';
+import { ERC721C_CONTRACTS, ERC721C_CONTRACT_SETS, isErc721c, slugFromContract } from '@/constants/erc721c';
 
 interface ActionsState {
   sell: boolean;
@@ -117,7 +117,18 @@ export class ItemViewComponent {
   ]);
 
   bidsEnabled(phunk: Phunk | null | undefined): boolean {
-    return !!phunk?.slug && this.bidsEnabledSlugs.has(phunk.slug);
+    return (!!phunk?.slug && this.bidsEnabledSlugs.has(phunk.slug)) || isErc721c(phunk?.slug);
+  }
+
+  // ── ERC-721C (QuantumPhunks market) helpers ──────────────────────────────────
+  /** Contract set for an ERC-721C collection (undefined for ethscription collections). */
+  private qpSet(phunk: Phunk | null | undefined) {
+    return phunk?.slug ? ERC721C_CONTRACT_SETS[phunk.slug] : undefined;
+  }
+  /** Positive tokenId for on-chain calls. */
+  private posTokenId(phunk: Phunk): number {
+    const t = phunk.tokenId ?? 0;
+    return t < 0 ? -t : t;
   }
 
   actionsState = signal<ActionsState>({
@@ -378,7 +389,12 @@ export class ItemViewComponent {
       const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner, slug: phunk.slug });
 
       let hash;
-      if (phunk.isEscrowed) {
+      const set = this.qpSet(phunk);
+      if (set) {
+        // ERC-721C: approval-based listing on the QP market (no escrow).
+        await this.web3Svc.qpEnsureApproval(set.nft, set.marketplace);
+        hash = await this.web3Svc.qpOfferForSale(set.marketplace, set.nft, this.posTokenId(phunk), value);
+      } else if (phunk.isEscrowed) {
         // Escrowed path: direct listing first.
         try {
           hash = await this.web3Svc.offerPhunkForSale(hashId, value, address, targetMarket);
@@ -457,7 +473,10 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.enterBid(hashId, this.bidOwner(phunk), value);
+      const set = this.qpSet(phunk);
+      const hash = set
+        ? await this.web3Svc.qpEnterBid(set.marketplace, set.nft, this.posTokenId(phunk), value)
+        : await this.web3Svc.enterBid(hashId, this.bidOwner(phunk), value);
 
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
@@ -492,7 +511,10 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const hash = await this.web3Svc.withdrawBid(hashId, this.bidKeyOwner ?? this.bidOwner(phunk));
+      const set = this.qpSet(phunk);
+      const hash = set
+        ? await this.web3Svc.qpWithdrawBid(set.marketplace, set.nft, this.posTokenId(phunk))
+        : await this.web3Svc.withdrawBid(hashId, this.bidKeyOwner ?? this.bidOwner(phunk));
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
 
@@ -525,17 +547,24 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      // If the phunk isn't escrowed yet, escrow + accept in ONE tx (V3_3 combined path).
-      // If it's already escrowed, the plain acceptBid suffices.
-      let actuallyEscrowed = phunk.isEscrowed;
-      if (!actuallyEscrowed) {
-        // Indexed state can lag — confirm on-chain before deciding the path.
-        actuallyEscrowed = await this.web3Svc.isInEscrow(hashId);
+      const set = this.qpSet(phunk);
+      let hash;
+      if (set) {
+        // ERC-721C: approval-based, single tx (no escrow).
+        await this.web3Svc.qpEnsureApproval(set.nft, set.marketplace);
+        hash = await this.web3Svc.qpAcceptBid(set.marketplace, set.nft, this.posTokenId(phunk), bid.value);
+      } else {
+        // If the phunk isn't escrowed yet, escrow + accept in ONE tx (V3_3 combined path).
+        // If it's already escrowed, the plain acceptBid suffices.
+        let actuallyEscrowed = phunk.isEscrowed;
+        if (!actuallyEscrowed) {
+          // Indexed state can lag — confirm on-chain before deciding the path.
+          actuallyEscrowed = await this.web3Svc.isInEscrow(hashId);
+        }
+        hash = actuallyEscrowed
+          ? await this.web3Svc.acceptBid(hashId, bid.bidder, bid.value)
+          : await this.web3Svc.escrowAndAcceptBid(hashId, bid.bidder, bid.value);
       }
-
-      const hash = actuallyEscrowed
-        ? await this.web3Svc.acceptBid(hashId, bid.bidder, bid.value)
-        : await this.web3Svc.escrowAndAcceptBid(hashId, bid.bidder, bid.value);
 
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
@@ -666,6 +695,16 @@ export class ItemViewComponent {
       this.currentBid.set(null);
       return;
     }
+    const set = this.qpSet(phunk);
+    if (set) {
+      // ERC-721C: bids live on the QP market, keyed by (collection, tokenId) — no orphan logic.
+      const b = await this.web3Svc.qpGetBid(set.marketplace, set.nft, this.posTokenId(phunk));
+      this.currentBid.set(b && b.hasBid
+        ? { bidder: b.bidder, value: b.value.toString(), valueWei: b.value, acceptedBlock: 0, accepted: false }
+        : null);
+      return;
+    }
+
     let keyOwner = this.bidOwner(phunk);
     let bid = await this.web3Svc.getBid(keyOwner, phunk.hashId);
 
@@ -769,9 +808,10 @@ export class ItemViewComponent {
     this.store.dispatch(upsertNotification({ notification }));
 
     try {
-      const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
-
-      const hash = await this.web3Svc.phunkNoLongerForSale(hashId, targetMarket);
+      const set = this.qpSet(phunk);
+      const hash = set
+        ? await this.web3Svc.qpNoLongerForSale(set.marketplace, set.nft, this.posTokenId(phunk))
+        : await this.web3Svc.phunkNoLongerForSale(hashId, this.web3Svc.resolveMarketAddress({ owner: phunk.owner }));
       if (!hash) throw new Error('Could not process transaction');
 
       notification = {
@@ -826,9 +866,17 @@ export class ItemViewComponent {
       await this.checkConsenus(phunk);
       if (!phunk.prevOwner) throw new Error('Invalid prevOwner');
 
-      const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
-
-      const hash = await this.web3Svc.batchBuyPhunks([phunk], targetMarket);
+      const set = this.qpSet(phunk);
+      let hash;
+      if (set) {
+        // ERC-721C: read the exact on-chain price (avoid JS number precision loss) and buy on the QP market.
+        const offer = await this.web3Svc.qpGetOffer(set.marketplace, set.nft, this.posTokenId(phunk));
+        if (!offer || !offer.isForSale) throw new Error('Not for sale');
+        hash = await this.web3Svc.qpBuy(set.marketplace, set.nft, this.posTokenId(phunk), offer.minValue.toString());
+      } else {
+        const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
+        hash = await this.web3Svc.batchBuyPhunks([phunk], targetMarket);
+      }
 
       if (!hash) throw new Error('Could not process transaction');
 

@@ -19,6 +19,7 @@ import { RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@s
 import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, tap, shareReplay, timeout } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
+import { isErc721c } from '@/constants/erc721c';
 import { supabase } from './supabase';
 import { isAdminWallet } from '@/constants/admin-wallets';
 
@@ -865,7 +866,11 @@ export class DataService {
         );
 
         // Cross-check ownership against the canonical ethscriptions protocol indexer.
-        const consensus$ = this.checkProtocolConsensus(phunk.hashId, phunk.owner);
+        // ERC-721C collections aren't ethscriptions — the protocol indexer has no say over
+        // their ownership. Treat as in-consensus so trading (via the QP market) is enabled.
+        const consensus$ = isErc721c(phunk.slug)
+          ? of(true)
+          : this.checkProtocolConsensus(phunk.hashId, phunk.owner);
 
         // Emit base immediately, then hydrate with attributes + listing + consensus in parallel
         return forkJoin([attributes$, listing$, consensus$]).pipe(
