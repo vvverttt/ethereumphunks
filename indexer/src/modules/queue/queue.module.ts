@@ -11,6 +11,7 @@ import { EthscriptionsModule } from '@/modules/ethscriptions/ethscriptions.modul
 import { BlockProcessingQueue } from '@/modules/queue/queues/block-processing.queue';
 import { NotifsModule } from '@/modules/notifs/notifs.module';
 import { LotteryModule } from '@/modules/lottery/lottery.module';
+import { NftModule } from '@/modules/nft/nft.module';
 
 import { ProcessingService } from '@/services/processing.service';
 
@@ -34,6 +35,7 @@ import { chain } from '@/constants/ethereum';
     StorageModule,
     NotifsModule,
     LotteryModule,
+    NftModule,
 
     forwardRef(() => EthscriptionsModule),
     forwardRef(() => CommentsModule),
