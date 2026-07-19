@@ -338,6 +338,53 @@ export class AuctionService {
     return hash;
   }
 
+  /** Tier-2 buy-now config (buyNow2* selectors). Same resilient read + hard timeout as tier 1. */
+  async getBuyNow2Config(): Promise<{ enabled: boolean; price: bigint; root: string }> {
+    const OFF = { enabled: false, price: 0n, root: '0x' };
+    const read = (async () => {
+      const results = await (this.web3Svc.l1DedicatedClient as any).multicall({
+        contracts: [
+          { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNow2Enabled' },
+          { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNow2Price' },
+          { address: this.address, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNow2MerkleRoot' },
+        ],
+        allowFailure: true,
+      });
+      return {
+        // Pre-V4 implementation lacks these selectors — treat that as "off", not an error.
+        enabled: (results[0]?.result as boolean) ?? false,
+        price: (results[1]?.result as bigint) ?? 0n,
+        root: (results[2]?.result as string) ?? '0x',
+      };
+    })();
+    const timeout = new Promise<typeof OFF>((resolve) => setTimeout(() => resolve(OFF), 8000));
+    try { return await Promise.race([read, timeout]); } catch { return OFF; }
+  }
+
+  /** Tier-2 take: identical to {buyNow} but hits the buyNow2 selector. */
+  async buyNow2(proof: string[], priceWei: bigint): Promise<string | undefined> {
+    await this.web3Svc.switchNetwork();
+    const chainId = environment.chainId;
+    let walletClient;
+    try {
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    } catch {
+      await reconnect(this.web3Svc.config);
+      walletClient = await getWalletClient(this.web3Svc.config, { chainId });
+    }
+    if (!walletClient) throw new Error('No wallet connected');
+    const hash = await walletClient.writeContract({
+      address: this.address,
+      abi: EtherPhunksAuctionHouseV2ABI,
+      functionName: 'buyNow2',
+      args: [proof as `0x${string}`[]],
+      value: priceWei,
+      chain: walletClient.chain,
+      account: walletClient.account,
+    });
+    return hash;
+  }
+
   async settleAuction(): Promise<string | undefined> {
     await this.web3Svc.switchNetwork();
 

@@ -48,6 +48,10 @@ const config: HardhatUserConfig = {
       'contracts/V2MainnetUpgrade/EtherPhunksAuctionHouseV3.sol': {
         version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
       },
+      // V4 (second buy-now tier) — fresh impl, same bug-fixed compiler as V3.
+      'contracts/V2MainnetUpgrade/EtherPhunksAuctionHouseV4.sol': {
+        version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
       // V2 stays on 0.8.20 so its standalone artifact keeps matching the deployed, Etherscan-verified impl.
       'contracts/V2MainnetUpgrade/EtherPhunksAuctionHouseV2.sol': {
         version: '0.8.20',

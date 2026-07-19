@@ -70,6 +70,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   /** Merkle proof for the connected wallet; null => not on the whitelist. */
   buyNowProof = signal<string[] | null>(null);
   buyNowEligible = computed(() => !!this.buyNowProof());
+  /** Which tier the connected wallet resolved to: 1 = Missing/Dysto (buyNow), 2 = EthsRocks (buyNow2). */
+  buyNowTier = signal<1 | 2>(1);
   /** ?buynow=preview — renders the control read-only so it can be reviewed pre-launch. */
   buyNowPreview = signal(false);
   updating = signal(false);
@@ -708,13 +710,39 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
    */
   async refreshBuyNow() {
     try {
-      const cfg = await this.auctionSvc.getBuyNowConfig();
-      const rootMatches = await this.buyNowWl.matchesRoot(cfg.root);
-      this.buyNowLive.set(cfg.enabled && rootMatches);
-      this.buyNowPriceEth.set(formatEther(cfg.price));
-
       const address = await firstValueFrom(this.walletAddress$);
-      this.buyNowProof.set(rootMatches ? await this.buyNowWl.proofFor(address) : null);
+      // Two independent tiers: tier 1 = Missing/Dysto (buyNow, ~0.267), tier 2 = EthsRocks (buyNow2,
+      // ~0.167). Each has its own on-chain enabled/price/root and bundled snapshot. A wallet may be
+      // in one, both, or neither — pick the CHEAPER tier it's eligible for and show one button.
+      const [cfg1, cfg2] = await Promise.all([
+        this.auctionSvc.getBuyNowConfig(),
+        this.auctionSvc.getBuyNow2Config(),
+      ]);
+      const [m1, m2] = await Promise.all([
+        this.buyNowWl.matchesRoot(1, cfg1.root),
+        this.buyNowWl.matchesRoot(2, cfg2.root),
+      ]);
+      const [p1, p2] = await Promise.all([
+        (cfg1.enabled && m1) ? this.buyNowWl.proofFor(1, address) : Promise.resolve(null),
+        (cfg2.enabled && m2) ? this.buyNowWl.proofFor(2, address) : Promise.resolve(null),
+      ]);
+      const t1ok = cfg1.enabled && m1 && !!p1;
+      const t2ok = cfg2.enabled && m2 && !!p2;
+
+      let tier: 1 | 2 | null = null;
+      if (t1ok && t2ok) tier = cfg2.price <= cfg1.price ? 2 : 1; // cheaper wins
+      else if (t2ok) tier = 2;
+      else if (t1ok) tier = 1;
+
+      if (tier === 2) {
+        this.buyNowTier.set(2); this.buyNowLive.set(true);
+        this.buyNowPriceEth.set(formatEther(cfg2.price)); this.buyNowProof.set(p2);
+      } else if (tier === 1) {
+        this.buyNowTier.set(1); this.buyNowLive.set(true);
+        this.buyNowPriceEth.set(formatEther(cfg1.price)); this.buyNowProof.set(p1);
+      } else {
+        this.buyNowLive.set(false); this.buyNowProof.set(null);
+      }
     } catch {
       this.buyNowLive.set(false);
       this.buyNowProof.set(null);
@@ -742,8 +770,12 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     this.txHash.set('');
 
     try {
-      const cfg = await this.auctionSvc.getBuyNowConfig();
-      const hash = await this.auctionSvc.buyNow(proof, cfg.price);
+      // Route to the tier the wallet was matched to (resolved in refreshBuyNow above).
+      const tier = this.buyNowTier();
+      const cfg = tier === 2 ? await this.auctionSvc.getBuyNow2Config() : await this.auctionSvc.getBuyNowConfig();
+      const hash = tier === 2
+        ? await this.auctionSvc.buyNow2(proof, cfg.price)
+        : await this.auctionSvc.buyNow(proof, cfg.price);
       if (hash) {
         this.txHash.set(hash);
         await this.web3Svc.pollReceipt(hash);

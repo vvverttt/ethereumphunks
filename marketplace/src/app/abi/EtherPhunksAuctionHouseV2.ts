@@ -74,6 +74,35 @@ export const EtherPhunksAuctionHouseV2ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  // ─── V4 (buyNow2 — second tier) ──────────────────────────
+  {
+    inputs: [{ internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' }],
+    name: 'buyNow2',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNow2Enabled',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNow2Price',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNow2MerkleRoot',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
   {
     inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
     name: 'itemReservePrice',
