@@ -723,8 +723,11 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         this.buyNowWl.proofFor(1, address),
         this.buyNowWl.proofFor(2, address),
       ]);
-      this.buyNow1Proof.set(p1);
-      this.buyNow1Live.set(!!p1);
+      // Lowest-only: EthsRocks (tier 2 @ 0.167) is cheaper than Missing/Dysto (tier 1 @ 0.267), so a
+      // wallet eligible for BOTH sees just the 0.167 button; tier 1 shows only when not in tier 2.
+      const showT1 = !!p1 && !p2;
+      this.buyNow1Proof.set(showT1 ? p1 : null);
+      this.buyNow1Live.set(showT1);
       this.buyNow1PriceEth.set(BUYNOW_TIER1_ETH);
 
       this.buyNow2Proof.set(p2);
