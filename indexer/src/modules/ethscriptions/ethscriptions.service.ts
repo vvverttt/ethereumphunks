@@ -646,7 +646,7 @@ export class EthscriptionsService {
     // DystoLabz market or on ours. Configure via TRACKED_MARKETPLACE_SLUGS env var.
     const trackedSlugs = new Set(
       (process.env.TRACKED_MARKETPLACE_SLUGS ||
-        'cryptophunksv67,ethsrocks,quantummissingphunksv67,quantumdystophunkzv67,og-missing-phunks,og-dysto-phunks')
+        'cryptophunksv67,ethsrocks,quantummissingphunksv67,quantumdystophunkzv67,og-missing-phunks,og-dysto-phunks,phikings')
         .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean),
     );
     if (!trackedSlugs.has((phunk.slug || '').toLowerCase())) return;
@@ -1115,15 +1115,12 @@ export class EthscriptionsService {
         const { hashId, auctionId, winner, amount } = args;
         const zeroAddress = '0x0000000000000000000000000000000000000000';
 
-        await this.storageSvc.settleAuction(
-          { hashId, auctionId, winner, amount, contractAddress: auctionAddr },
-          createdAt
-        );
-
-        // Only update ownership and create events if there was a winner
-        // (no-bid auctions have winner = address(0), item stays in pool)
+        // Ownership + activity FIRST — the critical, user-facing writes. A buy-now settles items
+        // whose AuctionCreated row may be missing, so settleAuction's self-heal upsert can throw;
+        // that must NOT skip the ownership update (it previously did, because settleAuction ran
+        // first and its throw aborted the whole handler). Only for a real winner (no-bid auctions
+        // have winner = address(0), item stays in the pool).
         if (winner.toLowerCase() !== zeroAddress) {
-          // Update ownership so the winner's wallet shows the phunk
           await this.storageSvc.updateEthscriptionOwner(
             hashId.toLowerCase(),
             auctionAddr,
@@ -1159,12 +1156,26 @@ export class EthscriptionsService {
           blockTimestamp: createdAt,
           value: amount.toString(),
         });
+
+        // Auction-history row is secondary — isolate it so a failure here can't abort the
+        // ownership/activity writes above. Surfaces the REAL error (not [object Object]).
+        try {
+          await this.storageSvc.settleAuction(
+            { hashId, auctionId, winner, amount, contractAddress: auctionAddr },
+            createdAt
+          );
+        } catch (settleErr) {
+          Logger.error(
+            '❌',
+            `settleAuction (history) failed for ${hashId} tx ${transaction.hash}: ${settleErr instanceof Error ? settleErr.message : JSON.stringify(settleErr)}`
+          );
+        }
       }
 
       } catch (handlerError) {
         Logger.error(
           '❌',
-          `Auction handler '${eventName}' failed for tx ${transaction.hash} (log index ${log.logIndex}): ${handlerError instanceof Error ? handlerError.message : String(handlerError)}`
+          `Auction handler '${eventName}' failed for tx ${transaction.hash} (log index ${log.logIndex}): ${handlerError instanceof Error ? handlerError.message : JSON.stringify(handlerError)}`
         );
         // Continue to next log — do not abort the whole batch.
       }
