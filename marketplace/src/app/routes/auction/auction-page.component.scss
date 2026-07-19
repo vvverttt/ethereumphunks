@@ -63,6 +63,22 @@
         letter-spacing: .05em;
         text-decoration: none;
       }
+
+      // Clarifies that the auction house deals in Ethscriptions, not the v67 ERC-721 collection —
+      // the page now uses the blue v67 theme, which could otherwise imply the item is a v67 phunk.
+      .auction-house-tag {
+        align-self: flex-start;
+        margin-top: .3rem;
+        font-family: var(--secondary-font-stack);
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: rgb(var(--background));
+        background: #ffffff;
+        padding: .12rem .5rem;
+        border-radius: 999px;
+      }
     }
   }
 

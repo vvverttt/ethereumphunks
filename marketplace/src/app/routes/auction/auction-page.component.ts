@@ -13,6 +13,8 @@ import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
 import { AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
 import { BuyNowWhitelistService } from '@/services/buy-now-whitelist.service';
+import { ThemeService } from '@/services/theme.service';
+import { appConfig } from 'src/environments/app';
 
 const AUCTION_SWAP_ABI = [
   { inputs: [{ name: 'sendHashId', type: 'bytes32' }, { name: 'receiveHashId', type: 'bytes32' }, { name: 'proof', type: 'bytes32[]' }], name: 'swap', outputs: [], stateMutability: 'payable', type: 'function' },
@@ -353,7 +355,13 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     public web3Svc: Web3Service,
     private route: ActivatedRoute,
     private buyNowWl: BuyNowWhitelistService,
+    private themeSvc: ThemeService,
   ) {
+    // Apply the site's default-collection theme here too. The blue cryptophunksv67 override is
+    // normally driven by the market route's setMarketSlug action, which the auction page never
+    // dispatches — so without this the auction house fell back to the default lime (#c3ff00).
+    this.themeSvc.setActiveCollection(appConfig.defaultCollection || '');
+
     this.buyNowPreview.set(this.route.snapshot.queryParamMap.get('buynow') === 'preview');
     // Check for address override from route data (auction house 2)
     const overrideAddress = this.route.snapshot.data['auctionAddress'];

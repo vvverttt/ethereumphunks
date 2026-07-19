@@ -19,6 +19,7 @@ import { Sorts } from '@/models/pipes';
 
 import { GlobalState, Notification, TraitFilter } from '@/models/global-state';
 import { Phunk } from '@/models/db';
+import { ERC721C_CONTRACT_SETS, CollectionContracts } from '@/constants/erc721c';
 
 import { DataService } from '@/services/data.service';
 import { Web3Service } from '@/services/web3.service';
@@ -218,6 +219,16 @@ export class MarketComponent {
 
   // Actions
   async buySelected(): Promise<void> {
+    // ERC-721C (QuantumPhunks) collections aren't escrow-based, so the escrow sweep flow below
+    // (checkSelected -> form -> submitBatchBuy) finds nothing to buy for them. Route those to the
+    // QP market's atomic batch buy instead.
+    const selectedPhunks = Object.values(this.selected);
+    const set = selectedPhunks[0]?.slug ? ERC721C_CONTRACT_SETS[selectedPhunks[0].slug!] : undefined;
+    if (set) {
+      await this.sweepErc721c(set, selectedPhunks);
+      return;
+    }
+
     this.isBuyingBulk = true;
     this.store.dispatch(appStateActions.setSlideoutActive({ slideoutActive: true }));
 
@@ -235,6 +246,63 @@ export class MarketComponent {
 
     this.bulkActionsForm.setControl('buyPhunks', formArray);
     this.selectedPhunksFormArray = this.bulkActionsForm.get('buyPhunks') as FormArray;
+  }
+
+  /**
+   * Sweep buy for ERC-721C (QuantumPhunks) collections — one atomic `buyPhunkBatch` tx.
+   * Reads each selected item's exact on-chain price, keeps only those still for sale, and buys them
+   * for the summed value. Gated on `supportsBatchBuy` so it's inert until the market proxy is upgraded.
+   */
+  private async sweepErc721c(set: CollectionContracts, phunks: Phunk[]): Promise<void> {
+    const hashIds = phunks.map((p) => p.hashId).filter(Boolean) as string[];
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('qpSweep' + phunks.map((p) => p.tokenId).join('')),
+      timestamp: Date.now(),
+      type: 'wallet',
+      function: 'buyPhunk',
+      hashId: hashIds[0],
+      hashIds,
+      isBatch: true,
+    };
+
+    try {
+      // buyPhunkBatch only exists on the upgraded impl; until then, don't hand the user a reverting tx.
+      if (!(await this.web3Svc.qpSupportsBatchBuy(set.marketplace))) {
+        throw new Error('Sweep for this collection is coming soon.');
+      }
+
+      // Read the live price for each selected item; keep only the ones still listed.
+      const collections: string[] = [];
+      const tokenIds: number[] = [];
+      let total = 0n;
+      for (const p of phunks) {
+        if (p.tokenId == null) continue;
+        const tokenId = Math.abs(p.tokenId);
+        const offer = await this.web3Svc.qpGetOffer(set.marketplace, set.nft, tokenId);
+        if (offer && offer.isForSale) {
+          collections.push(set.nft);
+          tokenIds.push(tokenId);
+          total += offer.minValue;
+        }
+      }
+      if (!tokenIds.length) throw new Error('None of the selected items are for sale.');
+
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const hash = await this.web3Svc.qpBatchBuy(set.marketplace, collections, tokenIds, total.toString());
+      if (!hash) throw new Error('Transaction failed');
+
+      notification = { ...notification, type: 'pending', hash };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash);
+      notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+      this.store.dispatch(upsertNotification({ notification }));
+      this.clearSelectedAndClose();
+    } catch (err) {
+      notification = { ...notification, type: 'error', detail: err };
+      this.store.dispatch(upsertNotification({ notification }));
+    }
   }
 
   async transferSelected(): Promise<void> {

@@ -1104,6 +1104,22 @@ export class Web3Service {
   async qpBuy(market: string, collection: string, tokenId: number | string, valueWei: string): Promise<string | undefined> {
     return this._writeMarketContractAt(market, 'buyPhunk', [collection, BigInt(tokenId)], valueWei, QuantumPhunksMarketABI as any);
   }
+  /** Sweep: buy several items in one tx. valueWei must equal the exact sum of their on-chain minValues. */
+  async qpBatchBuy(market: string, collections: string[], tokenIds: (number | string)[], valueWei: string): Promise<string | undefined> {
+    return this._writeMarketContractAt(
+      market,
+      'buyPhunkBatch',
+      [collections.map((c) => c as `0x${string}`), tokenIds.map((id) => BigInt(id))],
+      valueWei,
+      QuantumPhunksMarketABI as any,
+    );
+  }
+  /** True only on the upgraded impl that has buyPhunkBatch — lets the UI gate the sweep until the proxy is upgraded. */
+  async qpSupportsBatchBuy(market: string): Promise<boolean> {
+    try {
+      return await this.l1DedicatedClient.readContract({ address: market as `0x${string}`, abi: QuantumPhunksMarketABI as any, functionName: 'supportsBatchBuy' }) as boolean;
+    } catch { return false; }
+  }
 
   async batchBuyPhunks(
     phunks: Phunk[],
