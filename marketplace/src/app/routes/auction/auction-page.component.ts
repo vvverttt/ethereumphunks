@@ -14,7 +14,6 @@ import { Web3Service } from '@/services/web3.service';
 import { AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
 import { BuyNowWhitelistService } from '@/services/buy-now-whitelist.service';
 import { ThemeService } from '@/services/theme.service';
-import { appConfig } from 'src/environments/app';
 
 const AUCTION_SWAP_ABI = [
   { inputs: [{ name: 'sendHashId', type: 'bytes32' }, { name: 'receiveHashId', type: 'bytes32' }, { name: 'proof', type: 'bytes32[]' }], name: 'swap', outputs: [], stateMutability: 'payable', type: 'function' },
@@ -28,6 +27,13 @@ import { BidPanelComponent } from '@/components/auction/bid-panel/bid-panel.comp
 import { AuctionSliderComponent } from '@/components/auction/auction-slider/auction-slider.component';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+
+// Buy-now tier prices are fixed, so we display them from constants instead of reading them on-chain
+// on every refresh (saves RPC). Only an actual purchase reads the live price (doBuyNow), so the tx
+// value always matches the contract even if the owner is mid-changing it. Tier 1 = Missing/Dysto,
+// Tier 2 = EthsRocks.
+const BUYNOW_TIER1_ETH = '0.267';
+const BUYNOW_TIER2_ETH = '0.167';
 
 @Component({
   selector: 'app-auction-page',
@@ -359,10 +365,9 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     private buyNowWl: BuyNowWhitelistService,
     private themeSvc: ThemeService,
   ) {
-    // Apply the site's default-collection theme here too. The blue cryptophunksv67 override is
-    // normally driven by the market route's setMarketSlug action, which the auction page never
-    // dispatches — so without this the auction house fell back to the default lime (#c3ff00).
-    this.themeSvc.setActiveCollection(appConfig.defaultCollection || '');
+    // The Auction House trades ETHSCRIPTIONS, so it uses the default lime (#c3ff00) theme — NOT the
+    // v67 blue. Force the default here so arriving from a blue v67 market page doesn't carry over.
+    this.themeSvc.setActiveCollection('');
 
     // Check for address override from route data (auction house 2)
     const overrideAddress = this.route.snapshot.data['auctionAddress'];
@@ -710,28 +715,21 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   async refreshBuyNow() {
     try {
       const address = await firstValueFrom(this.walletAddress$);
-      // Two independent tiers, each with its own on-chain enabled/price/root + bundled snapshot.
-      // Compute both — a wallet in both sees both buttons (EthsRocks left, Missing/Dysto right).
-      const [cfg1, cfg2] = await Promise.all([
-        this.auctionSvc.getBuyNowConfig(),
-        this.auctionSvc.getBuyNow2Config(),
-      ]);
-      const [m1, m2] = await Promise.all([
-        this.buyNowWl.matchesRoot(1, cfg1.root),
-        this.buyNowWl.matchesRoot(2, cfg2.root),
-      ]);
+      // No RPC on refresh: the two tier prices are fixed constants and eligibility is the bundled
+      // whitelist (fetched once, cached). The contract still re-verifies the proof + exact price on
+      // buy, and doBuyNow reads the live price only when actually purchasing. A wallet in both tiers
+      // sees both buttons (EthsRocks left, Missing/Dysto right).
       const [p1, p2] = await Promise.all([
-        (cfg1.enabled && m1) ? this.buyNowWl.proofFor(1, address) : Promise.resolve(null),
-        (cfg2.enabled && m2) ? this.buyNowWl.proofFor(2, address) : Promise.resolve(null),
+        this.buyNowWl.proofFor(1, address),
+        this.buyNowWl.proofFor(2, address),
       ]);
-
-      this.buyNow1Live.set(cfg1.enabled && m1);
-      this.buyNow1PriceEth.set(formatEther(cfg1.price));
       this.buyNow1Proof.set(p1);
+      this.buyNow1Live.set(!!p1);
+      this.buyNow1PriceEth.set(BUYNOW_TIER1_ETH);
 
-      this.buyNow2Live.set(cfg2.enabled && m2);
-      this.buyNow2PriceEth.set(formatEther(cfg2.price));
       this.buyNow2Proof.set(p2);
+      this.buyNow2Live.set(!!p2);
+      this.buyNow2PriceEth.set(BUYNOW_TIER2_ETH);
     } catch {
       this.buyNow1Live.set(false); this.buyNow1Proof.set(null);
       this.buyNow2Live.set(false); this.buyNow2Proof.set(null);
