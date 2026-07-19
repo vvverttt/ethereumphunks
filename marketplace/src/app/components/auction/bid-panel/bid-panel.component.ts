@@ -37,17 +37,18 @@ export class BidPanelComponent {
   @Input() isHistorical = false;
   @Input() noAuction = false;
 
-  // ─── Buy-now (V3) ──────────────────────────────────────────────────────────
-  /** buyNowEnabled() on-chain AND the bundled snapshot still matches the live root. */
-  @Input() buyNowLive = false;
-  /** Connected wallet has a proof in the current snapshot. */
-  @Input() buyNowEligible = false;
-  /** buyNowPrice() in ETH, for display. */
-  @Input() buyNowPriceEth = '0';
-  /** Preview mode (?buynow=preview) — renders the control for review while it is NOT purchasable. */
-  @Input() buyNowPreview = false;
+  // ─── Buy-now (two tiers) ────────────────────────────────────────────────────
+  // Each tier: Live = enabled on-chain AND bundle root matches; Eligible = wallet has a proof.
+  // Tier 1 = Missing/Dysto (buyNow, ~0.267, RIGHT). Tier 2 = EthsRocks (buyNow2, ~0.167, LEFT).
+  @Input() buyNow1Live = false;
+  @Input() buyNow1Eligible = false;
+  @Input() buyNow1PriceEth = '0';
+  @Input() buyNow2Live = false;
+  @Input() buyNow2Eligible = false;
+  @Input() buyNow2PriceEth = '0';
 
-  @Output() buyNow = new EventEmitter<void>();
+  @Output() buyNow1 = new EventEmitter<void>();
+  @Output() buyNow2 = new EventEmitter<void>();
 
   @Output() placeBid = new EventEmitter<string>();
   @Output() settle = new EventEmitter<void>();
@@ -103,14 +104,14 @@ export class BidPanelComponent {
     return !hasBid;
   }
 
-  /** Preview renders the control regardless of eligibility, but never makes it purchasable. */
-  get showBuyNow(): boolean {
-    if (this.buyNowPreview) return true;
-    return this.buyNowWindowOpen && this.buyNowLive && this.connected && this.buyNowEligible;
+  // A tier's button shows when the window is open, that tier is live on-chain, and the wallet is
+  // eligible for it. A wallet in both tiers sees both buttons (EthsRocks left, Missing/Dysto right).
+  get showBuyNow1(): boolean {
+    return this.buyNowWindowOpen && this.buyNow1Live && this.connected && this.buyNow1Eligible;
   }
-
-  get canBuyNow(): boolean {
-    if (this.buyNowPreview) return false;
-    return this.showBuyNow && !this.txPending;
+  get showBuyNow2(): boolean {
+    return this.buyNowWindowOpen && this.buyNow2Live && this.connected && this.buyNow2Eligible;
   }
+  get canBuyNow1(): boolean { return this.showBuyNow1 && !this.txPending; }
+  get canBuyNow2(): boolean { return this.showBuyNow2 && !this.txPending; }
 }

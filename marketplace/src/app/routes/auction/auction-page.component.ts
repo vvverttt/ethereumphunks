@@ -63,17 +63,17 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   txPending = signal(false);
   txHash = signal<string>('');
 
-  // ─── Buy-now (V3) ──────────────────────────────────────────────────────────
-  /** buyNowEnabled() on-chain AND the bundled snapshot still matches the live merkle root. */
-  buyNowLive = signal(false);
-  buyNowPriceEth = signal<string>('0');
-  /** Merkle proof for the connected wallet; null => not on the whitelist. */
-  buyNowProof = signal<string[] | null>(null);
-  buyNowEligible = computed(() => !!this.buyNowProof());
-  /** Which tier the connected wallet resolved to: 1 = Missing/Dysto (buyNow), 2 = EthsRocks (buyNow2). */
-  buyNowTier = signal<1 | 2>(1);
-  /** ?buynow=preview — renders the control read-only so it can be reviewed pre-launch. */
-  buyNowPreview = signal(false);
+  // ─── Buy-now (two tiers) ────────────────────────────────────────────────────
+  // Tier 1 = Missing/Dysto (buyNow, ~0.267, RIGHT). Tier 2 = EthsRocks (buyNow2, ~0.167, LEFT).
+  // Live = enabled on-chain AND bundle root matches; proof present => eligible. Independent buttons.
+  buyNow1Live = signal(false);
+  buyNow1PriceEth = signal<string>('0');
+  buyNow1Proof = signal<string[] | null>(null);
+  buyNow1Eligible = computed(() => !!this.buyNow1Proof());
+  buyNow2Live = signal(false);
+  buyNow2PriceEth = signal<string>('0');
+  buyNow2Proof = signal<string[] | null>(null);
+  buyNow2Eligible = computed(() => !!this.buyNow2Proof());
   updating = signal(false);
 
   settledAuctions = signal<SettledAuction[]>([]);
@@ -364,7 +364,6 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     // dispatches — so without this the auction house fell back to the default lime (#c3ff00).
     this.themeSvc.setActiveCollection(appConfig.defaultCollection || '');
 
-    this.buyNowPreview.set(this.route.snapshot.queryParamMap.get('buynow') === 'preview');
     // Check for address override from route data (auction house 2)
     const overrideAddress = this.route.snapshot.data['auctionAddress'];
     if (overrideAddress) {
@@ -711,9 +710,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   async refreshBuyNow() {
     try {
       const address = await firstValueFrom(this.walletAddress$);
-      // Two independent tiers: tier 1 = Missing/Dysto (buyNow, ~0.267), tier 2 = EthsRocks (buyNow2,
-      // ~0.167). Each has its own on-chain enabled/price/root and bundled snapshot. A wallet may be
-      // in one, both, or neither — pick the CHEAPER tier it's eligible for and show one button.
+      // Two independent tiers, each with its own on-chain enabled/price/root + bundled snapshot.
+      // Compute both — a wallet in both sees both buttons (EthsRocks left, Missing/Dysto right).
       const [cfg1, cfg2] = await Promise.all([
         this.auctionSvc.getBuyNowConfig(),
         this.auctionSvc.getBuyNow2Config(),
@@ -726,30 +724,24 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         (cfg1.enabled && m1) ? this.buyNowWl.proofFor(1, address) : Promise.resolve(null),
         (cfg2.enabled && m2) ? this.buyNowWl.proofFor(2, address) : Promise.resolve(null),
       ]);
-      const t1ok = cfg1.enabled && m1 && !!p1;
-      const t2ok = cfg2.enabled && m2 && !!p2;
 
-      let tier: 1 | 2 | null = null;
-      if (t1ok && t2ok) tier = cfg2.price <= cfg1.price ? 2 : 1; // cheaper wins
-      else if (t2ok) tier = 2;
-      else if (t1ok) tier = 1;
+      this.buyNow1Live.set(cfg1.enabled && m1);
+      this.buyNow1PriceEth.set(formatEther(cfg1.price));
+      this.buyNow1Proof.set(p1);
 
-      if (tier === 2) {
-        this.buyNowTier.set(2); this.buyNowLive.set(true);
-        this.buyNowPriceEth.set(formatEther(cfg2.price)); this.buyNowProof.set(p2);
-      } else if (tier === 1) {
-        this.buyNowTier.set(1); this.buyNowLive.set(true);
-        this.buyNowPriceEth.set(formatEther(cfg1.price)); this.buyNowProof.set(p1);
-      } else {
-        this.buyNowLive.set(false); this.buyNowProof.set(null);
-      }
+      this.buyNow2Live.set(cfg2.enabled && m2);
+      this.buyNow2PriceEth.set(formatEther(cfg2.price));
+      this.buyNow2Proof.set(p2);
     } catch {
-      this.buyNowLive.set(false);
-      this.buyNowProof.set(null);
+      this.buyNow1Live.set(false); this.buyNow1Proof.set(null);
+      this.buyNow2Live.set(false); this.buyNow2Proof.set(null);
     }
   }
 
-  async onBuyNow() {
+  onBuyNow1() { this.doBuyNow(1); }
+  onBuyNow2() { this.doBuyNow(2); }
+
+  private async doBuyNow(tier: 1 | 2): Promise<void> {
     const connected = await firstValueFrom(this.connected$);
     if (!connected) {
       this.web3Svc.connect();
@@ -759,8 +751,9 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     // Re-read on-chain immediately before sending: a bid landing in the interim closes the
     // buy-now window, and the contract would revert with "Auction already has a bid".
     await this.refreshBuyNow();
-    const proof = this.buyNowProof();
-    if (!this.buyNowLive() || !proof) {
+    const proof = tier === 1 ? this.buyNow1Proof() : this.buyNow2Proof();
+    const live = tier === 1 ? this.buyNow1Live() : this.buyNow2Live();
+    if (!live || !proof) {
       this.errorMessage.set('Buy Now is not available for this wallet');
       return;
     }
@@ -770,12 +763,10 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     this.txHash.set('');
 
     try {
-      // Route to the tier the wallet was matched to (resolved in refreshBuyNow above).
-      const tier = this.buyNowTier();
-      const cfg = tier === 2 ? await this.auctionSvc.getBuyNow2Config() : await this.auctionSvc.getBuyNowConfig();
-      const hash = tier === 2
-        ? await this.auctionSvc.buyNow2(proof, cfg.price)
-        : await this.auctionSvc.buyNow(proof, cfg.price);
+      const cfg = tier === 1 ? await this.auctionSvc.getBuyNowConfig() : await this.auctionSvc.getBuyNow2Config();
+      const hash = tier === 1
+        ? await this.auctionSvc.buyNow(proof, cfg.price)
+        : await this.auctionSvc.buyNow2(proof, cfg.price);
       if (hash) {
         this.txHash.set(hash);
         await this.web3Svc.pollReceipt(hash);

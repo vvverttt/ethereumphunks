@@ -33,26 +33,35 @@
   </div>
 </div>
 
-<!-- Buy Now (V3) — ethsrocks holders only, and only while the live item has no bids.
-     Sits directly under the stats row. Hidden entirely unless the connected wallet is in the
-     current on-chain merkle root; ?buynow=preview renders it read-only for review. -->
-@if (showBuyNow) {
-  <div class="buy-now" [class.preview]="buyNowPreview">
-    <button (click)="buyNow.emit()" [disabled]="!canBuyNow">
-      @if (txPending && !buyNowPreview) {
-        {{ t('pending') }}
-      } @else {
-        <span class="buy-now-label">{{ t('buyNow') }}</span>
-        <span class="buy-now-price"><span class="eth-symbol">&Xi;</span>{{ buyNowPriceEth }}</span>
-      }
-    </button>
-    <p class="buy-now-note">
-      @if (buyNowPreview) {
-        {{ t('buyNowPreview') }}
-      } @else {
-        {{ t('buyNowNote') }}
-      }
-    </p>
+<!-- Buy Now — two whitelist tiers, only while the live item has no bids. EthsRocks (0.167) on the
+     LEFT, Missing/Dysto (0.267) on the RIGHT. A tier's button shows only if the connected wallet is
+     in that tier's on-chain merkle root. A wallet in both tiers sees both. -->
+@if (showBuyNow1 || showBuyNow2) {
+  <div class="buy-now-row">
+    @if (showBuyNow2) {
+      <div class="buy-now">
+        <button (click)="buyNow2.emit()" [disabled]="!canBuyNow2">
+          @if (txPending) {
+            {{ t('pending') }}
+          } @else {
+            <span class="buy-now-label">EthsRocks</span>
+            <span class="buy-now-price"><span class="eth-symbol">&Xi;</span>{{ buyNow2PriceEth }}</span>
+          }
+        </button>
+      </div>
+    }
+    @if (showBuyNow1) {
+      <div class="buy-now">
+        <button (click)="buyNow1.emit()" [disabled]="!canBuyNow1">
+          @if (txPending) {
+            {{ t('pending') }}
+          } @else {
+            <span class="buy-now-label">Missing / Dysto</span>
+            <span class="buy-now-price"><span class="eth-symbol">&Xi;</span>{{ buyNow1PriceEth }}</span>
+          }
+        </button>
+      </div>
+    }
   </div>
 }
 

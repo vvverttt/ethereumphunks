@@ -1,5 +1,5 @@
 export const appConfig = {
-  version: '2.8.63',
+  version: '2.8.64',
   standalone: false,
   defaultCollection: 'cryptophunksv67',
 };

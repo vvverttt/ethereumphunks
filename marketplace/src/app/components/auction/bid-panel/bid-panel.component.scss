@@ -69,6 +69,25 @@
 // Buy Now (V3) — sits between the stats row and the bid form. Deliberately styled as the
 // accent/highlight action rather than reusing the bid button's fill, so a discounted take reads
 // as distinct from placing a bid.
+// Two tiers side by side (EthsRocks left, Missing/Dysto right). Each child .buy-now keeps its own
+// button styling; the row just lays them out and stacks on narrow screens.
+.buy-now-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  .buy-now {
+    flex: 1;
+    margin-top: 0;
+
+    button { width: 100%; }
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
+}
+
 .buy-now {
   margin-top: 2rem;
 
