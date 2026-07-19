@@ -52,6 +52,7 @@ contract QuantumPhunksMarketMulti is OwnableUpgradeable, UUPSUpgradeable, Reentr
     error TraitBidsDisabled();
     error CollectionNotAllowed();
     error BadBatch();
+    error NothingBought();
 
     struct Offer { bool isForSale; address seller; uint256 minValue; address onlySellTo; }
     struct Bid   { bool hasBid;   address bidder; uint256 value; }
@@ -167,49 +168,68 @@ contract QuantumPhunksMarketMulti is OwnableUpgradeable, UUPSUpgradeable, Reentr
         if (b.bidder == msg.sender) { delete bids[c][id]; pendingWithdrawals[msg.sender] += b.value; }
     }
 
-    /// @notice Sweep: buy several listed items in one tx. `cs[i]` holds token `ids[i]`.
-    ///         `msg.value` must equal the EXACT sum of every item's minValue. Atomic — if any item
-    ///         is unavailable, mispriced, or its seller no longer owns it, the whole batch reverts
-    ///         (the buyer gets everything or nothing, and their ETH back on revert).
-    // buyer own-bid refunds are written after the (trusted, callback-free) NFT transfers, under nonReentrant — benign.
+    /// @notice Sweep: buy as many of the listed items as are still available, in one tx. `cs[i]` holds
+    ///         token `ids[i]`, and the buyer pays at most `maxPrices[i]` for it. Items that were sniped,
+    ///         delisted, changed owner, restricted to another buyer, or whose price rose above the
+    ///         buyer's max are SKIPPED (best-effort, not reverted). `msg.value` is the budget; whatever
+    ///         isn't spent (skipped items + price drops) is refunded to the buyer's pull balance.
+    ///         Reverts only if the arrays are malformed, the market is paused, or NOTHING was bought.
+    // buyer own-bid refunds + change go to pull balances; no ETH is pushed. nonReentrant + effects-before
+    // the only external calls (trusted ERC-721 ownerOf/transferFrom, callback-free).
     // slither-disable-next-line reentrancy-no-eth,reentrancy-benign
-    function buyPhunkBatch(address[] calldata cs, uint256[] calldata ids) external payable nonReentrant {
+    function buyPhunkBatch(
+        address[] calldata cs,
+        uint256[] calldata ids,
+        uint256[] calldata maxPrices
+    ) external payable nonReentrant {
         uint256 n = cs.length;
-        if (n == 0 || n != ids.length) revert BadBatch();
+        if (n == 0 || n != ids.length || n != maxPrices.length) revert BadBatch();
         if (marketPaused) revert MarketIsPaused();
 
-        uint256 spent;
-        for (uint256 i; i < n; ) {
+        uint256 spent = 0;
+        uint256 bought = 0;
+        for (uint256 i = 0; i < n; ) {
             address c = cs[i];
             uint256 id = ids[i];
-            if (!allowedCollections[c]) revert CollectionNotAllowed();
-
             Offer memory o = offers[c][id];
-            if (!o.isForSale) revert NotForSale();
-            if (o.onlySellTo != address(0) && o.onlySellTo != msg.sender) revert OnlySellToMismatch();
-            if (o.seller == msg.sender) revert CannotBuyOwn();
-            if (o.seller != ICollection(c).ownerOf(id)) revert SellerOwnershipChanged();
 
-            unchecked { spent += o.minValue; }
+            // Best-effort: skip anything not cleanly buyable at or below the buyer's per-item max.
+            if (
+                allowedCollections[c] &&
+                o.isForSale &&
+                (o.onlySellTo == address(0) || o.onlySellTo == msg.sender) &&
+                o.seller != msg.sender &&
+                o.minValue <= maxPrices[i] &&
+                o.seller == ICollection(c).ownerOf(id)
+            ) {
+                uint256 price = o.minValue;
+                unchecked { spent += price; ++bought; }
 
-            delete offers[c][id];
-            _settle(c, id, o.seller, o.minValue);
-            // slither-disable-next-line arbitrary-send-erc20
-            ICollection(c).transferFrom(o.seller, msg.sender, id);
-            emit PhunkBought(c, id, o.minValue, o.seller, msg.sender);
+                delete offers[c][id];
+                _settle(c, id, o.seller, price);
+                // slither-disable-next-line arbitrary-send-erc20
+                ICollection(c).transferFrom(o.seller, msg.sender, id);
+                emit PhunkBought(c, id, price, o.seller, msg.sender);
 
-            Bid memory b = bids[c][id];
-            if (b.bidder == msg.sender) { delete bids[c][id]; pendingWithdrawals[msg.sender] += b.value; }
+                Bid memory b = bids[c][id];
+                if (b.bidder == msg.sender) { delete bids[c][id]; pendingWithdrawals[msg.sender] += b.value; }
+            }
 
             unchecked { ++i; }
         }
 
-        if (msg.value != spent) revert WrongValue();
+        if (bought == 0) revert NothingBought();
+        if (spent > msg.value) revert WrongValue();
 
-        // One points award for the whole sweep (n items) — avoids n external calls.
+        // Points for the items actually bought — one external call.
         if (pointsAddress != address(0) && pointsPerBuy != 0) {
-            try IPoints(pointsAddress).addPoints(msg.sender, pointsPerBuy * n) {} catch {}
+            try IPoints(pointsAddress).addPoints(msg.sender, pointsPerBuy * bought) {} catch {}
         }
+
+        // Refund the unspent budget to the buyer's pull balance (consistent with the rest of the
+        // contract — no ETH is ever pushed, so no reentrancy surface on the refund).
+        uint256 refund = msg.value - spent;
+        if (refund > 0) pendingWithdrawals[msg.sender] += refund;
     }
 
     /// @dev Lets the frontend detect this impl supports batch sweeps before offering the sweep UI.

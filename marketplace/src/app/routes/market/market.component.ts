@@ -271,9 +271,12 @@ export class MarketComponent {
         throw new Error('Sweep for this collection is coming soon.');
       }
 
-      // Read the live price for each selected item; keep only the ones still listed.
+      // Read the live price for each selected item; keep only the ones still listed. The price we
+      // read becomes the per-item max we'll pay — the contract skips anything that rose above it (or
+      // got sniped/delisted) and refunds the difference, so a mid-sweep purchase can't fail the sweep.
       const collections: string[] = [];
       const tokenIds: number[] = [];
+      const maxPrices: string[] = [];
       let total = 0n;
       for (const p of phunks) {
         if (p.tokenId == null) continue;
@@ -282,6 +285,7 @@ export class MarketComponent {
         if (offer && offer.isForSale) {
           collections.push(set.nft);
           tokenIds.push(tokenId);
+          maxPrices.push(offer.minValue.toString());
           total += offer.minValue;
         }
       }
@@ -289,7 +293,7 @@ export class MarketComponent {
 
       this.store.dispatch(upsertNotification({ notification }));
 
-      const hash = await this.web3Svc.qpBatchBuy(set.marketplace, collections, tokenIds, total.toString());
+      const hash = await this.web3Svc.qpBatchBuy(set.marketplace, collections, tokenIds, maxPrices, total.toString());
       if (!hash) throw new Error('Transaction failed');
 
       notification = { ...notification, type: 'pending', hash };

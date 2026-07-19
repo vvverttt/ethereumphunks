@@ -6,6 +6,8 @@ import '@openzeppelin/hardhat-upgrades';
 
 import dotenv from 'dotenv';
 dotenv.config();
+// Optional one-off burner overrides (e.g. .env.deploy MAINNET_PK) — gitignored, no-op when absent.
+dotenv.config({ path: '.env.deploy', override: true });
 import path from 'path';
 
 const WIN_TMP = process.env.TEMP || process.env.TMP || 'C:\\\\tmp';
@@ -23,8 +25,44 @@ const config: HardhatUserConfig = {
           viaIR: true,
         },
       },
+      {
+        version: '0.8.36',
+        settings: {
+          evmVersion: 'paris',
+          optimizer: { enabled: true, runs: 200 },
+          viaIR: true,
+        },
+      },
     ],
     overrides: {
+      // NFT recompiled with 0.8.36 (fixes UnsoundSpillInMutualRecursion + full 0.8.20 bug list). Storage layout
+      // verified IDENTICAL to the deployed 0.8.20 impl (0x8757, Etherscan-verified) -> upgrade is layout-safe.
+      'contracts/V2MainnetUpgrade/QuantumPhunksMarket/QuantumPhunksNFT.sol': {
+        version: '0.8.36',
+        settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
+      // Auction V3 (buyNow) is a fresh implementation, so it deploys on 0.8.36 — the 0.8.20 bug list
+      // (UnsoundSpillInMutualRecursion + the viaIR full-inliner issues) is live for us because viaIR
+      // is enabled. Inherited V2 code compiles at 0.8.36 inside this job. Layout is unchanged
+      // (V3 only appends), so the upgrade stays layout-safe — validated via validateUpgrade.
+      'contracts/V2MainnetUpgrade/EtherPhunksAuctionHouseV3.sol': {
+        version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
+      // V2 stays on 0.8.20 so its standalone artifact keeps matching the deployed, Etherscan-verified impl.
+      'contracts/V2MainnetUpgrade/EtherPhunksAuctionHouseV2.sol': {
+        version: '0.8.20',
+        settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
+      // Market / Vault / Lottery deploy fresh on 0.8.36 (bug-fixed compiler)
+      'contracts/QuantumPhunksMarketMulti.sol': {
+        version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
+      'contracts/QuantumPhunksVault.sol': {
+        version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
+      'contracts/QuantumPhunksLottery.sol': {
+        version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
       // Size-optimize the V67 implementation (very large contract, infrequently called)
       'contracts/V2MainnetUpgrade/ERC721PhunksV67/ERC721PhunksV67.sol': {
         version: '0.8.20',
@@ -88,11 +126,26 @@ const config: HardhatUserConfig = {
       url: 'http://127.0.0.1:1248',
       chainId: 1,
     },
+    // Key-free Sepolia via Frame (set Frame's network to Sepolia, fund the account with test ETH).
+    // Use:  npx hardhat run scripts/deploy-quantumphunks-erc721.ts --network sepoliaFrame
+    sepoliaFrame: {
+      url: 'http://127.0.0.1:1248',
+      chainId: 11155111,
+    },
     ...(process.env.TREASURY_PK ? {
       treasury: {
         url: 'https://ethereum-rpc.publicnode.com',
         chainId: 1,
         accounts: [`0x${process.env.TREASURY_PK}`],
+      },
+    } : {}),
+    // auction-upgrade deploy burner (BURNER_PK in .env)
+    ...(process.env.BURNER_PK ? {
+      burner: {
+        url: process.env.MAINNET_RPC_URL || 'https://eth.drpc.org',
+        chainId: 1,
+        accounts: [`0x${process.env.BURNER_PK}`],
+        gasPrice: 500_000_000,
       },
     } : {}),
     // sepolia: {

@@ -1104,12 +1104,17 @@ export class Web3Service {
   async qpBuy(market: string, collection: string, tokenId: number | string, valueWei: string): Promise<string | undefined> {
     return this._writeMarketContractAt(market, 'buyPhunk', [collection, BigInt(tokenId)], valueWei, QuantumPhunksMarketABI as any);
   }
-  /** Sweep: buy several items in one tx. valueWei must equal the exact sum of their on-chain minValues. */
-  async qpBatchBuy(market: string, collections: string[], tokenIds: (number | string)[], valueWei: string): Promise<string | undefined> {
+  /**
+   * Sweep: buy as many of the listed items as are still available, in one tx (best-effort).
+   * `maxPricesWei[i]` is the most the buyer will pay for `tokenIds[i]`; items that got sniped,
+   * delisted, or whose price rose above the max are skipped and the unspent `valueWei` is refunded
+   * on-chain to the buyer's pull balance. `valueWei` is the budget (sum of maxPrices).
+   */
+  async qpBatchBuy(market: string, collections: string[], tokenIds: (number | string)[], maxPricesWei: string[], valueWei: string): Promise<string | undefined> {
     return this._writeMarketContractAt(
       market,
       'buyPhunkBatch',
-      [collections.map((c) => c as `0x${string}`), tokenIds.map((id) => BigInt(id))],
+      [collections.map((c) => c as `0x${string}`), tokenIds.map((id) => BigInt(id)), maxPricesWei.map((p) => BigInt(p))],
       valueWei,
       QuantumPhunksMarketABI as any,
     );

@@ -918,7 +918,8 @@ export const QuantumPhunksMarketABI = [
   {
     "inputs": [
       { "internalType": "address[]", "name": "cs", "type": "address[]" },
-      { "internalType": "uint256[]", "name": "ids", "type": "uint256[]" }
+      { "internalType": "uint256[]", "name": "ids", "type": "uint256[]" },
+      { "internalType": "uint256[]", "name": "maxPrices", "type": "uint256[]" }
     ],
     "name": "buyPhunkBatch",
     "outputs": [],
