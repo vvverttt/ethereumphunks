@@ -8,7 +8,8 @@ interface WhitelistPayload {
 }
 
 /**
- * Resolves a wallet's merkle proof for the auction-house buy-now whitelist (ethsrocks holders).
+ * Resolves a wallet's merkle proof for the auction-house buy-now whitelist (OG Missing Phunks +
+ * OG DystoPhunks holders, escrow-resolved). Filename is legacy ("phikings"); content is regenerated.
  *
  * The bundled snapshot is a CONVENIENCE, not a permission: the contract verifies the proof against
  * its own buyNowMerkleRoot on every call. If the owner rotates the root via setBuyNow(), this file

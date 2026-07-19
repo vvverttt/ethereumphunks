@@ -137,8 +137,11 @@
                     <div class="actions-group">
                       <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">{{ t('list') }}</button>
                       <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">{{ t('transfer') }}</button>
-                      <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">{{ t('escrow') }}</button>
-                      <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">{{ t('withdraw') }}</button>
+                      <!-- ERC-721C (v67) is approval-based, not escrow — hide escrow/withdraw for it -->
+                      @if (!isErc721c(collection.slug)) {
+                        <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">{{ t('escrow') }}</button>
+                        <button (click)="batchAction('withdraw')" [class.disabled]="!actionsState.canWithdraw">{{ t('withdraw') }}</button>
+                      }
                     </div>
                   } @else if (marketType === 'listings') {
                     <div class="actions-group buy-side">

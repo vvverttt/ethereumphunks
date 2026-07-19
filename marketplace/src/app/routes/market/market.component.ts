@@ -19,7 +19,7 @@ import { Sorts } from '@/models/pipes';
 
 import { GlobalState, Notification, TraitFilter } from '@/models/global-state';
 import { Phunk } from '@/models/db';
-import { ERC721C_CONTRACT_SETS, CollectionContracts } from '@/constants/erc721c';
+import { ERC721C_CONTRACT_SETS, CollectionContracts, isErc721c } from '@/constants/erc721c';
 
 import { DataService } from '@/services/data.service';
 import { Web3Service } from '@/services/web3.service';
@@ -157,6 +157,7 @@ export class MarketComponent {
 
   ceil = Math.ceil;
   objectKeys = Object.keys;
+  readonly isErc721c = isErc721c; // ERC-721C collections (v67) are approval-based — no escrow/withdraw
   objectValues = Object.values;
 
   usd$ = this.store.select(dataStateSelectors.selectDisplayUsd);
