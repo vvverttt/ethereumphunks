@@ -36,6 +36,8 @@ export class BidPanelComponent {
   @Input() explorerUrl = '';
   @Input() isHistorical = false;
   @Input() noAuction = false;
+  /** Remaining items in the auction pool — used to offer "Start Next Auction" after a buy-now. */
+  @Input() poolSize = 0;
 
   // ─── Buy-now (two tiers) ────────────────────────────────────────────────────
   // Each tier: Live = enabled on-chain AND bundle root matches; Eligible = wallet has a proof.

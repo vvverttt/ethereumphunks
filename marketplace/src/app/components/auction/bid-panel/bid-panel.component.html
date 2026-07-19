@@ -48,6 +48,7 @@
             <span class="buy-now-price"><span class="eth-symbol">&Xi;</span>{{ buyNow2PriceEth }}</span>
           }
         </button>
+        <p class="buy-now-note">EthsRocks holders — instant buy until the first bid</p>
       </div>
     }
     @if (showBuyNow1) {
@@ -60,6 +61,7 @@
             <span class="buy-now-price"><span class="eth-symbol">&Xi;</span>{{ buyNow1PriceEth }}</span>
           }
         </button>
+        <p class="buy-now-note">Missing &amp; Dysto holders — instant buy until the first bid</p>
       </div>
     }
   </div>
@@ -82,12 +84,14 @@
       <p>{{ t('waitingAuction') }}</p>
     } @else {
       <p>{{ t('auctionClosed') }}</p>
-      @if (!isHistorical && !auction?.settled) {
+      <!-- Show settle whenever there's something to do: settle a finished auction OR (after a
+           buy-now, which already set settled=true) start the next item from the pool. -->
+      @if (!isHistorical && (!auction?.settled || poolSize > 0)) {
         <button (click)="settle.emit()" [disabled]="txPending">
           @if (txPending) {
             {{ t('settling') }}
           } @else {
-            {{ t('settle') }}
+            {{ auction?.settled ? 'Start Next Auction' : t('settle') }}
           }
         </button>
       }
