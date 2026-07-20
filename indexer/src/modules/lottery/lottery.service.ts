@@ -1,10 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { StorageService } from '@/modules/storage/storage.service';
-import { lotteryAbi, lotteryAddressesL1 } from '@/constants/ethereum';
+import { lotteryAbi, lotteryAddressesL1, erc721LotteryAddressL1 } from '@/constants/ethereum';
 import { TransferEthscriptionForPreviousOwnerSignature } from '@/constants/esips';
 
 import { TransactionReceipt, decodeEventLog, zeroAddress } from 'viem';
+
+// The ERC-721 QuantumPhunks mint lottery emits RandomMinted(requestId, player, tokenId)
+// from the Chainlink VRF callback tx — one per won token.
+const ERC721_LOTTERY_EVENTS = [
+  {
+    type: 'event',
+    name: 'RandomMinted',
+    inputs: [
+      { indexed: true, name: 'requestId', type: 'uint256' },
+      { indexed: true, name: 'player', type: 'address' },
+      { indexed: true, name: 'tokenId', type: 'uint256' },
+    ],
+  },
+] as const;
+
+const PRIZE_SLUG = 'cryptophunksv67';
 
 @Injectable()
 export class LotteryService {
@@ -15,7 +31,8 @@ export class LotteryService {
 
   /**
    * Process lottery events from a transaction receipt.
-   * Detects PrizeAwarded events and records them in Supabase.
+   * Detects PrizeAwarded (ethscription lottery) and RandomMinted (ERC-721 lottery)
+   * events and records them in Supabase.
    */
   async processLotteryEvents(
     receipt: TransactionReceipt,
@@ -32,9 +49,25 @@ export class LotteryService {
     if (!lotteryLogs.length) return;
 
     for (const rawLog of lotteryLogs) {
+      const log = rawLog as any;
+      const contractAddress = log.address?.toLowerCase();
+
+      // ─── ERC-721 mint lottery: RandomMinted → one win row per won tokenId ───
+      if (erc721LotteryAddressL1 && contractAddress === erc721LotteryAddressL1) {
+        try {
+          const decoded = decodeEventLog({ abi: ERC721_LOTTERY_EVENTS as any, data: log.data, topics: log.topics }) as { eventName: string; args: any };
+          if (decoded.eventName === 'RandomMinted') {
+            const { player, tokenId } = decoded.args as { requestId: bigint; player: string; tokenId: bigint };
+            await this.recordErc721Win(Number(tokenId), player.toLowerCase(), txHash, createdAt, contractAddress);
+          }
+        } catch (err) {
+          // Not a RandomMinted log, skip
+        }
+        continue;
+      }
+
+      // ─── Ethscription lottery: PrizeAwarded ───
       try {
-        const log = rawLog as any;
-        const contractAddress = log.address?.toLowerCase();
         const decoded = decodeEventLog({
           abi: lotteryAbi,
           data: log.data,
@@ -62,6 +95,49 @@ export class LotteryService {
       } catch (err) {
         // Not a lottery event we care about, skip
       }
+    }
+  }
+
+  /**
+   * Record an ERC-721 mint-lottery win. Each won token is unique, so we key the
+   * row on (contract_address, play_id = tokenId). The image/hashId are resolved
+   * from the QuantumPhunks ethscriptions row for that tokenId.
+   */
+  private async recordErc721Win(
+    tokenId: number,
+    winner: string,
+    txHash: string,
+    createdAt: Date,
+    contractAddress: string
+  ): Promise<void> {
+    const suffix = this.storageSvc.suffix;
+
+    const { data: ethscription } = await this.storageSvc.supabase
+      .from('ethscriptions' + suffix)
+      .select('sha, hashId, tokenId, slug')
+      .eq('slug', PRIZE_SLUG)
+      .eq('tokenId', tokenId)
+      .maybeSingle();
+
+    const { error } = await this.storageSvc.supabase
+      .from('lottery_wins' + suffix)
+      .upsert({
+        contract_address: contractAddress,
+        play_id: tokenId,               // each QuantumPhunk is minted once → unique per contract
+        winner,
+        hash_id: ethscription?.hashId || '',
+        sha: ethscription?.sha || '',
+        token_id: tokenId,
+        collection_slug: ethscription?.slug || PRIZE_SLUG,
+        transfer_status: 'transferred',
+        tx_hash: txHash,
+        created_at: createdAt,
+      }, { onConflict: 'contract_address,play_id' });
+
+    if (error) {
+      Logger.error(`Failed to record ERC-721 lottery win: ${error.message}`, 'LotteryService');
+    } else {
+      Logger.log(`ERC-721 lottery win recorded: token #${tokenId} -> ${winner}`, 'LotteryService');
     }
   }
 

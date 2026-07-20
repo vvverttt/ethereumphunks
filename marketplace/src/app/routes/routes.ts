@@ -30,12 +30,6 @@ export const routes: Routes = [
     loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent)
   },
   {
-    path: 'lottery-pro',
-    loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent),
-    data: { lotteryAddress: '0x298771ECc338DE242ADa11e49E2B8224c33bf620'.toLowerCase() },
-    runGuardsAndResolvers: 'always',
-  },
-  {
     path: 'lottery/wins',
     loadComponent: () => import('@/routes/lottery/lottery-wins.component').then(mod => mod.LotteryWinsComponent)
   },

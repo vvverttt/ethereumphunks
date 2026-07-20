@@ -37,8 +37,6 @@ export class FooterComponent {
         marketplace: o?.marketplace || environment.marketAddress,
         points: environment.pointsAddress,
         lottery: o?.lottery || (environment as any).lotteryAddress,
-        // ERC-721C collections have a single lottery — hide "Lottery 2" for them
-        lottery2: o ? null : (environment as any).lottery2Address,
         auction: (environment as any).auctionAddress,
       };
     }),

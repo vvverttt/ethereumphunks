@@ -25,8 +25,13 @@ export const environment = {
   pointsAddress: '0xA22a3E40C3C5A01F802c5698Af6Ed5fAA21095eb'.toLowerCase(),
   bridgeAddress: '',
   bridgeAddressL2: '',
-  lotteryAddress: '0x29b0d38112e8e743b63EB463F3351ab0F1E15977'.toLowerCase(),
-  lottery2Address: '0x298771ECc338DE242ADa11e49E2B8224c33bf620'.toLowerCase(),
+  // ERC-721 QuantumPhunks mint lottery (PhilipLotteryV67Erc721). Replaces the old
+  // ethscription lottery + the second "Pro" lottery, both retired.
+  lotteryAddress: '0x702862d4cb2E55452170814AAb9117cDE8287e61'.toLowerCase(),
+  lotterySurrenderCollections: [
+    { address: '0xf07468ead8cf26c752c676e43c814fee9c8cf402', label: 'CryptoPhunks V2' },
+    { address: '0xa82f3a61f002f83eba7d184c50bb2a8b359ca1ce', label: 'Philip' },
+  ],
   auctionAddress: '0xc1fA86b53e8e101c93c570f276bC5177832bd031'.toLowerCase(),
   auction2Address: '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630'.toLowerCase(),
   auctionDeployBlock: 24650288n,

@@ -800,4 +800,190 @@ $lottery-muted: #c3ff00;
       font-size: 2.8rem;
     }
   }
+
+  .mint-options {
+    padding: 1.5rem;
+  }
+
+  .surrender-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .win-result .won-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// =========================================================
+// Mint options (quantity / surrender / live quote)
+// =========================================================
+
+.mint-options {
+  width: 100%;
+  max-width: 726px;
+  margin: 1.5rem auto 0;
+  padding: 1.5rem 2rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba($lottery-accent, 0.25);
+  font-family: '04B_30', monospace;
+
+  .option-row {
+    margin-bottom: 1.5rem;
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+
+  .option-label {
+    display: block;
+    font-size: 0.9rem;
+    color: $lottery-muted;
+    margin-bottom: 0.75rem;
+
+    small {
+      display: block;
+      margin-top: 0.35rem;
+      font-size: 0.65rem;
+      color: rgba($lottery-text, 0.55);
+      line-height: 1.4;
+    }
+  }
+
+  .quantity-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+
+    .qty-button {
+      font-family: '04B_30', monospace;
+      min-width: 2.6rem;
+      padding: 0.5rem 0;
+      background: transparent;
+      border: 2px solid rgba($lottery-accent, 0.4);
+      color: $lottery-text;
+      cursor: pointer;
+      transition: all 0.12s;
+
+      &:hover {
+        border-color: $lottery-accent;
+      }
+
+      &.active {
+        background-color: $lottery-accent;
+        color: $lottery-bg;
+        border-color: $lottery-accent;
+      }
+    }
+  }
+
+  .surrender-status {
+    font-size: 0.8rem;
+    color: rgba($lottery-text, 0.6);
+    margin: 0;
+  }
+
+  .surrender-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    max-height: 18rem;
+    overflow-y: auto;
+  }
+
+  .surrender-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.5rem 0.35rem;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    color: $lottery-text;
+    cursor: pointer;
+    transition: border-color 0.12s;
+    font-family: '04B_30', monospace;
+
+    &:hover {
+      border-color: rgba($lottery-accent, 0.6);
+    }
+
+    &.selected {
+      border-color: $lottery-accent;
+      background-color: rgba($lottery-accent, 0.1);
+    }
+
+    .chip-coll {
+      font-size: 0.55rem;
+      color: $lottery-muted;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .chip-id {
+      font-size: 0.9rem;
+    }
+
+    .chip-disc {
+      font-size: 0.55rem;
+      color: rgba($lottery-text, 0.6);
+    }
+  }
+
+  .quote-box {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+    .quote-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 0.25rem 0;
+      color: rgba($lottery-text, 0.85);
+
+      &.discount {
+        color: $lottery-accent;
+      }
+
+      &.vrf {
+        color: rgba($lottery-text, 0.55);
+        font-size: 0.75rem;
+      }
+
+      &.total {
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        font-size: 1.1rem;
+        color: $lottery-text;
+
+        span:last-child {
+          color: $lottery-accent;
+        }
+      }
+    }
+  }
+}
+
+// Multiple prizes won in one spin
+.win-result .won-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.owner-panel .owner-pool-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: '04B_30', monospace;
+  font-size: 0.85rem;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: $lottery-text;
+  padding: 0.6rem;
+  margin-bottom: 0.75rem;
+  resize: vertical;
 }

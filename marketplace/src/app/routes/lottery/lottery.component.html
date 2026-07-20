@@ -16,11 +16,8 @@
 
   <!-- Header -->
   <div class="lottery-header">
-    <h1>Philip Lottery<br /><span>V67</span></h1>
+    <h1>QuantumPhunks<br /><span>Mint Lottery</span></h1>
   </div>
-
-  <!-- Tier Toggle -->
-  <!-- Tier toggle removed — separate pages for Standard and Pro -->
 
   <!-- Grid Container -->
   <div class="grid-container" [class.shown]="loadedIn()" [class.spinning]="spinPhase() !== 'idle'">
@@ -35,7 +32,6 @@
           [style.animation-delay]="i * 150 + 'ms'"
           [style.--flip-delay]="i * 150 + 'ms'">
 
-          <!-- Frame layers (only visible when active) -->
           @if (activeFrameIndex() === i) {
             <div class="frame-background"></div>
             <div class="frame-border"></div>
@@ -50,30 +46,98 @@
     </div>
   </div>
 
-  <!-- Pending Commitment Banner -->
-  @if (hasPendingCommitment() && spinPhase() === 'idle') {
+  <!-- Whitelist-only notice -->
+  @if (whitelistEnabled() && (connected$ | async) && !isWhitelisted()) {
     <div class="pending-commitment">
-      @if (commitmentExpired()) {
-        <p>Your previous commitment has expired.</p>
-        <button class="play-button" [class.shown]="true" (click)="onCancelPlay()">
-          Cancel &amp; Reclaim ETH
-        </button>
-      } @else {
-        <p>You have a pending lottery commitment.</p>
-        <button class="play-button" [class.shown]="true" (click)="onResumeReveal()">
-          Resume Reveal
-        </button>
-      }
+      <p>This is a whitelist-only phase and your wallet isn't on the list yet.</p>
     </div>
   }
 
-  <!-- Stuck ETH recovery — only shown when pendingReturns > 0 (push refund failed) -->
-  @if (hasPendingReturns() && (connected$ | async)) {
+  <!-- Stuck ETH recovery — refund from a cancelled/stuck spin -->
+  @if (hasPendingRefund() && (connected$ | async)) {
     <div class="pending-commitment">
-      <p>You have {{ pendingReturnsFormatted() }} ETH stuck in the contract from a failed refund.</p>
-      <button class="play-button" [class.shown]="true" (click)="onWithdrawPending()">
-        Withdraw {{ pendingReturnsFormatted() }} ETH
+      <p>You have {{ pendingRefundFormatted() }} ETH to reclaim from a previous spin.</p>
+      <button class="play-button" [class.shown]="true" (click)="onWithdrawRefund()">
+        Withdraw {{ pendingRefundFormatted() }} ETH
       </button>
+    </div>
+  }
+
+  <!-- Mint options (hidden during a spin) -->
+  @if (spinPhase() === 'idle' || spinPhase() === 'won') {
+    <div class="mint-options">
+      <!-- Quantity -->
+      @if (effectiveMaxQty() > 1) {
+        <div class="option-row quantity-row">
+          <span class="option-label">Quantity</span>
+          <div class="quantity-picker">
+            @for (q of quantityOptions(); track q) {
+              <button
+                type="button"
+                class="qty-button"
+                [class.active]="quantity() === q"
+                (click)="onQuantityChange(q)">{{ q }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Surrender-for-discount -->
+      @if (discountsEnabled() && (connected$ | async)) {
+        <div class="option-row surrender-row">
+          <span class="option-label">
+            Surrender for a discount
+            <small>Hand over a Phunk V2 / Philip and pay less. It moves to the treasury on a win.</small>
+          </span>
+
+          @if (surrenderLoading()) {
+            <p class="surrender-status">Loading your eligible items…</p>
+          } @else if (surrenderNfts().length === 0) {
+            <p class="surrender-status">No eligible items found in your wallet.</p>
+          } @else {
+            <div class="surrender-grid">
+              @for (nft of surrenderNfts(); track nft.collection + '-' + nft.tokenId) {
+                <button
+                  type="button"
+                  class="surrender-chip"
+                  [class.selected]="nft.selected"
+                  (click)="toggleSurrender(nft.collection, nft.tokenId)">
+                  <span class="chip-coll">{{ nft.collectionLabel }}</span>
+                  <span class="chip-id">#{{ nft.tokenId }}</span>
+                  <span class="chip-disc">−{{ fmt(nft.discountWei) }} ETH</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Live quote -->
+      <div class="quote-box">
+        <div class="quote-line">
+          <span>{{ quantity() }} × {{ mintPriceFormatted() }} ETH</span>
+          <span>{{ fmt(baseTotal()) }} ETH</span>
+        </div>
+        @if (hasDiscount()) {
+          <div class="quote-line discount">
+            <span>Discount</span>
+            <span>−{{ fmt(quoteDiscount()) }} ETH</span>
+          </div>
+        }
+        @if (hasVrf()) {
+          <div class="quote-line vrf">
+            <span>Chainlink VRF fee (est.)</span>
+            <span>{{ fmt(quoteVrf()) }} ETH</span>
+          </div>
+        }
+        <div class="quote-line total">
+          <span>Total{{ quoteLoading() ? '…' : '' }}</span>
+          <span>{{ fmt(quoteTotal()) }} ETH</span>
+        </div>
+        @if (quoteError()) {
+          <p class="error-text">{{ quoteError() }}</p>
+        }
+      </div>
     </div>
   }
 
@@ -83,40 +147,37 @@
       class="play-button"
       [class.shown]="buttonShown()"
       [class.spinning]="spinPhase() !== 'idle' && spinPhase() !== 'won'"
-      [disabled]="spinPhase() !== 'idle' && spinPhase() !== 'won' || (poolSize() === 0 && spinPhase() !== 'won') || !isActive() || hasPendingCommitment()"
+      [disabled]="(spinPhase() !== 'idle' && spinPhase() !== 'won') || (poolSize() === 0 && spinPhase() !== 'won') || !isActive()"
       (click)="spinPhase() === 'won' ? onSpinAgain() : onPlay()">
       @if (spinPhase() === 'loading') {
         Confirm in wallet...
       } @else if (spinPhase() === 'committing') {
-        Submitting play... {{ confirmElapsed() }}s
+        Submitting mint... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'waiting') {
         Drawing your prize... {{ confirmElapsed() }}s
-      } @else if (spinPhase() === 'revealing') {
-        Drawing your prize... {{ confirmElapsed() }}s
-      } @else if (spinPhase() === 'confirming') {
-        Confirming... {{ confirmElapsed() }}s
       } @else if (spinPhase() === 'spinning') {
         Spinning...
       } @else if (spinPhase() === 'decelerating') {
         Slowing down...
       } @else if (spinPhase() === 'won') {
-        Spin Again
+        Mint Again
       } @else if (spinPhase() === 'idle' && !(connected$ | async)) {
         Connect Wallet
+      } @else if (!isActive()) {
+        Coming Soon
       } @else {
-        Start
+        Mint {{ quantity() > 1 ? quantity() : '' }}
       }
     </button>
+
     @if ((spinPhase() === 'idle' || spinPhase() === 'won') && poolSize() === 0) {
-      <button
-        class="play-button demo-button"
-        [class.shown]="buttonShown()"
-        (click)="onDemoPlay()">
+      <button class="play-button demo-button" [class.shown]="buttonShown()" (click)="onDemoPlay()">
         Demo
       </button>
     }
+
     <div class="price-info">
-      Play: {{ playPrice() }} ETH
+      Mint: {{ mintPriceFormatted() }} ETH
       <span class="pool-info">&middot; {{ poolSize() }} QuantumPhunks left</span>
     </div>
 
@@ -125,16 +186,20 @@
     }
   </div>
 
-  <!-- Win Result -->
-  @if (spinPhase() === 'won' && wonPrize()) {
+  <!-- Win Result (batch-aware) -->
+  @if (spinPhase() === 'won' && wonPrizes().length) {
     <div class="win-result">
-      <h2>You Won!</h2>
-      <div class="won-item">
-        <img [src]="staticUrl + '/static/images/' + wonPrize()!.sha" width="80" height="80" />
-        <div class="won-info">
-          <span class="won-collection">{{ wonPrize()!.collection_slug }}</span>
-          <span class="won-id">#{{ wonPrize()!.token_id }}</span>
-        </div>
+      <h2>You Won{{ wonPrizes().length > 1 ? ' ' + wonPrizes().length : '' }}!</h2>
+      <div class="won-list">
+        @for (prize of wonPrizes(); track prize.token_id) {
+          <div class="won-item">
+            <img [src]="getWinImageUrl(prize)" width="80" height="80" />
+            <div class="won-info">
+              <span class="won-collection">{{ prize.collection_slug }}</span>
+              <span class="won-id">#{{ prize.token_id }}</span>
+            </div>
+          </div>
+        }
       </div>
     </div>
   }
@@ -143,95 +208,35 @@
   @if (isOwner() && (connected$ | async)) {
     <div class="owner-panel">
       <h3>Owner Panel</h3>
+
       <div class="owner-balance">
-        <span>Contract Balance:</span>
-        <span class="balance-value">{{ contractBalance() }} ETH</span>
+        <span>Withdrawable surplus:</span>
+        <span class="balance-value">{{ fmt(contractSurplus()) }} ETH</span>
       </div>
-      <button class="withdraw-button" (click)="onWithdrawETH()">
-        Withdraw Funds
+      <button class="withdraw-button" (click)="onOwnerWithdrawSurplus()">Withdraw Surplus</button>
+
+      <div class="owner-balance">
+        <span>Lottery status:</span>
+        <span class="balance-value">{{ isActive() ? 'Active' : 'Inactive' }}</span>
+      </div>
+      <button class="withdraw-button" (click)="onOwnerToggleActive()">
+        {{ isActive() ? 'Pause Lottery' : 'Activate Lottery' }}
       </button>
 
-      <!-- Attribute Filters -->
-      @if (ownerFilterKeys().length) {
-        <div class="owner-filters">
-          @for (key of ownerFilterKeys(); track key) {
-            <ng-select
-              [(ngModel)]="ownerActiveFilters[key]"
-              [placeholder]="key"
-              [searchable]="true"
-              [clearable]="true"
-              [class.active]="ownerActiveFilters[key]"
-              (change)="selectOwnerFilter()">
-              @for (val of ownerFilterData()[key]; track val) {
-                <ng-option [value]="val">{{ val }}</ng-option>
-              }
-            </ng-select>
-          }
-          @if (ownerFilterKeys().length) {
-            <button class="clear-filters" (click)="clearOwnerFilters()">Clear</button>
-          }
-        </div>
+      <div class="deposit-section">
+        <h4>Load pool tokenIds</h4>
+        <textarea
+          class="owner-pool-input"
+          rows="2"
+          placeholder="e.g. 12, 87, 340"
+          [ngModel]="ownerPoolInput()"
+          (ngModelChange)="ownerPoolInput.set($event)"></textarea>
+        <button class="deposit-button" (click)="onOwnerLoadPool()">Add to Pool</button>
+      </div>
+
+      @if (ownerStatus()) {
+        <p class="deposit-status">{{ ownerStatus() }}</p>
       }
-
-      <div class="deposit-section">
-        <h4>Your Items ({{ filteredOwnedItems().length }})</h4>
-        @if (ownedLoading()) {
-          <p class="deposit-status">Loading...</p>
-        } @else if (ownedItems().length === 0) {
-          <p class="deposit-status">No items in wallet</p>
-        } @else {
-          <div class="owned-grid">
-            @for (item of filteredOwnedItems(); track item.hashId) {
-              <div
-                class="owned-item"
-                [class.selected]="item.selected"
-                (click)="toggleItem(item.hashId)">
-                <img [src]="staticUrl + '/static/images/' + item.sha" width="50" height="50" />
-                <span class="owned-label">#{{ item.tokenId }}</span>
-              </div>
-            }
-          </div>
-          <button
-            class="deposit-button"
-            [disabled]="selectedCount() === 0"
-            (click)="onDeposit()">
-            Transfer {{ selectedCount() }} to Contract
-          </button>
-        }
-        @if (depositStatus()) {
-          <p class="deposit-status">{{ depositStatus() }}</p>
-        }
-      </div>
-
-      <div class="deposit-section">
-        <h4>Pool Items ({{ filteredPoolItems().length }})</h4>
-        @if (poolLoading()) {
-          <p class="deposit-status">Loading...</p>
-        } @else if (poolItems().length === 0) {
-          <p class="deposit-status">Pool is empty</p>
-        } @else {
-          <div class="owned-grid">
-            @for (item of filteredPoolItems(); track item.hashId) {
-              <div
-                class="owned-item"
-                [class.selected]="item.selected"
-                (click)="togglePoolItem(item.hashId)">
-                <img [src]="staticUrl + '/static/images/' + item.sha" width="50" height="50" />
-                <span class="owned-label">#{{ item.tokenId }}</span>
-              </div>
-            }
-          </div>
-          <button
-            class="deposit-button"
-            [disabled]="poolSelectedCount() === 0"
-            (click)="onWithdrawPrizes()">
-            Withdraw {{ poolSelectedCount() }} from Contract
-          </button>
-        }
-        @if (withdrawStatus()) {
-          <p class="deposit-status">{{ withdrawStatus() }}</p>
-        }
-      </div>
     </div>
   }
 
@@ -243,22 +248,22 @@
         <div class="step">
           <span class="step-number">1</span>
           <div class="step-text">
-            <strong>Commit</strong>
-            <p>Pay the play price to lock in your entry. This creates an on-chain commitment.</p>
+            <strong>Pick your quantity</strong>
+            <p>Optionally surrender a Phunk V2 or Philip for an ETH discount. The price updates live.</p>
           </div>
         </div>
         <div class="step">
           <span class="step-number">2</span>
           <div class="step-text">
-            <strong>Wait 2 Blocks</strong>
-            <p>A short wait (~30s - 1 min) before you can reveal.</p>
+            <strong>Mint</strong>
+            <p>One transaction pays the mint price plus a small Chainlink VRF fee. Overpayment is refunded automatically.</p>
           </div>
         </div>
         <div class="step">
           <span class="step-number">3</span>
           <div class="step-text">
-            <strong>Reveal</strong>
-            <p>Confirm the reveal transaction to claim your random prize. The QuantumPhunk is sent directly to your wallet.</p>
+            <strong>Random reveal</strong>
+            <p>Chainlink VRF picks your QuantumPhunk at random and it's minted straight to your wallet — no reveal step needed.</p>
           </div>
         </div>
       </div>
@@ -271,16 +276,9 @@
       <h3>All</h3>
       <div class="section-stats-wrapper">
         <p>
-          <a class="highlight" routerLink="/lottery/pool">View all @if(poolSize() > 0) { {{ poolSize() }} } QuantumPhunks in pool.</a>
+          <a class="highlight" routerLink="/lottery/pool">View all @if(poolSize() > 0) { {{ poolSize() }} } QuantumPhunks in the pool.</a>
         </p>
       </div>
-      <app-phunk-grid
-        [phunkData]="$any(poolItems())"
-        [viewType]="'compact'"
-        [limit]="110"
-        [marketType]="'all'"
-        [activeSort]="'id'"
-      />
     </div>
   </section>
 

@@ -1,26 +1,20 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 
 import { Subscription, firstValueFrom } from 'rxjs';
-import { createPublicClient, http, formatEther, decodeEventLog } from 'viem';
-import { mainnet } from 'viem/chains';
+import { formatEther } from 'viem';
 
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { LotteryGridItem, LotteryWin, SpinPhase } from '@/models/lottery';
-import { Attribute } from '@/models/attributes';
-import { PhilipLotteryV67ABI } from '@/abi/PhilipLotteryV67';
 
 import { Web3Service } from '@/services/web3.service';
-import { LotteryService } from '@/services/lottery.service';
-import { DataService } from '@/services/data.service';
+import { LotteryService, OwnedNft } from '@/services/lottery.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
-import * as notifActions from '@/state/actions/notification.actions';
 
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 
@@ -29,12 +23,10 @@ import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component
 function getSpinPath(count: number): number[] {
   if (count <= 1) return [0];
   if (count <= 4) {
-    // Single row: ping-pong (0,1,2,3,2,1)
     const forward = Array.from({ length: count }, (_, i) => i);
     const backward = Array.from({ length: count - 2 }, (_, i) => count - 2 - i);
     return [...forward, ...backward];
   }
-  // 2 rows: clockwise — top row L→R, bottom row R→L
   const topRow = Math.min(count, 4);
   const bottomRow = count - topRow;
   const path: number[] = [];
@@ -51,7 +43,7 @@ const MAX_STEP_DELAY = 400;
 @Component({
   selector: 'app-lottery',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NgSelectModule, PhunkGridComponent],
+  imports: [CommonModule, RouterModule, FormsModule, PhunkGridComponent],
   templateUrl: './lottery.component.html',
   styleUrls: ['./lottery.component.scss']
 })
@@ -64,65 +56,89 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
   gridItems = signal<LotteryGridItem[]>(
     Array.from({ length: 8 }, (_, i) => ({
-      index: i,
-      hashId: '',
-      sha: '',
-      imageUrl: '/assets/images/lottery/philip.png',
-      flipping: false,
-      revealed: false,
-      rightFacing: false,
+      index: i, hashId: '', sha: '', imageUrl: '/assets/images/lottery/philip.png',
+      flipping: false, revealed: false, rightFacing: false,
     }))
   );
   spinPhase = signal<SpinPhase>('idle');
   activeFrameIndex = signal(-1);
-  wonPrize = signal<LotteryWin | null>(null);
+
+  // Prizes won this spin (batch-aware; wonPrize = the first/primary).
+  wonPrizes = signal<LotteryWin[]>([]);
+  wonPrize = computed(() => this.wonPrizes()[0] || null);
+
   recentWins = signal<LotteryWin[]>([]);
   totalWinsCount = signal(0);
-  playPrice = signal('0');
+
+  // ─── Contract state ───
+  mintPrice = signal(0n);               // base price per token (wei)
+  mintPriceFormatted = computed(() => formatEther(this.mintPrice()));
   poolSize = signal(0);
   isActive = signal(true);
+  maxBatchSize = signal(8);
+  maxPerWallet = signal(67);
+  mintsOf = signal(0);
+  whitelistEnabled = signal(false);
+  isWhitelisted = signal(false);
+  discountsEnabled = signal(false);
+
+  // ─── Play options ───
+  quantity = signal(1);
+  effectiveMaxQty = computed(() => {
+    const walletRemaining = this.maxPerWallet() > 0 ? Math.max(0, this.maxPerWallet() - this.mintsOf()) : 999;
+    return Math.max(1, Math.min(this.maxBatchSize(), this.poolSize() || 1, walletRemaining || 1));
+  });
+  quantityOptions = computed(() => Array.from({ length: this.effectiveMaxQty() }, (_, i) => i + 1));
+
+  // ─── Surrender-for-discount ───
+  surrenderNfts = signal<OwnedNft[]>([]);
+  surrenderLoading = signal(false);
+  selectedSurrenders = computed(() => this.surrenderNfts().filter(n => n.selected));
+
+  // ─── Live quote ───
+  quoteMint = signal(0n);   // mint payment after discount (wei)
+  quoteVrf = signal(0n);    // estimated VRF fee (wei)
+  quoteTotal = computed(() => this.quoteMint() + this.quoteVrf());
+  quoteDiscount = signal(0n);
+  baseTotal = computed(() => this.mintPrice() * BigInt(this.quantity()));
+  hasDiscount = computed(() => this.quoteDiscount() > 0n);
+  hasVrf = computed(() => this.quoteVrf() > 0n);
+
+  /** Format a wei bigint as an ETH string for the template. */
+  fmt(wei: bigint | null | undefined): string { return formatEther(wei ?? 0n); }
+  quoteError = signal('');
+  quoteLoading = signal(false);
+  private quoteTimer: any;
+
+  // ─── Owner ───
   isOwner = signal(false);
-  contractBalance = signal('0');
+  contractSurplus = signal(0n);
+  ownerPoolInput = signal('');
+  ownerStatus = signal('');
+
+  // ─── Stuck-ETH recovery ───
+  pendingRefund = signal(0n);
+  pendingRefundFormatted = computed(() => formatEther(this.pendingRefund()));
+  hasPendingRefund = computed(() => this.pendingRefund() > 0n);
+
   loadedIn = signal(false);
   buttonShown = signal(false);
   errorMessage = signal('');
   confirmElapsed = signal(0);
-  waitingBlocks = signal(0);
-  hasPendingCommitment = signal(false);
-  commitmentExpired = signal(false);
-  pendingReturns = signal<bigint>(0n);
-  pendingReturnsFormatted = computed(() => formatEther(this.pendingReturns()));
-  hasPendingReturns = computed(() => this.pendingReturns() > 0n);
   private confirmTimer: any;
-  depositStatus = signal('');
-  ownedItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean; attributes?: Attribute[] }[]>([]);
-  ownedLoading = signal(false);
-  selectedCount = computed(() => this.ownedItems().filter(i => i.selected).length);
-  poolItems = signal<{ hashId: string; sha: string; tokenId: number; slug: string; selected: boolean; attributes?: Attribute[] }[]>([]);
-  poolLoading = signal(false);
-  poolSelectedCount = computed(() => this.poolItems().filter(i => i.selected).length);
-  withdrawStatus = signal('');
-  headerImages = computed(() => {
-    const items = this.gridItems();
-    if (!items.length) {
-      const defaultSrc = '/assets/loadingphunk.png';
-      return Array.from({ length: 9 }, () => ({ src: defaultSrc }));
-    }
-    return Array.from({ length: 9 }, (_, i) => ({
-      src: items[i % items.length].imageUrl,
-    }));
-  });
-
-  hasSecondLottery = this.lotterySvc.hasSecondLottery;
-  activeTier = signal<'standard' | 'premium'>('standard');
 
   staticUrl = environment.staticUrl;
   philipFallback = '/assets/images/lottery/philip.png';
   private philipImageUrl = '';
 
+  headerImages = computed(() => {
+    const items = this.gridItems();
+    if (!items.length) return Array.from({ length: 9 }, () => ({ src: '/assets/loadingphunk.png' }));
+    return Array.from({ length: 9 }, (_, i) => ({ src: items[i % items.length].imageUrl }));
+  });
+
   private recentWinsSub!: Subscription;
   private totalWinsCountSub!: Subscription;
-  private winWatchSub!: Subscription;
   private spinTimeout: any;
   private spinPath: number[] = getSpinPath(8);
   private currentStepIndex = 0;
@@ -131,48 +147,17 @@ export class LotteryComponent implements OnInit, OnDestroy {
   private targetWinIndex = -1;
   private fireworks: any = null;
   private playInProgress = false;
-  private pendingWinRecord: LotteryWin | null = null;
-  private readonly PENDING_COMMIT_KEY = 'lottery_pending_commit';
-  private beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-    if (this.playInProgress) {
-      e.preventDefault();
-    }
-  };
-
-  // Owner panel attribute filters
-  ownerFilterData = signal<{ [key: string]: string[] }>({});
-  ownerActiveFilters: { [key: string]: string | null } = {};
-  ownerFilterVersion = signal(0);
-  filteredOwnedItems = computed(() => { this.ownerFilterVersion(); return this.applyAttrFilter(this.ownedItems(), this.ownerActiveFilters); });
-  filteredPoolItems = computed(() => { this.ownerFilterVersion(); return this.applyAttrFilter(this.poolItems(), this.ownerActiveFilters); });
-  ownerFilterKeys = computed(() => Object.keys(this.ownerFilterData()));
+  private pendingWinRecords: LotteryWin[] | null = null;
+  private beforeUnloadHandler = (e: BeforeUnloadEvent) => { if (this.playInProgress) e.preventDefault(); };
 
   constructor(
     private store: Store<GlobalState>,
     private web3Svc: Web3Service,
     private lotterySvc: LotteryService,
-    private dataSvc: DataService,
     private ngZone: NgZone,
-    private route: ActivatedRoute,
-  ) {
-    const overrideAddress = this.route.snapshot.data['lotteryAddress'];
-    if (overrideAddress) {
-      this.lotterySvc.setAddress(overrideAddress as `0x${string}`);
-    } else {
-      // Reset to standard address when navigating back from Pro
-      this.lotterySvc.setAddress(this.lotterySvc.standardAddress);
-    }
-  }
+  ) {}
 
   async ngOnInit() {
-    // Re-set address on init (handles navigation between standard/pro)
-    const overrideAddress = this.route.snapshot.data['lotteryAddress'];
-    if (overrideAddress) {
-      this.lotterySvc.setAddress(overrideAddress as `0x${string}`);
-    } else {
-      this.lotterySvc.setAddress(this.lotterySvc.standardAddress);
-    }
-
     // Fetch token #10298 (Philip) image for grid placeholders
     try {
       const philip = await this.lotterySvc.getEthscriptionByTokenId(10298);
@@ -185,213 +170,114 @@ export class LotteryComponent implements OnInit, OnDestroy {
     await this.loadContractState();
     await this.initGrid();
     this.subscribeRecentWins();
-    this.loadPoolItems();
 
-    // Check if current user is owner
     const address = await firstValueFrom(this.address$);
-    if (address) {
-      try {
-        const owner = await this.lotterySvc.getOwner();
-        this.isOwner.set(owner.toLowerCase() === address.toLowerCase());
-        if (this.isOwner()) {
-          const balance = await this.lotterySvc.getContractBalance();
-          this.contractBalance.set(formatEther(balance));
-          this.loadOwnedItems(address);
-          this.loadPoolItems();
-        }
-      } catch {}
-    }
+    if (address) await this.loadWalletState(address);
 
-    // Check for unconfirmed commit tx in localStorage (user refreshed mid-commit)
-    await this.resumePendingCommitTx();
+    // Re-load wallet-specific state when the wallet connects after page load.
+    this.address$.subscribe(addr => { if (addr) this.loadWalletState(addr); });
 
-    // Check for confirmed commitment on-chain (user refreshed between commit and reveal)
-    await this.checkPendingCommitment();
-
-    // Check for stuck ETH in pendingReturns (failed push refund)
-    if (address) {
-      try {
-        const pr = await this.lotterySvc.getPendingReturns(address);
-        this.pendingReturns.set(pr);
-      } catch {}
-    }
-
-    // Re-check commitment when wallet connects after page load
-    this.address$.subscribe(addr => {
-      if (addr && !this.hasPendingCommitment()) {
-        this.checkPendingCommitment();
-      }
-    });
-
-    // Staggered load-in animation (matches OG timing)
     setTimeout(() => this.loadedIn.set(true), 300);
     setTimeout(() => this.buttonShown.set(true), 1400);
-
-    // Prevent accidental navigation during play
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
-  }
 
-  // Resume an unconfirmed commit tx found in localStorage (user refreshed during committing phase)
-  private async resumePendingCommitTx() {
-    const stored = localStorage.getItem(this.PENDING_COMMIT_KEY);
-    if (!stored) return;
-
-    try {
-      const parsed = JSON.parse(stored);
-      const { txHash, address: storedAddress, contractAddress } = parsed;
-      // Only resume if same wallet + same lottery contract
-      const address = await firstValueFrom(this.address$);
-      if (!address || address.toLowerCase() !== storedAddress?.toLowerCase()) return;
-      if (contractAddress && contractAddress.toLowerCase() !== this.lotterySvc.address.toLowerCase()) return;
-
-      // ─── V67_VRF resume: a play tx is in flight / awaiting the VRF callback ──
-      if (parsed.vrf) {
-        try {
-          this.spinPhase.set('waiting');
-          const sinceMs = Number(parsed.sinceMs) || (Date.now() - 600000);
-          const fromBlock = parsed.fromBlock ? BigInt(parsed.fromBlock) : await this.lotterySvc.getBlockNumber();
-          const win = await this.lotterySvc.watchForWinByAddress(address, sinceMs, fromBlock);
-          localStorage.removeItem(this.PENDING_COMMIT_KEY);
-          // Show the result (no live spin — the window was missed on refresh)
-          if (win?.hash_id) {
-            let record = win;
-            if (!win.sha) {
-              const e = await this.lotterySvc.getEthscriptionsByHashIds([win.hash_id.toLowerCase()]);
-              if (e[0]) record = { ...win, sha: e[0].sha, token_id: e[0].tokenId, collection_slug: e[0].slug };
-            }
-            this.wonPrize.set(record);
-            this.spinPhase.set('won');
-          } else {
-            this.spinPhase.set('idle');
-          }
-        } catch {
-          localStorage.removeItem(this.PENDING_COMMIT_KEY);
-          this.spinPhase.set('idle');
-        }
-        return;
-      }
-
-      // Check if commitment already exists on-chain (tx already mined)
-      const commitment = await this.lotterySvc.getCommitment(address);
-      if (commitment.commitBlock > 0n) {
-        // Already confirmed — clear localStorage, let checkPendingCommitment handle it
-        localStorage.removeItem(this.PENDING_COMMIT_KEY);
-        return;
-      }
-
-      // Commitment not on-chain yet — tx may still be pending, poll for receipt
-      this.spinPhase.set('committing');
-      this.confirmElapsed.set(0);
-      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
-
-      try {
-        const receipt = await this.pollReceipt(txHash);
-        clearInterval(this.confirmTimer);
-        localStorage.removeItem(this.PENDING_COMMIT_KEY);
-
-        if (receipt?.status === 'reverted') {
-          this.spinPhase.set('idle');
-          this.errorMessage.set('Previous commit transaction failed. Please try again.');
-          return;
-        }
-
-        // Commit confirmed — now check on-chain commitment and show resume
-        await this.checkPendingCommitment();
-        this.spinPhase.set('idle');
-      } catch {
-        clearInterval(this.confirmTimer);
-        localStorage.removeItem(this.PENDING_COMMIT_KEY);
-        this.spinPhase.set('idle');
-      }
-    } catch {
-      localStorage.removeItem(this.PENDING_COMMIT_KEY);
-    }
-  }
-
-  private async checkPendingCommitment() {
-    try {
-      const address = await firstValueFrom(this.address$);
-      if (!address) return;
-
-      const commitment = await this.lotterySvc.getCommitment(address);
-      if (commitment.commitBlock === 0n) return;
-
-      const currentBlock = await this.lotterySvc.getBlockNumber();
-      const expiry = commitment.commitBlock + 256n;
-
-      if (currentBlock > expiry) {
-        // Commitment expired — show cancel option
-        this.hasPendingCommitment.set(true);
-        this.commitmentExpired.set(true);
-      } else {
-        // Active commitment — can reveal or needs to wait
-        this.hasPendingCommitment.set(true);
-        this.commitmentExpired.set(false);
-      }
-    } catch (err) {
-      console.error('Failed to check pending commitment:', err);
-    }
+    this.refreshQuote();
   }
 
   ngOnDestroy() {
     this.recentWinsSub?.unsubscribe();
     this.totalWinsCountSub?.unsubscribe();
-    this.winWatchSub?.unsubscribe();
     clearTimeout(this.spinTimeout);
     clearInterval(this.confirmTimer);
+    clearTimeout(this.quoteTimer);
     this.stopFireworks();
     window.removeEventListener('beforeunload', this.beforeUnloadHandler);
   }
 
   // =========================================================
-  // Contract State
+  // Contract / wallet state
   // =========================================================
 
   private async loadContractState() {
     try {
-      const [price, active, size] = await Promise.all([
-        this.lotterySvc.getPlayPrice(),
+      const [price, active, size, maxBatch, maxWallet, wl, disc] = await Promise.all([
+        this.lotterySvc.getMintPrice(),
         this.lotterySvc.isActive(),
         this.lotterySvc.getPoolSize(),
+        this.lotterySvc.getMaxBatchSize(),
+        this.lotterySvc.getMaxPerWallet(),
+        this.lotterySvc.isWhitelistEnabled(),
+        this.lotterySvc.isDiscountsEnabled(),
       ]);
-      this.playPrice.set(formatEther(price));
+      this.mintPrice.set(price);
       this.isActive.set(active);
       this.poolSize.set(Number(size));
+      this.maxBatchSize.set(maxBatch);
+      this.maxPerWallet.set(maxWallet);
+      this.whitelistEnabled.set(wl);
+      this.discountsEnabled.set(disc);
     } catch (err) {
       console.error('Failed to load contract state:', err);
     }
   }
 
+  private async loadWalletState(address: string) {
+    try {
+      const [mints, whitelisted, refund] = await Promise.all([
+        this.lotterySvc.getMintsOf(address),
+        this.lotterySvc.isWhitelisted(address),
+        this.lotterySvc.getPendingRefunds(address),
+      ]);
+      this.mintsOf.set(mints);
+      this.isWhitelisted.set(whitelisted);
+      this.pendingRefund.set(refund);
+
+      // Clamp quantity to what's now allowed
+      if (this.quantity() > this.effectiveMaxQty()) this.quantity.set(this.effectiveMaxQty());
+
+      // Owner check
+      const owner = await this.lotterySvc.getOwner();
+      this.isOwner.set(owner.toLowerCase() === address.toLowerCase());
+      if (this.isOwner()) {
+        this.lotterySvc.getWithdrawableSurplus().then(s => this.contractSurplus.set(s)).catch(() => {});
+      }
+
+      if (this.discountsEnabled()) this.loadSurrenderNfts(address);
+      this.refreshQuote();
+    } catch (err) {
+      console.error('Failed to load wallet state:', err);
+    }
+  }
+
   // =========================================================
-  // Grid Init
+  // Grid init (prizes = tokenId pool → image via ethscriptions table)
   // =========================================================
 
   private async initGrid() {
     const items: LotteryGridItem[] = [];
     const fallback = this.philipImageUrl || '/assets/images/lottery/philip.png';
+    const pad = (from: LotteryGridItem[]) => {
+      while (from.length < 8) from.push({ index: from.length, hashId: '', sha: '', imageUrl: fallback, flipping: false, revealed: false, rightFacing: false });
+      return from;
+    };
 
     try {
       const size = this.poolSize();
       if (size > 0) {
-        // Fetch a larger sample then randomly pick 8 for variety
         const fetchCount = Math.min(size, 50);
         const maxOffset = Math.max(0, size - fetchCount);
         const randomOffset = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
-        const hashIds = await this.lotterySvc.getPoolItems(randomOffset, fetchCount);
-
-        // Look up all fetched items, dedup by sha, then pick 8 unique
-        const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds(
-          hashIds.map(h => h.toLowerCase())
-        );
+        const tokenIds = await this.lotterySvc.getPoolItems(randomOffset, fetchCount);
+        const rows = await this.lotterySvc.getEthscriptionsByTokenIds(tokenIds);
+        const byToken = new Map(rows.map(r => [r.tokenId, r]));
 
         const seen = new Set<string>();
-        const unique = ethscriptions.filter(e => {
-          if (!e?.sha || seen.has(e.sha)) return false;
-          seen.add(e.sha);
-          return true;
-        });
+        const unique: { hashId: string; sha: string; tokenId: number; slug: string }[] = [];
+        for (const id of tokenIds) {
+          const e = byToken.get(id);
+          if (e?.sha && !seen.has(e.sha)) { seen.add(e.sha); unique.push(e); }
+        }
 
-        // Shuffle so display order varies each load
         for (let i = unique.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [unique[i], unique[j]] = [unique[j], unique[i]];
@@ -401,55 +287,17 @@ export class LotteryComponent implements OnInit, OnDestroy {
         for (let i = 0; i < displayCount; i++) {
           const eth = unique[i];
           items.push({
-            index: i,
-            hashId: eth?.hashId || '',
-            sha: eth?.sha || '',
-            imageUrl: eth?.sha
-              ? `${this.staticUrl}/static/images/${eth.sha}`
-              : fallback,
-            flipping: false,
-            revealed: false,
-            rightFacing: false,
+            index: i, hashId: eth.hashId || '', sha: eth.sha || '',
+            imageUrl: eth.sha ? `${this.staticUrl}/static/images/${eth.sha}` : fallback,
+            flipping: false, revealed: false, rightFacing: false,
           });
         }
-        // Always pad to 8 slots with fallback
-        while (items.length < 8) {
-          items.push({
-            index: items.length,
-            hashId: '',
-            sha: '',
-            imageUrl: fallback,
-            flipping: false,
-            revealed: false,
-            rightFacing: false,
-          });
-        }
+        pad(items);
       } else {
-        // No pool items, fill with 8 placeholders
-        for (let i = 0; i < 8; i++) {
-          items.push({
-            index: i,
-            hashId: '',
-            sha: '',
-            imageUrl: fallback,
-            flipping: false,
-            revealed: false,
-            rightFacing: false,
-          });
-        }
+        for (let i = 0; i < 8; i++) items.push({ index: i, hashId: '', sha: '', imageUrl: fallback, flipping: false, revealed: false, rightFacing: false });
       }
     } catch {
-      for (let i = 0; i < 8; i++) {
-        items.push({
-          index: i,
-          hashId: '',
-          sha: '',
-          imageUrl: fallback,
-          flipping: false,
-          revealed: false,
-          rightFacing: false,
-        });
-      }
+      for (let i = 0; i < 8; i++) items.push({ index: i, hashId: '', sha: '', imageUrl: fallback, flipping: false, revealed: false, rightFacing: false });
     }
 
     this.spinPath = getSpinPath(items.length);
@@ -457,581 +305,273 @@ export class LotteryComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // Play Flow
+  // Surrender-for-discount picker
+  // =========================================================
+
+  private async loadSurrenderNfts(address: string) {
+    if (!this.lotterySvc.surrenderCollections.length) return;
+    this.surrenderLoading.set(true);
+    try {
+      const all: OwnedNft[] = [];
+      for (const coll of this.lotterySvc.surrenderCollections) {
+        const eligible = await this.lotterySvc.isDiscountCollection(coll.address);
+        if (!eligible) continue;
+        const [tokenIds, defaultDiscount] = await Promise.all([
+          this.lotterySvc.getOwnedTokenIds(address, coll.address),
+          this.lotterySvc.getCollectionDefaultDiscount(coll.address),
+        ]);
+        for (const tokenId of tokenIds) {
+          all.push({
+            collection: coll.address, collectionLabel: coll.label, tokenId,
+            imageUrl: '', discountWei: defaultDiscount, selected: false,
+          });
+        }
+      }
+      all.sort((a, b) => a.collectionLabel.localeCompare(b.collectionLabel) || a.tokenId - b.tokenId);
+      this.surrenderNfts.set(all);
+    } catch (err) {
+      console.warn('Failed to load surrender NFTs:', err);
+    } finally {
+      this.surrenderLoading.set(false);
+    }
+  }
+
+  toggleSurrender(collection: string, tokenId: number) {
+    this.surrenderNfts.update(nfts =>
+      nfts.map(n => (n.collection === collection && n.tokenId === tokenId) ? { ...n, selected: !n.selected } : n)
+    );
+    this.refreshQuote();
+  }
+
+  onQuantityChange(q: number) {
+    this.quantity.set(Math.max(1, Math.min(q, this.effectiveMaxQty())));
+    this.refreshQuote();
+  }
+
+  // Debounced live quote from the contract (exact after-discount price + VRF estimate).
+  refreshQuote() {
+    clearTimeout(this.quoteTimer);
+    this.quoteTimer = setTimeout(() => this._refreshQuote(), 250);
+  }
+
+  private async _refreshQuote() {
+    const address = await firstValueFrom(this.address$);
+    const quantity = this.quantity();
+    const selected = this.selectedSurrenders();
+    const collections = selected.map(s => s.collection);
+    const tokenIds = selected.map(s => s.tokenId);
+
+    // Disconnected: show the plain base total (no discount, no VRF estimate yet).
+    if (!address) {
+      this.quoteMint.set(this.mintPrice() * BigInt(quantity));
+      this.quoteVrf.set(0n);
+      this.quoteDiscount.set(0n);
+      this.quoteError.set('');
+      return;
+    }
+
+    this.quoteLoading.set(true);
+    this.quoteError.set('');
+    try {
+      const { mintPayment, vrfCost } = await this.lotterySvc.getTotalCost(address, quantity, collections, tokenIds);
+      this.quoteMint.set(mintPayment);
+      this.quoteVrf.set(vrfCost);
+      this.quoteDiscount.set(this.mintPrice() * BigInt(quantity) - mintPayment);
+    } catch (err: any) {
+      // quote() reverts CreditExceedsOrder if the surrender is worth more than the order.
+      const msg = err?.shortMessage || err?.message || '';
+      this.quoteError.set(msg.includes('CreditExceedsOrder')
+        ? 'Surrendered items are worth more than the order — deselect some or raise the quantity.'
+        : 'Could not price this selection.');
+      this.quoteMint.set(this.mintPrice() * BigInt(quantity));
+      this.quoteVrf.set(0n);
+      this.quoteDiscount.set(0n);
+    } finally {
+      this.quoteLoading.set(false);
+    }
+  }
+
+  // =========================================================
+  // Play flow
   // =========================================================
 
   async onPlay() {
     const connected = await firstValueFrom(this.connected$);
-    if (!connected) {
-      this.web3Svc.connect();
-      return;
-    }
-
+    if (!connected) { this.web3Svc.connect(); return; }
     if (this.spinPhase() !== 'idle' && this.spinPhase() !== 'won') return;
-    if (!this.isActive()) {
-      this.errorMessage.set('Lottery is currently inactive');
-      return;
-    }
-    if (this.poolSize() === 0) {
-      this.errorMessage.set('No prizes available');
+
+    if (!this.isActive()) { this.errorMessage.set('Lottery is currently inactive'); return; }
+    if (this.poolSize() === 0) { this.errorMessage.set('No prizes available'); return; }
+
+    const address = await firstValueFrom(this.address$);
+    if (!address) { this.web3Svc.connect(); return; }
+
+    if (this.whitelistEnabled() && !this.isWhitelisted()) {
+      this.errorMessage.set('This phase is whitelist-only. Your wallet is not on the list yet.');
       return;
     }
 
-    // Check if user has enough ETH for play price + VRF fee + gas (single tx)
+    const quantity = Math.max(1, Math.min(this.quantity(), this.effectiveMaxQty()));
+    if (quantity < 1) { this.errorMessage.set('Nothing available to mint'); return; }
+    if (this.quoteError()) { this.errorMessage.set(this.quoteError()); return; }
+
+    const selected = this.selectedSurrenders();
+    const collections = selected.map(s => s.collection);
+    const tokenIds = selected.map(s => s.tokenId);
+
+    // Balance check: total cost (quote + VRF) + gas headroom
     try {
-      const address = await firstValueFrom(this.address$);
-      if (address) {
-        const [balance, costs, block] = await Promise.all([
-          this.web3Svc.l1Client.getBalance({ address: address as `0x${string}` }),
-          this.lotterySvc.getTotalPlayCost(),
-          this.web3Svc.l1Client.getBlock(),
-        ]);
-        const playPrice = costs.total; // playPrice + VRF fee
-        const baseFee = block.baseFeePerGas ?? 1000000000n;
-        const gasBuffer = 300000n * baseFee * 2n; // single play tx
-        if (balance < playPrice + gasBuffer) {
-          this.errorMessage.set('Insufficient ETH for play + gas');
-          return;
-        }
-      }
+      const [balance, cost, block] = await Promise.all([
+        this.web3Svc.l1Client.getBalance({ address: address as `0x${string}` }),
+        this.lotterySvc.getTotalCost(address, quantity, collections, tokenIds),
+        this.web3Svc.l1Client.getBlock(),
+      ]);
+      const baseFee = block.baseFeePerGas ?? 1000000000n;
+      const gasBuffer = 400000n * baseFee * 2n;
+      if (balance < cost.total + gasBuffer) { this.errorMessage.set('Insufficient ETH for mint + gas'); return; }
     } catch {}
 
     this.errorMessage.set('');
-    this.wonPrize.set(null);
+    this.wonPrizes.set([]);
     this.stopFireworks();
     this.spinPhase.set('loading');
     this.playInProgress = true;
-    this.hasPendingCommitment.set(false);
 
-    // Reset grid items to unrevealed
-    this.gridItems.update(items =>
-      items.map(item => ({ ...item, flipping: false, revealed: false }))
-    );
+    this.gridItems.update(items => items.map(item => ({ ...item, flipping: false, revealed: false })));
 
     try {
-      const address = await firstValueFrom(this.address$);
-      const fromBlock = await this.lotterySvc.getBlockNumber();
       const sinceMs = Date.now();
 
-      // ─── Single tx: play() requests Chainlink VRF ────────
-      const playHash = await this.lotterySvc.play();
-      if (!playHash) throw new Error('Play transaction failed');
+      // 1) Approvals for any surrendered collections (skips already-approved).
+      if (collections.length) {
+        this.ownerStatus.set('');
+        await this.lotterySvc.ensureSurrenderApprovals(collections);
+      }
 
-      // Persist so we can resume the result-watch if the user refreshes
-      localStorage.setItem(this.PENDING_COMMIT_KEY, JSON.stringify({
-        txHash: playHash,
-        address,
-        contractAddress: this.lotterySvc.address,
-        vrf: true,
-        sinceMs,
-        fromBlock: fromBlock.toString(),
-      }));
+      // 2) Single tx: requestMint → Chainlink VRF request
+      const playHash = await this.lotterySvc.requestMint(quantity, collections, tokenIds);
+      if (!playHash) throw new Error('Mint transaction failed');
 
-      // Submitting the play tx
+      // 3) Wait for the request tx to mine
       this.spinPhase.set('committing');
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
-      await this.pollReceipt(playHash);
+      await this.web3Svc.pollReceipt(playHash);
       clearInterval(this.confirmTimer);
 
-      // ─── Wait for the VRF callback to assign the prize ───
-      // (the callback is Chainlink's tx — we watch PrizeAwarded(winner=you)
-      //  + the Supabase win row; both keyed by address, not the play tx)
+      // 4) Wait for the VRF callback → indexer writes lottery_wins (watched via Supabase realtime)
       this.spinPhase.set('waiting');
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
 
-      const win = await this.lotterySvc.watchForWinByAddress(address!, sinceMs, fromBlock);
-
+      const wins = await this.lotterySvc.watchForWins(address, sinceMs, quantity);
       clearInterval(this.confirmTimer);
-      localStorage.removeItem(this.PENDING_COMMIT_KEY);
-      this.hasPendingCommitment.set(false);
 
-      let wonHashId = win.hash_id;
-      let playId = win.play_id;
-      let winRecord: LotteryWin | null = win;
-      // tail uses `revealHash` as the result tx for the win record
-      const revealHash = win.tx_hash || playHash;
-
-      // Resolve winner details BEFORE starting spin
-      let winCellIndex = this.spinPath[
-        (wonHashId ? playId : Math.floor(Math.random() * this.spinPath.length)) % this.spinPath.length
-      ];
-
-      if (wonHashId) {
-        try {
-          let won: { hashId: string; sha: string; tokenId: number; slug: string } | null = null;
-          if (winRecord?.sha) {
-            won = { hashId: winRecord.hash_id, sha: winRecord.sha, tokenId: winRecord.token_id, slug: winRecord.collection_slug };
-          } else {
-            const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds([wonHashId.toLowerCase()]);
-            won = ethscriptions[0] || null;
-          }
-
-          if (won) {
-            const existingIdx = this.gridItems().findIndex(item => item.sha === won!.sha);
-            if (existingIdx !== -1) {
-              winCellIndex = existingIdx;
-            } else {
-              this.gridItems.update(items =>
-                items.map((item, i) =>
-                  i === winCellIndex
-                    ? { ...item, hashId: won!.hashId, sha: won!.sha, imageUrl: `${this.staticUrl}/static/images/${won!.sha}` }
-                    : item
-                )
-              );
-            }
-
-            const address = await firstValueFrom(this.address$);
-            if (!winRecord) {
-              winRecord = {
-                id: 0,
-                contract_address: this.lotterySvc.address.toLowerCase(),
-                play_id: playId,
-                winner: (address || '').toLowerCase(),
-                hash_id: won.hashId,
-                sha: won.sha,
-                token_id: won.tokenId,
-                collection_slug: won.slug,
-                transfer_status: 'transferred',
-                tx_hash: revealHash,
-                created_at: new Date().toISOString(),
-              };
-            }
-
-            this.wonPrize.set(winRecord);
-            this.pendingWinRecord = winRecord;
-          }
-        } catch (err) {
-          console.error('Failed to look up won ethscription:', err);
-        }
+      if (!wins.length) {
+        // VRF/indexer hasn't landed within the window — leave a clear message; the win will
+        // still show in Recent Wins once the indexer catches up. Offer stuck-spin recovery.
+        this.spinPhase.set('idle');
+        this.errorMessage.set('Your mint is confirmed but the result is still settling. It will appear in Recent Wins shortly.');
+        await this.refreshAfterPlay(address);
+        return;
       }
 
-      // Insert win into Supabase immediately (fallback in case indexer is slow)
-      if (wonHashId && winRecord) {
-        const address = await firstValueFrom(this.address$);
-        this.lotterySvc.insertWinFallback({
-          contractAddress: this.lotterySvc.address,
-          playId,
-          winner: address || '',
-          hashId: wonHashId,
-          sha: winRecord.sha,
-          tokenId: winRecord.token_id,
-          collectionSlug: winRecord.collection_slug,
-          txHash: revealHash,
-        });
+      // 5) Reveal — spin to the first won token; list them all in the result panel.
+      this.wonPrizes.set(wins);
+      this.pendingWinRecords = wins;
+
+      const primary = wins[0];
+      let winCellIndex = this.spinPath[primary.play_id % this.spinPath.length];
+      const existingIdx = this.gridItems().findIndex(item => item.sha === primary.sha);
+      if (existingIdx !== -1) {
+        winCellIndex = existingIdx;
+      } else if (primary.sha) {
+        this.gridItems.update(items => items.map((item, i) =>
+          i === winCellIndex ? { ...item, hashId: primary.hash_id, sha: primary.sha, imageUrl: `${this.staticUrl}/static/images/${primary.sha}` } : item
+        ));
       }
 
-      // Now start spinning with real data loaded, then immediately signal deceleration
       this.startSpin();
       this.targetWinIndex = winCellIndex;
       this.shouldDecelerate = true;
 
-      // Refresh pool size in background
-      this.lotterySvc.getPoolSize().then(newSize => this.poolSize.set(Number(newSize)));
-
-      if (this.isOwner()) {
-        this.lotterySvc.getContractBalance().then(balance =>
-          this.contractBalance.set(formatEther(balance))
-        );
-      }
-
+      await this.refreshAfterPlay(address);
     } catch (err: any) {
       clearInterval(this.confirmTimer);
-      localStorage.removeItem(this.PENDING_COMMIT_KEY);
       this.stopSpin();
       this.spinPhase.set('idle');
       let msg = err?.shortMessage || err?.message || 'Transaction failed';
-      if (msg.includes('No contracts')) {
-        msg = 'Smart contract wallets are not supported. Please use a regular wallet.';
-      }
+      if (msg.includes('OnlyEOA') || msg.includes('No contracts')) msg = 'Smart-contract wallets are not supported. Please use a regular wallet.';
+      else if (msg.includes('NotWhitelisted')) msg = 'This phase is whitelist-only.';
+      else if (msg.includes('WalletLimitReached')) msg = 'You have reached the per-wallet mint limit.';
+      else if (msg.includes('NoTokensAvailable')) msg = 'Not enough prizes left for that quantity.';
       this.errorMessage.set(msg);
-      // Re-check for pending commitment (commit may have succeeded but reveal failed)
-      this.checkPendingCommitment();
     } finally {
       this.playInProgress = false;
     }
   }
 
-  // Resume a pending commitment (user refreshed or reveal failed)
-  async onResumeReveal() {
-    const connected = await firstValueFrom(this.connected$);
-    if (!connected) { this.web3Svc.connect(); return; }
-
-    const address = await firstValueFrom(this.address$);
-    if (!address) return;
-
-    this.errorMessage.set('');
-    this.wonPrize.set(null);
-    this.stopFireworks();
-    this.playInProgress = true;
-
+  private async refreshAfterPlay(address: string) {
     try {
-      const commitment = await this.lotterySvc.getCommitment(address);
-      if (commitment.commitBlock === 0n) {
-        this.hasPendingCommitment.set(false);
-        return;
-      }
-
-      const currentBlock = await this.lotterySvc.getBlockNumber();
-      const targetBlock = commitment.commitBlock + 2n;
-      const expiry = commitment.commitBlock + 256n;
-
-      if (currentBlock > expiry) {
-        this.commitmentExpired.set(true);
-        this.errorMessage.set('Commitment expired. Cancel to reclaim your ETH.');
-        return;
-      }
-
-      // Wait for blocks if needed
-      if (currentBlock <= targetBlock) {
-        this.spinPhase.set('waiting');
-        this.waitingBlocks.set(Math.min(Number(currentBlock - commitment.commitBlock), 2));
-        console.log(`[Lottery] Resume: waiting for blocks, target=${targetBlock}`);
-        await new Promise<void>((resolve) => {
-          let blockAttempts = 0;
-          const blockPoll = setInterval(async () => {
-            blockAttempts++;
-            try {
-              const block = await this.lotterySvc.getBlockNumber();
-              const elapsed = Number(block - commitment.commitBlock);
-              this.waitingBlocks.set(Math.min(elapsed, 2));
-              if (block > targetBlock) { clearInterval(blockPoll); resolve(); }
-            } catch (err: any) {
-              if (blockAttempts <= 3 || blockAttempts % 5 === 0) {
-                console.warn(`[Lottery] Resume block wait #${blockAttempts} error:`, err?.message?.slice(0, 80));
-              }
-            }
-            if (blockAttempts >= 45) {
-              clearInterval(blockPoll);
-              console.warn('[Lottery] Resume block wait timed out, proceeding to reveal');
-              resolve();
-            }
-          }, 2000);
-        });
-      }
-
-      // Reveal
-      this.spinPhase.set('revealing');
-      this.confirmElapsed.set(0);
-      this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
-
-      const revealHash = await this.lotterySvc.revealPlay();
-      if (!revealHash) throw new Error('Reveal transaction failed');
-
-      type ConfirmResult = { source: 'receipt'; receipt: any } | { source: 'supabase'; win: LotteryWin } | { source: 'onchain' };
-      const confirmation = await Promise.race([
-        this.pollReceipt(revealHash).then(receipt => ({ source: 'receipt' as const, receipt })),
-        this.lotterySvc.watchForWinByTxHash(revealHash).then(win => ({ source: 'supabase' as const, win })),
-        this.pollCommitmentCleared(address).then(() => ({ source: 'onchain' as const })),
-      ]) as ConfirmResult;
-
-      clearInterval(this.confirmTimer);
-      this.hasPendingCommitment.set(false);
-
-      let wonHashId = '';
-      let playId = 0;
-      let winRecord: LotteryWin | null = null;
-
-      if (confirmation.source === 'supabase') {
-        wonHashId = confirmation.win.hash_id;
-        playId = confirmation.win.play_id;
-        winRecord = confirmation.win;
-      } else if (confirmation.source === 'receipt') {
-        for (const log of confirmation.receipt.logs) {
-          try {
-            const decoded = decodeEventLog({ abi: PhilipLotteryV67ABI, data: log.data, topics: log.topics });
-            if (decoded.eventName === 'PrizeAwarded') {
-              const args = decoded.args as any;
-              wonHashId = args.hashId;
-              playId = Number(args.playId);
-            }
-          } catch {}
-        }
-      } else {
-        // On-chain commitment cleared — try to get receipt now
-        try {
-          const receipt = await this.web3Svc.l1Client.getTransactionReceipt({ hash: revealHash as `0x${string}` });
-          if (receipt) {
-            for (const log of receipt.logs) {
-              try {
-                const decoded = decodeEventLog({ abi: PhilipLotteryV67ABI, data: log.data, topics: log.topics });
-                if (decoded.eventName === 'PrizeAwarded') {
-                  const args = decoded.args as any;
-                  wonHashId = args.hashId;
-                  playId = Number(args.playId);
-                }
-              } catch {}
-            }
-          }
-        } catch {}
-      }
-
-      let winCellIndex = this.spinPath[
-        (wonHashId ? playId : Math.floor(Math.random() * this.spinPath.length)) % this.spinPath.length
-      ];
-
-      if (wonHashId) {
-        try {
-          let won: { hashId: string; sha: string; tokenId: number; slug: string } | null = null;
-          if (winRecord?.sha) {
-            won = { hashId: winRecord.hash_id, sha: winRecord.sha, tokenId: winRecord.token_id, slug: winRecord.collection_slug };
-          } else {
-            const ethscriptions = await this.lotterySvc.getEthscriptionsByHashIds([wonHashId.toLowerCase()]);
-            won = ethscriptions[0] || null;
-          }
-          if (won) {
-            const existingIdx = this.gridItems().findIndex(item => item.sha === won!.sha);
-            if (existingIdx !== -1) { winCellIndex = existingIdx; }
-            else {
-              this.gridItems.update(items => items.map((item, i) =>
-                i === winCellIndex ? { ...item, hashId: won!.hashId, sha: won!.sha, imageUrl: `${this.staticUrl}/static/images/${won!.sha}` } : item
-              ));
-            }
-            if (!winRecord) {
-              winRecord = {
-                id: 0, contract_address: this.lotterySvc.address.toLowerCase(), play_id: playId,
-                winner: address.toLowerCase(), hash_id: won.hashId, sha: won.sha, token_id: won.tokenId,
-                collection_slug: won.slug, transfer_status: 'transferred', tx_hash: revealHash, created_at: new Date().toISOString(),
-              };
-            }
-            this.wonPrize.set(winRecord);
-            this.pendingWinRecord = winRecord;
-          }
-        } catch (err) { console.error('Failed to look up won ethscription:', err); }
-      }
-
-      // Insert win into Supabase immediately (fallback in case indexer is slow)
-      if (wonHashId && winRecord) {
-        this.lotterySvc.insertWinFallback({
-          contractAddress: this.lotterySvc.address,
-          playId,
-          winner: address || '',
-          hashId: wonHashId,
-          sha: winRecord.sha,
-          tokenId: winRecord.token_id,
-          collectionSlug: winRecord.collection_slug,
-          txHash: revealHash,
-        });
-      }
-
-      this.startSpin();
-      this.targetWinIndex = winCellIndex;
-      this.shouldDecelerate = true;
-      this.lotterySvc.getPoolSize().then(newSize => this.poolSize.set(Number(newSize)));
-    } catch (err: any) {
-      clearInterval(this.confirmTimer);
-      this.stopSpin();
-      this.spinPhase.set('idle');
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Reveal failed');
-      this.checkPendingCommitment();
-    } finally {
-      this.playInProgress = false;
-    }
-  }
-
-  // Cancel an expired commitment to reclaim ETH
-  async onCancelPlay() {
-    try {
-      this.spinPhase.set('loading');
-      const hash = await this.lotterySvc.cancelPlay();
-      if (hash) {
-        await this.pollReceipt(hash);
-        this.hasPendingCommitment.set(false);
-        this.commitmentExpired.set(false);
-        this.spinPhase.set('idle');
-        this.errorMessage.set('');
-      }
-    } catch (err: any) {
-      this.spinPhase.set('idle');
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Cancel failed');
-    }
-  }
-
-  // Reusable receipt polling helper (Alchemy primary, publicnode fallback for CORS on localhost)
-  private pollReceipt(hash: string): Promise<any> {
-    const receiptRpc = (environment as any).receiptRpcUrl;
-    const alchemyClient = receiptRpc
-      ? createPublicClient({ chain: mainnet, transport: http(receiptRpc) })
-      : this.web3Svc.l1Client;
-    const fallbackClient = this.web3Svc.l1Client;
-
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      let networkErrors = 0;
-      let useFallback = false;
-      const timer = setInterval(async () => {
-        attempts++;
-        // Alternate: every 5th attempt try fallback RPC even if Alchemy is working
-        // This catches cases where Alchemy has indexing lag but the main RPC has the receipt
-        const useAlt = !useFallback && attempts % 5 === 0;
-        const client = (useFallback || useAlt) ? fallbackClient : alchemyClient;
-        try {
-          const receipt = await client.getTransactionReceipt({ hash: hash as `0x${string}` });
-          if (receipt) {
-            clearInterval(timer);
-            const via = useFallback ? 'fallback' : useAlt ? 'fallback-alt' : 'alchemy';
-            console.log(`[Lottery] Receipt found after ${attempts}s via ${via}`);
-            resolve(receipt);
-          }
-          networkErrors = 0;
-        } catch (err: any) {
-          const msg = err?.message || '';
-          const isNotFound = msg.includes('could not be found');
-          if (isNotFound) {
-            // After 15 "not found" responses, switch to fallback permanently
-            // Alchemy may have indexing lag while the main RPC already has the receipt
-            if (!useFallback && attempts >= 15) {
-              console.warn('[Lottery] Alchemy still not found after 15s, switching to fallback RPC');
-              useFallback = true;
-            }
-          } else {
-            networkErrors++;
-            if (networkErrors >= 3 && !useFallback) {
-              console.warn('[Lottery] Alchemy unreachable, switching to fallback RPC');
-              useFallback = true;
-              networkErrors = 0;
-            }
-          }
-          if (attempts <= 3 || attempts % 10 === 0) {
-            console.warn(`[Lottery] Receipt poll #${attempts}:`, msg.slice(0, 100));
-          }
-        }
-        if (attempts >= 120) {
-          clearInterval(timer);
-          reject(new Error('Transaction confirmation timed out'));
-        }
-      }, 1000);
-    });
-  }
-
-  // Poll on-chain commitment as a faster alternative to receipt polling
-  private pollCommitmentOnChain(address: string): Promise<bigint> {
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      const timer = setInterval(async () => {
-        attempts++;
-        try {
-          const commitment = await this.lotterySvc.getCommitment(address);
-          if (commitment.commitBlock > 0n) {
-            clearInterval(timer);
-            console.log(`[Lottery] Commitment found on-chain after ${attempts * 2}s`);
-            resolve(commitment.commitBlock);
-          }
-        } catch {}
-        if (attempts >= 60) { // 60 * 2s = 120s same timeout as pollReceipt
-          clearInterval(timer);
-          reject(new Error('Commitment poll timed out'));
-        }
-      }, 2000);
-    });
-  }
-
-  // Poll until on-chain commitment is cleared (reveal succeeded)
-  private pollCommitmentCleared(address: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      const timer = setInterval(async () => {
-        attempts++;
-        try {
-          const commitment = await this.lotterySvc.getCommitment(address);
-          if (attempts <= 3 || attempts % 10 === 0) {
-            console.log(`[Lottery] Commitment cleared poll #${attempts}: commitBlock=${commitment.commitBlock}`);
-          }
-          if (commitment.commitBlock === 0n) {
-            clearInterval(timer);
-            console.log(`[Lottery] Commitment cleared on-chain after ${attempts * 2}s`);
-            resolve();
-          }
-        } catch (err: any) {
-          if (attempts <= 3 || attempts % 10 === 0) {
-            console.warn(`[Lottery] Commitment cleared poll #${attempts} error:`, err?.message?.slice(0, 80));
-          }
-        }
-        if (attempts >= 60) { // 60 * 2s = 120s
-          clearInterval(timer);
-          reject(new Error('Commitment cleared poll timed out'));
-        }
-      }, 2000);
-    });
+      const size = await this.lotterySvc.getPoolSize();
+      this.poolSize.set(Number(size));
+    } catch {}
+    this.lotterySvc.getMintsOf(address).then(m => this.mintsOf.set(m)).catch(() => {});
+    if (this.discountsEnabled()) this.loadSurrenderNfts(address);
+    if (this.isOwner()) this.lotterySvc.getWithdrawableSurplus().then(s => this.contractSurplus.set(s)).catch(() => {});
   }
 
   // =========================================================
-  // Demo Play (pretend animation with real collection items)
+  // Stuck-ETH recovery
+  // =========================================================
+
+  async onWithdrawRefund() {
+    try {
+      const hash = await this.lotterySvc.withdrawRefund();
+      if (hash) { await this.web3Svc.pollReceipt(hash); this.pendingRefund.set(0n); }
+    } catch (err: any) {
+      this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
+    }
+  }
+
+  // =========================================================
+  // Demo play (animation only, using real collection items)
   // =========================================================
 
   async onDemoPlay() {
     if (this.spinPhase() !== 'idle' && this.spinPhase() !== 'won') return;
-
     this.errorMessage.set('');
-    this.wonPrize.set(null);
+    this.wonPrizes.set([]);
     this.stopFireworks();
     this.spinPhase.set('loading');
-
     try {
-      // Fetch 8 random items from Supabase for demo
       const demoItems = await this.lotterySvc.getRandomPoolItems(8);
-      if (!demoItems.length) {
-        this.errorMessage.set('No items found in database');
-        this.spinPhase.set('idle');
-        return;
-      }
+      if (!demoItems.length) { this.errorMessage.set('No items found in database'); this.spinPhase.set('idle'); return; }
 
       const cellCount = Math.min(demoItems.length, 8);
       const items: LotteryGridItem[] = [];
       for (let i = 0; i < cellCount; i++) {
         const eth = demoItems[i];
-        items.push({
-          index: i,
-          hashId: eth.hashId,
-          sha: eth.sha,
-          imageUrl: `${this.staticUrl}/static/images/${eth.sha}`,
-          flipping: false,
-          revealed: false,
-          rightFacing: false,
-        });
+        items.push({ index: i, hashId: eth.hashId, sha: eth.sha, imageUrl: `${this.staticUrl}/static/images/${eth.sha}`, flipping: false, revealed: false, rightFacing: false });
       }
-
       this.spinPath = getSpinPath(cellCount);
       this.gridItems.set(items);
 
-      // Pick a random winner
       const winIndex = Math.floor(Math.random() * cellCount);
       const winner = demoItems[winIndex];
-
-      // Start spin
       this.startSpin();
-
-      // Simulate "confirmation" after 2 seconds
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Set the winning cell and start deceleration
       const winCellIndex = this.spinPath[winIndex % this.spinPath.length];
-      this.gridItems.update(current =>
-        current.map((item, i) =>
-          i === winCellIndex
-            ? { ...item, hashId: winner.hashId, sha: winner.sha, imageUrl: `${this.staticUrl}/static/images/${winner.sha}` }
-            : item
-        )
-      );
-
+      this.gridItems.update(current => current.map((item, i) => i === winCellIndex ? { ...item, hashId: winner.hashId, sha: winner.sha, imageUrl: `${this.staticUrl}/static/images/${winner.sha}` } : item));
       this.targetWinIndex = winCellIndex;
       this.shouldDecelerate = true;
 
-      this.wonPrize.set({
-        id: 0,
-        contract_address: this.lotterySvc.address.toLowerCase(),
-        play_id: 0,
-        winner: 'demo',
-        hash_id: winner.hashId,
-        sha: winner.sha,
-        token_id: winner.tokenId,
-        collection_slug: winner.slug,
-        transfer_status: 'demo',
-        tx_hash: '',
-        created_at: new Date().toISOString(),
-      });
-
+      this.wonPrizes.set([{
+        id: 0, contract_address: this.lotterySvc.address.toLowerCase(), play_id: 0, winner: 'demo',
+        hash_id: winner.hashId, sha: winner.sha, token_id: winner.tokenId, collection_slug: winner.slug,
+        transfer_status: 'demo', tx_hash: '', created_at: new Date().toISOString(),
+      }]);
     } catch (err: any) {
       this.stopSpin();
       this.spinPhase.set('idle');
@@ -1040,7 +580,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // Spin Animation
+  // Spin animation (unchanged)
   // =========================================================
 
   private startSpin(initialPhase: SpinPhase = 'spinning') {
@@ -1049,110 +589,68 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.stepDelay = INITIAL_STEP_DELAY;
     this.shouldDecelerate = false;
     this.targetWinIndex = -1;
-
-    // Reset all flip states for the new spin
-    this.gridItems.update(items =>
-      items.map(item => ({ ...item, flipping: false, revealed: false, rightFacing: false }))
-    );
-
+    this.gridItems.update(items => items.map(item => ({ ...item, flipping: false, revealed: false, rightFacing: false })));
     this.advanceFrame();
   }
 
   private advanceFrame() {
     const pathIndex = this.currentStepIndex % this.spinPath.length;
     const cellIndex = this.spinPath[pathIndex];
-
     this.activeFrameIndex.set(cellIndex);
 
-    // Phase 1: Flip current cell to reveal real image (right-facing first)
-    this.gridItems.update(items =>
-      items.map((item, i) => ({
-        ...item,
-        flipping: i === cellIndex,
-        rightFacing: i === cellIndex,
-        revealed: this.shouldDecelerate && i === this.targetWinIndex && cellIndex === this.targetWinIndex,
-      }))
-    );
+    this.gridItems.update(items => items.map((item, i) => ({
+      ...item,
+      flipping: i === cellIndex,
+      rightFacing: i === cellIndex,
+      revealed: this.shouldDecelerate && i === this.targetWinIndex && cellIndex === this.targetWinIndex,
+    })));
 
     this.currentStepIndex++;
 
-    // Deceleration logic
     if (this.shouldDecelerate && this.currentStepIndex > MIN_ROTATIONS * this.spinPath.length) {
       this.stepDelay *= DECAY_FACTOR;
       this.spinPhase.set('decelerating');
-
-      // Stop when delay is high enough AND we're on the target cell
-      if (this.stepDelay > MAX_STEP_DELAY && cellIndex === this.targetWinIndex) {
-        this.onSpinComplete();
-        return;
-      }
+      if (this.stepDelay > MAX_STEP_DELAY && cellIndex === this.targetWinIndex) { this.onSpinComplete(); return; }
     }
+    if (this.currentStepIndex > 200) { this.onSpinComplete(); return; }
 
-    // Safety: stop after too many steps if no deceleration triggered
-    if (this.currentStepIndex > 200) {
-      this.onSpinComplete();
-      return;
-    }
-
-    // Phase 1.5: Mirror from right-facing → left-facing (the "phunk flip")
     const mirrorDelay = Math.min(this.stepDelay * 0.35, 220);
     this.ngZone.runOutsideAngular(() => {
-      setTimeout(() => {
-        this.ngZone.run(() => {
-          if (this.spinPhase() === 'spinning' || this.spinPhase() === 'decelerating') {
-            this.gridItems.update(items =>
-              items.map(item => ({ ...item, rightFacing: false }))
-            );
-          }
-        });
-      }, mirrorDelay);
+      setTimeout(() => this.ngZone.run(() => {
+        if (this.spinPhase() === 'spinning' || this.spinPhase() === 'decelerating') {
+          this.gridItems.update(items => items.map(item => ({ ...item, rightFacing: false })));
+        }
+      }), mirrorDelay);
     });
 
-    // Phase 2: Flip back to left-facing philip before next step
     const flipBackDelay = Math.min(this.stepDelay * 0.7, 450);
     this.ngZone.runOutsideAngular(() => {
-      setTimeout(() => {
-        this.ngZone.run(() => {
-          if (this.spinPhase() === 'spinning' || this.spinPhase() === 'decelerating') {
-            this.gridItems.update(items =>
-              items.map(item => ({ ...item, flipping: false }))
-            );
-          }
-        });
-      }, flipBackDelay);
+      setTimeout(() => this.ngZone.run(() => {
+        if (this.spinPhase() === 'spinning' || this.spinPhase() === 'decelerating') {
+          this.gridItems.update(items => items.map(item => ({ ...item, flipping: false })));
+        }
+      }), flipBackDelay);
     });
 
-    // Schedule next step
     this.ngZone.runOutsideAngular(() => {
-      this.spinTimeout = setTimeout(() => {
-        this.ngZone.run(() => this.advanceFrame());
-      }, this.stepDelay);
+      this.spinTimeout = setTimeout(() => this.ngZone.run(() => this.advanceFrame()), this.stepDelay);
     });
   }
 
   private onSpinComplete() {
-    // Reveal the winning cell, reset all others
-    this.gridItems.update(items =>
-      items.map((item, i) => ({
-        ...item,
-        flipping: false,
-        rightFacing: false,
-        revealed: i === this.targetWinIndex,
-      }))
-    );
-
+    this.gridItems.update(items => items.map((item, i) => ({ ...item, flipping: false, rightFacing: false, revealed: i === this.targetWinIndex })));
     this.spinPhase.set('won');
     this.startFireworks();
 
-    // Delay adding to recent wins so fireworks have time to play
-    if (this.pendingWinRecord) {
-      const record = this.pendingWinRecord;
-      this.pendingWinRecord = null;
+    if (this.pendingWinRecords) {
+      const records = this.pendingWinRecords;
+      this.pendingWinRecords = null;
       setTimeout(() => {
-        // Skip if Supabase realtime already delivered this win
-        this.recentWins.update(wins =>
-          wins.some(w => w.hash_id === record.hash_id) ? wins : [record, ...wins]
-        );
+        this.recentWins.update(wins => {
+          const merged = [...wins];
+          for (const r of records) if (!merged.some(w => w.token_id === r.token_id && w.contract_address === r.contract_address)) merged.unshift(r);
+          return merged;
+        });
       }, 4000);
     }
   }
@@ -1160,9 +658,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   private stopSpin() {
     clearTimeout(this.spinTimeout);
     this.activeFrameIndex.set(-1);
-    this.gridItems.update(items =>
-      items.map(item => ({ ...item, flipping: false }))
-    );
+    this.gridItems.update(items => items.map(item => ({ ...item, flipping: false })));
   }
 
   // =========================================================
@@ -1173,16 +669,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
     try {
       const { Fireworks } = await import('fireworks-js');
       this.fireworks = new Fireworks(this.fireworksCanvas.nativeElement, {
-        hue: { min: 0, max: 360 },
-        delay: { min: 15, max: 30 },
-        rocketsPoint: { min: 50, max: 50 },
-        traceSpeed: 2,
-        acceleration: 1.05,
-        particles: 50,
+        hue: { min: 0, max: 360 }, delay: { min: 15, max: 30 }, rocketsPoint: { min: 50, max: 50 },
+        traceSpeed: 2, acceleration: 1.05, particles: 50,
       });
       this.fireworks.start();
-
-      // Auto-stop after 10 seconds
       setTimeout(() => this.stopFireworks(), 10000);
     } catch (err) {
       console.error('Failed to start fireworks:', err);
@@ -1190,321 +680,80 @@ export class LotteryComponent implements OnInit, OnDestroy {
   }
 
   private stopFireworks() {
-    if (this.fireworks) {
-      this.fireworks.stop();
-      this.fireworks = null;
-    }
+    if (this.fireworks) { this.fireworks.stop(); this.fireworks = null; }
   }
 
   // =========================================================
-  // Recent Wins
+  // Recent wins
   // =========================================================
 
   private subscribeRecentWins() {
     let prevCount = 0;
     this.recentWinsSub = this.lotterySvc.fetchRecentWins().subscribe(wins => {
-      // Decrement poolSize for each new win that arrives via realtime
-      if (prevCount > 0 && wins.length > prevCount) {
-        const newWins = wins.length - prevCount;
-        this.poolSize.update(s => Math.max(0, s - newWins));
-      }
+      if (prevCount > 0 && wins.length > prevCount) this.poolSize.update(s => Math.max(0, s - (wins.length - prevCount)));
       prevCount = wins.length;
-
-      // Don't update during play — would spoil the reveal before fireworks
-      if (!this.playInProgress) {
-        this.recentWins.set(wins);
-      }
+      if (!this.playInProgress) this.recentWins.set(wins);
     });
-    this.totalWinsCountSub = this.lotterySvc.fetchTotalWinsCount().subscribe(count => {
-      this.totalWinsCount.set(count);
-    });
+    this.totalWinsCountSub = this.lotterySvc.fetchTotalWinsCount().subscribe(count => this.totalWinsCount.set(count));
   }
 
   getWinImageUrl(win: LotteryWin): string {
-    if (win.sha) {
-      return `${this.staticUrl}/static/images/${win.sha}`;
-    }
-    return '/assets/images/lottery/philip.png';
+    return win.sha ? `${this.staticUrl}/static/images/${win.sha}` : '/assets/images/lottery/philip.png';
   }
 
+  onSpinAgain() { window.location.reload(); }
+
   // =========================================================
-  // Spin Again (reload page for fresh grid)
+  // Owner panel
   // =========================================================
 
-  onSpinAgain() {
-    window.location.reload();
-  }
-
-  async switchTier(tier: 'standard' | 'premium') {
-    if (tier === this.activeTier()) return;
-    if (this.spinPhase() !== 'idle' && this.spinPhase() !== 'won') return;
-
-    this.activeTier.set(tier);
-    this.lotterySvc.setAddress(
-      tier === 'premium' ? this.lotterySvc.premiumAddress : this.lotterySvc.standardAddress
-    );
-
-    // Reload everything for the new contract
-    this.wonPrize.set(null);
-    this.stopFireworks();
-    this.stopSpin();
-    this.spinPhase.set('idle');
-    this.activeFrameIndex.set(-1);
-    this.errorMessage.set('');
-    this.recentWins.set([]);
-    this.totalWinsCount.set(0);
-
-    // Reset load-in animation so grid replays staggered entrance
-    this.loadedIn.set(false);
-    this.buttonShown.set(false);
-    // Clear grid items so Angular destroys DOM nodes (forces animation replay)
-    this.gridItems.set([]);
-
-    await this.loadContractState();
-    await this.initGrid();
-
-    // Replay staggered load-in animation (same timing as ngOnInit)
-    setTimeout(() => this.loadedIn.set(true), 300);
-    setTimeout(() => this.buttonShown.set(true), 1400);
-
-    // Re-subscribe to recent wins for the new contract
-    this.recentWinsSub?.unsubscribe();
-    this.totalWinsCountSub?.unsubscribe();
-    this.subscribeRecentWins();
-
-    // Reload owner panel data if owner
-    if (this.isOwner()) {
+  async onOwnerWithdrawSurplus() {
+    try {
       const address = await firstValueFrom(this.address$);
-      if (address) this.loadOwnedItems(address);
-      this.loadPoolItems();
-    }
-  }
-
-  // =========================================================
-  // Owner: Deposit Prizes
-  // =========================================================
-
-  async loadOwnedItems(address: string) {
-    this.ownedLoading.set(true);
-    try {
-      const items = await this.lotterySvc.getOwnedEthscriptions(address);
-      // Attach attributes from the data service
-      const slug = 'cryptophunksv67';
-      const attrMap = await firstValueFrom(this.dataSvc.getAttributes(slug));
-      const withAttrs = items.map(item => ({
-        ...item,
-        selected: false,
-        attributes: attrMap?.[item.sha] || [],
-      }));
-      this.ownedItems.set(withAttrs);
-
-      // Load filter options if not already loaded
-      if (Object.keys(this.ownerFilterData()).length === 0) {
-        const filters = await this.dataSvc.getFilters(slug);
-        if (filters) this.ownerFilterData.set(filters);
-      }
-    } catch (err) {
-      console.error('Failed to load owned items:', err);
-    } finally {
-      this.ownedLoading.set(false);
-    }
-  }
-
-  toggleItem(hashId: string) {
-    this.ownedItems.update(items =>
-      items.map(item =>
-        item.hashId === hashId ? { ...item, selected: !item.selected } : item
-      )
-    );
-  }
-
-  async onDeposit() {
-    const selected = this.ownedItems().filter(i => i.selected);
-    if (selected.length === 0) {
-      this.depositStatus.set('Select items to transfer');
-      return;
-    }
-
-    this.depositStatus.set(`Transferring ${selected.length} item(s)...`);
-
-    try {
-      const hashIds = selected.map(i => i.hashId);
-      const hash = await this.lotterySvc.depositPrizes(hashIds);
+      const surplus = await this.lotterySvc.getWithdrawableSurplus();
+      if (!address || surplus === 0n) { this.ownerStatus.set('No surplus to withdraw'); return; }
+      this.ownerStatus.set('Withdrawing...');
+      const hash = await this.lotterySvc.withdrawSurplusETH(address, surplus);
       if (hash) {
-        this.depositStatus.set('Waiting for confirmation...');
         await this.web3Svc.pollReceipt(hash);
-        this.depositStatus.set(`Transferred ${selected.length} item(s)!`);
+        this.contractSurplus.set(await this.lotterySvc.getWithdrawableSurplus());
+        this.ownerStatus.set('Withdrew surplus ETH');
+      }
+    } catch (err: any) {
+      this.ownerStatus.set(err?.shortMessage || err?.message || 'Withdraw failed');
+    }
+  }
 
-        // Remove deposited items from owned list
-        this.ownedItems.update(items => items.filter(i => !i.selected));
+  async onOwnerToggleActive() {
+    try {
+      this.ownerStatus.set('Updating...');
+      const hash = await this.lotterySvc.setActive(!this.isActive());
+      if (hash) {
+        await this.web3Svc.pollReceipt(hash);
+        this.isActive.set(await this.lotterySvc.isActive());
+        this.ownerStatus.set('Lottery ' + (this.isActive() ? 'activated' : 'paused'));
+      }
+    } catch (err: any) {
+      this.ownerStatus.set(err?.shortMessage || err?.message || 'Update failed');
+    }
+  }
 
-        // Refresh pool size and grid
-        const newSize = await this.lotterySvc.getPoolSize();
-        this.poolSize.set(Number(newSize));
+  async onOwnerLoadPool() {
+    const ids = this.ownerPoolInput()
+      .split(/[\s,]+/).map(s => Number(s.trim())).filter(n => Number.isFinite(n) && n >= 0);
+    if (!ids.length) { this.ownerStatus.set('Enter tokenIds to load'); return; }
+    try {
+      this.ownerStatus.set(`Loading ${ids.length} token(s)...`);
+      const hash = await this.lotterySvc.addPoolTokens(ids);
+      if (hash) {
+        await this.web3Svc.pollReceipt(hash);
+        this.poolSize.set(Number(await this.lotterySvc.getPoolSize()));
+        this.ownerPoolInput.set('');
+        this.ownerStatus.set(`Loaded ${ids.length} token(s)`);
         this.initGrid();
       }
     } catch (err: any) {
-      this.depositStatus.set(err?.shortMessage || err?.message || 'Deposit failed');
+      this.ownerStatus.set(err?.shortMessage || err?.message || 'Load failed');
     }
-  }
-
-  // =========================================================
-  // Owner: Withdraw Prizes from Pool
-  // =========================================================
-
-  async loadPoolItems() {
-    this.poolLoading.set(true);
-    try {
-      const size = this.poolSize() || Number(await this.lotterySvc.getPoolSize());
-      if (size === 0) {
-        this.poolItems.set([]);
-        return;
-      }
-
-      // Only fetch first 110 hashIds for the banner display — pool size is tracked separately
-      const DISPLAY_LIMIT = 110;
-      const hashIds = await this.lotterySvc.getPoolItems(0, Math.min(size, DISPLAY_LIMIT)) as string[];
-
-      // Single Supabase query for those items only
-      const allMeta = await this.lotterySvc.getEthscriptionsByHashIds(hashIds);
-
-      const metaMap = new Map(allMeta.map((m: any) => [m.hashId, m]));
-      const slug = 'cryptophunksv67';
-      const attrMap = await firstValueFrom(this.dataSvc.getAttributes(slug));
-      this.poolItems.set(
-        hashIds.map(h => {
-          const meta = metaMap.get(h) || {};
-          return {
-            hashId: h, sha: meta.sha || '', tokenId: meta.tokenId ?? 0, slug: meta.slug || '',
-            selected: false, attributes: attrMap?.[meta.sha] || [],
-          };
-        })
-      );
-
-      // Load filter options if not already loaded
-      if (Object.keys(this.ownerFilterData()).length === 0) {
-        const filters = await this.dataSvc.getFilters(slug);
-        if (filters) this.ownerFilterData.set(filters);
-      }
-    } catch (err) {
-      console.error('Failed to load pool items:', err);
-    } finally {
-      this.poolLoading.set(false);
-    }
-  }
-
-  togglePoolItem(hashId: string) {
-    this.poolItems.update(items =>
-      items.map(item =>
-        item.hashId === hashId ? { ...item, selected: !item.selected } : item
-      )
-    );
-  }
-
-  async onWithdrawPrizes() {
-    const selected = this.poolItems().filter(i => i.selected);
-    if (selected.length === 0) {
-      this.withdrawStatus.set('Select items to withdraw');
-      return;
-    }
-
-    this.withdrawStatus.set(`Withdrawing ${selected.length} item(s)...`);
-
-    try {
-      const hashIds = selected.map(i => i.hashId);
-      const hash = await this.lotterySvc.withdrawPrizeBatch(hashIds);
-      if (hash) {
-        this.withdrawStatus.set('Waiting for confirmation...');
-        await this.web3Svc.pollReceipt(hash);
-        this.withdrawStatus.set(`Withdrew ${selected.length} item(s)!`);
-
-        // Remove withdrawn items from pool list
-        this.poolItems.update(items => items.filter(i => !i.selected));
-
-        // Refresh pool size and grid
-        const newSize = await this.lotterySvc.getPoolSize();
-        this.poolSize.set(Number(newSize));
-        this.initGrid();
-      }
-    } catch (err: any) {
-      this.withdrawStatus.set(err?.shortMessage || err?.message || 'Withdraw failed');
-    }
-  }
-
-  // =========================================================
-  // User: Withdraw stuck ETH from pendingReturns
-  // =========================================================
-
-  async onWithdrawPending() {
-    try {
-      const hash = await this.lotterySvc.withdrawPending();
-      if (hash) {
-        await this.web3Svc.pollReceipt(hash);
-        this.pendingReturns.set(0n);
-      }
-    } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
-    }
-  }
-
-  // =========================================================
-  // Owner: Withdraw ETH
-  // =========================================================
-
-  async onWithdrawETH() {
-    try {
-      const balance = await this.lotterySvc.getContractBalance();
-      if (balance === BigInt(0)) return;
-
-      const address = await firstValueFrom(this.address$);
-      if (!address) return;
-
-      const hash = await this.lotterySvc.withdrawETH(balance, address);
-      if (hash) {
-        await this.web3Svc.pollReceipt(hash);
-        const newBalance = await this.lotterySvc.getContractBalance();
-        this.contractBalance.set(formatEther(newBalance));
-      }
-    } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
-    }
-  }
-
-  // =========================================================
-  // Owner: Attribute Filtering
-  // =========================================================
-
-  selectOwnerFilter(): void {
-    for (const key of Object.keys(this.ownerActiveFilters)) {
-      if (this.ownerActiveFilters[key] === null) delete this.ownerActiveFilters[key];
-    }
-    this.ownerFilterVersion.update(v => v + 1);
-  }
-
-  clearOwnerFilters(): void {
-    this.ownerActiveFilters = {};
-    this.ownerFilterVersion.update(v => v + 1);
-  }
-
-  private applyAttrFilter(
-    items: { hashId: string; sha: string; tokenId: number; slug: string; selected: boolean; attributes?: Attribute[] }[],
-    filters: { [key: string]: string | null }
-  ) {
-    const keys = Object.keys(filters).filter(k => filters[k] != null);
-    if (keys.length === 0) return items;
-
-    return items.filter(item => {
-      if (!item.attributes) return false;
-      return keys.every(key => {
-        const value = filters[key];
-        if (key === 'trait-count') {
-          return item.attributes!.length === Number(value) + 2;
-        }
-        if (value === 'none') {
-          return !item.attributes!.some(a => a.k === key);
-        }
-        return item.attributes!.some(a => a.k === key && (Array.isArray(a.v) ? a.v.includes(value!) : a.v === value));
-      });
-    });
   }
 }

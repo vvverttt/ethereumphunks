@@ -26,9 +26,6 @@
       {{ t('points') }}: <a [href]="explorerUrl + '/address/' + c.points" target="_blank"><app-address [address]="c.points" /></a><br />
       @if ((config$ | async)?.showLottery !== false) {
         {{ t('lottery') }}: <a [href]="explorerUrl + '/address/' + c.lottery" target="_blank"><app-address [address]="c.lottery" /></a><br />
-        @if (c.lottery2) {
-          {{ t('lottery2') }}: <a [href]="explorerUrl + '/address/' + c.lottery2" target="_blank"><app-address [address]="c.lottery2" /></a><br />
-        }
       }
       @if ((config$ | async)?.showAuction !== false) {
         {{ t('auction') }}: <a [href]="explorerUrl + '/address/' + c.auction" target="_blank"><app-address [address]="c.auction" /></a><br />

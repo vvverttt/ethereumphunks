@@ -28,7 +28,7 @@ export class LotteryPoolComponent implements OnInit {
 
   staticUrl = environment.staticUrl;
 
-  private allHashIds: string[] = [];
+  private allTokenIds: number[] = [];
   private attrMap: any = null;
   private slug = 'cryptophunksv67';
 
@@ -43,12 +43,12 @@ export class LotteryPoolComponent implements OnInit {
       this.totalSize.set(size);
       if (size === 0) { this.loaded.set(true); return; }
 
-      // Fetch all hashIds from contract in chunks (cheap RPC reads)
+      // Fetch all pool tokenIds from contract in chunks (cheap RPC reads)
       const CHUNK = 100;
       for (let offset = 0; offset < size; offset += CHUNK) {
         const limit = Math.min(CHUNK, size - offset);
         const chunk = await this.lotterySvc.getPoolItems(offset, limit);
-        this.allHashIds.push(...(chunk as string[]));
+        this.allTokenIds.push(...chunk);
       }
 
       this.attrMap = await firstValueFrom(this.dataSvc.getAttributes(this.slug));
@@ -71,19 +71,19 @@ export class LotteryPoolComponent implements OnInit {
   }
 
   private async loadPage(offset: number, limit: number) {
-    const batch = this.allHashIds.slice(offset, offset + limit);
+    const batch = this.allTokenIds.slice(offset, offset + limit);
     if (!batch.length) return;
 
-    const meta = await this.lotterySvc.getEthscriptionsByHashIds(batch);
-    const metaMap = new Map(meta.map((m: any) => [m.hashId, m]));
+    const meta = await this.lotterySvc.getEthscriptionsByTokenIds(batch);
+    const metaMap = new Map(meta.map((m: any) => [m.tokenId, m]));
 
-    const newItems = batch.map(h => {
-      const m = metaMap.get(h) || {};
+    const newItems = batch.map(tokenId => {
+      const m = metaMap.get(tokenId) || {};
       return {
-        hashId: h,
+        hashId: m.hashId || '',
         sha: m.sha || '',
-        tokenId: m.tokenId ?? 0,
-        slug: m.slug || '',
+        tokenId,
+        slug: m.slug || 'cryptophunksv67',
         attributes: this.attrMap?.[m.sha] || [],
       };
     });

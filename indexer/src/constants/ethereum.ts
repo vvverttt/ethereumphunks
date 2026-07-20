@@ -84,8 +84,16 @@ export const lottery2AddressL1: string =
     ? process.env.LOTTERY2_ADDRESS_MAINNET
     : process.env.LOTTERY2_ADDRESS_SEPOLIA)?.toLowerCase() || '';
 
+// ERC-721 QuantumPhunks mint lottery (PhilipLotteryV67Erc721). Hardcoded so the
+// indexer records its RandomMinted wins regardless of the deploy env config.
+// Overridable via ERC721_LOTTERY_ADDRESS_MAINNET.
+export const erc721LotteryAddressL1: string =
+  (chain === 'mainnet'
+    ? (process.env.ERC721_LOTTERY_ADDRESS_MAINNET || '0x702862d4cb2e55452170814aab9117cde8287e61')
+    : (process.env.ERC721_LOTTERY_ADDRESS_SEPOLIA || '')).toLowerCase();
+
 export const lotteryAddressesL1 = new Set(
-  [lotteryAddressL1, lottery2AddressL1].filter(Boolean)
+  [lotteryAddressL1, lottery2AddressL1, erc721LotteryAddressL1].filter(Boolean)
 );
 
 export const auctionAddressL1: string =
