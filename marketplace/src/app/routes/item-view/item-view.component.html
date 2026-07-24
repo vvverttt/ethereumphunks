@@ -76,6 +76,15 @@
                   <p>{{ phunk.collection?.singleName }} {{ t('isForSaleFor') }} <span class="highlight">{{ (value | weiToEth) }} ETH</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ ((value | weiToEth) * usd) | formatCash }})</span>}.</p>
                 } @else if (!phunk.isSupported) {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotSupported') }}</p>
+                } @else if (isPoolItem(phunk)) {
+                  <!-- Auction House pool item: fixed-price buy-now only (auctions disabled). -->
+                  @if (poolBuy(); as pb) {
+                    <p>{{ phunk.collection?.singleName }} is available now — <span class="highlight">Buy Now for {{ pb.priceEth }} ETH</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ (+pb.priceEth * usd) | formatCash }})</span>}@if (pb.tier === 2) {<span class="bold"> — Diamond Hands price</span>}.</p>
+                  } @else if (poolBuyLoading()) {
+                    <p>{{ phunk.collection?.singleName }} is in the Auction House pool…</p>
+                  } @else {
+                    <p>{{ phunk.collection?.singleName }} is in the Auction House pool.</p>
+                  }
                 } @else {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotForSale') }}</p>
                 }
@@ -130,6 +139,15 @@
                           ) {
                             <button class="buy" (click)="buyPhunk(phunk)">
                               <span>{{ t('buy') }}</span>
+                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
+                            </button>
+                          }
+
+                          <!-- Auction House Buy Now (pool item, fixed tier price — auctions disabled) -->
+                          <!-- tier 2 = Diamond Hands (EthsRocks whitelist) @ 0.167; else public @ 0.267 -->
+                          @if (isPoolItem(phunk) && poolBuy(); as pb) {
+                            <button class="buy" (click)="submitPoolBuy(phunk)">
+                              <span>@if (pb.tier === 2) {Diamond Hands }Buy Now — {{ pb.priceEth }} ETH</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
                             </button>
                           }

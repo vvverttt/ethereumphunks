@@ -110,6 +110,41 @@ export const EtherPhunksAuctionHouseV2ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  // ─── V5 (per-item buy-now over the whole pool: buyItem) ──
+  // buyItem(hashId, tier, proof): buy ANY pool item outright. tier 2 = EthsRocks (buyNow2Price),
+  // tier 1 = Missing/Dysto (buyNowPrice), tier 0 = PUBLIC/no-whitelist (buyNowPublicPrice).
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'hashId', type: 'bytes32' },
+      { internalType: 'uint8', name: 'tier', type: 'uint8' },
+      { internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' },
+    ],
+    name: 'buyItem',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'itemBuyNowEnabled',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNowPublicEnabled',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'buyNowPublicPrice',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
   {
     inputs: [],
     name: 'auctionId',

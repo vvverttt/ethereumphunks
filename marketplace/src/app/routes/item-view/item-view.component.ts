@@ -31,6 +31,7 @@ import { ThemeService } from '@/services/theme.service';
 import { UtilService } from '@/services/util.service';
 import { EthsRocksService } from '@/services/ethsrocks.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { PoolBuyNowService, BuyItemTier } from '@/services/pool-buy-now.service';
 
 import { Phunk } from '@/models/db';
 import { GlobalState, Notification } from '@/models/global-state';
@@ -190,6 +191,8 @@ export class ItemViewComponent {
       if (phunk?.hashId && phunk?.owner) {
         this.loadCurrentBid(phunk);
       }
+      // Auction-house pool item? Resolve the fixed-price buy-now tier for the connected wallet.
+      this.refreshPoolBuyNow(phunk);
     }),
     shareReplay(1),
   );
@@ -254,6 +257,7 @@ export class ItemViewComponent {
     private utilSvc: UtilService,
     private ethsrocksSvc: EthsRocksService,
     public preferences: PhunkPreferencesService,
+    private poolBuySvc: PoolBuyNowService,
   ) {
     // Live-refresh the current bid status (Accepted → Confirm, withdrawn, etc.)
     // when the bids table changes — so a bidder watching the item page sees the
@@ -264,6 +268,105 @@ export class ItemViewComponent {
     ).subscribe((phunk) => {
       if (phunk?.hashId && phunk?.owner) this.loadCurrentBid(phunk);
     });
+
+    // Buy-now eligibility (which tier / price) is per-wallet, so re-resolve whenever the connected
+    // account changes for the item currently on screen.
+    this.walletAddress$.pipe(
+      switchMap(() => this.singlePhunk$.pipe(take(1))),
+      takeUntilDestroyed(),
+    ).subscribe((phunk) => this.refreshPoolBuyNow(phunk));
+  }
+
+  // ─── Auction-house per-item buy-now (pool items) ─────────────────────────────
+  // A "pool item" is one currently held by the auction house (owner == auction address). It has no
+  // normal listing; the ONLY way to buy it is buyItem() at a fixed tier price (0.167 EthsRocks /
+  // 0.267 Missing-Dysto / 0.367 public — lowest eligible wins). Auctions are disabled.
+  readonly auctionAddress = (((environment as any).auctionAddress as string) || '').toLowerCase();
+
+  poolBuy = signal<{ tier: BuyItemTier; priceEth: string; priceWei: bigint; proof: string[] } | null>(null);
+  poolBuyLoading = signal<boolean>(false);
+  private poolBuyHashId: string | null = null;
+
+  isPoolItem(phunk: Phunk | null | undefined): boolean {
+    return !!phunk?.owner && phunk.owner.toLowerCase() === this.auctionAddress && !!this.auctionAddress;
+  }
+
+  /** Resolve whether the on-screen item is a buyable pool item and, if so, the wallet's best tier. */
+  async refreshPoolBuyNow(phunk: Phunk | null | undefined): Promise<void> {
+    this.poolBuy.set(null);
+    if (!phunk?.hashId || !this.isPoolItem(phunk)) { this.poolBuyHashId = null; return; }
+    this.poolBuyHashId = phunk.hashId;
+    this.poolBuyLoading.set(true);
+    try {
+      const [inPool, config] = await Promise.all([
+        this.poolBuySvc.isInPool(phunk.hashId),
+        this.poolBuySvc.getConfig(),
+      ]);
+      if (!inPool || !config.itemEnabled) return;
+      const address = await firstValueFrom(this.walletAddress$);
+      const resolved = await this.poolBuySvc.resolveTier(address, config);
+      if (!resolved) return;
+      // Guard against a stale async resolve for an item the user has since navigated away from.
+      if (this.poolBuyHashId !== phunk.hashId) return;
+      this.poolBuy.set({
+        tier: resolved.tier,
+        priceWei: resolved.priceWei,
+        priceEth: formatEther(resolved.priceWei),
+        proof: resolved.proof,
+      });
+    } catch {
+      this.poolBuy.set(null);
+    } finally {
+      this.poolBuyLoading.set(false);
+    }
+  }
+
+  async submitPoolBuy(phunk: Phunk): Promise<void> {
+    const hashId = phunk.hashId;
+    if (!hashId || !this.isPoolItem(phunk)) return;
+
+    const connected = await firstValueFrom(this.connected$);
+    if (!connected) { this.web3Svc.connect(); return; }
+
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('buyItem' + hashId),
+      timestamp: Date.now(),
+      slug: phunk.slug,
+      type: 'wallet',
+      function: 'buyPhunk',
+      hashId,
+      tokenId: phunk.tokenId,
+    };
+    this.store.dispatch(upsertNotification({ notification }));
+
+    try {
+      // Re-read live config immediately before sending: the owner can change a tier price/switch at
+      // any time, and eligibility is per-wallet. This guarantees the exact on-chain value + a fresh
+      // proof, so the tx can't revert on a stale snapshot.
+      const config = await this.poolBuySvc.getConfig();
+      const address = await firstValueFrom(this.walletAddress$);
+      const resolved = await this.poolBuySvc.resolveTier(address, config);
+      if (!resolved) throw new Error('Buy Now is not available for this wallet');
+
+      notification = { ...notification, value: Number(formatEther(resolved.priceWei)) };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const hash = await this.poolBuySvc.buyItem(hashId, resolved.tier, resolved.proof, resolved.priceWei);
+      if (!hash) throw new Error('Could not process transaction');
+
+      notification = { ...notification, type: 'pending', hash };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      const receipt = await this.web3Svc.pollReceipt(hash);
+      notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+      this.store.dispatch(appStateActions.addCooldown({ cooldown: { [hashId]: Number(receipt.blockNumber) } }));
+      await this.refreshPoolBuyNow(phunk);
+    } catch (err) {
+      console.log(err);
+      notification = { ...notification, type: 'error', detail: err };
+    } finally {
+      this.store.dispatch(upsertNotification({ notification }));
+    }
   }
 
   t(key: string): string {
