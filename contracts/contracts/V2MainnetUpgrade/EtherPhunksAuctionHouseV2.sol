@@ -28,7 +28,7 @@
    ∬  + RefundEscrowed event (audit)       ∬
    ====================================== */
 
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
 
 import "./EthscriptionsEscrower.sol";
 import "./interfaces/IPoints.sol";
@@ -319,6 +319,22 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         });
 
         emit AuctionCreated(hashId, auctionId, startTime, endTime);
+    }
+
+    // ─── Internal: O(1) pool removal (shared helper) ─────────
+    // Storage-neutral (adds no state) — safe to introduce in an upgrade. Used by V5's per-item
+    // buy-now (buyItem). Mirrors the swap-and-pop used by withdrawFromPool / _createAuction, but
+    // leaves `depositor[hashId]` intact so the caller can read it before the escrow transfer.
+
+    function _removeFromPool(bytes32 hashId) internal {
+        require(inPool[hashId], "Not in pool");
+        uint256 idx = _poolIndex[hashId];
+        bytes32 lastHash = _pool[_pool.length - 1];
+        _pool[idx] = lastHash;
+        _poolIndex[lastHash] = idx;
+        _pool.pop();
+        inPool[hashId] = false;
+        delete _poolIndex[hashId];
     }
 
     // ─── View functions ──────────────────────────────────────
