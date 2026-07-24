@@ -1056,6 +1056,36 @@ export class EthscriptionsService {
         });
       }
 
+      if (eventName === 'ItemBought') {
+        // V5 per-item buy-now: buyItem() sells a pool item outright at a fixed tier price (no auction).
+        // The ethscription transfer is emitted BY the auction address, so it's excluded from the
+        // esip1/esip2 handlers above — this handler is the ONLY place a buy updates ownership + activity.
+        const { hashId, buyer, amount } = args;
+
+        // Ownership: auction house -> buyer
+        await this.storageSvc.updateEthscriptionOwner(
+          hashId.toLowerCase(),
+          auctionAddr,
+          buyer.toLowerCase()
+        );
+
+        // Activity: render as a purchase with the price. 'PhunkBought' shows a "bought" row carrying
+        // the ETH value in recent activity + the item's details/transaction history.
+        events.push({
+          txId: transaction.hash + '-item-bought-' + log.logIndex,
+          type: 'PhunkBought',
+          hashId: hashId.toLowerCase(),
+          from: auctionAddr,
+          to: buyer.toLowerCase(),
+          blockHash: transaction.blockHash,
+          txIndex: transaction.transactionIndex,
+          txHash: transaction.hash,
+          blockNumber: Number(transaction.blockNumber),
+          blockTimestamp: createdAt,
+          value: amount.toString(),
+        });
+      }
+
       if (eventName === 'AuctionCreated') {
         const { hashId, auctionId, startTime, endTime } = args;
 
