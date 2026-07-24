@@ -45,12 +45,13 @@ const requiredMainnetContractEnvs = [
   'MARKET_ADDRESS_MAINNET_L1',
   'OLD_MARKET_ADDRESS_MAINNET_L1',
   'POINTS_ADDRESS_MAINNET',
-  'LOTTERY_ADDRESS_MAINNET',
-  'LOTTERY2_ADDRESS_MAINNET',
   'AUCTION_ADDRESS_MAINNET',
-  // AUCTION2_ADDRESS_MAINNET and EVOLVE_ADDRESS_MAINNET are optional — the indexer
-  // already filters out missing/empty addresses (Set([...]).filter(Boolean)), so a
-  // retired auction2/evolve contract simply isn't watched instead of crashing boot.
+  // LOTTERY_ADDRESS_MAINNET (old ethscription lottery) and LOTTERY2_ADDRESS_MAINNET
+  // (retired "Pro" lottery) are now OPTIONAL — the live lottery is the ERC-721 mint
+  // lottery, watched via ERC721_LOTTERY_ADDRESS_MAINNET (hardcoded default in
+  // constants/ethereum.ts). Like AUCTION2/EVOLVE, missing/empty addresses are filtered
+  // out (Set([...]).filter(Boolean)), so a retired contract simply isn't watched
+  // instead of crashing boot.
 ] as const;
 
 for (const envName of requiredMainnetContractEnvs) {
