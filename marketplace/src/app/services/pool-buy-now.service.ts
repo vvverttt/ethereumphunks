@@ -113,20 +113,24 @@ export class PoolBuyNowService {
   async resolveTier(address: string | null | undefined, config: PoolBuyNowConfig): Promise<ResolvedTier | null> {
     if (!config.itemEnabled) return null;
 
-    // Only bother resolving proofs for tiers whose whitelist snapshot still matches the live root —
-    // a stale bundle would hand out a guaranteed-revert proof.
+    // Collect every tier the wallet is eligible for, then return the genuinely CHEAPEST — compare by
+    // price, not tier number, so a lower-priced tier always wins even if it isn't tier 2. (Only resolve
+    // proofs for tiers whose bundled snapshot still matches the live root — a stale bundle would hand
+    // out a guaranteed-revert proof.)
+    const candidates: ResolvedTier[] = [];
     if (address && config.tier2Enabled && config.tier2Price > 0n && await this.wl.matchesRoot(2, config.tier2Root)) {
       const proof = await this.wl.proofFor(2, address);
-      if (proof) return { tier: 2, priceWei: config.tier2Price, proof };
+      if (proof) candidates.push({ tier: 2, priceWei: config.tier2Price, proof });
     }
     if (address && config.tier1Enabled && config.tier1Price > 0n && await this.wl.matchesRoot(1, config.tier1Root)) {
       const proof = await this.wl.proofFor(1, address);
-      if (proof) return { tier: 1, priceWei: config.tier1Price, proof };
+      if (proof) candidates.push({ tier: 1, priceWei: config.tier1Price, proof });
     }
     if (config.publicEnabled && config.publicPrice > 0n) {
-      return { tier: 0, priceWei: config.publicPrice, proof: [] };
+      candidates.push({ tier: 0, priceWei: config.publicPrice, proof: [] });
     }
-    return null;
+    if (!candidates.length) return null;
+    return candidates.reduce((lo, c) => (c.priceWei < lo.priceWei ? c : lo));
   }
 
   /** Send the buyItem tx. `priceWei` must be the live on-chain tier price (read just before). */
