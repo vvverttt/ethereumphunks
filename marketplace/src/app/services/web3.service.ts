@@ -40,6 +40,9 @@ const ERC721_APPROVAL_ABI = [
   { type: 'function', name: 'setApprovalForAll', stateMutability: 'nonpayable', inputs: [{ name: 'operator', type: 'address' }, { name: 'approved', type: 'bool' }], outputs: [] },
   { type: 'function', name: 'isApprovedForAll', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }, { name: 'operator', type: 'address' }], outputs: [{ type: 'bool' }] },
 ] as const;
+const ERC721_TRANSFER_ABI = [
+  { type: 'function', name: 'transferFrom', stateMutability: 'nonpayable', inputs: [{ name: 'from', type: 'address' }, { name: 'to', type: 'address' }, { name: 'tokenId', type: 'uint256' }], outputs: [] },
+] as const;
 const oldMarketAddresses: string[] = (environment as any).oldMarketAddresses || [];
 const oldMarketAddressSet = new Set(oldMarketAddresses.map((a) => a.toLowerCase()));
 const ogSlugs: string[] = (environment as any).ogSlugs || [];
@@ -1067,6 +1070,29 @@ export class Web3Service {
   /** One-time approval so the QP market can transfer the seller's NFT on buy/accept-bid. */
   async qpSetApproval(collection: string, market: string): Promise<string | undefined> {
     return this._writeMarketContractAt(collection, 'setApprovalForAll', [market, true], undefined, ERC721_APPROVAL_ABI as any);
+  }
+
+  /**
+   * Direct wallet-to-wallet transfer of an ERC-721C NFT (e.g. cryptophunksv67) via
+   * transferFrom on the NFT contract itself. The token owner is exempt from the
+   * collection's operator whitelist, so this succeeds even while third-party
+   * marketplace approvals stay blocked (keeping trading on the QP market).
+   * @param collection The ERC-721C NFT contract address
+   * @param tokenId The token ID to transfer (positive)
+   * @param toAddress The recipient address
+   */
+  async transferNft(collection: string, tokenId: number | string, toAddress: string): Promise<string | undefined> {
+    if (!collection) throw new Error('No collection');
+    if (!toAddress) throw new Error('No address provided');
+    const from = getAccount(this.config).address;
+    if (!from) throw new Error('No wallet connected');
+    return this._writeMarketContractAt(
+      collection,
+      'transferFrom',
+      [from as `0x${string}`, toAddress as `0x${string}`, BigInt(tokenId)],
+      undefined,
+      ERC721_TRANSFER_ABI as any,
+    );
   }
 
   /**

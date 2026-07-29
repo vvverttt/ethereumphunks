@@ -76,6 +76,17 @@ export class BreadcrumbsComponent {
     return this.preferences.t(key);
   }
 
+  /**
+   * Solid background used when compositing a saved/preview image. cryptophunksv67 is an
+   * ERC-721C shown on the blue #648595 scheme (see ThemeService.collectionOverrides), so its
+   * saves sit on that blue instead of the default lime. All other collections are unchanged.
+   */
+  private saveBgColor(phunk: Phunk | null | undefined): string {
+    if (phunk?.slug === 'cryptophunksv67') return '#648595';
+    const theme = localStorage.getItem('EtherPhunks_theme');
+    return theme === 'light' ? '#FFDF00' : '#C3FF00';
+  }
+
   async paintCanvas(phunk: Phunk): Promise<void> {
     const transparent = this.transparentCheck.value;
     const canvas = this.pfp.nativeElement as HTMLCanvasElement;
@@ -106,8 +117,7 @@ export class BreadcrumbsComponent {
       this.ctx.fillStyle = '#9bbc0f';
       this.ctx.fillRect(0, 0, this.width / this.scale, this.height / this.scale);
     } else if (!transparent && phunk.isSupported) {
-      const theme = localStorage.getItem('EtherPhunks_theme');
-      this.ctx.fillStyle = theme === 'light' ? '#FFDF00' : '#C3FF00';
+      this.ctx.fillStyle = this.saveBgColor(phunk);
       this.ctx.fillRect(0, 0, this.width / this.scale, this.height / this.scale);
     }
 
@@ -188,7 +198,7 @@ export class BreadcrumbsComponent {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-        const bgColor = this.transparentCheck.value ? null : '#C3FF00';
+        const bgColor = this.transparentCheck.value ? null : this.saveBgColor(phunk);
 
         try {
           const { apngToGif } = await import('@/utils/apng');
@@ -205,7 +215,7 @@ export class BreadcrumbsComponent {
       } else if (decodedData) {
         // Any static item (phunk or rock): preserve aspect ratio (no squish or
         // crop) and place it on the C3FF00 background unless "transparent" is on.
-        const bg = this.transparentCheck.value ? null : '#C3FF00';
+        const bg = this.transparentCheck.value ? null : this.saveBgColor(phunk);
         blob = await this.aspectCorrectBlob(decodedData, bg);
         ext = 'png';
       }

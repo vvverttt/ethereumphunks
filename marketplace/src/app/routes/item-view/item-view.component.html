@@ -18,6 +18,21 @@
 
   @if ((singlePhunk$ | async); as phunk) {
 
+    <!-- Phikings launch countdown — dismissible, re-shows on each Phikings item until live -->
+    @if (phunk.slug === 'phikings' && !phikingsLaunchPassed() && phikingsDismissedFor() !== phunk.hashId) {
+      <div class="phikings-popup-overlay" (click)="dismissPhikings(phunk)">
+        <div class="phikings-popup" (click)="$event.stopPropagation()">
+          <button type="button" class="phikings-popup-close" (click)="dismissPhikings(phunk)" aria-label="Close">&times;</button>
+          <h2 class="phikings-popup-kicker">PHIKINGS</h2>
+          <p class="phikings-popup-title">LIVE PHRIDAY</p>
+          <div class="phikings-popup-timer">
+            <app-timer [endTime]="phikingsLaunchMs" (event)="onPhikingsTimer($event)" />
+          </div>
+          <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings(phunk)">Got it</button>
+        </div>
+      </div>
+    }
+
     <div class="inner">
 
       <div class="details-wrapper">
