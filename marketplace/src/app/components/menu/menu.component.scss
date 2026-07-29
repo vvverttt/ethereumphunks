@@ -34,6 +34,27 @@
   }
 }
 
+// cryptophunksv67: deep-teal menu panel that complements the bright #67cdff content, and the
+// clashing link buttons unified to the #67cdff brand blue (black text/arrows) so they match.
+:host-context([data-collection='cryptophunksv67']) {
+  background-color: rgba(35, 92, 99, 0.94); // #235c63
+
+  section {
+    .dystolabz-button,
+    .lottery-button,
+    .lottery-pro-button,
+    .ethsrocks-button,
+    .owners-button,
+    .vault-button,
+    .curated-button {
+      background-color: #67cdff;
+      color: rgba(var(--black), 1);
+
+      .arrow svg path { fill: rgba(var(--black), 1); }
+    }
+  }
+}
+
 section {
   position: absolute;
   top: 0;

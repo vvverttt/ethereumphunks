@@ -82,7 +82,7 @@ export class BreadcrumbsComponent {
    * saves sit on that blue instead of the default lime. All other collections are unchanged.
    */
   private saveBgColor(phunk: Phunk | null | undefined): string {
-    if (phunk?.slug === 'cryptophunksv67') return '#648595';
+    if (phunk?.slug === 'cryptophunksv67') return '#67cdff';
     const theme = localStorage.getItem('EtherPhunks_theme');
     return theme === 'light' ? '#FFDF00' : '#C3FF00';
   }

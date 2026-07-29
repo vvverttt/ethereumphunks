@@ -5,6 +5,7 @@ export interface ThemeProperties {
   '--dark-text': string;
   '--pink': string;
   '--base-color': string;
+  '--phunk-bg': string;
   '--highlight': string;
   '--button-color': string;
   '--header-text': string;

@@ -18,6 +18,7 @@ export class ThemeService {
   themeStyles: ThemeStyles = {
     dark: {
       label: 'Dark',
+      '--phunk-bg': '195, 255, 0',
       '--background': '17, 26, 0',
       '--text-color': '255, 255, 255',
       '--dark-text': '255, 255, 255',
@@ -34,6 +35,7 @@ export class ThemeService {
     },
     light: {
       label: 'Light',
+      '--phunk-bg': '195, 255, 0',
       '--background': '255, 4, 180',
       '--text-color': '0, 0, 0',
       '--dark-text': '0, 0, 0',
@@ -58,7 +60,8 @@ export class ThemeService {
    */
   collectionOverrides: Record<string, Record<string, string>> = {
     cryptophunksv67: {
-      '--base-color': '100, 133, 149',      // #648595 — backgrounds (header, grid tiles, dropdown box)
+      '--base-color': '103, 205, 255',      // #67cdff — all v67 chrome (panels, popup, status bar, header) now the bright blue
+      '--phunk-bg': '103, 205, 255',        // #67cdff — tile/billboard/splash/top bg so the green turtles pop
       '--highlight': '255, 255, 255',       // white — text/links/labels (readable on both the blue bg and dark bg)
       '--header-highlight': '255, 255, 255',
       '--background': '12, 20, 26',          // #0c141a — dark blue-grey page bg (replaces the green-tinted 17,26,0)

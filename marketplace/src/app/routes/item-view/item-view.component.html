@@ -80,10 +80,6 @@
                   <!-- Auction House pool item: fixed-price buy-now only (auctions disabled). -->
                   @if (poolBuy(); as pb) {
                     <p>{{ phunk.collection?.singleName }} is available now — <span class="highlight">Buy Now for {{ pb.priceEth }} ETH</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ (+pb.priceEth * usd) | formatCash }})</span>}@if (pb.tier === 2) {<span class="bold"> — Diamond Hands price</span>}.</p>
-                  } @else if (poolBuyLoading()) {
-                    <p>{{ phunk.collection?.singleName }} is in the Auction House pool…</p>
-                  } @else {
-                    <p>{{ phunk.collection?.singleName }} is in the Auction House pool.</p>
                   }
                 } @else {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotForSale') }}</p>

@@ -4,6 +4,12 @@
 :host {
   display: block;
   width: 100%;
+
+  // These curated cards preview OTHER ethscription collections whose background is lime
+  // (#c3ff00). The v67 page sets --phunk-bg to #67cdff, but that must NOT bleed into these
+  // previews — #67cdff is only for cryptophunksv67 itself. Reset the preview bg to lime here
+  // (CSS vars inherit into the nested app-phunk-grid).
+  --phunk-bg: 195, 255, 0;
 }
 
 h2 {
@@ -49,7 +55,7 @@ h2 {
           height: 100%;
           object-fit: cover;
           image-rendering: pixelated;
-          background-color: rgba(var(--base-color), 1);
+          background-color: #c3ff00; // ethscription collections' background is lime, not the v67 blue
 
           box-shadow: -.3rem -.3rem 0 0 rgba(var(--bid-color), 1);
         }

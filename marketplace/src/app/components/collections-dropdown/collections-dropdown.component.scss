@@ -5,6 +5,12 @@
   display: block;
 }
 
+// cryptophunksv67: match the collection button to the bright #67cdff header (base-color);
+// black text stays from the base rule, and the pink drop-shadow keeps it distinct.
+:host-context([data-collection='cryptophunksv67']) .curated-wrapper .curated-button {
+  background-color: rgba(var(--base-color), 1);
+}
+
 .curated-wrapper {
   position: relative;
   z-index: 1;
@@ -131,12 +137,12 @@
       }
 
       // QuantumPhunks (cryptophunksv67) is the ERC-721C collection — its dropdown row is always
-      // #648595 blue-grey; every other row stays lime, on every page (independent of active theme).
+      // #67cdff (matches the v67 phunk-bg tiles); every other row stays lime, on every page.
       &[data-slug='cryptophunksv67'] {
-        .image-wrapper { background-color: #648595; }
+        .image-wrapper { background-color: #67cdff; }
 
         &.active {
-          background-color: #648595;
+          background-color: #67cdff;
 
           .image-wrapper { background: none; }
         }

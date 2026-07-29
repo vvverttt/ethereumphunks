@@ -5,6 +5,13 @@
   display: block;
 }
 
+// cryptophunksv67: give the activity thumbnails a defined #67cdff tile with a dark ring so
+// they don't blend into the blue page/header behind them.
+:host-context([data-collection='cryptophunksv67']) .event-item .image-wrapper {
+  background-color: rgba(var(--phunk-bg), 1);
+  box-shadow: 0 0 0 2px rgba(var(--background), 1);
+}
+
 h2 {
   font-size: 2.4rem;
   font-weight: 700;
