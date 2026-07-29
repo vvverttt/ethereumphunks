@@ -1,4 +1,20 @@
 @if ((activeCollection$ | async); as activeCollection) {
+
+  <!-- Phikings launch countdown — dismissible, re-shows on each visit to /phikings until live -->
+  @if (activeCollection.slug === 'phikings' && !phikingsLaunchPassed() && !phikingsDismissed()) {
+    <div class="phikings-popup-overlay" (click)="dismissPhikings()">
+      <div class="phikings-popup" (click)="$event.stopPropagation()">
+        <button type="button" class="phikings-popup-close" (click)="dismissPhikings()" aria-label="Close">&times;</button>
+        <h2 class="phikings-popup-kicker">PHIKINGS</h2>
+        <p class="phikings-popup-title">LIVE PHRIDAY</p>
+        <div class="phikings-popup-timer">
+          <app-timer [endTime]="phikingsLaunchMs" (event)="onPhikingsTimer($event)" />
+        </div>
+        <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings()">Got it</button>
+      </div>
+    </div>
+  }
+
   @if ((config$ | async)?.hiddenSlugs?.includes(activeCollection.slug)) {
     <div class="hidden-collection">
       <img src="/assets/loader-phunk.gif" alt="Coming soon" />

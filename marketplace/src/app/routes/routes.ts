@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { InitialCollectionGuard } from '@/guards/initial-collection.guard';
+import { featureVisibleGuard, hiddenSlugGuard } from '@/guards/visibility.guard';
 
 export const routes: Routes = [
   {
@@ -27,22 +28,27 @@ export const routes: Routes = [
   },
   {
     path: 'lottery',
+    canActivate: [featureVisibleGuard('showLottery')],
     loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent)
   },
   {
     path: 'lottery/wins',
+    canActivate: [featureVisibleGuard('showLottery')],
     loadComponent: () => import('@/routes/lottery/lottery-wins.component').then(mod => mod.LotteryWinsComponent)
   },
   {
     path: 'lottery/pool',
+    canActivate: [featureVisibleGuard('showLottery')],
     loadComponent: () => import('@/routes/lottery/lottery-pool.component').then(mod => mod.LotteryPoolComponent)
   },
   {
     path: 'auction',
+    canActivate: [featureVisibleGuard('showAuction')],
     loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent)
   },
   {
     path: 'auction2',
+    canActivate: [featureVisibleGuard('showAuction')],
     loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent),
     data: { auctionAddress: '0x2132622FF3178EF2574aF25D8EFdf94D6b7cc630'.toLowerCase() }
   },
@@ -65,18 +71,22 @@ export const routes: Routes = [
   },
   {
     path: ':slug/owners',
+    canActivate: [hiddenSlugGuard],
     loadComponent: () => import('@/routes/collection-owners/collection-owners.component').then(mod => mod.CollectionOwnersComponent)
   },
   {
     path: ':slug/attributes',
+    canActivate: [hiddenSlugGuard],
     loadComponent: () => import('@/routes/collection-attributes/collection-attributes.component').then(mod => mod.CollectionAttributesComponent)
   },
   {
     path: ':slug',
+    canActivate: [hiddenSlugGuard],
     loadComponent: () => import('@/routes/index/index.component').then(mod => mod.IndexComponent)
   },
   {
     path: ':slug/market/:marketType',
+    canActivate: [hiddenSlugGuard],
     loadComponent: () => import('@/routes/market/market.component').then(mod => mod.MarketComponent)
   },
   {

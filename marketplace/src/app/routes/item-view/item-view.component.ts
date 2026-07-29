@@ -15,7 +15,6 @@ import { PhunkBillboardComponent } from '@/components/phunk-billboard/phunk-bill
 import { TxHistoryComponent } from '@/components/tx-history/tx-history.component';
 import { BreadcrumbsComponent } from '@/components/breadcrumbs/breadcrumbs.component';
 import { CommentsComponent } from '@/components/comments/comments.component';
-import { TimerComponent } from '@/components/auction/timer/timer.component';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -79,7 +78,6 @@ interface ActionsState {
     WalletAddressDirective,
     BreadcrumbsComponent,
     CommentsComponent,
-    TimerComponent,
 
     TraitCountPipe,
     RarityTierPipe,
@@ -135,21 +133,6 @@ export class ItemViewComponent {
   private posTokenId(phunk: Phunk): number {
     const t = phunk.tokenId ?? 0;
     return t < 0 ? -t : t;
-  }
-
-  // ── Phikings "LIVE PHRIDAY" launch popup ─────────────────────────────────────
-  /** Phikings go live at noon Pacific (PDT, UTC-7) on Fri Jul 31, 2026 = 19:00 UTC. */
-  readonly phikingsLaunchMs = new Date('2026-07-31T12:00:00-07:00').getTime();
-  /** True once the launch moment has passed — hides the countdown popup. */
-  phikingsLaunchPassed = signal(Date.now() >= this.phikingsLaunchMs);
-  /** hashId the popup was dismissed for; the popup re-shows on every other Phikings item. */
-  phikingsDismissedFor = signal<string | null>(null);
-
-  dismissPhikings(phunk: Phunk): void {
-    this.phikingsDismissedFor.set(phunk.hashId);
-  }
-  onPhikingsTimer(e: { left: number }): void {
-    if (e && e.left <= 0) this.phikingsLaunchPassed.set(true);
   }
 
   actionsState = signal<ActionsState>({

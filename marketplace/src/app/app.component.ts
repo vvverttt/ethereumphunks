@@ -15,6 +15,7 @@ import { StatusBarComponent } from '@/components/status-bar/status-bar.component
 import { ModalComponent } from '@/components/modal/modal.component';
 import { ChatComponent } from '@/components/chat/chat.component';
 import { ConnectDialogComponent } from '@/components/connect-dialog/connect-dialog.component';
+import { BgColorPickerComponent } from '@/components/bg-color-picker/bg-color-picker.component';
 
 import { Web3Service } from '@/services/web3.service';
 import { DataService } from '@/services/data.service';
@@ -47,6 +48,7 @@ import { environment } from 'src/environments/environment';
     ModalComponent,
     ChatComponent,
     ConnectDialogComponent,
+    BgColorPickerComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',

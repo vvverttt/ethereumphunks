@@ -135,10 +135,12 @@
                 <div class="actions" [class.disabled]="!objectKeys(selected).length">
                   @if (marketType === 'owned') {
                     <div class="actions-group">
-                      <!-- ERC-721C (v67) is approval-based and the QP market has no batch offer/transfer,
-                           so bulk actions aren't supported for it — owners use the single-item page
-                           (list / transfer / buy), which route to the correct QP contracts. -->
-                      @if (!isErc721c(collection.slug)) {
+                      <!-- ERC-721C (v67): bulk Transfer works via sequential transferFrom on the NFT
+                           contract. The QP market has no batch offer/escrow, so List/Escrow/Withdraw
+                           stay hidden — single-item List/Buy live on the item page. -->
+                      @if (isErc721c(collection.slug)) {
+                        <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">{{ t('transfer') }}</button>
+                      } @else {
                         <button (click)="batchAction('list')" [class.disabled]="!actionsState.canList">{{ t('list') }}</button>
                         <button (click)="batchAction('transfer')" [class.disabled]="!actionsState.canTransfer">{{ t('transfer') }}</button>
                         <button (click)="batchAction('escrow')" [class.disabled]="!actionsState.canEscrow">{{ t('escrow') }}</button>

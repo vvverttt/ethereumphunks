@@ -390,10 +390,22 @@ export class MarketComponent {
   async submitBatchTransfer(): Promise<void> {
 
     if (!this.bulkActionsForm.value.transferPhunks) return;
-    const hashIds = this.bulkActionsForm.value.transferPhunks.map((phunk: any) => phunk.hashId);
+    const entries = this.bulkActionsForm.value.transferPhunks as any[];
+    const hashIds = entries.map((phunk: any) => phunk.hashId);
 
     if (!hashIds?.length) return;
     if (!this.transferAddress.value) return;
+
+    // ERC-721C (v67): ERC-721 has no atomic batch transfer, so we send one
+    // transferFrom per item sequentially (see transferBatchErc721c).
+    const selectedPhunks = Object.values(this.selected);
+    const erc721cSet = selectedPhunks[0]?.slug ? ERC721C_CONTRACT_SETS[selectedPhunks[0].slug!] : undefined;
+    if (erc721cSet) {
+      const to = await this.web3Svc.verifyAddressOrEns(this.transferAddress.value);
+      if (!to) return;
+      await this.transferBatchErc721c(erc721cSet, entries, to);
+      return;
+    }
 
     let notification: Notification = {
       id: this.utilSvc.createIdFromString('transferPhunk' + hashIds.map((hashId: string) => hashId.substring(2)).join('')),
@@ -440,6 +452,48 @@ export class MarketComponent {
       };
       this.store.dispatch(upsertNotification({ notification }));
     }
+  }
+
+  /**
+   * ERC-721C bulk transfer. ERC-721 has no atomic batch transfer, so we send one
+   * transferFrom per selected item, in sequence (the wallet prompts for each). The
+   * owner is exempt from the collection's operator whitelist, so these go through
+   * directly on the NFT contract. Stops the run if the user rejects a prompt.
+   */
+  private async transferBatchErc721c(
+    set: CollectionContracts,
+    entries: Array<{ phunkId: number; hashId: string }>,
+    toAddress: string,
+  ): Promise<void> {
+    this.closeModal();
+    for (const entry of entries) {
+      const tokenId = Math.abs(Number(entry.phunkId));
+      let notification: Notification = {
+        id: this.utilSvc.createIdFromString('transferPhunk' + entry.hashId),
+        timestamp: Date.now(),
+        type: 'wallet',
+        function: 'transferPhunk',
+        hashId: entry.hashId,
+        tokenId,
+      };
+      this.store.dispatch(upsertNotification({ notification }));
+
+      try {
+        const hash = await this.web3Svc.transferNft(set.nft, tokenId, toAddress);
+        notification = { ...notification, type: 'pending', hash };
+        this.store.dispatch(upsertNotification({ notification }));
+
+        const receipt = await this.web3Svc.pollReceipt(hash!);
+        notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+        this.store.dispatch(upsertNotification({ notification }));
+      } catch (err) {
+        console.log(err);
+        notification = { ...notification, type: 'error', detail: err };
+        this.store.dispatch(upsertNotification({ notification }));
+        break; // user rejected or a tx failed — don't keep firing prompts
+      }
+    }
+    this.clearSelectedAndClose();
   }
 
   async submitBatchListing(): Promise<void> {
