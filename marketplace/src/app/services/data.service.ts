@@ -1258,6 +1258,23 @@ export class DataService {
   }
 
   /**
+   * hashIds of a collection's items currently escrowed in the auction-house pool (buyable via
+   * per-item buy-now). The /market/all pagination RPC doesn't return `owner`, so the grid can't
+   * tell which items are pool items on its own — this fills that gap with one lightweight, indexed
+   * read (slug + owner == auctionAddress). Returns an empty set for non-pool collections.
+   */
+  async fetchPoolHashIds(slug: string): Promise<Set<string>> {
+    const auction = ((environment as any).auctionAddress || '').toLowerCase();
+    if (!slug || !auction) return new Set<string>();
+    const { data } = await supabase
+      .from('ethscriptions' + this.suffix)
+      .select('hashId')
+      .eq('slug', slug)
+      .eq('owner', auction);
+    return new Set<string>((data || []).map((r: any) => (r.hashId || '').toLowerCase()));
+  }
+
+  /**
    * Fetches mint progress for a collection
    * @param slug Collection slug
    */

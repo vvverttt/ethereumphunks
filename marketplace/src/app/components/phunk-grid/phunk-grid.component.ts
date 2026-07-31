@@ -93,12 +93,15 @@ export class PhunkGridComponent implements OnChanges {
   private filterPipe = new AttributeFilterPipe();
 
   // ── Pool buy-now display ──────────────────────────────────────────────────
-  // Items escrowed in the auction house (owner == auctionAddress) are buyable at a fixed
-  // per-item price via buyItem — but they carry no market `listing`, so the grid would show
-  // them plain. We surface them like listings: highlighted tile + the wallet-resolved tier
-  // price (public 0.267, EthsRocks "Diamond Hands" 0.167, etc.). Synthetic listings are
-  // memoized so the template never builds new objects during change detection.
+  // Items escrowed in the auction house are buyable at a fixed per-item price via buyItem — but
+  // they carry no market `listing`, so the grid would show them plain. We surface them like
+  // listings: highlighted tile + the wallet-resolved tier price (public 0.267, EthsRocks
+  // "Diamond Hands" 0.167, etc.). The /market/all data has no `owner`, so pool membership comes
+  // from a separate hashId lookup. Synthetic listings are memoized so the template never builds
+  // new objects during change detection.
   private readonly auctionAddress = ((environment as any).auctionAddress || '').toLowerCase();
+  private poolHashIds = new Set<string>();
+  private poolSlug = '';
   private poolPriceWei: string | null = null;
   private poolListings = new Map<string, Listing>();
 
@@ -140,19 +143,28 @@ export class PhunkGridComponent implements OnChanges {
     return phunk.listing ?? this.poolListings.get(phunk.hashId) ?? null;
   }
 
-  /** Read the auction-house buy-now config once and resolve the price this wallet would pay,
-   *  then (re)build the synthetic listing map. No-op (and no RPC) for grids with no pool items. */
+  /** Load which items are in the auction-house pool (by hashId) and resolve the price this wallet
+   *  would pay, then (re)build the synthetic listing map. No-op for collections with no pool items. */
   private async refreshPoolListings(): Promise<void> {
-    const hasPoolItems = (this.phunkData || []).some(
-      (p) => (p.owner || '').toLowerCase() === this.auctionAddress && !p.listing
-    );
-    if (!this.auctionAddress || !hasPoolItems) {
+    const slug = (this.phunkData || []).find((p) => p.slug)?.slug || '';
+    if (!this.auctionAddress || !slug) {
       this.poolPriceWei = null;
       if (this.poolListings.size) this.poolListings = new Map();
       return;
     }
 
     try {
+      // Pool membership only depends on the collection — cache per slug so a wallet change
+      // (which re-prices) doesn't re-query the set.
+      if (slug !== this.poolSlug) {
+        this.poolHashIds = await this.dataSvc.fetchPoolHashIds(slug);
+        this.poolSlug = slug;
+      }
+      if (!this.poolHashIds.size) {
+        this.poolPriceWei = null;
+        this.poolListings = new Map();
+        return;
+      }
       const config = await this.poolBuySvc.getConfig();
       const tier = await this.poolBuySvc.resolveTier(this.walletAddress, config);
       this.poolPriceWei = tier ? tier.priceWei.toString() : null;
@@ -164,9 +176,9 @@ export class PhunkGridComponent implements OnChanges {
 
   private rebuildPoolListingsMap(): void {
     const next = new Map<string, Listing>();
-    if (this.poolPriceWei) {
+    if (this.poolPriceWei && this.poolHashIds.size) {
       for (const p of this.phunkData || []) {
-        if ((p.owner || '').toLowerCase() === this.auctionAddress && !p.listing) {
+        if (!p.listing && this.poolHashIds.has((p.hashId || '').toLowerCase())) {
           next.set(p.hashId, {
             createdAt: new Date(),
             hashId: p.hashId,
