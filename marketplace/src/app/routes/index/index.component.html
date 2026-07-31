@@ -1,16 +1,28 @@
 @if ((activeCollection$ | async); as activeCollection) {
 
-  <!-- Phikings launch countdown — dismissible, re-shows on each visit to /phikings until live -->
-  @if (activeCollection.slug === 'phikings' && !phikingsLaunchPassed() && !phikingsDismissed()) {
+  <!-- Phikings launch popup — countdown before launch, then a LIVE + buy CTA. Dismissible; re-shows on each visit to /phikings. -->
+  @if (activeCollection.slug === 'phikings' && !phikingsDismissed()) {
     <div class="phikings-popup-overlay" (click)="dismissPhikings()">
       <div class="phikings-popup" (click)="$event.stopPropagation()">
         <button type="button" class="phikings-popup-close" (click)="dismissPhikings()" aria-label="Close">&times;</button>
         <h2 class="phikings-popup-kicker">PHIKINGS</h2>
-        <p class="phikings-popup-title">LIVE PHRIDAY</p>
-        <div class="phikings-popup-timer">
-          <app-timer [endTime]="phikingsLaunchMs" (event)="onPhikingsTimer($event)" />
-        </div>
-        <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings()">Got it</button>
+
+        @if (!phikingsLaunchPassed()) {
+          <!-- Before launch: countdown to noon Pacific -->
+          <p class="phikings-popup-title">LIVE PHRIDAY</p>
+          <div class="phikings-popup-timer">
+            <app-timer [endTime]="phikingsLaunchMs" (event)="onPhikingsTimer($event)" />
+          </div>
+          <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings()">Got it</button>
+        } @else {
+          <!-- Live: send buyers straight to the market listings (each item links to its /details buy page) -->
+          <p class="phikings-popup-title">IT&rsquo;S LIVE</p>
+          <p class="phikings-popup-sub">Phikings are live. Grab one on the market.</p>
+          <a
+            class="phikings-popup-cta"
+            [routerLink]="['/phikings', 'market', 'listings']"
+            (click)="dismissPhikings()">Buy Phikings &rarr;</a>
+        }
       </div>
     </div>
   }

@@ -303,3 +303,28 @@ section {
     background-color: rgba(var(--background), 1);
   }
 }
+
+// Live-state: short line under the title + the primary "buy" CTA (an <a> to /market/listings).
+.phikings-popup-sub {
+  margin: -1rem 0 2rem;
+  font-family: var(--primary-font-stack);
+  font-size: 1.4rem;
+  color: rgba(var(--text-color), .8);
+}
+
+.phikings-popup-cta {
+  display: inline-block;
+  padding: .9rem 2.5rem;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--primary-font-stack);
+  font-size: 1.5rem;
+  color: rgba(var(--background), 1);
+  background-color: rgba(var(--highlight), 1);
+  border: 2px solid rgba(var(--highlight), 1);
+
+  &:hover {
+    color: rgba(var(--highlight), 1);
+    background-color: rgba(var(--background), 1);
+  }
+}

@@ -11,6 +11,22 @@
   background-color: rgba(var(--base-color), 1);
 }
 
+// Preview hook for the localhost bg-color picker: when it stamps [data-bgpick] on :root,
+// only the collection you're currently on tracks the previewed --base-color — the button
+// (closed selector) and that collection's active row — so it mirrors how real per-collection
+// theming works (e.g. cryptophunksv67's row is the only one that's #67cdff). Other rows keep
+// their default lime. Inert in production — the attribute is only ever set by that
+// localhost-only tool, so this never affects the deployed site.
+:host-context([data-bgpick]) .curated-wrapper {
+  .curated-button { background-color: rgba(var(--base-color), 1); }
+
+  .curated-dropdown a.active {
+    background-color: rgba(var(--base-color), 1);
+
+    .image-wrapper { background: none; }
+  }
+}
+
 .curated-wrapper {
   position: relative;
   z-index: 1;

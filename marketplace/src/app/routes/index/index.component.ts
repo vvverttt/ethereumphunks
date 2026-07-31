@@ -91,10 +91,11 @@ export class IndexComponent {
   mintImage = signal<string | null>(null);
   openFaq = signal<string | null>(null);
 
-  // ── Phikings "LIVE PHRIDAY" launch popup (shown on the /phikings landing page) ──
-  /** Phikings go live at noon Pacific (PDT, UTC-7) on Fri Jul 31, 2026 = 19:00 UTC. */
-  readonly phikingsLaunchMs = new Date('2026-07-31T12:00:00-07:00').getTime();
-  /** True once the launch moment has passed — hides the countdown popup. */
+  // ── Phikings launch popup (shown on the /phikings landing page) ──
+  /** Phikings went LIVE on Fri Jul 31, 2026 (~9am PT). Timestamp is in the past, so the popup
+   *  shows the "IT'S LIVE" + Buy state, not the countdown. */
+  readonly phikingsLaunchMs = new Date('2026-07-31T09:00:00-07:00').getTime();
+  /** True once the launch moment has passed — now always true, so the live popup shows. */
   phikingsLaunchPassed = signal(Date.now() >= this.phikingsLaunchMs);
   /** Dismissed for the current visit; reset each time the /phikings landing is (re)entered. */
   phikingsDismissed = signal(false);
