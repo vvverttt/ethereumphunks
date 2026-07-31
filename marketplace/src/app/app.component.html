@@ -49,9 +49,6 @@
 <app-footer />
 <app-notifications />
 
-<!-- Local-only background preview tool (self-gates to localhost) -->
-<app-bg-color-picker />
-
 <app-connect-dialog
   [open]="web3Svc.connectDialogOpen()"
   (selected)="web3Svc.connectWithConnector($event)"

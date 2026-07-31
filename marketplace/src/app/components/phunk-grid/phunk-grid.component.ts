@@ -10,10 +10,11 @@ import { WaIntersectionObserver } from '@ng-web-apis/intersection-observer';
 import { GlobalState, TraitFilter } from '@/models/global-state';
 import { MarketType } from '@/models/market.state';
 import { ViewType } from '@/models/view-types';
-import { Phunk } from '@/models/db';
+import { Phunk, Listing } from '@/models/db';
 import { Sort } from '@/models/pipes';
 
 import { DataService } from '@/services/data.service';
+import { PoolBuyNowService } from '@/services/pool-buy-now.service';
 
 import { ItemLinkPipe } from '@/pipes/item-link.pipe';
 
@@ -91,10 +92,21 @@ export class PhunkGridComponent implements OnChanges {
 
   private filterPipe = new AttributeFilterPipe();
 
+  // ── Pool buy-now display ──────────────────────────────────────────────────
+  // Items escrowed in the auction house (owner == auctionAddress) are buyable at a fixed
+  // per-item price via buyItem — but they carry no market `listing`, so the grid would show
+  // them plain. We surface them like listings: highlighted tile + the wallet-resolved tier
+  // price (public 0.267, EthsRocks "Diamond Hands" 0.167, etc.). Synthetic listings are
+  // memoized so the template never builds new objects during change detection.
+  private readonly auctionAddress = ((environment as any).auctionAddress || '').toLowerCase();
+  private poolPriceWei: string | null = null;
+  private poolListings = new Map<string, Listing>();
+
   constructor(
     private store: Store<GlobalState>,
     private el: ElementRef,
     public dataSvc: DataService,
+    private poolBuySvc: PoolBuyNowService,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -114,6 +126,59 @@ export class PhunkGridComponent implements OnChanges {
     if (changes.phunkData || changes.total || changes.limit || changes.traitFilters) {
       this.updateShowLoadMore();
     }
+
+    // Recompute pool buy-now prices when the data or the connected wallet changes
+    // (wallet change flips the eligible tier, e.g. Diamond Hands -> 0.167).
+    if (changes.phunkData || changes.walletAddress) {
+      void this.refreshPoolListings();
+    }
+  }
+
+  /** The listing to render for an item: a real market listing wins; otherwise the synthetic
+   *  pool buy-now listing (present only for auction-house-escrowed items when buy-now is on). */
+  displayListing(phunk: Phunk): Listing | null {
+    return phunk.listing ?? this.poolListings.get(phunk.hashId) ?? null;
+  }
+
+  /** Read the auction-house buy-now config once and resolve the price this wallet would pay,
+   *  then (re)build the synthetic listing map. No-op (and no RPC) for grids with no pool items. */
+  private async refreshPoolListings(): Promise<void> {
+    const hasPoolItems = (this.phunkData || []).some(
+      (p) => (p.owner || '').toLowerCase() === this.auctionAddress && !p.listing
+    );
+    if (!this.auctionAddress || !hasPoolItems) {
+      this.poolPriceWei = null;
+      if (this.poolListings.size) this.poolListings = new Map();
+      return;
+    }
+
+    try {
+      const config = await this.poolBuySvc.getConfig();
+      const tier = await this.poolBuySvc.resolveTier(this.walletAddress, config);
+      this.poolPriceWei = tier ? tier.priceWei.toString() : null;
+    } catch {
+      this.poolPriceWei = null;
+    }
+    this.rebuildPoolListingsMap();
+  }
+
+  private rebuildPoolListingsMap(): void {
+    const next = new Map<string, Listing>();
+    if (this.poolPriceWei) {
+      for (const p of this.phunkData || []) {
+        if ((p.owner || '').toLowerCase() === this.auctionAddress && !p.listing) {
+          next.set(p.hashId, {
+            createdAt: new Date(),
+            hashId: p.hashId,
+            listed: true,
+            listedBy: this.auctionAddress,
+            minValue: this.poolPriceWei,
+            toAddress: null,
+          });
+        }
+      }
+    }
+    this.poolListings = next;
   }
 
   selectPhunk(
