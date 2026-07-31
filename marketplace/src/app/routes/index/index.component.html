@@ -15,13 +15,14 @@
           </div>
           <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings()">Got it</button>
         } @else {
-          <!-- Live: send buyers straight to the market listings (each item links to its /details buy page) -->
+          <!-- Live: Phikings sell via per-item buy-now on their /details pages (NOT market listings),
+               so "Enter" sends buyers to the full grid to browse and click into any one. -->
           <p class="phikings-popup-title">IT&rsquo;S LIVE</p>
           <p class="phikings-popup-sub">Phikings are live. Grab one on the market.</p>
           <a
             class="phikings-popup-cta"
-            [routerLink]="['/phikings', 'market', 'listings']"
-            (click)="dismissPhikings()">Buy Phikings &rarr;</a>
+            [routerLink]="['/phikings', 'market', 'all']"
+            (click)="dismissPhikings()">Enter</a>
         }
       </div>
     </div>
