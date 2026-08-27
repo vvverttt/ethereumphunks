@@ -965,8 +965,11 @@ export class DataService {
    */
   private watchSinglePhunk(hashId: string) {
     return new Observable<void>((subscriber) => {
-      const ethChannel = supabase
-        .channel(`ethscription_changes__${hashId}`)
+      // Both watches ride one channel. They cover the same row on the same page, so
+      // opening two cost an extra websocket topic and an extra join/leave against
+      // realtime.subscription on every item view, for no added coverage.
+      const channel = supabase
+        .channel(`phunk_changes__${hashId}`)
         .on(
           'postgres_changes',
           {
@@ -977,10 +980,6 @@ export class DataService {
           },
           () => subscriber.next()
         )
-        .subscribe();
-
-      const listingChannel = supabase
-        .channel(`listing_changes__${hashId}`)
         .on(
           'postgres_changes',
           {
@@ -994,8 +993,7 @@ export class DataService {
         .subscribe();
 
       return () => {
-        ethChannel.unsubscribe();
-        listingChannel.unsubscribe();
+        channel.unsubscribe();
       };
     });
   }
