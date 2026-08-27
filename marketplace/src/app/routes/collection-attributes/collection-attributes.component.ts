@@ -205,17 +205,10 @@ export class CollectionAttributesComponent implements OnInit {
     let attrs = await this.loadAttrsFromStatic(this.slug);
     if (!attrs.length) attrs = await this.loadAttrsFromSupabase(this.slug);
 
-    // Load combined type attrs only for cryptophunksv67 — other collections use their own data
-    const combinedTypeAttrs: { sha: string; values: Record<string, any> }[] = [];
-    if (this.slug === 'cryptophunksv67') {
-      for (const slug of COMBINED_SLUGS) {
-        let a = await this.loadAttrsFromStatic(slug);
-        if (!a.length) a = await this.loadAttrsFromSupabase(slug);
-        combinedTypeAttrs.push(...a);
-      }
-    } else {
-      combinedTypeAttrs.push(...attrs);
-    }
+    // Types come from THIS collection only. Merging the sibling collections here leaked
+    // their values in (EthsRock, Infinity Stone) and computed every percentage against a
+    // different total than the one shown, so the numbers never matched the collection.
+    const combinedTypeAttrs = attrs;
 
     const total = attrs.length;
     this.totalItems.set(total);

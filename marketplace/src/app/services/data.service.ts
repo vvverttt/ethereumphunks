@@ -157,8 +157,15 @@ export class DataService {
     if (!this.attributeCache.has(slug)) {
       const attributes$ = from(this.storageSvc.getItem<AttributeItem>(`${slug}__attributes`)).pipe(
         switchMap((res: AttributeItem | null) => {
-          if (res) return of(res);
-          return this.fetchAttributes(slug);
+          if (!res) return this.fetchAttributes(slug);
+          // The stored copy is keyed on environment.version, so an app release busts it —
+          // but trait data changes on its own schedule (a token re-rendered, a collection
+          // extended) with no deploy. Without this check those visitors keep a stale file
+          // forever and see missing or wrong traits. A HEAD is cheap; compare the ETag and
+          // only refetch when the file actually changed.
+          return from(this.attributesChangedRemotely(slug)).pipe(
+            switchMap(changed => changed ? this.fetchAttributes(slug) : of(res)),
+          );
         }),
         tap((res) => {
           if (res && !this.rarityCache.has(slug)) this.buildRarityCache(slug, res);
@@ -188,7 +195,32 @@ export class DataService {
    */
   private async cacheAttributes(slug: string, attributes: AttributeItem) {
     const stored = await this.storageSvc.setItem<AttributeItem>(`${slug}__attributes`, attributes);
+    // remember what the file looked like when we cached it, so we can tell later
+    try {
+      const tag = await this.attributesEtag(slug);
+      if (tag) await this.storageSvc.setItem<string>(`${slug}__attributes_etag`, tag);
+    } catch { /* never let cache bookkeeping break the data path */ }
     return stored;
+  }
+
+  /** ETag (falling back to length) of the remote attributes file, or null if unreachable. */
+  private async attributesEtag(slug: string): Promise<string | null> {
+    try {
+      const res = await fetch(`${environment.staticUrl}/data/${slug}_attributes.json`, { method: 'HEAD' });
+      if (!res.ok) return null;
+      return res.headers.get('etag') || res.headers.get('content-length');
+    } catch { return null; }
+  }
+
+  /** True when the remote file differs from the one we cached. Unreachable = keep cache. */
+  private async attributesChangedRemotely(slug: string): Promise<boolean> {
+    const [seen, now] = await Promise.all([
+      this.storageSvc.getItem<string>(`${slug}__attributes_etag`),
+      this.attributesEtag(slug),
+    ]);
+    if (!now) return false;      // offline or blocked — the cache is better than nothing
+    if (!seen) return true;      // cached before this check existed; refresh once
+    return seen !== now;
   }
 
   /**

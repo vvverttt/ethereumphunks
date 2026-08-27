@@ -86,8 +86,10 @@
 
         <div class="image-wrapper">
           <img
-            [lazyLoad]="phunk | imageUrlPipe"
-            [defaultImage]="'assets/loadingphunk.png'"
+            [src]="phunk | imageUrlPipe"
+            loading="lazy"
+            decoding="async"
+            (error)="retryImg($event)"
             width="50"
             height="50"
           />

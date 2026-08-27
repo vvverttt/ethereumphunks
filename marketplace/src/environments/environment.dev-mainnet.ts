@@ -48,6 +48,8 @@ export const environment = {
 
   relayUrl: 'https://ethereumphunks.onrender.com',
   staticUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public',
+  // See environment.mainnet.ts — swap to the Cloudflare R2 domain once images are uploaded.
+  imageCdnUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public',
 
   supabaseUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co',
   supabaseKey: 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe',

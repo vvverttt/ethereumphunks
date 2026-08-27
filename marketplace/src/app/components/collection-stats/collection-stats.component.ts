@@ -22,11 +22,14 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'quantumdystophunkzv67': 'DystoPhunkz',
 };
 const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSupplyDisplay?: string; uniqueTraitValues?: number; oneOfOnes?: number }> = {
+  // Recounted 2026-08-25 after the 4,668 ERC-721 phunks were added.
+  // Trait figures come from data/cryptophunksv67_attributes.json; colour figures from
+  // decoding all 8,913 stored PNGs (the 6 animated GIFs are not counted).
   'cryptophunksv67': {
-    totalSupply: 4251,
-    totalSupplyDisplay: '4,251 / 10,000',
-    uniqueTraitValues: 1526,
-    oneOfOnes: 675,
+    totalSupply: 8919,
+    totalSupplyDisplay: '8,919 / 10,000',
+    uniqueTraitValues: 1861,
+    oneOfOnes: 676,
   },
   'quantummissingphunksv67': {
     totalSupplyDisplay: '17 / 250',
@@ -41,8 +44,8 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
 };
 const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string }>> = {
   'cryptophunksv67': [
-    { label: 'Unique Colors', display: '28,835' },
-    { label: 'Colored Pixels', display: '1,274,270 / 2,447,424' },
+    { label: 'Unique Colors', display: '34,737' },
+    { label: 'Colored Pixels', display: '2,839,649 / 5,135,616' },
   ],
   'quantummissingphunksv67': [
     { label: 'Unique Colors', display: '93' },

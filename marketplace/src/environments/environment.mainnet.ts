@@ -52,6 +52,11 @@ export const environment = {
 
   relayUrl: 'https://ethereumphunks.onrender.com',
   staticUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public',
+  // Grid/thumbnail images are served from here (imageUrlPipe). Immutable (sha-addressed), so it
+  // belongs on a CDN. Point this at the Cloudflare R2 custom domain once images are uploaded
+  // (scripts/upload-images-to-r2.js) to get edge caching + escape Supabase's single-host throttle.
+  // Falls back to staticUrl while unset. Objects must live under `/static/images/{sha}`.
+  imageCdnUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public',
 
   supabaseUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co',
   supabaseKey: 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe',

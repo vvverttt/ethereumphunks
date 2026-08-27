@@ -8,7 +8,6 @@ import { GlobalState } from '@/models/global-state';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
-import { environment } from 'src/environments/environment';
 
 import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
 
@@ -24,8 +23,11 @@ import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
   styleUrl: './collections-dropdown.component.scss'
 })
 export class CollectionsDropdownComponent {
+  // The QuantumPhunks re-issues are hidden in favour of the OG collections they came
+  // from — the dropdown used to do the opposite and hide `environment.ogSlugs`.
   private readonly hiddenDropdownSlugs = new Set([
-    ...(environment.ogSlugs || []),
+    'quantummissingphunksv67',
+    'quantumdystophunkzv67',
     'ethereumphunks',
     'etherphunks',
   ]);

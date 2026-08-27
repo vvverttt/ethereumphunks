@@ -214,11 +214,12 @@ export class SplashComponent {
   }
 
   /**
-   * Picks SHAs biased toward rarer items for the splash header.
-   * Tier 1 (highest): Special trait "One of One" or "Character"
-   * Tier 2: Rare Type values (Alien, Cosmic, Ape, Zombie, Robot, Cyborg, Mythic, Guardian)
-   * Tier 3: Everything else, scored by overall trait rarity
-   * Mostly shows tier 1 & 2, mixed with a couple from tier 3 for variety.
+   * Picks SHAs for the splash header: one per Animal, rarest first within each.
+   *
+   * Rarity alone doesn't work here. Turtles are 845 of the 860 "One of One"/"Character"
+   * items, so a purely rarity-ranked pick returns an all-turtle strip and none of the
+   * other 22 animals ever appear. Rotating over animals first and applying rarity only
+   * *within* an animal keeps the rare picks while showing the whole cast.
    */
   private pickRareShas(previewShas: string[], attributes: AttributeItem | null): string[] {
     if (!attributes) return previewShas;
@@ -230,52 +231,61 @@ export class SplashComponent {
     // Special trait values
     const specialValues = new Set(['One of One', 'Character']);
 
-    const tier1: string[] = []; // Special: One of One, Character
-    const tier2: string[] = []; // Rare Type: Alien, Cosmic, etc.
-    const tier3: string[] = []; // Everything else
+    // animal -> [tier1 (Special), tier2 (rare Type), tier3 (rest)]
+    const byAnimal = new Map<string, [string[], string[], string[]]>();
 
     for (const [sha, attrs] of Object.entries(attributes)) {
+      let animal = 'Unknown';
       let isSpecial = false;
       let isRareType = false;
 
       for (const attr of attrs) {
+        if (attr.k === 'Animal') animal = String(attr.v);
         if (attr.k === 'Special' && specialValues.has(attr.v)) isSpecial = true;
         if (attr.k === 'Type' && rareTypes.has(attr.v)) isRareType = true;
       }
 
-      if (isSpecial) tier1.push(sha);
-      else if (isRareType) tier2.push(sha);
-      else tier3.push(sha);
+      if (!byAnimal.has(animal)) byAnimal.set(animal, [[], [], []]);
+      byAnimal.get(animal)![isSpecial ? 0 : isRareType ? 1 : 2].push(sha);
     }
 
-    // Shuffle each tier for variety on each reload
-    this.shuffleArray(tier1);
-    this.shuffleArray(tier2);
-    this.shuffleArray(tier3);
+    // Flatten each animal to one rarity-ordered list, shuffled within tier so the
+    // same rare items don't recur on every reload.
+    const ordered = new Map<string, string[]>();
+    for (const [animal, tiers] of byAnimal) {
+      for (const tier of tiers) this.shuffleArray(tier);
+      ordered.set(animal, [...tiers[0], ...tiers[1], ...tiers[2]]);
+    }
 
-    // Fill 9 slots: ~3 special, ~4 rare type, ~2 common (adjust based on availability)
-    const picked: string[] = [];
-    const t1Count = Math.min(tier1.length, 3);
-    const t2Count = Math.min(tier2.length, this.IMAGE_LIMIT - t1Count - 2);
-    const t3Count = this.IMAGE_LIMIT - t1Count - t2Count;
-
-    for (let i = 0; i < t1Count; i++) picked.push(tier1[i]);
-    for (let i = 0; i < t2Count; i++) picked.push(tier2[i]);
-    for (let i = 0; i < t3Count && i < tier3.length; i++) picked.push(tier3[i]);
+    const animals = [...ordered.keys()];
+    this.shuffleArray(animals);
 
     // Overpick to account for animated items that get skipped in splash
     const overPick = this.IMAGE_LIMIT * 2;
+    const picked: string[] = [];
 
-    // If we still don't have enough, fill from whatever's left
-    const used = new Set(picked);
-    for (const pool of [tier1, tier2, tier3]) {
-      for (const sha of pool) {
+    // Turtles keep a fixed share (~2 of every 9 shown) rather than taking a single
+    // round-robin slot like the rest — they're the original 4,251 and hold nearly
+    // every 1/1, so rotating them out entirely would be as wrong as showing only them.
+    const turtlePool = ordered.get('Turtle') ?? [];
+    const turtleSlots = Math.min(turtlePool.length, Math.round((overPick * 2) / this.IMAGE_LIMIT));
+    for (let i = 0; i < turtleSlots; i++) picked.push(turtlePool[i]);
+
+    // Round-robin the remaining slots: lap 0 takes each animal's rarest, lap 1 its
+    // next, and so on. With more animals than slots this fills the rest of the strip
+    // with distinct animals.
+    const others = animals.filter((animal) => animal !== 'Turtle');
+    for (let lap = 0; picked.length < overPick; lap++) {
+      let added = 0;
+      for (const animal of others) {
         if (picked.length >= overPick) break;
-        if (!used.has(sha)) { picked.push(sha); used.add(sha); }
+        const pool = ordered.get(animal)!;
+        if (lap < pool.length) { picked.push(pool[lap]); added++; }
       }
+      if (!added) break;
     }
 
-    // Final shuffle so tiers aren't grouped together
+    // Final shuffle so the strip isn't ordered by animal
     this.shuffleArray(picked);
 
     return picked;

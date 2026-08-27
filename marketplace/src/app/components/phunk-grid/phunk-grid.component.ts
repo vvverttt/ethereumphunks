@@ -4,7 +4,6 @@ import { RouterModule } from '@angular/router';
 
 import { Store } from '@ngrx/store';
 import { NgxPaginationModule } from 'ngx-pagination';
-import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { WaIntersectionObserver } from '@ng-web-apis/intersection-observer';
 
 import { GlobalState, TraitFilter } from '@/models/global-state';
@@ -35,7 +34,6 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
   imports: [
     CommonModule,
     RouterModule,
-    LazyLoadImageModule,
     NgxPaginationModule,
     WaIntersectionObserver,
 
@@ -111,6 +109,23 @@ export class PhunkGridComponent implements OnChanges {
     public dataSvc: DataService,
     private poolBuySvc: PoolBuyNowService,
   ) {}
+
+  // Grid images are static (Supabase/CDN), so a blank tile is always a transient fetch failure
+  // (single-host connection cap / CDN throttle), never a missing image. ng-lazyload-image left
+  // those stuck forever; native lazy-loading + this bounded retry guarantees every tile eventually
+  // loads. The themed .image-wrapper background is the placeholder while it retries.
+  retryImg(e: Event): void {
+    const img = e.target as HTMLImageElement;
+    const n = +(img.dataset['retry'] || 0);
+    if (n >= 4) {                                    // give up after 4 tries -> gray placeholder
+      if (!img.src.endsWith('loadingphunk.png')) img.src = 'assets/loadingphunk.png';
+      return;
+    }
+    img.dataset['retry'] = String(n + 1);
+    const base = img.src.split('?')[0];
+    // backoff + jitter, and a changing query so the browser makes a fresh request (not a cached error)
+    setTimeout(() => { img.src = base + '?r=' + (n + 1); }, 500 * (n + 1) + Math.floor(Math.random() * 300));
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     // Selected state is reflected reactively via [class.checked]; no DOM work needed.

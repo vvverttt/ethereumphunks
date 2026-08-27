@@ -88,3 +88,8 @@ AUX
 **/nul
 .vercel
 .env*.local
+
+# throwaway key that briefly holds v67 ownership during the 4677 populate run
+.burner-v67
+.burner-v67-old-*
+v67_new4677/.populate-progress.json

@@ -5,12 +5,6 @@
       {{ collectionName() }}
     </a>
     <h1>{{ t('typesAndAttributes') }}</h1>
-    @if (isCombinableSlug) {
-      <button class="combined-toggle" [class.active]="showCombined()" (click)="toggleCombined()">
-        {{ t('fullCollection') }}
-        <span class="toggle-indicator">{{ showCombined() ? t('on') : t('off') }}</span>
-      </button>
-    }
   </div>
 
   @if (loading() || combinedLoading()) {

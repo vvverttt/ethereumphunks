@@ -52,11 +52,19 @@
     }
 
     .image-wrapper {
+      // Guaranteed full-cell square so the colored box can never render "cut" on the right
+      // (fractional column widths + pixelated scaling could leave a sub-pixel gap on the img).
+      // The background lives on the wrapper (always fills the cell); the pixel art fits inside.
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      overflow: hidden;
+      background-color: rgba(var(--phunk-bg), 1);
+
       img {
-        background-color: rgba(var(--phunk-bg), 1);
         display: block;
         width: 100%;
-        height: auto;
+        height: 100%;
+        object-fit: contain;
         image-rendering: pixelated;
       }
     }
@@ -82,25 +90,19 @@
 
     &.in-escrow {
       .image-wrapper {
-        img {
-          background-color: rgba(var(--escrow-color), 1);
-        }
+        background-color: rgba(var(--escrow-color), 1);
       }
     }
 
     &.listing {
       .image-wrapper {
-        img {
-          background-color: rgba(var(--listed-color), 1);
-        }
+        background-color: rgba(var(--listed-color), 1);
       }
     }
 
     &.bid {
       .image-wrapper {
-        img {
-          background-color: rgba(var(--bid-color), 1);
-        }
+        background-color: rgba(var(--bid-color), 1);
       }
     }
 
@@ -110,9 +112,7 @@
     // both classes are present.
     &.dead-bid {
       .image-wrapper {
-        img {
-          background-color: rgba(150, 150, 150, 1);
-        }
+        background-color: rgba(150, 150, 150, 1);
       }
     }
 
@@ -126,9 +126,7 @@
 
     &.bridged {
       .image-wrapper {
-        img {
-          background-color: rgba(var(--magma), 1);
-        }
+        background-color: rgba(var(--magma), 1);
       }
     }
 
@@ -197,6 +195,8 @@
 
     .item {
       .image-wrapper {
+        background: none;
+
         img {
           background: none;
         }
