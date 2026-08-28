@@ -18,6 +18,12 @@ import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 
 import { EventType, GlobalState, TxFilterItem } from '@/models/global-state';
 
+// cryptophunksv67 is the site's only ERC-721 collection — its tokens are contract
+// state, not inscriptions. Everything else here is an Ethscription, written into
+// Ethereum calldata. The two are unrelated and holders confuse them, so the
+// activity header labels which one they're looking at.
+const ERC721_SLUGS = new Set(['cryptophunksv67']);
+
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -50,6 +56,8 @@ export class RecentActivityComponent {
 
   collection = input.required<Collection | null>();
   ogCollection = input<Collection | null>(null);
+
+  isErc721 = computed<boolean>(() => ERC721_SLUGS.has(this.collection()?.slug ?? ''));
   public preferences = inject(PhunkPreferencesService);
 
   txFilters = computed<TxFilterItem[]>(() => {

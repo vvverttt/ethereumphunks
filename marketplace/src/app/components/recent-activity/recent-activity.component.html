@@ -7,6 +7,29 @@
     </div>
 
     <div class="events-header-controls">
+      @if (collection()) {
+        @if (isErc721()) {
+          <a
+            class="standard-badge erc721"
+            href="https://etherscan.io/address/0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="ERC-721 token — lives in contract state on Ethereum. Not an Ethscription. View the contract.">
+            <img src="assets/ethereum-eth.svg" alt="" aria-hidden="true" />
+            <span class="standard-badge-label">ERC-721</span>
+          </a>
+        } @else {
+          <a
+            class="standard-badge ethscription"
+            href="https://docs.ethscriptions.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Ethscription — inscribed directly into Ethereum calldata. Read the docs.">
+            <span class="lockup" role="img" aria-label="Ethscription"></span>
+          </a>
+        }
+      }
+
       @if (ogCollection(); as og) {
         <a class="og-collection-btn" [routerLink]="['/curated', og.slug]" [title]="og.name">
           <img [src]="og.image" [alt]="og.name" />

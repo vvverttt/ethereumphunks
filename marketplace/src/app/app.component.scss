@@ -54,6 +54,19 @@
 
       &:active { transform: translate(0, 1px); }
     }
+
+    // Build stamp under the CTA — lets someone reporting a bug say which version they
+    // were on, which matters here because ngsw can serve a cached shell that lags the
+    // deployed one.
+    .popup-version {
+      margin: 1.4rem 0 0;
+      font-family: var(--secondary-font-stack);
+      font-size: 1rem;
+      letter-spacing: .05rem;
+      // Explicit black rather than a theme token — opacity would wash it out against
+      // the popup's light panel.
+      color: rgba(0, 0, 0, 1);
+    }
   }
 }
 

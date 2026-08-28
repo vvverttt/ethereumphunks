@@ -14,6 +14,7 @@
             <app-timer [endTime]="phikingsLaunchMs" (event)="onPhikingsTimer($event)" />
           </div>
           <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings()">Got it</button>
+          <p class="popup-version">v{{ env.version }}</p>
         } @else {
           <!-- Live: Phikings sell via per-item buy-now on their /details pages (NOT market listings),
                so "Enter" sends buyers to the full grid to browse and click into any one. -->
@@ -23,6 +24,7 @@
             class="phikings-popup-cta"
             [routerLink]="['/phikings', 'market', 'all']"
             (click)="dismissPhikings()">Enter</a>
+          <p class="popup-version">v{{ env.version }}</p>
         }
       </div>
     </div>
@@ -200,7 +202,10 @@
                       <span class="faq-toggle">{{ openFaq() === item.q ? 'âˆ’' : '+' }}</span>
                     </div>
                     @if (openFaq() === item.q) {
-                      <div class="faq-answer">{{ item.a }}</div>
+                      <!-- innerHTML so answers can carry links (e.g. the EtherPhunks market).
+                           Content is authored in this component, never user input, and Angular
+                           sanitizes it regardless — href/target/rel all survive the allowlist. -->
+                      <div class="faq-answer" [innerHTML]="item.a"></div>
                     }
                   </div>
                 }

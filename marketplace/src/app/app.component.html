@@ -3,14 +3,14 @@
     <div class="intro-box">
       @if (introSlug() === 'ethsrocks') {
         <h2>EthsRocks</h2>
-        <p>EthsRocks are live, and the first collection we brought to our auction house and market, forked from Chopperdad. So far, so good.</p>
+        <p>EthsRocks are live, and the first collection we brought to our auction house and market, forked from Chopperdad.</p>
         <p>Most of the 100 normal EthsRocks were airdropped to 77 unique wallets that never sold or listed their Missing Phunks or DystoPhunks under 0.67 ETH, with some receiving two, and are now in their holders' hands. The rest went to test our auction house, with a total of 8 that went to auction at zero reserve.</p>
         <p>We hold 6 infinity stones, to be distributed at a later time.</p>
       } @else if (introSlug() === 'og-missing-phunks' || introSlug() === 'og-dysto-phunks') {
         <h2>{{ introSlug() === 'og-missing-phunks' ? 'Missing Phunks' : 'DystoPhunks' }}</h2>
-        <p>These trade on the EtherPhunks market, so listings and sales run there, with funds escrowed in their contract.</p>
-        <p>EtherPhunks has no bidding, so bids run through our marketplace contract instead. Your bid ETH is locked and stored safely on our contract, and you can withdraw it anytime before it's accepted.</p>
-        <p>To accept a bid, the owner first withdraws the item from EtherPhunks escrow, then accepts it here. You confirm after a short cooldown to complete the purchase.</p>
+        <p>These trade on the <a href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks market</a>, so listings and sales run there, with funds escrowed in their contract.</p>
+        <p><a href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks</a> has no bidding, so bids run through our marketplace contract instead. Your bid ETH is locked and stored safely on our contract, and you can withdraw it anytime before it's accepted.</p>
+        <p>To accept a bid, the owner first withdraws the item from <a href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks</a> escrow, then accepts it here. You confirm after a short cooldown to complete the purchase.</p>
       } @else if (introSlug() === 'auction' || introSlug() === 'auction2') {
         <h2>QuantumPhunks Auction House</h2>
         <p>Forked from Chopperdad and upgraded.</p>
@@ -23,6 +23,7 @@
       <p>Made by DystoLabz, aka <a href="https://x.com/ArkanaRuzain" target="_blank" rel="noopener noreferrer">&#64;ArkanaRuzain</a> and me.</p>
       <p>Questions? Reach out to <a href="https://x.com/Vvverttt" target="_blank" rel="noopener noreferrer">&#64;Vvverttt</a> on X.</p>
       <button type="button" (click)="dismissIntro()">Enter</button>
+      <p class="popup-version">v{{ env.version }}</p>
     </div>
   </div>
 }

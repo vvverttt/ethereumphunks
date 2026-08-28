@@ -328,3 +328,16 @@ section {
     background-color: rgba(var(--background), 1);
   }
 }
+
+// Build stamp under the CTA, matching the intro popup. Rendered in both states of
+// this popup (pre-launch "Got it" and live "Enter").
+.popup-version {
+  margin: 1.4rem 0 0;
+  font-family: var(--secondary-font-stack);
+  font-size: 1rem;
+  letter-spacing: .05rem;
+  text-align: center;
+  // Explicit black rather than a theme token — opacity would wash it out against
+  // the popup's light panel.
+  color: rgba(0, 0, 0, 1);
+}
