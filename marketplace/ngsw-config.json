@@ -30,14 +30,15 @@
   ],
   "dataGroups": [
     {
-      "name": "supabase-storage",
+      "name": "collection-images",
       "urls": [
-        "https://kfnprbhoodmgfhqojmqp.supabase.co/storage/**"
+        "https://kfnprbhoodmgfhqojmqp.supabase.co/storage/**",
+        "https://img.quantumphunks.com/**"
       ],
       "cacheConfig": {
         "strategy": "performance",
-        "maxSize": 50,
-        "maxAge": "30d"
+        "maxSize": 12000,
+        "maxAge": "365d"
       }
     }
   ]
