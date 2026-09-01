@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const PHUNKQUIDITY = '0x7f5763D56c7E8c34eB125DbD19124945D77e5f1A';
 const SUPABASE_URL = 'https://kfnprbhoodmgfhqojmqp.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbnByYmhvb2RtZ2ZocW9qbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTM1NTYsImV4cCI6MjA4OTQ4OTU1Nn0.jum-NTWlLJnxmbxe9foylgrEMhGrhn34IPxd4aiyTSE';
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe');
 
 // Ethscription-only collections (ERC721s don't need merkle roots)
 const ETHSC_COLLECTIONS: { slugStr: string; contractSlug: string }[] = [

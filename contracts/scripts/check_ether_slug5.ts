@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(
   'https://kfnprbhoodmgfhqojmqp.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbnByYmhvb2RtZ2ZocW9qbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTM1NTYsImV4cCI6MjA4OTQ4OTU1Nn0.jum-NTWlLJnxmbxe9foylgrEMhGrhn34IPxd4aiyTSE'
+  (process.env.SUPABASE_KEY || 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe')
 );
 async function main() {
   const tables = ['ethscriptions', 'ethscriptions_mainnet', 'phunks', 'etherphunks', 'og_phunks', 'collections'];

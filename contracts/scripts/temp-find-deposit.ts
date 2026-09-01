@@ -19,7 +19,7 @@ async function main() {
   // Check ethscription storage for each address against OG items
   // Fetch OG hashIds from Supabase
   const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY';
+  const SUPABASE_KEY = (process.env.SUPABASE_KEY || '');
 
   // Get items owned by contract (deposited for swap)
   const url = new URL(`${SUPABASE_URL}/rest/v1/ethscriptions`);

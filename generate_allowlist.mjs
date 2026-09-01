@@ -1,7 +1,7 @@
 // Generate allowlist: wallets that own at least 1 OG Missing Phunk, OG DystoPhunk, or mutated version
 // Minus wallets blocked for listing/selling under 1.67 ETH
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY';
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || '');
 
 const MARKET_ADDRESS = '0xa48a43186612b179c0bc68ea34b4932549a70bfa';
 

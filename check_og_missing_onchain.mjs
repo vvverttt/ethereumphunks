@@ -3,7 +3,7 @@ import { mainnet } from 'viem/chains';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://kfnprbhoodmgfhqojmqp.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbnByYmhvb2RtZ2ZocW9qbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTM1NTYsImV4cCI6MjA4OTQ4OTU1Nn0.jum-NTWlLJnxmbxe9foylgrEMhGrhn34IPxd4aiyTSE';
+const supabaseKey = (process.env.SUPABASE_KEY || 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe');
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const TARGET = '0xc33f8610941be56fb0d84e25894c0d928cc97dde';

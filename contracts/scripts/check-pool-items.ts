@@ -4,7 +4,7 @@ const LOTTERY1 = '0x29b0d38112e8e743b63eb463f3351ab0f1e15977';
 const LOTTERY2 = '0x298771ecc338de242ada11e49e2b8224c33bf620';
 
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY';
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || '');
 
 async function checkPool(contract: any, label: string) {
   const poolSize = await contract.poolSize();

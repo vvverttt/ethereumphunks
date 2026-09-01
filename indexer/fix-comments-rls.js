@@ -12,7 +12,7 @@ var { createClient } = require("@supabase/supabase-js");
 
 var SUPABASE_URL = "https://hzpwkpjxhtpcygrwtwku.supabase.co";
 var SERVICE_KEY = "REDACTED_SUPABASE_SERVICE_ROLE";
-var ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY";
+var ANON_KEY = (process.env.SUPABASE_KEY || '');
 
 var serviceClient = createClient(SUPABASE_URL, SERVICE_KEY);
 var anonClient = createClient(SUPABASE_URL, ANON_KEY);

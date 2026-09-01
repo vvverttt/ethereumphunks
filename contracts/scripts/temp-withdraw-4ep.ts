@@ -11,7 +11,7 @@ async function main() {
   ];
 
   // Get full hashes from Supabase
-  const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjYnV5Y2JoeW5sbXNydm9lZ3pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODkyMTMzNTQsImV4cCI6MjAwNDc4OTM1NH0.jUvNzW6jrBPfKg9SvDhW5auqF8y_DKo4tmAmXCwgHAY';
+  const KEY = (process.env.SUPABASE_KEY || '');
   const contract_addr = '0x6a85c501b16e8c7be34eea409dab590a5b037cb8';
 
   const res = await fetch(`https://kcbuycbhynlmsrvoegzp.supabase.co/rest/v1/ethscriptions?select=hashId,tokenId&slug=eq.ethereum-phunks&owner=eq.${contract_addr}&limit=20`, {

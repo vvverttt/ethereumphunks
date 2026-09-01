@@ -3,7 +3,7 @@ import hre, { upgrades } from 'hardhat';
 const proxyAddress = '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8';
 const DEPOSITOR = '0x78d3AAf8E3cd4B350635C79b7021Bd76144c582C';
 
-const EPKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjYnV5Y2JoeW5sbXNydm9lZ3pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODkyMTMzNTQsImV4cCI6MjAwNDc4OTM1NH0.jUvNzW6jrBPfKg9SvDhW5auqF8y_DKo4tmAmXCwgHAY';
+const EPKEY = (process.env.SUPABASE_KEY || '');
 
 async function main() {
   const [signer] = await hre.ethers.getSigners();

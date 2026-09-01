@@ -11,7 +11,7 @@ import * as path from 'path';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SUPABASE_URL = 'https://kfnprbhoodmgfhqojmqp.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbnByYmhvb2RtZ2ZocW9qbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTM1NTYsImV4cCI6MjA4OTQ4OTU1Nn0.jum-NTWlLJnxmbxe9foylgrEMhGrhn34IPxd4aiyTSE';
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe');
 const OUT_FILE     = path.resolve(__dirname, './owners.json');
 
 const SLUGS = ['cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67'];

@@ -16,7 +16,7 @@ import { keccak256, encodePacked } from 'viem';
 import * as fs from 'fs';
 
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY';
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || '');
 
 // Collection slugs
 const MISSING_PHUNK_SLUGS = ['og-missing-phunks', 'missing-phunks', 'quantummissingphunksv67'];

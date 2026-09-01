@@ -2,7 +2,7 @@ import hre from 'hardhat';
 
 const proxyAddress = '0x6A85c501B16E8c7bE34Eea409dAb590A5B037CB8';
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cHdrcGp4aHRwY3lncnd0d2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwNDMsImV4cCI6MjA4NTg5MDA0M30.BxG4LrAQOckVGBtAMtPUP4qnEpN-ZvTdRy53LEzbWyY';
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || '');
 
 async function query(table: string, params: Record<string, string>) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
