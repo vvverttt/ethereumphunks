@@ -78,7 +78,7 @@
             },
             "sepolia": {
               "outputPath": {
-                "base": "dist/etherphunks-market-sepolia_aug27"
+                "base": "dist/etherphunks-market-sepolia_aug31"
               },
               "budgets": [
                 {
@@ -106,7 +106,7 @@
             },
             "mainnet": {
               "outputPath": {
-                "base": "dist/etherphunks-market-mainnet_aug27"
+                "base": "dist/etherphunks-market-mainnet_aug31"
               },
               "budgets": [
                 {
@@ -152,6 +152,34 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.mainnet.ts"
+                }
+              ],
+              "index": {
+                "input": "src/index.mainnet.html",
+                "output": "index.html"
+              },
+              "outputHashing": "all"
+            },
+            "mainnet-ipfs": {
+              "outputPath": {
+                "base": "dist/etherphunks-market-ipfs"
+              },
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "10mb",
+                  "maximumError": "50mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "10mb",
+                  "maximumError": "50mb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.mainnet-ipfs.ts"
                 }
               ],
               "index": {

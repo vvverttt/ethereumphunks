@@ -13,6 +13,7 @@
     "build:sepolia": "yarn prebuild && ng build --configuration sepolia && node copy-to-fixed.js sepolia",
     "build:mainnet": "yarn prebuild && ng build --configuration mainnet && node copy-to-fixed.js mainnet",
     "build:production": "ng build --configuration production",
+    "build:ipfs": "yarn prebuild && ng build --configuration mainnet-ipfs && node bundle-static-assets.mjs dist/etherphunks-market-ipfs/browser",
     "test": "ng test",
     "run-built": "http-server dist/etherphunks-market -p 8000",
     "translate": "ng extract-i18n --output-path src/locale",

@@ -33,7 +33,9 @@
       "name": "collection-images",
       "urls": [
         "https://kfnprbhoodmgfhqojmqp.supabase.co/storage/**",
-        "https://img.quantumphunks.com/**"
+        "https://img.quantumphunks.com/**",
+        "/static/images/**",
+        "/data/*_attributes.json"
       ],
       "cacheConfig": {
         "strategy": "performance",
