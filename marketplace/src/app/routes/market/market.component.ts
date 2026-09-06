@@ -155,6 +155,11 @@ export class MarketComponent {
   );
 
   ceil = Math.ceil;
+  /** Only consulted below 900px; above that the rail is always shown by CSS.
+   *  Defaults open to match desktop — the rail is capped at 50vh and scrolls
+   *  there, so it no longer buries the grid. The toggle just lets it be hidden. */
+  mobileFiltersOpen = true;
+
   objectKeys = Object.keys;
   readonly isErc721c = isErc721c; // ERC-721C collections (v67) are approval-based — no escrow/withdraw
   objectValues = Object.values;

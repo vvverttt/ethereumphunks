@@ -154,7 +154,16 @@
 
           <div class="market-body">
 
-          <aside class="filter-wrapper">
+          <!-- Small screens only (CSS-hidden above 900px), where the rail stacks
+               above the grid and starts collapsed. -->
+          <button
+            type="button"
+            class="mobile-filters-toggle"
+            (click)="mobileFiltersOpen = !mobileFiltersOpen">
+            {{ mobileFiltersOpen ? 'Hide' : 'Show' }} Filters
+          </button>
+
+          <aside class="filter-wrapper" [class.mobile-hidden]="!mobileFiltersOpen">
             <app-market-filters [slug]="(activeCollection$ | async)?.slug" />
           </aside>
 

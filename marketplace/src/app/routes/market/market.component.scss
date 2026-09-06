@@ -362,19 +362,53 @@
   flex-shrink: 0;
 }
 
-// Below tablet the rail would leave too little room for tiles — stack it above
-// the grid and let it scroll with the page instead of sticking.
+// Toggle is desktop-hidden; the rail is always open there.
+.mobile-filters-toggle {
+  display: none;
+}
+
+// Below tablet the rail would leave too little room for tiles, so it stacks —
+// and it starts collapsed, because ~28 trait groups would otherwise bury the
+// grid under a screen and a half of accordion.
 @media (max-width: 900px) {
   .market-body {
     flex-direction: column;
   }
 
+  .mobile-filters-toggle {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 1.2rem;
+
+    font-family: var(--secondary-font-stack);
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    background-color: rgba(var(--highlight), 1);
+    color: rgba(var(--background), 1);
+    border: none;
+  }
+
+  .filter-wrapper.mobile-hidden {
+    display: none;
+  }
+
   .filter-wrapper {
     width: 100%;
 
+    // Bounded AND scrollable — the two must go together. A max-height on its own
+    // (what was here before) clips the box while the content keeps rendering, so
+    // ~28 trait groups spilled straight over the grid. On desktop the rail stays
+    // unbounded and unscrolled; this applies only at phone/tablet sizes, where
+    // letting it run full height would bury the phunks under a screen of
+    // accordion.
     app-market-filters {
       position: static;
-      max-height: 40vh;
+      max-height: 50vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
   }
 }
