@@ -23,7 +23,9 @@ section {
     align-items: center;
     justify-content: space-between;
 
-    padding: 0 3rem 2rem;
+    // No side padding — the header must start on the same left edge as the tile
+    // grid below it and as the rest of the page.
+    padding: 0 0 2rem;
 
     h2 {
       padding: 0;
@@ -31,6 +33,15 @@ section {
 
     ng-select {
       width: 20rem;
+    }
+
+    // Takes the slack between the heading and the controls and centres the
+    // stats within it.
+    .events-header-stats {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      min-width: 0;
     }
 
     .events-header-title {
@@ -150,14 +161,22 @@ section {
     }
   }
 
+  // Two rows of eight, flush with the page container. Previously a horizontally
+  // scrolling flex strip whose own 3rem side padding pushed it past the margin
+  // the rest of the page aligns to.
   .events-items {
-    display: flex;
-    overflow-y: auto;
-    grid-gap: 3rem;
-    padding: 0 3rem 2rem;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2rem;
+    padding: 0 0 2rem;
+
+    // Eight tiles only make sense with room for them; step down so the two rows
+    // stay readable rather than shrinking to slivers.
+    @media (max-width: 1100px) { grid-template-columns: repeat(6, 1fr); }
+    @media (max-width: 700px)  { grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+    @media (max-width: 460px)  { grid-template-columns: repeat(3, 1fr); }
 
     scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
 
     &::-webkit-scrollbar {
       display: none;
@@ -167,9 +186,10 @@ section {
   .event-item {
     position: relative;
 
-    min-width: 12rem;
-    width: 12rem;
-    max-width: 12rem;
+    // Track-sized, not fixed — the tiles now flex with the container so the row
+    // ends exactly on the margin at any width.
+    min-width: 0;
+    width: 100%;
 
     text-decoration: none;
     color: rgba(var(--text-color), 1);
@@ -414,7 +434,7 @@ section {
     .events-header {
       flex-direction: column;
       align-items: flex-start;
-      padding: 0 2rem 2rem;
+      padding: 0 0 2rem;
 
       h2 {
         font-size: 2rem;

@@ -6,6 +6,14 @@
       <h2>{{ t('recentActivity') }}</h2>
     </div>
 
+    <!-- Own flex child between the title and the controls so it sits centred in
+         the row rather than hanging off the heading. -->
+    @if (collection(); as col) {
+      <div class="events-header-stats">
+        <app-collection-stat-bar [slug]="col.slug" [variant]="'header'" />
+      </div>
+    }
+
     <div class="events-header-controls">
       @if (collection()) {
         @if (isErc721()) {
@@ -53,7 +61,7 @@
     class="events-items">
 
     @for (
-      event of events$ | async;
+      event of (events$ | async) | slice:0:16;
       track (event.hashId + '-' + event.type + '-' + event.from + '-' + event.tokenId + '-' + idx);
       let idx = $index
     ) {
@@ -157,7 +165,7 @@
         </div>
       </a>
     } @empty {
-      @for (i of [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]; track idx; let idx = $index) {
+      @for (i of [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]; track idx; let idx = $index) {
         <span class="event-item">
           <div class="image-wrapper placeholder">
             <img
@@ -171,13 +179,5 @@
       }
     }
 
-    @if (hasMore$ | async) {
-      <button
-        class="event-item view-more"
-        (click)="paginateEvents()">
-
-        {{ t('viewMore') }}
-      </button>
-    }
   </div>
 </section>

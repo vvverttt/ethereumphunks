@@ -137,8 +137,16 @@ export type TxFunction =
   | 'devolvePhunk'
   | 'freeClaim';
 
+/**
+ * Active trait filters.
+ *
+ * A value may be a single string (one value selected for that trait) or an array
+ * (several selected — matched as OR within the trait, AND across traits). Arrays
+ * are what the multi-select checkbox panel produces; single strings are kept so
+ * existing preset filters and ?key=value URLs keep working unchanged.
+ */
 export interface TraitFilter {
-  [key: string]: string | null;
+  [key: string]: string | string[] | null;
 }
 
 export interface TxFilterItem {

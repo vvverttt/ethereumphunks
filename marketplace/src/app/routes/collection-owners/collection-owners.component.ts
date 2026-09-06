@@ -33,9 +33,9 @@ const CONTRACT_NAMES: Record<string, string> = {
 const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'ethsrocks': 'EthsRocks',
   'cryptophunksv67': 'QuantumPhunks',
-  'og-missing-phunks': 'Missing Phunk',
+  'missing-phunks': 'Missing Phunk',
   'quantummissingphunksv67': 'MissingPhunks',
-  'og-dysto-phunks': 'DystoPhunks',
+  'dysto-phunks': 'DystoPhunks',
   'quantumdystophunkzv67': 'DystoPhunkz',
 };
 

@@ -102,11 +102,22 @@ export class ThemeService {
     this.document.body.dataset['theme'] = theme;
     localStorage.setItem('EtherPhunks_theme', theme);
 
-    // Update iOS Safari status bar color to match --base-color
+    // Update the browser chrome / iOS status bar colour to match --base-color.
+    //
+    // The meta element is REPLACED rather than mutated. Safari on iOS reads
+    // theme-color when the tag is parsed and frequently ignores a later
+    // setAttribute on the same node — which is why switching from QuantumPhunks
+    // to Phikings on iPhone/iPad left the top of the screen showing the previous
+    // collection's blue. Removing and re-appending makes it re-read.
     const baseColor = themeStyles['--base-color' as keyof ThemeProperties];
     if (baseColor) {
       const hex = '#' + baseColor.split(',').map(c => (+c.trim()).toString(16).padStart(2, '0')).join('');
-      this.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex);
+      // Clear every existing one first: a stale duplicate would win unpredictably.
+      this.document.querySelectorAll('meta[name="theme-color"]').forEach((el) => el.remove());
+      const meta = this.document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      meta.setAttribute('content', hex);
+      this.document.head.appendChild(meta);
     }
 
     // On mobile, reload only when user actually switches theme (not on initial load)

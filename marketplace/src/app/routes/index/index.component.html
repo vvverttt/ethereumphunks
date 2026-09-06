@@ -16,13 +16,15 @@
           <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings()">Got it</button>
           <p class="popup-version">v{{ env.version }}</p>
         } @else {
-          <!-- Live: Phikings sell via per-item buy-now on their /details pages (NOT market listings),
-               so "Enter" sends buyers to the full grid to browse and click into any one. -->
+          <!-- Live: 59 Phikings carry active listings, so "Enter" drops buyers straight
+               onto the listings grid where everything for sale is priced and buyable.
+               (Previously pointed at /all, from when they sold only via per-item
+               buy-now on their /details pages.) -->
           <p class="phikings-popup-title">IT&rsquo;S LIVE</p>
           <p class="phikings-popup-sub">Phikings are live. Grab one on the market.</p>
           <a
             class="phikings-popup-cta"
-            [routerLink]="['/phikings', 'market', 'all']"
+            [routerLink]="['/phikings', 'market', 'listings']"
             (click)="dismissPhikings()">Enter</a>
           <p class="popup-version">v{{ env.version }}</p>
         }
@@ -58,10 +60,12 @@
     <div class="sections-wrapper">
 
       <section class="overview">
-        <app-recent-activity
-          [collection]="activeCollection"
-          [ogCollection]="ogCollection$ | async"
-        />
+        <div class="inner">
+          <app-recent-activity
+            [collection]="activeCollection"
+            [ogCollection]="ogCollection$ | async"
+          />
+        </div>
       </section>
 
       @defer {
@@ -179,6 +183,29 @@
                 />
               }
             }
+          </div>
+        </section>
+
+        <section class="sales">
+          <div class="inner">
+            <h3>Sales</h3>
+
+            <div class="section-stats-wrapper">
+              <p>
+                <a
+                  class="highlight"
+                  [routerLink]="['sales']"
+                  [relativeTo]="route">
+
+                  View all {{ activeCollection.name }} sales.
+                </a>
+              </p>
+            </div>
+
+            <app-collection-sales
+              [slug]="activeCollection.slug"
+              [limit]="(isMobile$ | async) ? 56 : 110"
+            />
           </div>
         </section>
 

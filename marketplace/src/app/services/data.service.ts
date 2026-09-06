@@ -16,7 +16,7 @@ import { AttributeItem } from '@/models/attributes';
 
 import { RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
-import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, tap, shareReplay, timeout } from 'rxjs';
+import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { isErc721c } from '@/constants/erc721c';
@@ -105,7 +105,10 @@ export class DataService {
     ]).pipe(
       map(([config, walletAddress]) => {
         if (!config) return null;
-        if (localStorage.getItem('admin_preview') === 'true' && isAdminWallet(walletAddress)) {
+        // `forceAdminPreview` is set ONLY in the dev-* environment files, so this is
+        // unreachable in any production build — see environment.dev-mainnet.ts.
+        const devPreview = !!(environment as any).forceAdminPreview;
+        if (devPreview || (localStorage.getItem('admin_preview') === 'true' && isAdminWallet(walletAddress))) {
           config.maintenance = false;
           config.showMutate = true;
           config.showDevolve = true;
@@ -181,10 +184,39 @@ export class DataService {
    * Fetches attributes for a collection from the static URL
    * @param slug Collection slug
    */
+  /**
+   * Storage filename for a collection's attributes.
+   *
+   * Normally `{slug}_attributes.json`. These two keep their pre-rename filenames:
+   * the slugs became missing-phunks / dysto-phunks, but renaming the objects in
+   * Storage needs a working service key (the one in indexer/.env is stale) and a
+   * SQL rename of storage.objects moves only the metadata, not the bytes —
+   * tried it, both files 404'd with NoSuchKey until rolled back.
+   *
+   * Delete these two entries once the files are re-uploaded under the new names.
+   */
+  private static readonly ATTRIBUTE_FILE_OVERRIDES: Record<string, string> = {
+    'missing-phunks': 'og-missing-phunks',
+    'dysto-phunks': 'og-dysto-phunks',
+  };
+
+  private attributesFileName(slug: string): string {
+    return `${DataService.ATTRIBUTE_FILE_OVERRIDES[slug] ?? slug}_attributes.json`;
+  }
+
   fetchAttributes(slug: string): Observable<AttributeItem> {
-    return this.http.get<AttributeItem>(`${environment.staticUrl}/data/${slug}_attributes.json`).pipe(
+    return this.http.get<AttributeItem>(`${environment.staticUrl}/data/${this.attributesFileName(slug)}`).pipe(
       switchMap((res: AttributeItem) => from(this.cacheAttributes(slug, res))),
       tap((res: AttributeItem) => this.createFilters(slug, res)),
+      // Traits are decoration; the collection must still render without them.
+      // Without this, a missing or renamed attributes file errors the observable
+      // and every consumer dies with it — fetchMarketData pipes through
+      // addAttributes, so the grid, listings and sales sections all vanish and
+      // the page looks broken rather than merely untagged.
+      catchError((err) => {
+        console.warn(`attributes unavailable for "${slug}" — rendering without traits`, err?.status ?? err);
+        return of({} as AttributeItem);
+      }),
     );
   }
 
@@ -206,7 +238,7 @@ export class DataService {
   /** ETag (falling back to length) of the remote attributes file, or null if unreachable. */
   private async attributesEtag(slug: string): Promise<string | null> {
     try {
-      const res = await fetch(`${environment.staticUrl}/data/${slug}_attributes.json`, { method: 'HEAD' });
+      const res = await fetch(`${environment.staticUrl}/data/${this.attributesFileName(slug)}`, { method: 'HEAD' });
       if (!res.ok) return null;
       return res.headers.get('etag') || res.headers.get('content-length');
     } catch { return null; }
@@ -546,6 +578,12 @@ export class DataService {
    * Watches for changes to ethscriptions by slug
    * @param slug Collection slug
    */
+  /** Public handle on the per-collection realtime channel, for components that
+   *  need to refresh when a collection's rows change (e.g. the sales feed). */
+  watchCollection(slug: string): Observable<void> {
+    return this.watchEthscriptionsBySlug(slug);
+  }
+
   private ethscriptionChannels = new Map<string, Observable<void>>();
   private watchEthscriptionsBySlug(slug: string) {
     if (!this.ethscriptionChannels.has(slug)) {
@@ -1214,6 +1252,91 @@ export class DataService {
    * @param slug Collection slug
    * @param days Number of days to fetch stats for
    */
+  /**
+   * Headline numbers for a collection: floor, listed, sales, volume, supply.
+   *
+   * Floor/listed deliberately avoid fetch_ethscriptions_with_listings_and_bids —
+   * that pulls every item in the collection (8,919 rows for v67) which is far too
+   * heavy for something rendered in the header on every page. The listings table
+   * holds ~115 rows across ALL collections, so pulling it whole and resolving
+   * those hashIds to slugs is two small queries (~300ms) regardless of collection
+   * size. Volume and sale count come from the existing get_total_volume RPC.
+   */
+  private statSummaryCache = new Map<string, { data: Observable<any>; timestamp: number }>();
+  fetchCollectionStatSummary(slug: string): Observable<{
+    floor: number | null; listed: number; sales: number; volume: number; supply: number;
+  }> {
+    if (!slug) return of({ floor: null, listed: 0, sales: 0, volume: 0, supply: 0 });
+
+    const cached = this.statSummaryCache.get(slug);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) return cached.data;
+
+    // Sales/volume come from get_total_volume, which is now the single definition
+    // of a sale across the whole app.
+    //
+    // This was briefly computed client-side because that RPC double-counted:
+    // it matched `PhunkBought OR (transfer AND value != 0)` as separate rows,
+    // and one marketplace sale emits BOTH (missing-phunks reported 344 sales
+    // at ~2x the real volume). The 2026-09-05 migration dedupes on
+    // (txHash, hashId) and adds BidAccepted / AuctionSettled, so the RPC is
+    // authoritative again — and unlike the client it can also see OTC sales
+    // (a paid transfer with no marketplace event), which needs txHash to
+    // identify and fetch_events does not return.
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 100000);
+
+    const volume$ = from(supabase.rpc(
+      `get_total_volume${this.suffix}`,
+      { start_date: startDate, end_date: endDate, slug_filter: slug },
+    )).pipe(
+      map((res: any) => ({
+        sales: Number(res?.data?.[0]?.sales ?? 0),
+        volume: Number(res?.data?.[0]?.volume ?? 0),
+      })),
+      catchError(() => of({ sales: 0, volume: 0 })),
+    );
+
+    const listings$ = from(
+      supabase.from('listings' + this.suffix).select('hashId,minValue,listed').eq('listed', true),
+    ).pipe(
+      switchMap(async (res: any) => {
+        const rows = (res.data ?? []) as { hashId: string; minValue: string }[];
+        if (!rows.length) return { floor: null as number | null, listed: 0 };
+        const { data: eths } = await supabase
+          .from('ethscriptions' + this.suffix)
+          .select('hashId')
+          .eq('slug', slug)
+          .in('hashId', rows.map((r) => r.hashId));
+        const mine = new Set((eths ?? []).map((e: any) => e.hashId));
+        const values = rows.filter((r) => mine.has(r.hashId)).map((r) => Number(r.minValue));
+        return {
+          floor: values.length ? Math.min(...values) / 1e18 : null,
+          listed: values.length,
+        };
+      }),
+    );
+
+    const collection$ = from(
+      supabase.from('collections' + this.suffix).select('supply').eq('slug', slug).limit(1),
+    ).pipe(map((res: any) => Number(res.data?.[0]?.supply ?? 0)));
+
+    const result$ = forkJoin([volume$, listings$, collection$]).pipe(
+      map(([vol, listing, supply]: any) => ({
+        floor: listing.floor,
+        listed: listing.listed,
+        sales: vol.sales,
+        volume: vol.volume,
+        supply,
+      })),
+      catchError(() => of({ floor: null, listed: 0, sales: 0, volume: 0, supply: 0 })),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+
+    this.statSummaryCache.set(slug, { data: result$, timestamp: Date.now() });
+    return result$;
+  }
+
   fetchStats(slug: string, days: number = 1000): Observable<any> {
     const endDate = new Date();
     const startDate = new Date();

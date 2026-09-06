@@ -11,6 +11,18 @@
   background-color: rgba(var(--base-color), 1);
 }
 
+// The four ethscription collections keep the original lime button. Only the
+// background is set here — the pink drop-shadow and black text come from the
+// base rule and are deliberately left alone.
+:host-context([data-collection='missing-phunks']),
+:host-context([data-collection='dysto-phunks']),
+:host-context([data-collection='ethsrocks']),
+:host-context([data-collection='phikings']) {
+  .curated-wrapper .curated-button {
+    background-color: #c3ff00;
+  }
+}
+
 .curated-wrapper {
   position: relative;
   z-index: 1;

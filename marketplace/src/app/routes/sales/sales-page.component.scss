@@ -1,0 +1,60 @@
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
+
+:host {
+  display: block;
+  padding-top: calc(var(--header-height) + 4rem);
+}
+
+// Match the market route: the tile grid earns the full viewport on widescreen
+// rather than sitting inside the site-wide --max-width measure.
+:host .inner {
+  @media (min-width: 1441px) {
+    max-width: 100%;
+    padding: 0 4rem;
+  }
+}
+
+.header-wrapper {
+  margin-bottom: 4rem;
+
+  > a.button {
+    display: inline-block;
+    background: none;
+    padding: 0;
+    margin-bottom: 1rem;
+
+    font-family: var(--secondary-font-stack);
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    color: rgba(var(--highlight), 1);
+    text-decoration: none;
+  }
+
+  h1 {
+    font-size: 4.8rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .count {
+    padding-top: 1rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: rgba(var(--text-color), .7);
+  }
+}
+
+.no-sales {
+  padding: 4rem 0;
+  font-size: 1.6rem;
+  color: rgba(var(--text-color), .5);
+}
+
+// The grid is fed sale events dressed as listings, so PhunkGridComponent paints
+// its tiles with --listed-color. Repaint them gold here so the page reads as
+// sales rather than active listings.
+:host ::ng-deep app-phunk-grid .item .image-wrapper,
+:host ::ng-deep app-phunk-grid .item.listing .image-wrapper {
+  background-color: $sale-gold;
+}

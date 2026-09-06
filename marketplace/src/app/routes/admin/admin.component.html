@@ -412,11 +412,11 @@
 
         <div class="action-group">
           <h3>Collections</h3>
-          <button class="pause-toggle" [class.paused]="isSlugHidden('og-missing-phunks')" (click)="toggleSlug('og-missing-phunks')" [disabled]="txPending()">
-            OG Missing Phunks: {{ isSlugHidden('og-missing-phunks') ? 'HIDDEN' : 'VISIBLE' }}
+          <button class="pause-toggle" [class.paused]="isSlugHidden('missing-phunks')" (click)="toggleSlug('missing-phunks')" [disabled]="txPending()">
+            Missing Phunks: {{ isSlugHidden('missing-phunks') ? 'HIDDEN' : 'VISIBLE' }}
           </button>
-          <button class="pause-toggle" [class.paused]="isSlugHidden('og-dysto-phunks')" (click)="toggleSlug('og-dysto-phunks')" [disabled]="txPending()">
-            OG DystoPhunks: {{ isSlugHidden('og-dysto-phunks') ? 'HIDDEN' : 'VISIBLE' }}
+          <button class="pause-toggle" [class.paused]="isSlugHidden('dysto-phunks')" (click)="toggleSlug('dysto-phunks')" [disabled]="txPending()">
+            DystoPhunks: {{ isSlugHidden('dysto-phunks') ? 'HIDDEN' : 'VISIBLE' }}
           </button>
           <button class="pause-toggle" [class.paused]="isSlugHidden('quantummissingphunksv67')" (click)="toggleSlug('quantummissingphunksv67')" [disabled]="txPending()">
             Quantum Missing: {{ isSlugHidden('quantummissingphunksv67') ? 'HIDDEN' : 'VISIBLE' }}

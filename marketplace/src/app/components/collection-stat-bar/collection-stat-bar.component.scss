@@ -1,0 +1,54 @@
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// Five figures need real width. Rather than wrap or ellipsize on small screens,
+// the bar is simply not rendered — the same numbers live on the collection page.
+@media (max-width: 1200px) {
+  :host { display: none; }
+}
+
+.stat-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+
+  .stat {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    white-space: nowrap;
+
+    .label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      opacity: .65;
+    }
+
+    .value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  // Roomier treatment when it sits in a page section rather than the header bar.
+  &.section {
+    gap: 2.6rem;
+
+    .stat {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .2rem;
+
+      .label { font-size: 1.1rem; }
+      .value { font-size: 1.8rem; }
+    }
+  }
+}

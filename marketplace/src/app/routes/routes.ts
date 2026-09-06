@@ -84,6 +84,26 @@ export const routes: Routes = [
     canActivate: [hiddenSlugGuard],
     loadComponent: () => import('@/routes/index/index.component').then(mod => mod.IndexComponent)
   },
+  // Legacy slug redirects. These collections were renamed (og-missing-phunks ->
+  // missing-phunks, og-dysto-phunks -> dysto-phunks); every link shared before
+  // that rename still points at the old path. Must sit ABOVE the :slug routes,
+  // or the catch-all matches first and renders a collection that no longer exists.
+  { path: 'og-missing-phunks', redirectTo: 'missing-phunks', pathMatch: 'full' },
+  { path: 'og-dysto-phunks', redirectTo: 'dysto-phunks', pathMatch: 'full' },
+  { path: 'og-missing-phunks/sales', redirectTo: 'missing-phunks/sales', pathMatch: 'full' },
+  { path: 'og-dysto-phunks/sales', redirectTo: 'dysto-phunks/sales', pathMatch: 'full' },
+  { path: 'og-missing-phunks/market/:marketType', redirectTo: 'missing-phunks/market/:marketType', pathMatch: 'full' },
+  { path: 'og-dysto-phunks/market/:marketType', redirectTo: 'dysto-phunks/market/:marketType', pathMatch: 'full' },
+  { path: 'curated/og-missing-phunks', redirectTo: 'missing-phunks', pathMatch: 'full' },
+  { path: 'curated/og-dysto-phunks', redirectTo: 'dysto-phunks', pathMatch: 'full' },
+  { path: 'curated/og-missing-phunks/market/:marketType', redirectTo: 'missing-phunks/market/:marketType', pathMatch: 'full' },
+  { path: 'curated/og-dysto-phunks/market/:marketType', redirectTo: 'dysto-phunks/market/:marketType', pathMatch: 'full' },
+
+  {
+    path: ':slug/sales',
+    canActivate: [hiddenSlugGuard],
+    loadComponent: () => import('@/routes/sales/sales-page.component').then(mod => mod.SalesPageComponent)
+  },
   {
     path: ':slug/market/:marketType',
     canActivate: [hiddenSlugGuard],

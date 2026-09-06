@@ -6,8 +6,8 @@
         <p>EthsRocks are live, and the first collection we brought to our auction house and market, forked from Chopperdad.</p>
         <p>Most of the 100 normal EthsRocks were airdropped to 77 unique wallets that never sold or listed their Missing Phunks or DystoPhunks under 0.67 ETH, with some receiving two, and are now in their holders' hands. The rest went to test our auction house, with a total of 8 that went to auction at zero reserve.</p>
         <p>We hold 6 infinity stones, to be distributed at a later time.</p>
-      } @else if (introSlug() === 'og-missing-phunks' || introSlug() === 'og-dysto-phunks') {
-        <h2>{{ introSlug() === 'og-missing-phunks' ? 'Missing Phunks' : 'DystoPhunks' }}</h2>
+      } @else if (introSlug() === 'missing-phunks' || introSlug() === 'dysto-phunks') {
+        <h2>{{ introSlug() === 'missing-phunks' ? 'Missing Phunks' : 'DystoPhunks' }}</h2>
         <p>These trade on the <a href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks market</a>, so listings and sales run there, with funds escrowed in their contract.</p>
         <p><a href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks</a> has no bidding, so bids run through our marketplace contract instead. Your bid ETH is locked and stored safely on our contract, and you can withdraw it anytime before it's accepted.</p>
         <p>To accept a bid, the owner first withdraws the item from <a href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks</a> escrow, then accepts it here. You confirm after a short cooldown to complete the purchase.</p>
@@ -17,8 +17,8 @@
         <p>Phikings are now live. Acquire them through our Auction House at a 0.367 ETH reserve to start the auction, or at a cheaper Buy Now price for EthsRocks and Missing/Dysto holders before the first bid. Once bidding starts, Buy Now closes for that item.</p>
       } @else {
         <h2>Viewing Only</h2>
-        <p style="text-align: center;">The site's been updated. Have a read through the Q&amp;A to see what's new.</p>
-        <p>QuantumPhunks, Quantum Missing Phunks, and Quantum DystoPhunkz are not live yet and are for viewing only. Distributions, mechanics, and price have not been announced.</p>
+        <p style="text-align: center;">Last site update: {{ lastSiteUpdate }}. Scroll down to the Q&amp;A for more info.</p>
+        <p>QuantumPhunks are not live yet and are for viewing only. Nothing has been announced.</p>
       }
       <p>Made by DystoLabz, aka <a href="https://x.com/ArkanaRuzain" target="_blank" rel="noopener noreferrer">&#64;ArkanaRuzain</a> and me.</p>
       <p>Questions? Reach out to <a href="https://x.com/Vvverttt" target="_blank" rel="noopener noreferrer">&#64;Vvverttt</a> on X.</p>

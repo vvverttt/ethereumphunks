@@ -54,9 +54,9 @@ export class OwnersPageComponent implements OnInit {
   }
 
   readonly collectionNames: Record<string, string> = {
-    'cryptophunksv67': 'CryptoPhunksV67',
-    'og-missing-phunks': 'OG Missing Phunks',
-    'og-dysto-phunks': 'OG DystoPhunks',
+    'cryptophunksv67': 'QuantumPhunks',
+    'missing-phunks': 'Missing Phunks',
+    'dysto-phunks': 'DystoPhunks',
     'quantummissingphunksv67': 'Quantum Missing Phunks',
     'quantumdystophunkzv67': 'Quantum DystoPhunkz',
     'ethsrocks': 'EthsRocks',

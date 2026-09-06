@@ -1,0 +1,24 @@
+@if (sales(); as items) {
+  @if (items.length) {
+    <div class="sales-grid">
+      @for (sale of items.slice(0, limit()); track trackSale($index, sale)) {
+        <a
+          class="sale-item"
+          [routerLink]="['/', 'details', sale.hashId]"
+          [title]="'#' + displayId(sale)">
+
+          <div class="image-wrapper">
+            <img
+              [lazyLoad]="dataSvc.staticUrl + '/static/images/' + sale.sha"
+              [defaultImage]="'assets/loadingphunk.png'"
+              width="120"
+              height="120"
+            />
+          </div>
+        </a>
+      }
+    </div>
+  } @else if (!loading()) {
+    <p class="no-sales">No sales yet.</p>
+  }
+}

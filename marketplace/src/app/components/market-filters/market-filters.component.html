@@ -1,41 +1,57 @@
 @if (activeTraitFilters$ | async; as filters) {
-  @for (key of objectKeys(filterData); track key; let i = $index) {
+
+  <div class="filters-head">
+    <span class="title">{{ t('filters') || 'Filters' }}</span>
+    @if (selectedCount) {
+      <button class="clear-filters" (click)="clearFilters()">
+        {{ t('clearFilters') }} ({{ selectedCount }})
+      </button>
+    }
+  </div>
+
+  @for (key of objectKeys(filterData); track key) {
 
     @if (!(filterData[key][0] | isNumber)) {
-      <div
-        [id]="key"
-        class="filter-group-wrapper">
+      <div [id]="key" class="filter-group" [class.open]="isOpen(key)">
 
-        <ng-select
-          [(ngModel)]="activeTraitFilters[key]"
-          [placeholder]="key"
-          [searchable]="true"
-          [class.active]="filters[key]"
-          (change)="selectFilter($event)">
+        <button class="group-header" [class.has-selection]="countFor(key) > 0" (click)="toggleGroup(key)">
+          <span class="group-name">{{ key | titlecase }}</span>
+          @if (countFor(key); as n) {
+            <span class="group-selected">{{ n }}</span>
+          }
+          <span class="group-count">{{ optionCount(key) }}</span>
+          <span class="chevron"></span>
+        </button>
 
-          @for (item of filterData[key]; track item) {
-            @if (!(item | isNumber)) {
-              <ng-option [value]="item">
-                {{ item.toString() | titlecase }}
-              </ng-option>
-            }
+        @if (isOpen(key)) {
+          @if (searchable(key)) {
+            <input
+              class="group-search"
+              type="text"
+              [placeholder]="'Search ' + optionCount(key) + '...'"
+              [(ngModel)]="groupSearch[key]"
+              (click)="$event.stopPropagation()"
+            />
           }
 
-          <!-- <ng-option [value]="'none'">
-            None
-          </ng-option> -->
-        </ng-select>
+          <div class="group-options">
+            @for (item of visibleOptions(key); track item) {
+              <label class="option" [class.checked]="isChecked(key, item)">
+                <input
+                  type="checkbox"
+                  [checked]="isChecked(key, item)"
+                  (change)="toggleValue(key, item)"
+                />
+                <span class="box"></span>
+                <span class="option-name">{{ item | titlecase }}</span>
+                <span class="option-count">{{ rarityFor(key, item) }}</span>
+              </label>
+            } @empty {
+              <span class="no-match">No match</span>
+            }
+          </div>
+        }
       </div>
     }
-
-  }
-
-  @if (objectKeys(activeTraitFilters).length) {
-    <button
-      class="clear-filters"
-      (click)="clearFilters()">
-
-      {{ t('clearFilters') }}
-    </button>
   }
 }

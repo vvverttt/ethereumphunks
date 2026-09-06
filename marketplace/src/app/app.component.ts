@@ -57,6 +57,14 @@ export class AppComponent implements OnInit {
 
   env = environment;
 
+  /**
+   * Shown in the intro popup. Hardcoded rather than derived from a build
+   * timestamp: this should say when the SITE meaningfully changed, not when a
+   * bundle happened to be rebuilt. Bump it when you ship something worth
+   * telling people about.
+   */
+  readonly lastSiteUpdate = 'September 6, 2026';
+
   chatActive$ = this.store.select(selectChatActive).pipe(map(({ active }) => active));
 
   statusBarVisible = signal(true);
@@ -88,7 +96,7 @@ export class AppComponent implements OnInit {
   // the auction house (auction / auction2).
   private readonly noticeSlugs = new Set([
     'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67', 'ethsrocks',
-    'og-missing-phunks', 'og-dysto-phunks', 'auction', 'auction2',
+    'missing-phunks', 'dysto-phunks', 'auction', 'auction2',
   ]);
 
   // The collection slug that triggered the currently-shown notice.

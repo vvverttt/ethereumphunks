@@ -93,6 +93,26 @@ interface ActionsState {
 })
 export class ItemViewComponent {
 
+  /**
+   * The heading for an item: its real name where the collection gives one
+   * (Phikings 10370 is "Gisli"), otherwise "<singleName> <tokenId>".
+   *
+   * `name` comes from the ethscriptions row itself, so it is present on the
+   * very first paint. An earlier version fetched a names JSON over HTTP, which
+   * made the numbered fallback render first and visibly swap a moment later —
+   * storing it on the row removes that entirely. NULL for every collection that
+   * numbers its items, which falls through to the numbered form.
+   */
+  displayName(phunk: any): string {
+    if (phunk?.name) return phunk.name;
+
+    const single = phunk?.collection?.singleName ?? '';
+    const id = phunk?.tokenId ?? 0;
+    const abs = id < 0 ? -id : id;
+    return `${single} ${phunk?.slug === 'ethsrocks' ? '-' + abs : abs}`;
+  }
+
+
   objectValues = Object.values;
 
   @ViewChild('sellPriceInput') sellPriceInput!: ElementRef<HTMLInputElement>;
@@ -117,7 +137,7 @@ export class ItemViewComponent {
   // Phikings, etc.). NOTE: withdrawing/confirming an EXISTING bid is never gated,
   // so anyone with an open bid can always pull it back, on any collection.
   private readonly bidsEnabledSlugs = new Set([
-    'og-missing-phunks', 'og-dysto-phunks', 'ethsrocks',
+    'missing-phunks', 'dysto-phunks', 'ethsrocks',
   ]);
 
   bidsEnabled(phunk: Phunk | null | undefined): boolean {

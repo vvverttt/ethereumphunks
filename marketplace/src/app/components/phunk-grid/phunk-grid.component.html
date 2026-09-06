@@ -1,11 +1,14 @@
 @if (marketType) {
+  <!-- Track pairs sha with $index: sha alone is not unique for every consumer.
+       The sales view feeds this grid one row per sale, so an item that sold
+       twice repeats its sha, which Angular rejects as a duplicate key (NG0955). -->
 
   @for (
     phunk of phunkData |
     attributeFilter : traitFilters |
     sort: activeSort : marketType |
     slice: 0 : limit;
-    track phunk.sha;
+    track phunk.sha + '-' + $index;
     let i = $index;
   ) {
     <ng-container *ngTemplateOutlet="phunkItem; context:{ $implicit: phunk, index: i }" />
@@ -89,6 +92,7 @@
             [src]="phunk | imageUrlPipe"
             loading="lazy"
             decoding="async"
+            (load)="imgSettled($event)"
             (error)="retryImg($event)"
             width="50"
             height="50"
@@ -108,6 +112,9 @@
                 <p i18n>
                   {{ (listing.minValue | weiToEth) | number : '1.0-5' }}Ξ@if (usd$ | async; as usd) {<br />${{ ((listing.minValue | weiToEth) * usd) | formatCash }}}
                 </p>
+                @if (showDate && listing.createdAt) {
+                  <p class="tile-date">{{ listing.createdAt | timeago : true }}</p>
+                }
               }
             }
 

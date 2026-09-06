@@ -22,13 +22,13 @@ export const environment = {
   lotteryAddress: '0x4C0b9B7b3e290B793474c533C7AC90262bb69971'.toLowerCase(),
   auctionAddress: '',
   oldMarketAddresses: [] as string[],
-  ogSlugs: ['og-missing-phunks', 'og-dysto-phunks'],
+  ogSlugs: ['missing-phunks', 'dysto-phunks'],
   evolveAddress: '',
   evolvePairs: {
-    'og-missing-phunks': 'quantummissingphunksv67',
-    'og-dysto-phunks': 'quantumdystophunkzv67',
-    'quantummissingphunksv67': 'og-missing-phunks',
-    'quantumdystophunkzv67': 'og-dysto-phunks',
+    'missing-phunks': 'quantummissingphunksv67',
+    'dysto-phunks': 'quantumdystophunkzv67',
+    'quantummissingphunksv67': 'missing-phunks',
+    'quantumdystophunkzv67': 'dysto-phunks',
   } as Record<string, string>,
 
   relayUrl: 'https://relay-sepolia.ethereumphunks.com',

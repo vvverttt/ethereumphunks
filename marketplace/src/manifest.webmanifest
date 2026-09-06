@@ -1,7 +1,7 @@
 {
   "name": "QuantumPhunks Market",
   "short_name": "QuantumPhunks",
-  "theme_color": "#C3FF00",
+  "theme_color": "#67CDFF",
   "background_color": "#000000",
   "display": "standalone",
   "scope": "./",

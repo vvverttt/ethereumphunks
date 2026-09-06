@@ -92,12 +92,6 @@ tbody td { padding: .8rem .5rem; }
 .count { font-weight: 700; }
 
 // Obscure contract names for non-ethsrocks collections (hide the flow until release).
-.blurred {
-  filter: blur(5px);
-  user-select: none;
-  pointer-events: none;
-}
-
 @media (max-width: $mobile) {
   .header-wrapper h1 { font-size: 3rem; }
   table { font-size: 1rem; }

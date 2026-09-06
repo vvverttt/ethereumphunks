@@ -93,7 +93,6 @@ export class MarketComponent {
     { label: 'Recently Listed', value: 'recently-listed' },
   ];
   activeSortModel: any = this.sorts[0];
-  filtersVisible: boolean = false;
 
   bulkActionsForm = this.fb.group({
     listingPhunks: this.fb.array([]),
@@ -776,7 +775,6 @@ export class MarketComponent {
       this.selected = {};
       this.deselected = [];
     }
-    this.filtersVisible = false;
   }
 
   clearSelectedAndClose() {
@@ -876,8 +874,4 @@ export class MarketComponent {
     return [validItems, invalidItems];
   }
 
-  toggleFilters() {
-    this.filtersVisible = !this.filtersVisible;
-    this.selectMultipleActive = false;
-  }
 }

@@ -63,3 +63,7 @@ html[data-phunk-font='high-blockscript'] {
   --primary-font-stack: 'High Blockscript', 'Retro Computer', sans-serif;
   --secondary-font-stack: 'High Blockscript', 'Retro Computer', sans-serif;
 }
+
+// Gold for anything representing a completed sale — matches the "bought"
+// colour used in the activity feed so a sale reads the same everywhere.
+$sale-gold: #ffd700;

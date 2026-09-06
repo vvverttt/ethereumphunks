@@ -1,0 +1,31 @@
+<div class="inner">
+
+  <div class="header-wrapper">
+    <a class="button" [routerLink]="['/', slug()]">
+      &lt; {{ collectionName() }}
+    </a>
+
+    <h1>All {{ collectionName() }} Sales</h1>
+
+    @if (!loading()) {
+      <p class="count">Showing {{ sales().length | number }} sales.</p>
+    } @else {
+      <p class="count">Loading sales...</p>
+    }
+  </div>
+
+  @if (sales().length) {
+    <app-phunk-grid
+      [phunkData]="sales()"
+      [viewType]="'market'"
+      [marketType]="'listings'"
+      [activeSort]="'recently-listed'"
+      [limit]="1000"
+      [observe]="false"
+      [showDate]="true"
+    />
+  } @else if (!loading()) {
+    <p class="no-sales">No sales yet for this collection.</p>
+  }
+
+</div>

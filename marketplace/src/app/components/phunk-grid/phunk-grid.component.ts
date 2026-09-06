@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { WaIntersectionObserver } from '@ng-web-apis/intersection-observer';
+import { TimeagoModule } from 'ngx-timeago';
 
 import { GlobalState, TraitFilter } from '@/models/global-state';
 import { MarketType } from '@/models/market.state';
@@ -36,6 +37,7 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
     RouterModule,
     NgxPaginationModule,
     WaIntersectionObserver,
+    TimeagoModule,
 
     WeiToEthPipe,
     FormatCashPipe,
@@ -71,6 +73,9 @@ export class PhunkGridComponent implements OnChanges {
   @Input() limit: number = 0;
 
   @Input() showLabels: boolean = true;
+  /** Show when the price happened (sales view); off for live listings, where
+   *  the tile already means "currently for sale". */
+  @Input() showDate: boolean = false;
   @Input() traitFilters!: TraitFilter | null;
   @Input() observe: boolean = false;
 
@@ -114,11 +119,28 @@ export class PhunkGridComponent implements OnChanges {
   // (single-host connection cap / CDN throttle), never a missing image. ng-lazyload-image left
   // those stuck forever; native lazy-loading + this bounded retry guarantees every tile eventually
   // loads. The themed .image-wrapper background is the placeholder while it retries.
+  /**
+   * Marks the tile as painted so the loading placeholder behind it is dropped.
+   *
+   * The placeholder lives on the WRAPPER, not the img, because phunk art is
+   * transparent — left underneath, it would show through every gap in the pixel
+   * art. The class is toggled here rather than with CSS :has() so it does not
+   * depend on selector support.
+   */
+  imgSettled(e: Event): void {
+    const img = e.target as HTMLImageElement;
+    img.classList.add('loaded');
+    img.parentElement?.classList.add('img-loaded');
+  }
+
   retryImg(e: Event): void {
     const img = e.target as HTMLImageElement;
     const n = +(img.dataset['retry'] || 0);
     if (n >= 4) {                                    // give up after 4 tries -> gray placeholder
       if (!img.src.endsWith('loadingphunk.png')) img.src = 'assets/loadingphunk.png';
+      // Nothing further is coming — reveal whatever is there rather than
+      // leaving the tile stuck at opacity 0 forever.
+      this.imgSettled(e);
       return;
     }
     img.dataset['retry'] = String(n + 1);

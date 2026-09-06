@@ -6,6 +6,13 @@
   align-content: start;
   grid-template-columns: repeat(16, calc(100% / 16));
 
+  // The column count is fixed rather than auto-fill, so a wider container only
+  // makes tiles bigger. Step it up on large displays so the extra width becomes
+  // more phunks per row instead of fewer, larger ones.
+  @media (min-width: 1441px) { grid-template-columns: repeat(20, calc(100% / 20)); }
+  @media (min-width: 1800px) { grid-template-columns: repeat(24, calc(100% / 24)); }
+  @media (min-width: 2200px) { grid-template-columns: repeat(28, calc(100% / 28)); }
+
   .item {
     position: relative;
     width: 100%;
@@ -60,6 +67,19 @@
       overflow: hidden;
       background-color: rgba(var(--phunk-bg), 1);
 
+      // Loading placeholder. Sits on the wrapper so it can be removed outright
+      // once the real art paints — phunk art is transparent, so anything left
+      // behind it would show through the gaps.
+      background-image: url('/assets/loadingphunk.png');
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      image-rendering: pixelated;
+
+      &.img-loaded {
+        background-image: none;
+      }
+
       img {
         display: block;
         width: 100%;
@@ -70,6 +90,13 @@
     }
 
     .labels-wrapper {
+      // Only rendered when [showDate] is on (sales view).
+      .tile-date {
+        font-size: 1.1rem;
+        color: rgba(var(--text-color), .5);
+        white-space: nowrap;
+      }
+
       padding: 1rem 0 2rem;
 
       .label {

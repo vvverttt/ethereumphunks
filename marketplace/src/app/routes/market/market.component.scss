@@ -19,6 +19,18 @@
   padding-top: calc(var(--header-height) + 4rem)
 }
 
+// The market is a dense tile grid — unlike the rest of the site it benefits from
+// every pixel. The shared .inner container caps content at --max-width (140rem),
+// which strands ~1100px of empty page on a 2560px display once the filter rail
+// takes its 24rem. Widen it past the cap for this route only; every other page
+// keeps the site-wide measure.
+:host .inner {
+  @media (min-width: 1441px) {
+    max-width: 100%;
+    padding: 0 4rem;
+  }
+}
+
 .header-wrapper {
   margin-bottom: 4rem;
 
@@ -329,8 +341,42 @@
   }
 }
 
+// Filter rail sits to the LEFT of the results; the grid takes the rest.
+// min-width: 0 on the results column is required or the grid's own tracks
+// refuse to shrink and the rail gets pushed off-screen.
+.market-body {
+  display: flex;
+  gap: 2rem;
+  // stretch (not flex-start) so the rail's background runs the full height of
+  // the results column instead of stopping under the last trait row.
+  align-items: stretch;
+
+  .results-area {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .filter-wrapper {
-  width: 100%;
+  width: 24rem;
+  flex-shrink: 0;
+}
+
+// Below tablet the rail would leave too little room for tiles — stack it above
+// the grid and let it scroll with the page instead of sticking.
+@media (max-width: 900px) {
+  .market-body {
+    flex-direction: column;
+  }
+
+  .filter-wrapper {
+    width: 100%;
+
+    app-market-filters {
+      position: static;
+      max-height: 40vh;
+    }
+  }
 }
 
 .content-layout {

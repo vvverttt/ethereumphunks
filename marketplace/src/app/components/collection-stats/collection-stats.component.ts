@@ -16,9 +16,9 @@ const CACHE_VERSION = 13;
 const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'ethsrocks': 'EthsRocks',
   'cryptophunksv67': 'QuantumPhunks',
-  'og-missing-phunks': 'Missing Phunk',
+  'missing-phunks': 'Missing Phunk',
   'quantummissingphunksv67': 'MissingPhunks',
-  'og-dysto-phunks': 'DystoPhunks',
+  'dysto-phunks': 'DystoPhunks',
   'quantumdystophunkzv67': 'DystoPhunkz',
 };
 const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSupplyDisplay?: string; uniqueTraitValues?: number; oneOfOnes?: number }> = {
@@ -55,11 +55,11 @@ const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string
     { label: 'Unique Colors', display: '456' },
     { label: 'Colored Pixels', display: '20,507 / 39,744' },
   ],
-  'og-missing-phunks': [
+  'missing-phunks': [
     { label: 'Unique Colors', display: '220' },
     { label: 'Colored Pixels', display: '56,712 / 144,000' },
   ],
-  'og-dysto-phunks': [
+  'dysto-phunks': [
     { label: 'Unique Colors', display: '154' },
     { label: 'Colored Pixels', display: '15,475 / 39,744' },
   ],

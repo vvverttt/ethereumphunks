@@ -19,7 +19,7 @@ export const environment = {
   oldMarketAddresses: [
     '0xd3418772623be1a3cc6b6d45cb46420cedd9154a', // OG EtherPhunksMarket
   ],
-  ogSlugs: ['og-missing-phunks', 'og-dysto-phunks'],
+  ogSlugs: ['missing-phunks', 'dysto-phunks'],
   marketAddressL2: '0x3Dfbc8C62d3cE0059BDaf21787EC24d5d116fe1e'.toLowerCase(),
   donationsAddress: '0x8191f333Da8fEB4De8Ec0d929b136297FDAA34de'.toLowerCase(),
   pointsAddress: '0xA22a3E40C3C5A01F802c5698Af6Ed5fAA21095eb'.toLowerCase(),
@@ -40,10 +40,10 @@ export const environment = {
   erc721PhunksAddress: '0x9833b60234424e1DAAC8883D3F52c16093563BBF' as `0x${string}`,
 
   evolvePairs: {
-    'og-missing-phunks': 'quantummissingphunksv67',
-    'og-dysto-phunks': 'quantumdystophunkzv67',
-    'quantummissingphunksv67': 'og-missing-phunks',
-    'quantumdystophunkzv67': 'og-dysto-phunks',
+    'missing-phunks': 'quantummissingphunksv67',
+    'dysto-phunks': 'quantumdystophunkzv67',
+    'quantummissingphunksv67': 'missing-phunks',
+    'quantumdystophunkzv67': 'dysto-phunks',
   } as Record<string, string>,
 
   relayUrl: 'https://ethereumphunks.onrender.com',
@@ -53,4 +53,12 @@ export const environment = {
 
   supabaseUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co',
   supabaseKey: 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe',
+
+  // LOCAL DEV ONLY. Forces every admin visibility flag on so gated routes
+  // (/auction, /lottery, ...) are reachable without connecting an admin wallet.
+  // The real flags live in Supabase `_global_config`, which is SHARED WITH
+  // PRODUCTION — flipping them there would expose these routes on
+  // quantumphunks.com and .eth.limo. This key exists only in the dev-* env
+  // files, so `ng build --configuration mainnet` never sees it.
+  forceAdminPreview: true,
 };

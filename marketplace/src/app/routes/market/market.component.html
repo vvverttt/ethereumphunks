@@ -76,19 +76,6 @@
                   </button>
                 }
 
-                <button
-                  class="filters-button"
-                  [class.active]="filtersVisible"
-                  (click)="toggleFilters()">
-
-                  @if ((effectiveTraitFilters$ | async); as filters) {
-                    @if (objectKeys(filters).length) {
-                      <div class="count">{{ objectKeys(filters).length }}</div>
-                    }
-                  }
-                  {{ t('filterByAttribute') }}
-                </button>
-
                 @if ((walletAddress$ | async); as walletAddress) {
                   @if (
                     (
@@ -165,11 +152,13 @@
             }
           </div>
 
-          @if (filtersVisible) {
-            <div class="filter-wrapper">
-              <app-market-filters [slug]="(activeCollection$ | async)?.slug" />
-            </div>
-          }
+          <div class="market-body">
+
+          <aside class="filter-wrapper">
+            <app-market-filters [slug]="(activeCollection$ | async)?.slug" />
+          </aside>
+
+          <div class="results-area">
 
           @if (phunkData.data.length) {
             <app-phunk-grid
@@ -192,6 +181,9 @@
               (selectedChange)="selectedChange($event)"
             />
           }
+
+          </div><!-- /.results-area -->
+          </div><!-- /.market-body -->
         </div>
 
         @if (marketType === 'owned') {

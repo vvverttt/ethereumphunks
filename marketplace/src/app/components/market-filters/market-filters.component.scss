@@ -1,59 +1,178 @@
 @use 'abstracts/variables' as *;
 @use 'abstracts/mixins' as *;
 
+// Left-hand filter rail: a vertical accordion of trait groups, each holding
+// checkboxes. Several values inside one group are OR'd; groups are AND'd.
 :host {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 2rem;
+  display: block;
+  height: 100%;
+  padding: 1.5rem 1.5rem 3rem;
 
-  margin: 1rem 0 0;
-  padding: 2rem;
+  background-color: rgba(var(--highlight), .06);
+  border-right: .1rem solid rgba(var(--highlight), .25);
 
-  background-color: rgba(var(--highlight), .1);
-  border: .3rem solid rgba(var(--highlight), 1);
+  .filters-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.2rem;
 
-  .filter-group-wrapper {
-    padding: 0;
-    font-size: 1.4rem;
-    font-weight: 600;
-    width: 100%;
-  }
+    .title {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.2rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: rgba(var(--text-color), .6);
+    }
 
-  .trait-select {
-
-    input {
-      font-family: var(--primary-font-stack);
-      font-size: 1.4rem;
-      font-weight: 600;
-
-      padding: 0 1rem;
-      margin: 0;
+    .clear-filters {
+      font-size: 1.1rem;
+      padding: .4rem .8rem;
+      cursor: pointer;
+      background-color: rgba(var(--highlight), 1);
+      color: rgba(var(--background), 1);
       border: none;
-      border-radius: .4rem;
+      white-space: nowrap;
+    }
+  }
 
+  .filter-group {
+    border-top: .1rem solid rgba(var(--highlight), .35);
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
       width: 100%;
-      height: 3.6rem;
+      padding: 2rem .2rem;
 
-      border: .3rem solid rgba(var(--highlight), 1);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      color: rgba(var(--text-color), 1);
+      font-size: 1.5rem;
+      font-weight: 700;
 
-      outline: none;
+      .group-name { flex: 1; }
+
+      // Muted tally of how many values this trait offers (Eyes 17, Hair 42).
+      .group-count {
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: rgba(var(--text-color), .45);
+      }
+
+      // Only appears once something in the group is checked.
+      .group-selected {
+        min-width: 1.8rem;
+        padding: .1rem .5rem;
+        font-size: 1.1rem;
+        text-align: center;
+        background-color: rgba(var(--highlight), 1);
+        color: rgba(var(--background), 1);
+      }
+
+      &.has-selection .group-name { color: rgba(var(--highlight), 1); }
+
+      .chevron {
+        width: 0;
+        height: 0;
+        border-left: .5rem solid transparent;
+        border-right: .5rem solid transparent;
+        border-top: .6rem solid rgba(var(--highlight), 1);
+        transition: transform .15s ease;
+      }
+    }
+
+    &.open .group-header .chevron { transform: rotate(180deg); }
+
+    .group-search {
+      width: 100%;
+      margin-bottom: .6rem;
+      padding: .6rem .8rem;
+      font-family: var(--primary-font-stack);
+      font-size: 1.2rem;
+      color: rgba(var(--text-color), 1);
+      background-color: rgba(var(--background), 1);
+      border: .1rem solid rgba(var(--highlight), .4);
+
+      &::placeholder { color: rgba(var(--text-color), .4); }
+      &:focus { outline: none; border-color: rgba(var(--highlight), 1); }
+    }
+
+    .no-match {
+      padding: .5rem .4rem;
+      font-size: 1.2rem;
+      color: rgba(var(--text-color), .4);
+    }
+
+    .group-options {
+      padding: 0 .2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+
+      .option {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        padding: .5rem .4rem;
+        cursor: pointer;
+        font-size: 1.2rem;
+        color: rgba(var(--text-color), .85);
+
+        // The native input stays in the DOM for keyboard + screen readers; the
+        // visible control is .box so it can be styled to match the pixel theme.
+        input {
+          position: absolute;
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .box {
+          flex-shrink: 0;
+          width: 1.4rem;
+          height: 1.4rem;
+          border: .2rem solid rgba(var(--highlight), 1);
+          background-color: transparent;
+        }
+
+        input:focus-visible + .box {
+          outline: .2rem solid rgba(var(--highlight), 1);
+          outline-offset: .2rem;
+        }
+
+        &:hover { color: rgba(var(--text-color), 1); }
+
+        &.checked {
+          color: rgba(var(--text-color), 1);
+          font-weight: 600;
+
+          .box {
+            background-color: rgba(var(--highlight), 1);
+          }
+        }
+
+        .option-name {
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        // How many items carry this value — the rarity read.
+        .option-count {
+          flex-shrink: 0;
+          font-size: 1.1rem;
+          font-variant-numeric: tabular-nums;
+          color: rgba(var(--text-color), .45);
+        }
+
+        &.checked .option-count { color: rgba(var(--text-color), .7); }
+      }
     }
   }
-
-  .clear-filters {
-    background: none;
-    color: rgba(var(--highlight), 1);
-    border-color: rgba(var(--background), 1);
-    font-size: 1.4rem;
-
-    &.disabled {
-      opacity: .5;
-      pointer-events: none;
-    }
-  }
-
-  @media (max-width: $mobile) {
-    grid-template-columns: repeat(2, calc((100% / 2) - 1rem));
-  }
-
 }

@@ -39,7 +39,7 @@ export class AttributeFilterPipe implements PipeTransform {
 
     // Handle trait count filter if present
     if (traitCountFilter !== undefined) {
-      const traitCount = Number(traitCountFilter);
+      const traitCount = Number(Array.isArray(traitCountFilter) ? traitCountFilter[0] : traitCountFilter);
       filtered = filtered.filter((res) => {
         // Add 2 to account for Name and Description attributes
         return res.attributes && (res.attributes.length === traitCount + 2);
@@ -51,24 +51,28 @@ export class AttributeFilterPipe implements PipeTransform {
       filtered = filtered.filter((res: Phunk) => {
         if (!res.attributes) return false;
 
-        // Check each filter
+        // Check each filter. AND across trait keys, OR within a key when several
+        // values are selected (the multi-select checkbox case).
         return Object.entries(traitFilters).every(([key, value]) => {
           // Skip trait-count as it's handled separately
           if (key === 'trait-count') return true;
 
+          const wanted = (Array.isArray(value) ? value : [value]).filter(v => v != null) as string[];
+          if (!wanted.length) return true;
+
           // Find ALL attributes with matching key (a phunk can have multiple attrs with same key)
           const matchingAttrs = res.attributes?.filter(attr => attr?.k === key);
 
-          // Handle "none" case
-          if (value === 'none') {
-            return !matchingAttrs || matchingAttrs.length === 0;
-          }
+          return wanted.some((want) => {
+            // Handle "none" case
+            if (want === 'none') return !matchingAttrs || matchingAttrs.length === 0;
 
-          // Check if any matching attribute has the target value
-          return matchingAttrs?.some(attr => {
-            if (Array.isArray(attr?.v)) return attr.v.includes(value);
-            return attr?.v === value;
-          }) ?? false;
+            // Check if any matching attribute has the target value
+            return matchingAttrs?.some(attr => {
+              if (Array.isArray(attr?.v)) return attr.v.includes(want);
+              return attr?.v === want;
+            }) ?? false;
+          });
         });
       });
     }

@@ -1,5 +1,5 @@
 import { isDevMode } from '@angular/core';
-import { RouteReuseStrategy, provideRouter } from '@angular/router';
+import { RouteReuseStrategy, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideHttpClient } from '@angular/common/http';
 
@@ -69,6 +69,13 @@ export const config = {
     provideRouter(
       routes,
       // withHashLocation(),
+      // Restore scroll position on back/forward so returning from an item lands
+      // where you left the grid rather than at the top. Forward navigations still
+      // start at the top, which is the previous behaviour.
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'enabled',
+        anchorScrolling: 'enabled',
+      }),
     ),
     provideServiceWorker('ngsw-worker.js', {
         enabled: !isDevMode() && !isWalletBrowser(),

@@ -1,0 +1,49 @@
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
+
+:host {
+  display: block;
+}
+
+// Mirrors the All preview box exactly: 22 flush tiles, no labels, no gutter, so
+// the two sections read as one family. Prices live on the full /sales page.
+.sales-grid {
+  display: grid;
+  grid-template-columns: repeat(22, calc(100% / 22));
+  gap: 0;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(14, calc(100% / 14)); }
+  @media (max-width: 700px)  { grid-template-columns: repeat(8, calc(100% / 8)); }
+  @media (max-width: 460px)  { grid-template-columns: repeat(6, calc(100% / 6)); }
+}
+
+.sale-item {
+  min-width: 0;
+  text-decoration: none;
+  color: rgba(var(--text-color), 1);
+
+  .image-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    // Gold — the same colour "bought" is rendered in throughout the activity
+    // feed, so a sale reads as a sale wherever it appears.
+    background-color: $sale-gold;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+  }
+
+  &:hover .image-wrapper { opacity: .85; }
+}
+
+.no-sales {
+  padding: 2rem 0;
+  font-size: 1.4rem;
+  color: rgba(var(--text-color), .5);
+}

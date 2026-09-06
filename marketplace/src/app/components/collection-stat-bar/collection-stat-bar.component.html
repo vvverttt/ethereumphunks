@@ -1,0 +1,30 @@
+@if (loaded()) {
+  <div class="stat-bar" [class.section]="variant() === 'section'">
+
+    <div class="stat">
+      <span class="label">Floor</span>
+      <span class="value">{{ floor() === null ? '—' : eth(floor()) + 'Ξ' }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="label">Artifacts</span>
+      <span class="value">{{ supply() | number }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="label">Listed</span>
+      <span class="value">{{ listed() | number }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="label">Sales</span>
+      <span class="value">{{ sales() | number }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="label">Volume</span>
+      <span class="value">{{ eth(volume()) }}Ξ</span>
+    </div>
+
+  </div>
+}

@@ -15,6 +15,7 @@ import { Web3Service } from '@/services/web3.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
+import { CollectionStatBarComponent } from '@/components/collection-stat-bar/collection-stat-bar.component';
 
 import { EventType, GlobalState, TxFilterItem } from '@/models/global-state';
 
@@ -45,6 +46,7 @@ import { firstValueFrom, map, tap } from 'rxjs';
 
     WalletAddressDirective,
     WeiToEthPipe,
+    CollectionStatBarComponent,
   ],
   selector: 'app-recent-activity',
   templateUrl: './recent-activity.component.html',
