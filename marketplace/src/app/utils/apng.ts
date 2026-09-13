@@ -367,11 +367,18 @@ function blobToImage(blob: Blob): Promise<HTMLImageElement> {
  * `bgColor` is set (e.g. '#C3FF00') every frame is composited onto it; when
  * null the GIF uses 1-bit transparency.
  */
+/** See gif.ts — same contract, so the component can pass one object to both. */
+export interface FrameDecoration {
+  clip?: (ctx: CanvasRenderingContext2D, w: number, h: number) => void;
+  border?: (ctx: CanvasRenderingContext2D, w: number, h: number) => void;
+}
+
 export async function apngToGif(
   buffer: ArrayBuffer,
   targetWidth: number,
   targetHeight: number,
   bgColor: string | null,
+  decoration?: FrameDecoration,
 ): Promise<Blob> {
   const parsed = parseApng(buffer);
   if (!parsed || parsed.frames.length === 0) throw new Error('Not a valid APNG');
@@ -386,14 +393,36 @@ export async function apngToGif(
   if (!ctx) throw new Error('no 2d context');
   ctx.imageSmoothingEnabled = false;
 
+  // When decorating, the working canvas stays TRANSPARENT and the background is
+  // painted on the output canvas instead. Otherwise the running composite would
+  // be fully opaque and, drawn over the border, would hide it completely.
+  const decorating = !!(decoration?.clip || decoration?.border);
+  const workingBg = decorating ? null : bgColor;
+
   const paint = (x: number, y: number, w: number, h: number) => {
-    if (bgColor) { ctx.fillStyle = bgColor; ctx.fillRect(x, y, w, h); }
+    if (workingBg) { ctx.fillStyle = workingBg; ctx.fillRect(x, y, w, h); }
     else { ctx.clearRect(x, y, w, h); }
   };
   paint(0, 0, targetWidth, targetHeight);
 
   const gif = GIFEncoder();
-  const format = bgColor ? 'rgb565' : 'rgba4444';
+  // A clipped shape leaves transparent corners even with a background colour.
+  const needsAlpha = !bgColor || !!decoration?.clip;
+  const format = needsAlpha ? 'rgba4444' : 'rgb565';
+
+  // APNG frames build on each other (blendOp OVER), so the working canvas must
+  // keep the raw running composite — masking it in place would corrupt every
+  // later frame. Decoration is applied to a separate output canvas instead, and
+  // that is what gets encoded.
+  const decorated = !!(decoration?.clip || decoration?.border);
+  let outCtx: CanvasRenderingContext2D | null = null;
+  if (decorated) {
+    const out = document.createElement('canvas');
+    out.width = targetWidth;
+    out.height = targetHeight;
+    outCtx = out.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D | null;
+    if (outCtx) outCtx.imageSmoothingEnabled = false;
+  }
 
   for (let i = 0; i < parsed.frames.length; i++) {
     const frame = parsed.frames[i];
@@ -408,8 +437,30 @@ export async function apngToGif(
     if (frame.blendOp === 0) paint(fx, fy, fw, fh);
     ctx.drawImage(img, fx, fy, fw, fh);
 
-    const { data } = ctx.getImageData(0, 0, targetWidth, targetHeight);
-    const palette = quantize(data, 256, { format, oneBitAlpha: !bgColor });
+    let source = ctx;
+    if (outCtx) {
+      // background -> border -> art, matching the still exports. The working
+      // canvas holds only the (transparent-backed) animation, so the background
+      // is laid down here first and the border can sit between the two.
+      outCtx.clearRect(0, 0, targetWidth, targetHeight);
+
+      outCtx.save();
+      if (decoration?.clip) { decoration.clip(outCtx, targetWidth, targetHeight); outCtx.clip(); }
+      if (bgColor) { outCtx.fillStyle = bgColor; outCtx.fillRect(0, 0, targetWidth, targetHeight); }
+      outCtx.restore();
+
+      decoration?.border?.(outCtx, targetWidth, targetHeight);
+
+      outCtx.save();
+      if (decoration?.clip) { decoration.clip(outCtx, targetWidth, targetHeight); outCtx.clip(); }
+      outCtx.drawImage(canvas, 0, 0);
+      outCtx.restore();
+
+      source = outCtx;
+    }
+
+    const { data } = source.getImageData(0, 0, targetWidth, targetHeight);
+    const palette = quantize(data, 256, { format, oneBitAlpha: needsAlpha });
     const index = applyPalette(data, palette, format);
 
     const den = frame.delayDen || 100;

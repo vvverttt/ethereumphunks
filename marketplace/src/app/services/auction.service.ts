@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { formatEther, parseEther, decodeEventLog, createPublicClient, http, fallback } from 'viem';
 import { mainnet } from 'viem/chains';
 import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
@@ -6,6 +6,7 @@ import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 import { environment } from 'src/environments/environment';
 import { supabase } from './supabase';
 import { Web3Service } from './web3.service';
+import { SpriteService } from './sprite.service';
 import { EtherPhunksAuctionHouseV2ABI } from '@/abi/EtherPhunksAuctionHouseV2';
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
@@ -54,6 +55,8 @@ export interface SettledAuction {
 
 @Injectable()
 export class AuctionService {
+
+  private readonly spriteSvc = inject(SpriteService);
 
   // Cache for values that rarely change
   private cachedReservePrice: bigint | null = null;
@@ -545,19 +548,21 @@ export class AuctionService {
         .in('hashId', hashIds);
       const ethMap = new Map((ethscriptions ?? []).map(e => [e.hashId, e]));
 
-      return auctions.map(a => {
+      const rows = await Promise.all(auctions.map(async a => {
         const eth = ethMap.get(a.hashId.toLowerCase());
         return {
           auctionId: a.auctionId,
           hashId: a.hashId,
           winner: a.bidder || '',
           amount: BigInt(a.amount || '0'),
-          imageUrl: eth ? `${environment.staticUrl}/static/images/${eth.sha}` : '',
+          // Sprite-backed where the art is packed, the plain file URL otherwise.
+          imageUrl: eth ? await this.spriteSvc.url(eth.sha) : '',
           tokenId: eth?.tokenId ?? 0,
           slug: eth?.slug ?? '',
           settledTimestamp: Math.floor(new Date(a.createdAt).getTime() / 1000),
         };
-      }).filter(a => !!a.imageUrl);
+      }));
+      return rows.filter(a => !!a.imageUrl);
     } catch {
       return [];
     }

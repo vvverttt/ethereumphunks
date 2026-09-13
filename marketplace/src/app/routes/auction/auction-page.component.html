@@ -113,7 +113,7 @@
                 [class.pickable]="pendingSwapDeposit()"
                 [class.selected]="pickedSwapItem()?.hashId === item.hashId"
                 (click)="onPoolItemClick(item)">
-                <img [src]="getImageUrl(item)" loading="lazy" />
+                <app-phunk-image [sha]="item.sha" />
                 <span>#{{ item.tokenId }}</span>
               </div>
             }
@@ -140,7 +140,7 @@
                       class="owned-item"
                       [class.selected]="selectedV67?.hashId === item.hashId"
                       (click)="selectV67(item)">
-                      <img [src]="getImageUrl(item)" />
+                      <app-phunk-image [sha]="item.sha" />
                       <span>#{{ item.tokenId }}</span>
                     </div>
                   }

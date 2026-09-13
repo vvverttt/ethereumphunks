@@ -6,10 +6,41 @@
   min-width: 0;
 }
 
-// Five figures need real width. Rather than wrap or ellipsize on small screens,
-// the bar is simply not rendered — the same numbers live on the collection page.
+// Shown at every width. Five figures don't fit inline on a phone or a
+// half-width desktop window, so instead of hiding the bar it tightens: the gap
+// closes, the type shrinks, and below 640px each stat stacks its label over its
+// value and the row wraps.
 @media (max-width: 1200px) {
-  :host { display: none; }
+  .stat-bar { gap: 1.2rem; }
+  .stat .label { font-size: 1rem; }
+  .stat .value { font-size: 1.2rem; }
+}
+
+@media (max-width: 900px) {
+  .stat-bar {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .stat .label { font-size: .95rem; }
+  .stat .value { font-size: 1.15rem; }
+}
+
+@media (max-width: 640px) {
+  .stat-bar {
+    gap: .8rem 1.4rem;
+    justify-content: flex-start;
+
+    .stat {
+      // Label over value — an inline pair per stat needs more width than a
+      // phone has once there are five of them.
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
+
+    .stat .label { font-size: .9rem; }
+    .stat .value { font-size: 1.2rem; }
+  }
 }
 
 .stat-bar {

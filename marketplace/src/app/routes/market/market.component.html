@@ -238,13 +238,9 @@
             <div [formGroupName]="i">
 
               <div class="selected">
-                <img
+                <app-phunk-image
                   [class.listed]="item.value.listing"
-                  [lazyLoad]="dataSvc.staticUrl + '/static/images/' + item.value.sha"
-                  [defaultImage]="'assets/loadingphunk.png'"
-                  width="50"
-                  height="50"
-                />
+                  [sha]="item.value.sha" />
 
                 <div class="form-group">
                   <label [for]="item.value.phunkId">List Price</label>
@@ -281,10 +277,7 @@
       <div class="image-grid-wrapper">
         @for (item of selectedPhunksFormArray.controls; track item.value.sha; let i = $index) {
           <div class="image">
-            <img
-              [lazyLoad]="dataSvc.staticUrl + '/static/images/' + item.value.sha"
-              [defaultImage]="'assets/loadingphunk.png'"
-            />
+            <app-phunk-image [sha]="item.value.sha" />
           </div>
         }
       </div>
@@ -314,10 +307,7 @@
       <div class="image-grid-wrapper">
         @for (item of selectedPhunksFormArray.controls; track item.value.hashId; let i = $index) {
           <div class="image">
-            <img
-              [lazyLoad]="dataSvc.staticUrl + '/static/images/' + item.value.sha"
-              [defaultImage]="'assets/loadingphunk.png'"
-            />
+            <app-phunk-image [sha]="item.value.sha" />
           </div>
         }
       </div>
@@ -341,10 +331,7 @@
       <div class="image-grid-wrapper">
         @for (item of selectedPhunksFormArray.controls; track item.value.hashId; let i = $index) {
           <div class="image">
-            <img
-              [lazyLoad]="dataSvc.staticUrl + '/static/images/' + item.value.sha"
-              [defaultImage]="'assets/loadingphunk.png'"
-            />
+            <app-phunk-image [sha]="item.value.sha" />
           </div>
         }
       </div>
@@ -368,10 +355,7 @@
       <div class="items-wrapper">
         @for (item of selectedPhunksFormArray.controls; track item.value.hashId; let i = $index) {
           <div class="image-wrapper">
-            <img
-              [lazyLoad]="dataSvc.staticUrl + '/static/images/' + item.value.sha"
-              [defaultImage]="'assets/loadingphunk.png'"
-            />
+            <app-phunk-image [sha]="item.value.sha" />
           </div>
           <div class="value-wrapper">
             <span class="token">

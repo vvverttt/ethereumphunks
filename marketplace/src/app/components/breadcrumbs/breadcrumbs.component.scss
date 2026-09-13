@@ -102,3 +102,119 @@
     }
   }
 }
+
+// ── Phunk Box ────────────────────────────────────────────────────────────────
+// Shape / background / border / size controls for the PFP export.
+.phunk-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .box-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    &.disabled {
+      opacity: .35;
+      pointer-events: none;
+    }
+
+    .box-label {
+      flex: 0 0 8rem;
+      font-family: var(--secondary-font-stack);
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      opacity: .7;
+    }
+
+    .box-choices {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .6rem;
+    }
+  }
+
+  .choice {
+    padding: .5rem 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    background: none;
+    border: .2rem solid rgba(var(--text-color), .35);
+    color: rgba(var(--text-color), 1);
+
+    &:hover { border-color: rgba(var(--highlight), 1); }
+
+    &.active {
+      background-color: rgba(var(--highlight), 1);
+      border-color: rgba(var(--highlight), 1);
+      color: rgba(var(--background), 1);
+    }
+  }
+
+  .swatch {
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    cursor: pointer;
+
+    border: .2rem solid rgba(var(--text-color), .35);
+    background-clip: padding-box;
+
+    &:hover { border-color: rgba(var(--highlight), .7); }
+
+    // Selected swatch gets a ring rather than a colour change, which would
+    // misrepresent the colour it stands for.
+    &.active {
+      border-color: rgba(var(--highlight), 1);
+      box-shadow: 0 0 0 .2rem rgba(var(--highlight), .45);
+    }
+
+    // "A" = use whatever the collection's own background is.
+    .swatch-default {
+      font-size: 1rem;
+      font-weight: 700;
+      color: rgba(0, 0, 0, .65);
+    }
+
+    &.custom {
+      // Native colour input: strip the chrome so it reads as another swatch.
+      appearance: none;
+      -webkit-appearance: none;
+      background: none;
+    }
+  }
+}
+
+// Live preview beside the Phunk Box controls. The canvas has explicit CSS
+// dimensions set in paintCanvas (width/scale), so this only frames it.
+.pfp-preview {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 0 0 auto;
+
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+    // Checkerboard shows through where the export will be transparent.
+    background-image:
+      linear-gradient(45deg, rgba(var(--text-color), .12) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(var(--text-color), .12) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(var(--text-color), .12) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(var(--text-color), .12) 75%);
+    background-size: 1.6rem 1.6rem;
+    background-position: 0 0, 0 .8rem, .8rem -.8rem, -.8rem 0;
+  }
+}
+
+.pfp-options-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}

@@ -26,19 +26,100 @@
         @if (pfpOptionsActive()) {
           <div class="pfp-options-wrapper">
 
-            <div class="pfp-options">
-              <div
-                class="shape-select"
-                [class.disabled]="!customizeEnabled()">
+            <!-- Live preview. The canvas was previously display:none and used
+                 only as an export buffer, so every option changed something the
+                 user could not see. -->
+            <div class="pfp-preview">
+              <canvas #pfp id="pfp" width="480" height="480"></canvas>
+            </div>
 
-                <input
-                  type="checkbox"
-                  id="transparent"
-                  name="transparent"
-                  value="transparent"
-                  [formControl]="transparentCheck"
-                />
-                <label for="transparent">{{ t('transparent') }}</label>
+            <div class="pfp-options phunk-box">
+
+              <div class="box-row">
+                <span class="box-label">Shape</span>
+                <div class="box-choices">
+                  @for (s of shapes; track s.value) {
+                    <button
+                      type="button"
+                      class="choice"
+                      [class.active]="shapeControl.value === s.value"
+                      (click)="shapeControl.setValue(s.value)">
+                      {{ s.label }}
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="box-row" [class.disabled]="!customizeEnabled()">
+                <span class="box-label">Background</span>
+                <div class="box-choices swatches">
+                  @for (c of bgPalette; track $index) {
+                    <button
+                      type="button"
+                      class="swatch"
+                      [class.active]="bgColorControl.value === c"
+                      [style.background-color]="swatchColor(c)"
+                      [title]="c === null ? 'Collection default' : c"
+                      (click)="bgColorControl.setValue(c)">
+                      @if (c === null) { <span class="swatch-default">A</span> }
+                    </button>
+                  }
+                  <input
+                    type="color"
+                    class="swatch custom"
+                    [value]="bgColorControl.value || swatchColor(null)"
+                    (input)="bgColorControl.setValue($any($event.target).value)"
+                    title="Custom colour"
+                  />
+                </div>
+              </div>
+
+              <div class="box-row">
+                <span class="box-label">Border</span>
+                <div class="box-choices">
+                  <input type="checkbox" id="border" [formControl]="borderCheck" />
+                  <label for="border">On</label>
+                  @if (borderCheck.value) {
+                    <input
+                      type="color"
+                      class="swatch"
+                      [formControl]="borderColorControl"
+                      title="Border colour"
+                    />
+                  }
+                </div>
+              </div>
+
+              <div class="box-row">
+                <span class="box-label">Size</span>
+                <div class="box-choices">
+                  @for (s of sizes; track s) {
+                    <button
+                      type="button"
+                      class="choice"
+                      [class.active]="sizeControl.value === s"
+                      (click)="sizeControl.setValue(s)">
+                      {{ s }}px
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="box-row" [class.disabled]="!customizeEnabled()">
+                <span class="box-label">Extras</span>
+                <div class="box-choices">
+                  <input
+                    type="checkbox"
+                    id="transparent"
+                    name="transparent"
+                    value="transparent"
+                    [formControl]="transparentCheck"
+                  />
+                  <label for="transparent">{{ t('transparent') }}</label>
+
+                  <input type="checkbox" id="gba" name="gba" [formControl]="gbaCheck" />
+                  <label for="gba">GBA</label>
+                </div>
               </div>
             </div>
 
@@ -65,4 +146,4 @@
   </div>
 </div>
 
-<canvas #pfp id="pfp" width="480" height="480" style="display: none;"></canvas>
+

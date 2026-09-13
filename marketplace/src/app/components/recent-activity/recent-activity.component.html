@@ -72,12 +72,7 @@
         [class.background]="collection()?.hasBackgrounds">
 
         <div class="image-wrapper">
-          <img
-            [lazyLoad]="dataSvc.staticUrl + '/static/images/' + event.sha"
-            [defaultImage]="'assets/loadingphunk.png'"
-            width="120"
-            height="120"
-          />
+          <app-phunk-image [sha]="event.sha" />
         </div>
 
         <div class="labels-wrapper">
@@ -109,6 +104,10 @@
                   <span class="prismatic-marketbid">Bid</span> confirmed by
                 } @else if (event.type === 'BidWithdrawn' || event.type === 'BidRefunded') {
                   <span class="prismatic-marketbid">Bid</span> withdrawn by
+                } @else if (event.type === 'transfer') {
+                  <span class="prismatic-transfer">{{ eventLabelHead(event.type) }}</span> {{ eventLabelTail(event.type) }}
+                } @else if (event.type === 'PhunkOffered') {
+                  <span class="prismatic-offered">{{ eventLabelHead(event.type) }}</span> {{ eventLabelTail(event.type) }}
                 } @else {
                   {{ eventLabel(event.type) }}
                 }

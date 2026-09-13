@@ -16,6 +16,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { CollectionStatBarComponent } from '@/components/collection-stat-bar/collection-stat-bar.component';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 
 import { EventType, GlobalState, TxFilterItem } from '@/models/global-state';
 
@@ -47,6 +48,7 @@ import { firstValueFrom, map, tap } from 'rxjs';
     WalletAddressDirective,
     WeiToEthPipe,
     CollectionStatBarComponent,
+    PhunkImageComponent,
   ],
   selector: 'app-recent-activity',
   templateUrl: './recent-activity.component.html',
@@ -124,6 +126,22 @@ export class RecentActivityComponent {
 
   eventLabel(type: string): string {
     return this.t(this.labelKeys[type] || type);
+  }
+
+  /** Action word of a label — "Transferred" from "Transferred to". Split rather
+   *  than composed from separate keys so each locale keeps its own correct
+   *  phrasing ("Ofrecido por", not a stitched-together plural). */
+  eventLabelHead(type: string): string {
+    const label = this.eventLabel(type);
+    const i = label.indexOf(' ');
+    return i === -1 ? label : label.slice(0, i);
+  }
+
+  /** The rest — "to" / "for" — which stays uncoloured. */
+  eventLabelTail(type: string): string {
+    const label = this.eventLabel(type);
+    const i = label.indexOf(' ');
+    return i === -1 ? '' : label.slice(i + 1);
   }
 
   /**

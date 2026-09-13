@@ -111,6 +111,138 @@
   color: rgba(var(--text-color), .4);
 }
 
+// Totals bar at the top of the All view.
+.all-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem 2.4rem;
+
+  margin-bottom: 2rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid rgba(var(--text-color), .12);
+
+  // Montserrat, not the pixel face. Retro Computer is a display font — at the sizes
+  // these dense figures need it becomes hard to read, especially the digits.
+  font-family: var(--primary-font-stack);
+  font-size: 1.4rem;
+  color: rgba(var(--text-color), .65);
+
+  strong {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: rgba(var(--text-color), 1);
+  }
+}
+
+// Per-trait-type breakdown under the summary. Auto-fill so 28 types wrap into as many
+// columns as the viewport allows rather than a fixed count that overflows on mobile.
+.all-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: .4rem;
+  margin-bottom: 2.4rem;
+}
+
+.all-breakdown-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'name uses'
+    'values uses';
+  align-items: center;
+  gap: 0 1rem;
+
+  padding: .8rem 1.2rem;
+  text-align: left;
+  cursor: pointer;
+
+  background: none;
+  border: 1px solid rgba(var(--text-color), .12);
+  // Montserrat for the same reason as the summary — these are numbers to read, not
+  // a heading to look at.
+  font-family: var(--primary-font-stack);
+
+  &:hover {
+    border-color: rgba(var(--phunk-bg), 1);
+    background-color: rgba(var(--phunk-bg), .12);
+  }
+
+  .bd-name {
+    grid-area: name;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: rgba(var(--text-color), 1);
+  }
+
+  .bd-uses {
+    grid-area: uses;
+    font-size: 1.9rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: rgba(var(--text-color), 1);
+  }
+
+  .bd-values {
+    grid-area: values;
+    font-size: 1.2rem;
+    color: rgba(var(--text-color), .6);
+  }
+}
+
+// Section heading for the stacked "All" view — the tab bar no longer says which trait
+// type you're looking at, so each table needs its own label. Sticky so the heading
+// stays visible while scrolling a long section.
+.all-section-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+
+  margin: 3.2rem 0 1rem;
+  padding: .8rem 1.4rem;
+
+  font-family: var(--secondary-font-stack);
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: .05rem;
+
+  // Collection background rather than white: ThemeService sets --phunk-bg to
+  // #c3ff00 for the Ethscription collections and #67cdff for cryptophunksv67.
+  // Both are light, so the text is pinned black rather than following
+  // --text-color, which flips to white in dark mode and would vanish.
+  color: rgba(0, 0, 0, 1);
+  background-color: rgba(var(--phunk-bg), 1);
+
+  &:first-of-type {
+    margin-top: 1.6rem;
+  }
+
+  // The section NAME keeps the pixel face — it's a heading, and short uppercase words
+  // read fine in it. The totals beside it are figures, so they get Montserrat.
+  .all-section-totals {
+    font-family: var(--primary-font-stack);
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: .8;
+  }
+}
+
+// Text-only tables (All view): drop the examples column so the four remaining columns
+// use the full width instead of leaving a gap where the thumbnails were.
+.attr-table.text-only {
+  .attr-table-head,
+  .attr-row {
+    grid-template-columns: minmax(20rem, 2fr) 8rem 7rem minmax(10rem, 1fr);
+  }
+}
+
 // Table
 .attr-table {
   border: 1px solid rgba(var(--text-color), .12);
@@ -136,8 +268,11 @@
   align-items: center;
   padding: 0 0 0 1.4rem;
   border-bottom: 1px solid rgba(var(--text-color), .06);
-  font-family: var(--secondary-font-stack);
-  font-size: 1.15rem;
+  // Data rows read in Montserrat. The pixel face is kept for the column headers and
+  // section names, which are short uppercase labels; at 1.15rem across thousands of
+  // trait names and figures it was the hardest text on the page to scan.
+  font-family: var(--primary-font-stack);
+  font-size: 1.35rem;
   min-height: 5rem;
 
   &:last-child { border-bottom: none; }
@@ -159,16 +294,23 @@
   &:hover { text-decoration: underline; }
 }
 
+// Tabular figures keep the digits in a fixed-width column. The pixel font was
+// monospaced by nature; Montserrat is proportional, so without this the numbers
+// would no longer line up down the column.
 .attr-val-count {
   color: rgba(var(--text-color), .85);
+  font-variant-numeric: tabular-nums;
 }
 
 .attr-val-pct {
   color: rgba(var(--text-color), .5);
+  font-variant-numeric: tabular-nums;
 }
 
 .attr-val-rarity {
-  font-size: 1rem;
+  // Was 1rem to fit the pixel face; Montserrat sits smaller at the same size, so the
+  // rarity words needed bringing back up to stay readable.
+  font-size: 1.15rem;
   font-weight: 700;
 
   &.one-of-one { background: linear-gradient(90deg, #f7971e, #ffd700, #fff0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -208,7 +350,11 @@
     object-fit: contain;
     display: block;
     cursor: pointer;
-    background-color: rgba(var(--highlight), 1);
+    // Tile colour, not the accent. Many token PNGs have transparent backgrounds, so
+    // this shows through as the artwork's backdrop — it has to match the grid, splash
+    // and activity thumbnails (--phunk-bg: #67cdff on v67, #c3ff00 elsewhere). The old
+    // --highlight resolved to a pale mint (#79fae6) on v67 that read as white.
+    background-color: rgba(var(--phunk-bg), 1);
 
     &:hover { opacity: .75; }
   }

@@ -22,6 +22,79 @@
       }
     </div>
 
+    @if (showAll()) {
+      <!-- Text only: no example thumbnails anywhere in this view. Every section renders
+           at once (1,861 rows for cryptophunksv67), and even 3 images per row put ~5.6k
+           <img> nodes on one page. Names, counts and rarity load instantly. -->
+      <div class="all-summary">
+        <span><strong>{{ allSections().length | number }}</strong> {{ t('traitTypes') }}</span>
+        <span><strong>{{ allValueCount() | number }}</strong> {{ t('values') }}</span>
+        <span><strong>{{ allUseCount() | number }}</strong> {{ t('traitsUsed') }}</span>
+        <span><strong>{{ avgTraitsPerItem() }}</strong> {{ t('avgPerItem') }}</span>
+      </div>
+
+      <!-- Per-type breakdown, heaviest first. Clicking opens that trait type's own tab,
+           which carries the example thumbnails this view omits. -->
+      <div class="all-breakdown">
+        @for (section of allSectionsByUse(); track section.name) {
+          <button type="button" class="all-breakdown-item" (click)="setTab(section.name)">
+            <span class="bd-name">{{ section.name }}</span>
+            <span class="bd-uses">{{ section.uses | number }}</span>
+            <span class="bd-values">{{ section.values | number }} {{ section.values === 1 ? t('value') : t('values') }}</span>
+          </button>
+        }
+      </div>
+
+      @for (section of allSections(); track section.name) {
+        <h3 class="all-section-heading">
+          <span class="all-section-name">{{ section.name }}</span>
+          <span class="all-section-totals">
+            {{ section.values | number }} {{ section.values === 1 ? t('value') : t('values') }}
+            · {{ section.uses | number }} {{ t('traitsUsed') }}
+          </span>
+        </h3>
+        <div class="attr-table text-only">
+          <div class="attr-table-head">
+            <span class="col-attr">{{ t('attribute') }}</span>
+            <span class="col-count">#</span>
+            <span class="col-pct">%</span>
+            <span class="col-rarity">{{ t('rarity') }}</span>
+          </div>
+          @for (row of section.rows; track row.name) {
+            <div class="attr-row">
+              <span class="attr-val-name" (click)="goToAttribute(row.traitType, row.name)">{{ row.name }}</span>
+              <span class="attr-val-count">{{ row.count | number }}</span>
+              <span class="attr-val-pct">{{ row.pct }}</span>
+              <span [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')" [class.cosmic]="row.name.toLowerCase() === 'cosmic'" [class.power-ranger]="row.name.toLowerCase() === 'power ranger'" [class.xcopy]="row.name.toLowerCase() === 'xcopy'" [class.phunkism]="row.name.toLowerCase() === 'phunkism'" [class.character-trait]="row.name.toLowerCase() === 'character'" [class.alien-invasion]="row.name.toLowerCase() === 'alien invasion study'">{{ rarityLabel(row.rarity) }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      @if (activeCountRows().length) {
+        <h3 class="all-section-heading">
+          <span class="all-section-name">{{ t('attributeCount') }}</span>
+          <span class="all-section-totals">{{ activeCountRows().length | number }} {{ t('values') }}</span>
+        </h3>
+        <div class="attr-table text-only">
+          <div class="attr-table-head">
+            <span class="col-attr">{{ t('numberOfAttributes') }}</span>
+            <span class="col-count">#</span>
+            <span class="col-pct">%</span>
+            <span class="col-rarity">{{ t('rarity') }}</span>
+          </div>
+          @for (row of activeCountRows(); track row.numTraits) {
+            <div class="attr-row">
+              <span class="attr-val-name">{{ row.numTraits }} {{ row.numTraits === 1 ? t('attribute') : t('attributes') }}</span>
+              <span class="attr-val-count">{{ row.count | number }}</span>
+              <span class="attr-val-pct">{{ row.pct }}</span>
+              <span [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')">{{ rarityLabel(row.rarity) }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
+
     @if (activeTab() === 'Attribute Count') {
       <div class="attr-table">
         <div class="attr-table-head">
@@ -38,8 +111,8 @@
             <span class="attr-val-pct">{{ row.pct }}</span>
             <span [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')">{{ rarityLabel(row.rarity) }}</span>
             <span class="attr-val-examples">
-              @for (url of row.examples; track url; let i = $index) {
-                <img [src]="url" [alt]="row.numTraits + ' attributes'" loading="lazy" (click)="goToPhunk(row.exampleShas[i])" />
+              @for (sha of row.exampleShas; track sha) {
+                <app-phunk-image [sha]="sha" [alt]="row.numTraits + ' attributes'" (click)="goToPhunk(sha)" />
               }
             </span>
           </div>
@@ -66,12 +139,11 @@
             <span class="attr-val-pct">{{ row.pct }}</span>
             <span [class]="'attr-val-rarity ' + row.rarity.toLowerCase().replaceAll(' ', '-')" [class.cosmic]="row.name.toLowerCase() === 'cosmic'" [class.power-ranger]="row.name.toLowerCase() === 'power ranger'" [class.xcopy]="row.name.toLowerCase() === 'xcopy'" [class.phunkism]="row.name.toLowerCase() === 'phunkism'" [class.character-trait]="row.name.toLowerCase() === 'character'" [class.alien-invasion]="row.name.toLowerCase() === 'alien invasion study'">{{ rarityLabel(row.rarity) }}</span>
             <span class="attr-val-examples">
-              @for (url of row.examples; track url; let i = $index) {
-                <img
-                  [src]="url"
+              @for (sha of row.exampleShas; track sha) {
+                <app-phunk-image
+                  [sha]="sha"
                   [alt]="row.name"
-                  loading="lazy"
-                  (click)="goToPhunk(row.exampleShas[i])"
+                  (click)="goToPhunk(sha)"
                 />
               }
             </span>

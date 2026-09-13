@@ -18,11 +18,12 @@ import { PoolBuyNowService } from '@/services/pool-buy-now.service';
 
 import { ItemLinkPipe } from '@/pipes/item-link.pipe';
 
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
+
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
 import { SortPipe } from '@/pipes/sort.pipe';
 import { AttributeFilterPipe } from '@/pipes/attribute-filter';
-import { ImageUrlPipe } from '@/pipes/image-url.pipe';
 
 import { environment } from 'src/environments/environment';
 
@@ -39,12 +40,13 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
     WaIntersectionObserver,
     TimeagoModule,
 
+    PhunkImageComponent,
+
     WeiToEthPipe,
     FormatCashPipe,
     SortPipe,
     AttributeFilterPipe,
     ItemLinkPipe,
-    ImageUrlPipe,
   ],
   host:  {
     '[class.selectable]': 'selectable',
@@ -115,39 +117,10 @@ export class PhunkGridComponent implements OnChanges {
     private poolBuySvc: PoolBuyNowService,
   ) {}
 
-  // Grid images are static (Supabase/CDN), so a blank tile is always a transient fetch failure
-  // (single-host connection cap / CDN throttle), never a missing image. ng-lazyload-image left
-  // those stuck forever; native lazy-loading + this bounded retry guarantees every tile eventually
-  // loads. The themed .image-wrapper background is the placeholder while it retries.
-  /**
-   * Marks the tile as painted so the loading placeholder behind it is dropped.
-   *
-   * The placeholder lives on the WRAPPER, not the img, because phunk art is
-   * transparent — left underneath, it would show through every gap in the pixel
-   * art. The class is toggled here rather than with CSS :has() so it does not
-   * depend on selector support.
-   */
-  imgSettled(e: Event): void {
-    const img = e.target as HTMLImageElement;
-    img.classList.add('loaded');
-    img.parentElement?.classList.add('img-loaded');
-  }
-
-  retryImg(e: Event): void {
-    const img = e.target as HTMLImageElement;
-    const n = +(img.dataset['retry'] || 0);
-    if (n >= 4) {                                    // give up after 4 tries -> gray placeholder
-      if (!img.src.endsWith('loadingphunk.png')) img.src = 'assets/loadingphunk.png';
-      // Nothing further is coming — reveal whatever is there rather than
-      // leaving the tile stuck at opacity 0 forever.
-      this.imgSettled(e);
-      return;
-    }
-    img.dataset['retry'] = String(n + 1);
-    const base = img.src.split('?')[0];
-    // backoff + jitter, and a changing query so the browser makes a fresh request (not a cached error)
-    setTimeout(() => { img.src = base + '?r=' + (n + 1); }, 500 * (n + 1) + Math.floor(Math.random() * 300));
-  }
+  // Tiles are drawn by PhunkImageComponent, which paints from a sprite sheet where one
+  // exists and falls back to the per-file URL otherwise. It also owns the load/retry
+  // handling that used to live here, and still marks the wrapper `img-loaded` so the
+  // placeholder background in this component's stylesheet is dropped on settle.
 
   ngOnChanges(changes: SimpleChanges): void {
     // Selected state is reflected reactively via [class.checked]; no DOM work needed.

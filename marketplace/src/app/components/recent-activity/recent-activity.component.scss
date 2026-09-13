@@ -44,6 +44,20 @@ section {
       min-width: 0;
     }
 
+    // Below this the title + stats + controls cannot share one line. The row
+    // wraps and the stats drop to their own full-width line, left-aligned,
+    // rather than being squeezed out or hidden.
+    @media (max-width: 1100px) {
+      flex-wrap: wrap;
+      row-gap: 1.2rem;
+
+      .events-header-stats {
+        order: 3;
+        flex: 1 0 100%;
+        justify-content: flex-start;
+      }
+    }
+
     .events-header-title {
       display: flex;
       align-items: center;
@@ -301,6 +315,21 @@ section {
           display: inline-block;
           font: inherit;
           color: #ff00cc;
+        }
+
+        // Same two colours the token-id already uses for these events, so the
+        // action word and the "#1234" beside it match instead of the label
+        // falling through uncoloured.
+        .prismatic-transfer {
+          display: inline-block;
+          font: inherit;
+          color: #02ff64;
+        }
+
+        .prismatic-offered {
+          display: inline-block;
+          font: inherit;
+          color: #00ffc8;
         }
 
         .prismatic-marketbid {

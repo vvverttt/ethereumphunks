@@ -9,6 +9,7 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { map, switchMap } from 'rxjs';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 
 import { DataService } from '@/services/data.service';
 
@@ -27,6 +28,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
     TimeagoModule,
 
     WalletAddressDirective,
+    PhunkImageComponent,
 
     WeiToEthPipe,
   ],

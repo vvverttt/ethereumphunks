@@ -1,0 +1,135 @@
+import { Component, ElementRef, computed, inject, input, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { SpriteService } from '@/services/sprite.service';
+
+import { environment } from 'src/environments/environment';
+
+/**
+ * Draws one phunk by sha, from a sprite sheet where possible and from its own file
+ * otherwise.
+ *
+ * Every view used to render `<img [src]="staticUrl + '/static/images/' + sha">`. That
+ * cost one request per tile, which Supabase answered with HTTP 429 for roughly half a
+ * 250-tile grid page, and it forced the IPFS bundle to carry 9,497 separate files.
+ * Sheets fix both: a page now pulls one ~270 KB image instead of 250 small ones.
+ *
+ * Two deliberate details:
+ *
+ * - The sprite is on a child element, not on `.image-wrapper`. That wrapper already
+ *   uses its own background for the loading placeholder and for the listing/bid/escrow
+ *   status colours, so painting the art there would fight with them.
+ * - `img-loaded` is applied to the PARENT on settle, which is the contract the existing
+ *   stylesheets already expect. Keeping it means none of the per-view SCSS changes.
+ */
+@Component({
+  selector: 'app-phunk-image',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    @if (tile(); as t) {
+      <div
+        class="sprite-tile"
+        [style.background-image]="'url(' + spriteSvc.sheetUrl(t.sheet) + ')'"
+        [style.background-size]="backgroundSize()"
+        [style.background-position]="backgroundPosition(t)"></div>
+    } @else {
+      <img
+        [src]="src()"
+        [alt]="alt()"
+        loading="lazy"
+        decoding="async"
+        (load)="settle()"
+        (error)="retry($event)" />
+    }
+  `,
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sprite-tile {
+      width: 100%;
+      height: 100%;
+      background-repeat: no-repeat;
+      image-rendering: pixelated;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+  `],
+})
+export class PhunkImageComponent {
+
+  readonly sha = input<string | null | undefined>(null);
+  readonly alt = input<string>('');
+
+  readonly spriteSvc = inject(SpriteService);
+  private readonly el = inject(ElementRef<HTMLElement>);
+
+  /** Bumped by the retry ladder so `src` recomputes with a fresh cache-busting query. */
+  private readonly attempt = signal(0);
+
+  readonly tile = computed(() => {
+    // Touch `ready` so the first render after the index arrives swaps to sprites.
+    this.spriteSvc.ready();
+    return this.spriteSvc.tile(this.sha());
+  });
+
+  readonly src = computed(() => {
+    const sha = this.sha();
+    if (!sha) return 'assets/loadingphunk.png';
+    const cdn = (environment as any).imageCdnUrl || environment.staticUrl;
+    const n = this.attempt();
+    return `${cdn}/static/images/${sha}` + (n ? `?r=${n}` : '');
+  });
+
+  constructor() {
+    // Drop the placeholder only once the sheet has actually decoded.
+    queueMicrotask(() => {
+      const t = this.tile();
+      if (t) void this.spriteSvc.loadSheet(t.sheet).then(() => this.settle());
+    });
+  }
+
+  /** Marks the tile painted so the wrapper's placeholder background is dropped. */
+  settle(): void {
+    this.el.nativeElement.parentElement?.classList.add('img-loaded');
+  }
+
+  /**
+   * A blank tile on the file path is always a transient fetch failure (single-host
+   * connection cap, CDN throttle), never a missing image, so retry with backoff
+   * before giving up. Only reachable for shas outside the sheets.
+   */
+  retry(e: Event): void {
+    const n = this.attempt();
+    if (n >= 4) {
+      (e.target as HTMLImageElement).src = 'assets/loadingphunk.png';
+      this.settle();
+      return;
+    }
+    setTimeout(() => this.attempt.set(n + 1), 500 * (n + 1) + Math.floor(Math.random() * 300));
+  }
+
+  backgroundSize(): string {
+    return `${this.spriteSvc.cols * 100}% ${this.spriteSvc.rows * 100}%`;
+  }
+
+  /**
+   * Percentage positioning rather than pixels, so one sheet serves every display size
+   * the app uses (50px grid cells, large item art) with no per-call-site maths.
+   */
+  backgroundPosition(t: { col: number; row: number }): string {
+    const x = this.spriteSvc.cols > 1 ? (t.col / (this.spriteSvc.cols - 1)) * 100 : 0;
+    const y = this.spriteSvc.rows > 1 ? (t.row / (this.spriteSvc.rows - 1)) * 100 : 0;
+    return `${x}% ${y}%`;
+  }
+}

@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 
 import { environment } from 'src/environments/environment';
 import { supabase } from '@/services/supabase';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 
 interface MosaicItem {
   hashId: string;
@@ -14,7 +15,7 @@ interface MosaicItem {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PhunkImageComponent],
   selector: 'app-mosaic',
   template: `
     @if (allItems.length) {
@@ -31,10 +32,8 @@ interface MosaicItem {
               [routerLink]="isDragging ? null : ['details', item.hashId]"
               (click)="onItemClick($event)"
               [title]="'#' + item.tokenId">
-              <img
-                [src]="getImageUrl(item)"
-                loading="lazy"
-                decoding="async"
+              <app-phunk-image
+                [sha]="item.sha"
                 draggable="false"
               />
             </a>
@@ -210,7 +209,7 @@ export class MosaicComponent implements OnChanges {
     else this.cols = 50;
   }
 
-  getImageUrl(item: MosaicItem): string {
-    return environment.staticUrl + '/static/images/' + item.sha;
-  }
+  // Tiles render through app-phunk-image, which resolves each sha against the
+  // sprite sheets. The mosaic draws up to 2,500 at once, so this is the view that
+  // benefits most from one sheet request replacing one request per tile.
 }

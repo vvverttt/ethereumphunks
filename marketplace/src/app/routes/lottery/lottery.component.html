@@ -193,7 +193,11 @@
       <div class="won-list">
         @for (prize of wonPrizes(); track prize.token_id) {
           <div class="won-item">
-            <img [src]="getWinImageUrl(prize)" width="80" height="80" />
+            @if (prize.sha) {
+              <app-phunk-image [sha]="prize.sha" />
+            } @else {
+              <img src="/assets/images/lottery/philip.png" width="80" height="80" />
+            }
             <div class="won-info">
               <span class="won-collection">{{ prize.collection_slug }}</span>
               <span class="won-id">#{{ prize.token_id }}</span>

@@ -17,12 +17,21 @@ const args = process.argv.slice(2);
 const configArg = args.find(arg => arg.startsWith('--configuration='));
 const config = configArg ? configArg.split('=')[1] : null;
 
-if (!config || !['mainnet', 'sepolia'].includes(config)) {
-  logError('Please specify a valid configuration: --configuration=mainnet or --configuration=sepolia');
+if (!config || !['mainnet-ipfs', 'mainnet', 'sepolia'].includes(config)) {
+  logError('Please specify a valid configuration: --configuration=mainnet-ipfs, --configuration=mainnet or --configuration=sepolia');
+  process.exit(1);
+}
+
+// mainnet-ipfs is the one to pin: it is the only configuration whose staticUrl is empty,
+// so its build carries the collection images and attribute JSON inside the folder. A pin
+// made from `mainnet` leaves every tile fetching from Supabase, which rate-limits.
+if (config === 'mainnet') {
+  logError('The `mainnet` build points images at Supabase and must not be pinned — use --configuration=mainnet-ipfs.');
   process.exit(1);
 }
 
 const ensGatewayByConfig = {
+  'mainnet-ipfs': 'quantumphunks.eth.limo',
   mainnet: 'etherphunks.eth.limo',
   sepolia: 'sepolia.etherphunks.eth.limo',
 };

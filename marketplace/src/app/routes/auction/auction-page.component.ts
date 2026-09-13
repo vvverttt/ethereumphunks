@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, signal, effect } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -11,6 +11,8 @@ import { getWalletClient, getChainId, reconnect } from '@wagmi/core';
 import { environment } from 'src/environments/environment';
 import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
+import { SpriteService } from '@/services/sprite.service';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
 import { BuyNowWhitelistService } from '@/services/buy-now-whitelist.service';
 import { ThemeService } from '@/services/theme.service';
@@ -43,12 +45,15 @@ const BUYNOW_TIER2_ETH = '0.167';
     PhunkInfoComponent,
     BidPanelComponent,
     AuctionSliderComponent,
+    PhunkImageComponent,
   ],
   providers: [AuctionService],
   templateUrl: './auction-page.component.html',
   styleUrls: ['./auction-page.component.scss'],
 })
 export class AuctionPageComponent implements OnInit, OnDestroy {
+
+  private readonly spriteSvc = inject(SpriteService);
 
   connected$ = this.store.select(appStateSelectors.selectConnected);
   walletAddress$ = this.store.select(appStateSelectors.selectWalletAddress);
@@ -134,9 +139,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   private merkleTree: string[][] = [];
   private get rpcClient() { return this.web3Svc.l1Client; }
 
-  getImageUrl(item: { sha: string }): string {
-    return environment.staticUrl + '/static/images/' + item.sha;
-  }
+  // Pool and owned-item tiles render through app-phunk-image, which resolves the
+  // sha against the sprite sheets itself, so no URL is built here any more.
 
   selectV67(item: any) {
     this.selectedV67 = this.selectedV67?.hashId === item.hashId ? null : item;
@@ -529,7 +533,11 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         this.auctionSvc.getBidHistory(auctionData.auctionId).then(h => this.bids.set(h)).catch(() => {});
 
         if (eth) {
-          this.phunkImage.set(`${this.staticUrl}/static/images/${eth.sha}`);
+          // Sprite-backed data URL where the art is packed, the plain file URL
+          // otherwise. Data URLs are same-origin, so the colour sampling this
+          // image feeds still works.
+          const img = await this.spriteSvc.url(eth.sha);
+          this.phunkImage.set(img);
           this.phunkTokenId.set(eth.tokenId);
           this.phunkSlug.set(eth.slug);
           this.phunkSha.set(eth.sha);
@@ -539,7 +547,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
             hashId: auctionData.hashId,
             winner: auctionData.bidder || '',
             amount: auctionData.amount ?? 0n,
-            imageUrl: `${this.staticUrl}/static/images/${eth.sha}`,
+            imageUrl: img,
             tokenId: eth.tokenId,
             slug: eth.slug,
             settledTimestamp: auctionData.startTime,
@@ -622,7 +630,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       this.bids.set(bidHistory);
 
       if (eth) {
-        this.phunkImage.set(`${this.staticUrl}/static/images/${eth.sha}`);
+        this.phunkImage.set(await this.spriteSvc.url(eth.sha));
         this.phunkTokenId.set(eth.tokenId);
         this.phunkSlug.set(eth.slug);
         this.phunkSha.set(eth.sha);

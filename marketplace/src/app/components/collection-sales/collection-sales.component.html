@@ -8,12 +8,7 @@
           [title]="'#' + displayId(sale)">
 
           <div class="image-wrapper">
-            <img
-              [lazyLoad]="dataSvc.staticUrl + '/static/images/' + sale.sha"
-              [defaultImage]="'assets/loadingphunk.png'"
-              width="120"
-              height="120"
-            />
+            <app-phunk-image [sha]="sale.sha" />
           </div>
         </a>
       }

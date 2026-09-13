@@ -1,3 +1,11 @@
+# Bundled collection images are stored by sha with no file extension, the way Supabase
+# serves them, so a host has nothing to derive a type from. Both eth.limo and the Pages
+# deploy send X-Content-Type-Options: nosniff, which stops the browser from working it
+# out itself, so declare it here. Content is addressed by hash and can never change.
+/static/images/*
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
 /ngsw.json
   Cache-Control: no-cache, no-store, must-revalidate
 

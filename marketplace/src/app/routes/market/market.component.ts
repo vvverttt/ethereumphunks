@@ -9,6 +9,7 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { MarketFiltersComponent } from '@/components/market-filters/market-filters.component';
 import { SlideoutComponent } from '@/components/slideout/slideout.component';
 import { CommentsComponent } from '@/components/comments/comments.component';
@@ -62,6 +63,7 @@ const defaultActionState = {
     ReactiveFormsModule,
 
     PhunkGridComponent,
+    PhunkImageComponent,
     MarketFiltersComponent,
     SlideoutComponent,
     CommentsComponent,

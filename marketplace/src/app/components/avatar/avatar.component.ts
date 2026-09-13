@@ -1,9 +1,10 @@
-import { Component, input, effect, model } from '@angular/core';
+import { Component, inject, input, effect, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 
 import { Web3Service } from '@/services/web3.service';
 import { DataService } from '@/services/data.service';
+import { SpriteService } from '@/services/sprite.service';
 
 import { environment } from 'src/environments/environment';
 
@@ -18,6 +19,8 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./avatar.component.scss']
 })
 export class AvatarComponent {
+
+  private readonly spriteSvc = inject(SpriteService);
 
   address = input.required<string>();
   src = model<string>('');
@@ -35,7 +38,7 @@ export class AvatarComponent {
 
       avatar = await this.dataSvc.getUserAvatar(this.address());
       if (avatar) {
-        this.src.set(`${environment.staticUrl}/static/images/${avatar}`);
+        this.src.set(await this.spriteSvc.url(avatar));
         return;
       }
     })

@@ -18,4 +18,8 @@ export const environment = {
   ...mainnet,
   staticUrl: '',
   imageCdnUrl: '',
+  // Only this build ships sprite sheets (`build-sprite.mjs` runs after the bundle
+  // step), so only this build should go looking for the index. Everywhere else the
+  // lookup would 404 on every load and every tile would fall back anyway.
+  sprites: true,
 };

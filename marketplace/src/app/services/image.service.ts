@@ -1,12 +1,15 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
+
+import { SpriteService } from './sprite.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageService {
+
+  private readonly spriteSvc = inject(SpriteService);
 
   constructor(private http: HttpClient) {}
 
@@ -34,8 +37,12 @@ export class ImageService {
    * @returns ArrayBuffer of the image
    */
   public async fetchSupportedImageBySha(sha: string): Promise<ArrayBuffer> {
-    // console.log('fetchImageBySha', sha);
-    const imageResponse = await fetch(environment.staticUrl + '/static/images/' + sha, {
+    // Packed art has no file of its own any more, so resolve through the sprite
+    // service: it hands back a data URL for anything in a sheet and the original
+    // file URL for everything else (the large rock art, the few GIFs). Both fetch
+    // the same way, and a data URL costs no network round trip.
+    const url = await this.spriteSvc.url(sha);
+    const imageResponse = await fetch(url, {
       cache: 'force-cache',
       headers: {
         'Cache-Control': 'max-age=31536000' // 1 year

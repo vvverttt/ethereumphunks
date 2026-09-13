@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { GlobalState } from '@/models/global-state';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import { supabase } from '@/services/supabase';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { environment } from 'src/environments/environment';
@@ -15,6 +16,9 @@ const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
 const CACHE_VERSION = 26;
+
+/** Pseudo-tab that stacks every section on one page instead of showing one at a time. */
+const ALL_TAB = 'All';
 
 const COMBINED_SLUGS = ['cryptophunksv67', 'ethsrocks', 'quantummissingphunksv67', 'quantumdystophunkzv67'];
 
@@ -75,6 +79,14 @@ export interface AttrSection {
   rows: AttrRow[];
 }
 
+/** A section plus its own totals, for the stacked All view. */
+export interface AllSection extends AttrSection {
+  /** Distinct values this trait type has. */
+  values: number;
+  /** Times this trait type is applied across the collection. */
+  uses: number;
+}
+
 export interface CountRow {
   numTraits: number;
   count: number;
@@ -94,7 +106,7 @@ interface CacheEntry {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, DecimalPipe],
+  imports: [CommonModule, RouterModule, DecimalPipe, PhunkImageComponent],
   selector: 'app-collection-attributes',
   templateUrl: './collection-attributes.component.html',
   styleUrls: ['./collection-attributes.component.scss'],
@@ -125,17 +137,72 @@ export class CollectionAttributesComponent implements OnInit {
 
   readonly staticUrl = environment.staticUrl;
 
+
   tabs = computed<string[]>(() => {
-    const names: string[] = [];
+    const names: string[] = [ALL_TAB];
     if (this.activeTypeSection()) names.push(this.activeTypeSection()!.name);
     names.push(...this.activeSections().map(s => s.name));
     if (this.activeCountRows().length) names.push('Attribute Count');
     return names;
   });
 
+  /** True when the single-page view is selected. */
+  showAll = computed<boolean>(() => this.activeTab() === ALL_TAB);
+
+  /**
+   * Every section in tab order, for the "All" view, each carrying its own totals.
+   * Rendering them stacked means the whole trait breakdown is readable in one scroll
+   * instead of one tab at a time — the only way to compare rarity across trait types.
+   *
+   * `values` is how many distinct values that trait type has; `uses` is how many times
+   * it is applied across the collection. They differ, and both matter: Character has 562
+   * values but is worn by relatively few tokens, while Animal has 23 values covering
+   * nearly every token. `uses` can exceed the collection size for multi-value traits,
+   * where one token carries several values of the same type.
+   */
+  allSections = computed<AllSection[]>(() => {
+    const raw: AttrSection[] = [];
+    const type = this.activeTypeSection();
+    if (type) raw.push(type);
+    raw.push(...this.activeSections());
+
+    return raw.map(s => ({
+      name: s.name,
+      rows: s.rows,
+      values: s.rows.length,
+      uses: s.rows.reduce((sum, r) => sum + r.count, 0),
+    }));
+  });
+
+  /**
+   * The same sections ranked by how heavily each is used, for the breakdown under the
+   * summary. Ranking by `uses` rather than alphabetically shows at a glance which trait
+   * types actually cover the collection — Hair leads on 11,835 while Artist has 1.
+   */
+  allSectionsByUse = computed<AllSection[]>(() =>
+    [...this.allSections()].sort((a, b) => b.uses - a.uses)
+  );
+
+  /** Distinct trait values across every section — the All view's summary line. */
+  allValueCount = computed<number>(() =>
+    this.allSections().reduce((sum, s) => sum + s.values, 0)
+  );
+
+  /** Every trait application across the collection, summed over all sections. */
+  allUseCount = computed<number>(() =>
+    this.allSections().reduce((sum, s) => sum + s.uses, 0)
+  );
+
+  /** Average trait values carried per token — uses divided by collection size. */
+  avgTraitsPerItem = computed<string>(() => {
+    const total = this.activeTotalItems();
+    if (!total) return '0';
+    return (this.allUseCount() / total).toFixed(1);
+  });
+
   activeSection = computed<AttrSection | null>(() => {
     const tab = this.activeTab();
-    if (!tab) return null;
+    if (!tab || tab === ALL_TAB) return null;
     if (this.activeTypeSection()?.name === tab) return this.activeTypeSection();
     return this.activeSections().find(s => s.name === tab) ?? null;
   });
@@ -192,8 +259,9 @@ export class CollectionAttributesComponent implements OnInit {
           this.sections.set(cached.sections);
           this.countRows.set(cached.countRows);
           const tabParam = this.route.snapshot.queryParamMap.get('tab');
-          const allTabs = [cached.typeSection?.name, ...cached.sections.map((s: AttrSection) => s.name), 'Attribute Count'];
-          const initialTab = tabParam && allTabs.includes(tabParam) ? tabParam : (cached.typeSection?.name || cached.sections[0]?.name || '');
+          const allTabs = [ALL_TAB, cached.typeSection?.name, ...cached.sections.map((s: AttrSection) => s.name), 'Attribute Count'];
+          // Land on the stacked view by default; an explicit ?tab= still wins.
+          const initialTab = tabParam && allTabs.includes(tabParam) ? tabParam : ALL_TAB;
           this.activeTab.set(initialTab);
           this.loading.set(false);
           return;
@@ -315,8 +383,8 @@ export class CollectionAttributesComponent implements OnInit {
     this.sections.set(sections);
     this.countRows.set(countRows);
     const tabParam = this.route.snapshot.queryParamMap.get('tab');
-    const allTabs = [typeSection.name, ...sections.map(s => s.name), 'Attribute Count'];
-    const initialTab = tabParam && allTabs.includes(tabParam) ? tabParam : typeSection.name;
+    const allTabs = [ALL_TAB, typeSection.name, ...sections.map(s => s.name), 'Attribute Count'];
+    const initialTab = tabParam && allTabs.includes(tabParam) ? tabParam : ALL_TAB;
     this.activeTab.set(initialTab);
     this.loading.set(false);
 

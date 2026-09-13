@@ -3,6 +3,11 @@
 // instead of reaching out to Supabase on every tile.
 //
 //   node bundle-static-assets.mjs <buildDir> [cacheDir]
+//   node bundle-static-assets.mjs --config <name> [cacheDir]
+//
+// The --config form reads the dated output path prebuild.js just wrote into
+// angular.json, the same way copy-to-fixed.js does, so the folder that gets
+// pinned can carry a date without this step guessing at it.
 //
 // Layout produced (matches the URLs the app builds when staticUrl is ''):
 //   <buildDir>/static/images/{sha}              — no extension, as Supabase serves it
@@ -16,11 +21,24 @@ import fs from 'fs';
 import path from 'path';
 import http2 from 'http2';
 
-const BUILD = process.argv[2];
+const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
+
+// `--config <name>` resolves the build dir from angular.json instead of taking a
+// literal path, so a dated output folder stays correct across a midnight boundary.
+const CONFIG = process.argv[2] === '--config' ? process.argv[3] : null;
+const BUILD = CONFIG
+  ? path.join(
+      HERE,
+      JSON.parse(fs.readFileSync(path.join(HERE, 'angular.json'), 'utf8'))
+        .projects['etherphunks-market'].architect.build.configurations[CONFIG].outputPath.base,
+      'browser',
+    )
+  : process.argv[2];
+
 // Persist fetched images between builds. `ng build` wipes the output dir every
 // run, so without this each deploy would re-pull ~9.5k objects (~9 minutes, and
 // storage starts 429ing). Gitignored; delete it to force a clean re-fetch.
-const CACHE = process.argv[3] || path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '.image-cache');
+const CACHE = (CONFIG ? process.argv[4] : process.argv[3]) || path.join(HERE, '.image-cache');
 const HOST = 'https://kfnprbhoodmgfhqojmqp.supabase.co';
 const PREFIX = '/storage/v1/object/public';
 const KEY = 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe';
@@ -62,8 +80,8 @@ async function main() {
   const slugs = JSON.parse(collRes.body.toString('utf8')).map(c => c.slug);
   console.log(`collections: ${slugs.length}`);
 
-  // Attribute JSON per collection, and the union of every sha they reference.
-  const shas = new Set();
+  // Attribute JSON per collection. Not every collection has one — missing-phunks and
+  // dysto-phunks carry no traits — so these files decide metadata only, never coverage.
   let attrBytes = 0;
   for (const slug of slugs) {
     const dest = path.join(dataDir, `${slug}_attributes.json`);
@@ -71,16 +89,31 @@ async function main() {
     if (fs.existsSync(dest)) { body = fs.readFileSync(dest); }
     else {
       const r = await get(c0, `${PREFIX}/data/${slug}_attributes.json`);
-      if (r.status !== 200) { console.log(`  ${slug}: no attributes (${r.status}) — skipped`); continue; }
+      if (r.status !== 200) { console.log(`  ${slug}: no attributes (${r.status}) — traits omitted`); continue; }
       body = r.body; fs.writeFileSync(dest, body);
     }
     attrBytes += body.length;
-    try { Object.keys(JSON.parse(body.toString('utf8'))).forEach(s => shas.add(s)); }
-    catch { console.log(`  ${slug}: attributes not a sha map — images resolved elsewhere`); }
     console.log(`  ${slug}: ${(body.length / 1048576).toFixed(2)} MB`);
   }
+  console.log(`attributes total ${(attrBytes / 1048576).toFixed(2)} MB\n`);
+
+  // Which images to bundle comes from the ethscriptions table, not from the attribute
+  // files. Every call site in the app builds `staticUrl + /static/images/{sha}` from a
+  // row's sha, so the table IS the set of images the site can ask for — phunks, the
+  // ERC-721 collections and plain ethscriptions alike. Deriving it from attributes
+  // instead silently dropped the 319 items in the two trait-less collections, and those
+  // tiles then 404'd against a bundle that has no Supabase to fall back to.
+  const shas = new Set();
+  for (let offset = 0; ; offset += 1000) {
+    const r = await get(c0, `/rest/v1/ethscriptions?select=sha&limit=1000&offset=${offset}&apikey=${KEY}`);
+    if (r.status !== 200) throw new Error(`ethscriptions fetch failed at offset ${offset}: ${r.status}`);
+    const rows = JSON.parse(r.body.toString('utf8'));
+    for (const row of rows) if (row.sha) shas.add(row.sha);
+    if (rows.length < 1000) break;
+  }
   c0.close();
-  console.log(`attributes total ${(attrBytes / 1048576).toFixed(2)} MB, ${shas.size} distinct shas\n`);
+  if (!shas.size) throw new Error('ethscriptions returned no shas — refusing to ship an imageless bundle');
+  console.log(`${shas.size} distinct shas to bundle\n`);
 
   // Images: copy from cache where possible, fetch the rest.
   const all = [...shas];
@@ -125,7 +158,8 @@ async function main() {
 
   const count = fs.readdirSync(imgDir).length;
   let bytes = 0; for (const f of fs.readdirSync(imgDir)) bytes += fs.statSync(path.join(imgDir, f)).size;
-  console.log(`\nbundled ${count} images (${(bytes / 1048576).toFixed(2)} MB) + ${slugs.length} attribute files`);
+  const attrFiles = fs.readdirSync(dataDir).length;
+  console.log(`\nbundled ${count} images (${(bytes / 1048576).toFixed(2)} MB) + ${attrFiles} attribute files`);
   if (count !== shas.size) console.log(`  ! expected ${shas.size} — folder holds ${count}`);
 }
 

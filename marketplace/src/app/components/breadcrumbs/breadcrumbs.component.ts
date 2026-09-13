@@ -36,6 +36,32 @@ export class BreadcrumbsComponent {
   transparentCheck = new FormControl(false);
   gbaCheck = new FormControl(false);
 
+  // ── Phunk Box ──────────────────────────────────────────────────────────────
+  // Shape, background colour, border and output size. Every one of these is
+  // applied in BOTH the preview canvas and the saved file — the two go through
+  // different code paths (paintCanvas vs aspectCorrectBlob), so the shared
+  // geometry lives in shapePath()/decorate() rather than being written twice.
+  shapeControl = new FormControl<'square' | 'round' | 'hex'>('square');
+  bgColorControl = new FormControl<string | null>(null);   // null = collection default
+  borderCheck = new FormControl(false);
+  borderColorControl = new FormControl('#000000');
+  sizeControl = new FormControl(480);
+
+  readonly shapes: { value: 'square' | 'round' | 'hex'; label: string }[] = [
+    { value: 'square', label: 'Square' },
+    { value: 'round', label: 'Round' },
+    { value: 'hex', label: 'Hexagon' },
+  ];
+
+  readonly sizes = [480, 1200];
+
+  /** Palette offered for the background. `null` is the collection's own colour. */
+  readonly bgPalette: (string | null)[] = [
+    null,
+    '#c3ff00', '#67cdff', '#ffdf00', '#ff00cc', '#9e03ff',
+    '#02ff64', '#ff4d4d', '#ffffff', '#000000', '#638596',
+  ];
+
   pfpOptionsActive = signal(false);
   downloadEnabled = signal(false);
   customizeEnabled = signal(false);
@@ -70,6 +96,48 @@ export class BreadcrumbsComponent {
       tap((v) => { if (v) this.transparentCheck.setValue(false, { emitEvent: false }); }),
       tap(() => this.paintCanvas(this.phunk()!))
     ).subscribe();
+
+    // Phunk Box controls all just repaint. Size also resizes the canvas, which
+    // paintCanvas already does from this.width/this.height.
+    // Cast to a common type: the controls hold different value types, so the
+    // array's union of valueChanges has no single callable signature.
+    const repaintOn: FormControl<any>[] = [
+      this.shapeControl as FormControl<any>,
+      this.bgColorControl as FormControl<any>,
+      this.borderCheck as FormControl<any>,
+      this.borderColorControl as FormControl<any>,
+    ];
+    for (const ctrl of repaintOn) {
+      ctrl.valueChanges.pipe(
+        filter(() => !!this.phunk()),
+        tap(() => this.paintCanvas(this.phunk()!)),
+      ).subscribe();
+    }
+
+    this.sizeControl.valueChanges.pipe(
+      filter(() => !!this.phunk()),
+      tap((v) => {
+        const size = Number(v) || 480;
+        this.width = size;
+        this.height = size;
+        // Keep the on-screen preview a constant ~240px whatever the export size,
+        // so picking 1200 doesn't blow the panel open.
+        this.scale = size / 240;
+      }),
+      tap(() => this.paintCanvas(this.phunk()!)),
+    ).subscribe();
+  }
+
+  /** Background swatch preview colour — null means "the collection's own". */
+  swatchColor(c: string | null): string {
+    return c ?? this.saveBgColorDefault();
+  }
+
+  /** The collection default, ignoring any Phunk Box override. */
+  private saveBgColorDefault(): string {
+    if (this.phunk()?.slug === 'cryptophunksv67') return '#67cdff';
+    const theme = localStorage.getItem('EtherPhunks_theme');
+    return theme === 'light' ? '#FFDF00' : '#C3FF00';
   }
 
   t(key: string): string {
@@ -82,12 +150,90 @@ export class BreadcrumbsComponent {
    * saves sit on that blue instead of the default lime. All other collections are unchanged.
    */
   private saveBgColor(phunk: Phunk | null | undefined): string {
+    // An explicit Phunk Box choice wins over the collection default.
+    const picked = this.bgColorControl.value;
+    if (picked) return picked;
     if (phunk?.slug === 'cryptophunksv67') return '#67cdff';
     const theme = localStorage.getItem('EtherPhunks_theme');
     return theme === 'light' ? '#FFDF00' : '#C3FF00';
   }
 
+  /**
+   * Traces the selected shape on a w×h canvas.
+   *
+   * Used as a clip for the fill and the art, and again as a stroke for the
+   * border, so the two can never disagree. Hexagon is pointy-top, inset by half
+   * the border width so a stroke isn't clipped in half by the canvas edge.
+   */
+  private shapePath(ctx: CanvasRenderingContext2D, w: number, h: number, inset = 0): void {
+    const shape = this.shapeControl.value ?? 'square';
+    const x = inset, y = inset, cw = w - inset * 2, ch = h - inset * 2;
+
+    ctx.beginPath();
+    if (shape === 'round') {
+      ctx.ellipse(x + cw / 2, y + ch / 2, cw / 2, ch / 2, 0, 0, Math.PI * 2);
+    } else if (shape === 'hex') {
+      const cx = x + cw / 2, cy = y + ch / 2;
+      const rx = cw / 2, ry = ch / 2;
+      for (let i = 0; i < 6; i++) {
+        // -90° start = flat sides left/right, point top and bottom.
+        const a = (Math.PI / 180) * (60 * i - 90);
+        const px = cx + rx * Math.cos(a);
+        const py = cy + ry * Math.sin(a);
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    } else {
+      ctx.rect(x, y, cw, ch);
+    }
+  }
+
+  /** Stroke the shape outline, if the border option is on. */
+  private strokeBorder(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+    if (!this.borderCheck.value) return;
+    // Scales with output size so a 1200px export isn't hairline. The phunk is
+    // drawn on top, so the visible band is roughly half this — hence the fairly
+    // generous ratio.
+    const lw = Math.max(3, Math.round(Math.min(w, h) * 0.0405));
+    ctx.save();
+    ctx.lineWidth = lw;
+    ctx.strokeStyle = this.borderColorControl.value || '#000000';
+    ctx.lineJoin = 'round';
+    this.shapePath(ctx, w, h, lw / 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /**
+   * Shape + border packaged for the animated exporters, which apply it to every
+   * frame. Returns undefined when there is nothing to do, so GIF/APNG keep their
+   * cheaper opaque-palette path for a plain square export.
+   */
+  private frameDecoration(): { clip?: (c: CanvasRenderingContext2D, w: number, h: number) => void;
+                               border?: (c: CanvasRenderingContext2D, w: number, h: number) => void } | undefined {
+    const wantsClip = this.shapeClips;
+    const wantsBorder = !!this.borderCheck.value;
+    if (!wantsClip && !wantsBorder) return undefined;
+    return {
+      clip: wantsClip ? (c, w, h) => this.shapePath(c, w, h) : undefined,
+      border: wantsBorder ? (c, w, h) => this.strokeBorder(c, w, h) : undefined,
+    };
+  }
+
+  /** True when the shape crops — used to skip clipping for square exports. */
+  private get shapeClips(): boolean {
+    return (this.shapeControl.value ?? 'square') !== 'square';
+  }
+
   async paintCanvas(phunk: Phunk): Promise<void> {
+    // The canvas only exists while the options panel is open, so this runs with
+    // nothing to draw on during the initial load effect. Still resolve the image
+    // first — that is what sets downloadEnabled and un-greys the button.
+    if (!this.pfp?.nativeElement) {
+      await this.drawPhunk(phunk).catch(() => undefined);
+      return;
+    }
+
     const transparent = this.transparentCheck.value;
     const canvas = this.pfp.nativeElement as HTMLCanvasElement;
 
@@ -111,21 +257,46 @@ export class BreadcrumbsComponent {
     this.ctx.scale(this.scale, this.scale);
 
     const gba = this.gbaCheck.value;
+    const lw = this.width / this.scale;
+    const lh = this.height / this.scale;
 
-    // Fill background
+    // Draw order is background -> border -> phunk, so the art sits in FRONT of
+    // both. A border drawn last would overlap the phunk's outer pixels and clip
+    // its silhouette; this way the stroke tucks behind it.
+    //
+    // Background and art are each clipped to the shape so round/hex corners come
+    // out genuinely transparent rather than merely covered. The border is
+    // stroked unclipped, or the clip would slice it to half width.
+
+    // 1. Background, inside the shape.
+    this.ctx.save();
+    if (this.shapeClips) {
+      this.shapePath(this.ctx, lw, lh);
+      this.ctx.clip();
+    }
     if (gba && phunk.isSupported) {
       this.ctx.fillStyle = '#9bbc0f';
-      this.ctx.fillRect(0, 0, this.width / this.scale, this.height / this.scale);
+      this.ctx.fillRect(0, 0, lw, lh);
     } else if (!transparent && phunk.isSupported) {
       this.ctx.fillStyle = this.saveBgColor(phunk);
-      this.ctx.fillRect(0, 0, this.width / this.scale, this.height / this.scale);
+      this.ctx.fillRect(0, 0, lw, lh);
     }
+    this.ctx.restore();
 
-    // Draw the phunk image
+    // 2. Border, behind the art.
+    this.strokeBorder(this.ctx, lw, lh);
+
+    // 3. The phunk, on top of both.
     const image = await this.drawPhunk(phunk);
     if (!image) return;
 
-    this.ctx.drawImage(image, 0, 0, this.width / this.scale, this.height / this.scale);
+    this.ctx.save();
+    if (this.shapeClips) {
+      this.shapePath(this.ctx, lw, lh);
+      this.ctx.clip();
+    }
+    this.ctx.drawImage(image, 0, 0, lw, lh);
+    this.ctx.restore();
 
     // Apply GBA 4-color palette quantization
     if (gba) {
@@ -202,15 +373,31 @@ export class BreadcrumbsComponent {
 
         try {
           const { apngToGif } = await import('@/utils/apng');
-          blob = await apngToGif(bytes.buffer, this.width, this.height, bgColor);
+          blob = await apngToGif(bytes.buffer, this.width, this.height, bgColor, this.frameDecoration());
           ext = 'gif';
         } catch {
           blob = await (await fetch(decodedData)).blob();
           ext = 'png';
         }
       } else if (isGif && decodedData) {
-        // GIF: download the original bytes untouched so it stays animated.
-        blob = await (await fetch(decodedData)).blob();
+        // GIF: upscale to the same size as a static download so the pixels stay
+        // crisp. Shipping the original bytes left animated items at their native
+        // 24x24 while every static item downloaded at 480x480 — they looked blurry
+        // side by side. Falls back to the untouched bytes if the browser has no
+        // ImageDecoder, so it stays animated either way.
+        const base64 = decodedData.split(',')[1];
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+        const bgColor = this.transparentCheck.value ? null : this.saveBgColor(phunk);
+
+        try {
+          const { upscaleGif } = await import('@/utils/gif');
+          blob = await upscaleGif(bytes.buffer, this.width, this.height, bgColor, this.frameDecoration());
+        } catch {
+          blob = await (await fetch(decodedData)).blob();
+        }
         ext = 'gif';
       } else if (decodedData) {
         // Any static item (phunk or rock): preserve aspect ratio (no squish or
@@ -302,8 +489,24 @@ export class BreadcrumbsComponent {
         const cx = c.getContext('2d');
         if (!cx) { reject(new Error('no 2d context')); return; }
         cx.imageSmoothingEnabled = false;
+
+        // Same shape/border treatment as the preview — this is the path the
+        // SAVED file actually takes, so without it the options would preview
+        // correctly and then download as a plain square.
+        // background -> border -> art, so the phunk sits in front of the border
+        // rather than being overlapped by it. Matches paintCanvas exactly.
+        cx.save();
+        if (this.shapeClips) { this.shapePath(cx, w, h); cx.clip(); }
         if (bgColor) { cx.fillStyle = bgColor; cx.fillRect(0, 0, w, h); }
+        cx.restore();
+
+        this.strokeBorder(cx, w, h);
+
+        cx.save();
+        if (this.shapeClips) { this.shapePath(cx, w, h); cx.clip(); }
         cx.drawImage(img, 0, 0, w, h);
+        cx.restore();
+
         c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
       };
       img.onerror = reject;
@@ -327,6 +530,11 @@ export class BreadcrumbsComponent {
 
   togglePfpOptions(): void {
     this.pfpOptionsActive.update(active => !active);
+    // The canvas lives inside the panel now, so it does not exist until this
+    // opens. Paint once Angular has created it.
+    if (this.pfpOptionsActive() && this.phunk()) {
+      setTimeout(() => this.paintCanvas(this.phunk()!));
+    }
   }
 
   clearCanvas(): void {

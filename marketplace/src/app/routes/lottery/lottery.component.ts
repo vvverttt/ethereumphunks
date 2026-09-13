@@ -1,7 +1,9 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal, computed, NgZone } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { SpriteService } from '@/services/sprite.service';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { Store } from '@ngrx/store';
 
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -43,11 +45,13 @@ const MAX_STEP_DELAY = 400;
 @Component({
   selector: 'app-lottery',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, PhunkGridComponent],
+  imports: [CommonModule, RouterModule, FormsModule, PhunkGridComponent, PhunkImageComponent],
   templateUrl: './lottery.component.html',
   styleUrls: ['./lottery.component.scss']
 })
 export class LotteryComponent implements OnInit, OnDestroy {
+
+  private readonly spriteSvc = inject(SpriteService);
 
   @ViewChild('fireworksCanvas', { static: true }) fireworksCanvas!: ElementRef<HTMLDivElement>;
 
@@ -162,7 +166,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     try {
       const philip = await this.lotterySvc.getEthscriptionByTokenId(10298);
       if (philip?.sha) {
-        this.philipImageUrl = `${this.staticUrl}/static/images/${philip.sha}`;
+        this.philipImageUrl = await this.spriteSvc.url(philip.sha);
         this.philipFallback = this.philipImageUrl;
       }
     } catch {}
@@ -288,7 +292,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
           const eth = unique[i];
           items.push({
             index: i, hashId: eth.hashId || '', sha: eth.sha || '',
-            imageUrl: eth.sha ? `${this.staticUrl}/static/images/${eth.sha}` : fallback,
+            imageUrl: eth.sha ? await this.spriteSvc.url(eth.sha) : fallback,
             flipping: false, revealed: false, rightFacing: false,
           });
         }
@@ -486,8 +490,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
       if (existingIdx !== -1) {
         winCellIndex = existingIdx;
       } else if (primary.sha) {
+        // Resolve before updating: the signal callback has to stay synchronous.
+        const primaryImage = await this.spriteSvc.url(primary.sha);
         this.gridItems.update(items => items.map((item, i) =>
-          i === winCellIndex ? { ...item, hashId: primary.hash_id, sha: primary.sha, imageUrl: `${this.staticUrl}/static/images/${primary.sha}` } : item
+          i === winCellIndex ? { ...item, hashId: primary.hash_id, sha: primary.sha, imageUrl: primaryImage } : item
         ));
       }
 
@@ -552,7 +558,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const items: LotteryGridItem[] = [];
       for (let i = 0; i < cellCount; i++) {
         const eth = demoItems[i];
-        items.push({ index: i, hashId: eth.hashId, sha: eth.sha, imageUrl: `${this.staticUrl}/static/images/${eth.sha}`, flipping: false, revealed: false, rightFacing: false });
+        items.push({ index: i, hashId: eth.hashId, sha: eth.sha, imageUrl: await this.spriteSvc.url(eth.sha), flipping: false, revealed: false, rightFacing: false });
       }
       this.spinPath = getSpinPath(cellCount);
       this.gridItems.set(items);
@@ -563,7 +569,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const winCellIndex = this.spinPath[winIndex % this.spinPath.length];
-      this.gridItems.update(current => current.map((item, i) => i === winCellIndex ? { ...item, hashId: winner.hashId, sha: winner.sha, imageUrl: `${this.staticUrl}/static/images/${winner.sha}` } : item));
+      // Resolve before updating: the signal callback has to stay synchronous.
+      const winnerImage = await this.spriteSvc.url(winner.sha);
+      this.gridItems.update(current => current.map((item, i) => i === winCellIndex ? { ...item, hashId: winner.hashId, sha: winner.sha, imageUrl: winnerImage } : item));
       this.targetWinIndex = winCellIndex;
       this.shouldDecelerate = true;
 
@@ -697,9 +705,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.totalWinsCountSub = this.lotterySvc.fetchTotalWinsCount().subscribe(count => this.totalWinsCount.set(count));
   }
 
-  getWinImageUrl(win: LotteryWin): string {
-    return win.sha ? `${this.staticUrl}/static/images/${win.sha}` : '/assets/images/lottery/philip.png';
-  }
+  // Won-prize art renders through app-phunk-image, which resolves the sha against
+  // the sprite sheets itself. The template keeps the philip.png fallback for wins
+  // that carry no sha.
 
   onSpinAgain() { window.location.reload(); }
 

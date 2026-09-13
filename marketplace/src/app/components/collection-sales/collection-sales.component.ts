@@ -7,6 +7,8 @@ import { TimeagoModule } from 'ngx-timeago';
 
 import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
+
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
 import { GlobalState } from '@/models/global-state';
@@ -39,6 +41,7 @@ import { combineLatest, of, startWith, switchMap } from 'rxjs';
     RouterModule,
     LazyLoadImageModule,
     TimeagoModule,
+    PhunkImageComponent,
     WeiToEthPipe,
     FormatCashPipe,
   ],

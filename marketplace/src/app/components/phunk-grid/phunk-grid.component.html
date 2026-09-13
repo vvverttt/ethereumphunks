@@ -88,15 +88,7 @@
         [routerLink]="phunk | itemLink">
 
         <div class="image-wrapper">
-          <img
-            [src]="phunk | imageUrlPipe"
-            loading="lazy"
-            decoding="async"
-            (load)="imgSettled($event)"
-            (error)="retryImg($event)"
-            width="50"
-            height="50"
-          />
+          <app-phunk-image [sha]="phunk.sha" />
         </div>
 
         @if (showLabels && (viewType === 'market' || viewType === 'owned')) {

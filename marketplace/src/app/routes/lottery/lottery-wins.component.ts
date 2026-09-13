@@ -8,11 +8,12 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { environment } from 'src/environments/environment';
 import { LotteryService } from '@/services/lottery.service';
 import { LotteryWin } from '@/models/lottery';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 
 @Component({
   selector: 'app-lottery-wins',
   standalone: true,
-  imports: [CommonModule, RouterModule, LazyLoadImageModule],
+  imports: [CommonModule, RouterModule, LazyLoadImageModule, PhunkImageComponent],
   templateUrl: './lottery-wins.component.html',
   styleUrls: ['./lottery-wins.component.scss']
 })
@@ -37,10 +38,6 @@ export class LotteryWinsComponent implements OnInit, OnDestroy {
     this.sub?.unsubscribe();
   }
 
-  getWinImageUrl(win: LotteryWin): string {
-    if (win.sha) {
-      return `${this.staticUrl}/static/images/${win.sha}`;
-    }
-    return '/assets/images/lottery/philip.png';
-  }
+  // Tiles render through app-phunk-image, which resolves the sha against the
+  // sprite sheets; the template keeps the philip.png fallback for wins with no sha.
 }

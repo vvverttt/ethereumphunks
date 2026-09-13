@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { from, map, switchMap, tap } from 'rxjs';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
-import { ImageUrlPipe } from '@/pipes/image-url.pipe';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { Store } from '@ngrx/store';
 import { GlobalState } from '@/models/global-state';
 import { setChat } from '@/state/actions/chat.actions';
@@ -18,7 +18,7 @@ import { setChat } from '@/state/actions/chat.actions';
   imports: [
     AsyncPipe,
     NgTemplateOutlet,
-    ImageUrlPipe,
+    PhunkImageComponent,
     FormsModule,
 
     TimeagoModule,
