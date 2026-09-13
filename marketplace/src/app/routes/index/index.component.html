@@ -68,7 +68,14 @@
         </div>
       </section>
 
-      @defer {
+      <!-- `on immediate`, not the default idle trigger. Everything below the activity
+           feed — owned, listings, bids, the collection grid, sales, stats — lives in
+           this block, and a bare @defer waits for requestIdleCallback. On the bundled
+           build the splash decodes art on the main thread at startup, so idle can be
+           starved and the page renders the activity feed and then nothing at all, with
+           no error because there is no @error branch. This is primary content; it
+           should not wait for a quiet moment that may never arrive. -->
+      @defer (on immediate) {
         @if ((owned$ | async); as ownedData) {
           @if (ownedData.length) {
             @if ((connected$ | async) && (walletAddress$ | async); as address) {
