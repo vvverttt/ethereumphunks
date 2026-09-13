@@ -22,4 +22,10 @@ export const environment = {
   // step), so only this build should go looking for the index. Everywhere else the
   // lookup would 404 on every load and every tile would fall back anyway.
   sprites: true,
+  // No service worker on the pinned build. Each re-pin is a new CID on the same
+  // origin with freshly hashed filenames, so a worker from an earlier pin keeps
+  // control and requests files the new pin does not have — which the catch-all
+  // redirect answers with index.html, leaving a blank page and an empty console.
+  // See disable-sw.mjs, which also neutralises workers already registered.
+  serviceWorker: false,
 };

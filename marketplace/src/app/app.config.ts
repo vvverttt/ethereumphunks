@@ -5,6 +5,8 @@ import { provideHttpClient } from '@angular/common/http';
 
 import { TimeagoClock, TimeagoDefaultClock, TimeagoDefaultFormatter, TimeagoFormatter } from 'ngx-timeago';
 
+import { environment } from 'src/environments/environment';
+
 import { routes } from '@/routes/routes';
 import { CustomReuseStrategy } from '@/routes/route.strategy';
 
@@ -78,7 +80,9 @@ export const config = {
       }),
     ),
     provideServiceWorker('ngsw-worker.js', {
-        enabled: !isDevMode() && !isWalletBrowser(),
+        // `serviceWorker: false` on the IPFS build — a worker cannot survive re-pinning,
+        // since every pin changes the hashed filenames under the same origin.
+        enabled: !isDevMode() && !isWalletBrowser() && (environment as any).serviceWorker !== false,
         registrationStrategy: 'registerWhenStable:30000'
     })
 ]
