@@ -6,6 +6,35 @@ import { SpriteService } from '@/services/sprite.service';
 import { environment } from 'src/environments/environment';
 
 /**
+ * Caps how many tiles may fetch their own file at once.
+ *
+ * Sheet-backed art needs no gate — one request paints 512 tiles. But the ~133 images
+ * too large or too animated to pack still load individually, and a page of them
+ * (ethsrocks is 106 at roughly 60 KB each) fires the lot in one burst. The .eth.limo
+ * gateway answers a burst with HTTP 429, which broke images and, when it caught a JS
+ * chunk or the stylesheet, took the whole page down with "page isn't working".
+ *
+ * Six matches what a browser would allow over HTTP/1.1 to one host, and is low enough
+ * that the gateway does not start shedding.
+ */
+const ImageGate = (() => {
+  const MAX = 6;
+  let active = 0;
+  const waiting: (() => void)[] = [];
+  return {
+    acquire(): Promise<void> {
+      if (active < MAX) { active++; return Promise.resolve(); }
+      return new Promise<void>((resolve) => waiting.push(resolve));
+    },
+    release(): void {
+      const next = waiting.shift();
+      if (next) next();          // hand the slot straight over
+      else active = Math.max(0, active - 1);
+    },
+  };
+})();
+
+/**
  * Draws one phunk by sha, from a sprite sheet where possible and from its own file
  * otherwise.
  *
@@ -93,21 +122,38 @@ export class PhunkImageComponent {
   readonly src = computed(() => {
     const sha = this.sha();
     if (!sha) return 'assets/loadingphunk.png';
+    // Hold until a slot is free, so a page of unpacked art cannot flood the gateway.
+    if (!this.slot()) return 'assets/loadingphunk.png';
     const cdn = (environment as any).imageCdnUrl || environment.staticUrl;
     const n = this.attempt();
     return `${cdn}/static/images/${sha}` + (n ? `?r=${n}` : '');
   });
 
+  /** Granted once this tile is allowed to start its own request. */
+  private readonly slot = signal(false);
+
   constructor() {
-    // Drop the placeholder only once the sheet has actually decoded.
     queueMicrotask(() => {
       const t = this.tile();
-      if (t) void this.spriteSvc.loadSheet(t.sheet).then(() => this.settle());
+      if (t) {
+        // Sheet-backed: one request serves 512 tiles, so no gate is needed. Drop the
+        // placeholder once the sheet has actually decoded.
+        void this.spriteSvc.loadSheet(t.sheet).then(() => this.settle());
+        return;
+      }
+      // Its own file. Queue for a slot rather than starting immediately.
+      void ImageGate.acquire().then(() => this.slot.set(true));
     });
+  }
+
+  /** Frees this tile's slot for the next queued one. */
+  private release(): void {
+    if (this.slot()) ImageGate.release();
   }
 
   /** Marks the tile painted so the wrapper's placeholder background is dropped. */
   settle(): void {
+    this.release();
     this.el.nativeElement.parentElement?.classList.add('img-loaded');
   }
 
@@ -123,7 +169,10 @@ export class PhunkImageComponent {
       this.settle();
       return;
     }
-    setTimeout(() => this.attempt.set(n + 1), 500 * (n + 1) + Math.floor(Math.random() * 300));
+    // Exponential, not linear. The gateway answers a burst with HTTP 429, and a
+    // linear retry re-floods it while it is still shedding load.
+    const wait = 600 * Math.pow(2, n) + Math.floor(Math.random() * 400);
+    setTimeout(() => this.attempt.set(n + 1), wait);
   }
 
   backgroundSize(): string {
