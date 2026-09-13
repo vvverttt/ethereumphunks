@@ -17,7 +17,7 @@
   </div>
 
   <p class="links">
-    {{ t('version') }}: {{ version }}<br />
+    {{ t('version') }}: {{ version }} ({{ buildDate }})<br />
     @if (contracts$ | async; as c) {
       @if (c.nft) {
         <span i18n>Collection</span>: <a [href]="explorerUrl + '/address/' + c.nft" target="_blank"><app-address [address]="c.nft" /></a><br />

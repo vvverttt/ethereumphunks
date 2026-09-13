@@ -44,10 +44,17 @@ import { environment } from 'src/environments/environment';
     }
   `,
   styles: [`
+    /* Square by aspect-ratio, not height 100%.
+     *
+     * The markup this replaced was an img with width and height attributes, inside a
+     * wrapper that set width 100% and left height to the image. A host of height 100%
+     * resolves against that auto height and collapses to zero, which blanked the
+     * activity rows entirely. Deriving height from width reproduces what the img did
+     * and works whether or not the parent has a definite height. */
     :host {
       display: block;
       width: 100%;
-      height: 100%;
+      aspect-ratio: 1 / 1;
     }
 
     .sprite-tile {

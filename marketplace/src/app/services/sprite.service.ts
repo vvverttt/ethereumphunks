@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, WritableSignal, signal } from '@angular/core';
 
 import { environment } from 'src/environments/environment';
 
@@ -42,11 +42,15 @@ export class SpriteService {
   private index: SpriteIndex | null = null;
   private lookup = new Map<string, number>();
   private sheetLoads = new Map<number, Promise<void>>();
+  private sheetAttempts = new Map<number, WritableSignal<number>>();
   private sheetImages = new Map<number, Promise<HTMLImageElement>>();
   private tileUrls = new Map<string, string>();
 
   private readonly base = environment.staticUrl;
   private readonly enabled = !!(environment as any).sprites;
+
+  /** Build generation. Bumping the app version retires every cached sheet and index. */
+  private readonly gen = environment.version;
 
   constructor() {
     if (this.enabled) void this.load();
@@ -54,7 +58,11 @@ export class SpriteService {
 
   private async load(): Promise<void> {
     try {
-      const res = await fetch(`${this.base}/static/sprite.json`, { cache: 'force-cache' });
+      // Versioned, and deliberately NOT force-cache. The index and the sheets are one
+      // unit: a cached index read against a newer build's sheets maps every sha to the
+      // wrong tile, which shows as art from entirely the wrong collection. Tying both
+      // to the app version means a new build can never read the previous generation.
+      const res = await fetch(`${this.base}/static/sprite.json?v=${this.gen}`);
       if (!res.ok) return;
       const idx: SpriteIndex = await res.json();
       if (!idx?.shas || !idx.prefix) return;
@@ -85,25 +93,55 @@ export class SpriteService {
     };
   }
 
+  /**
+   * A sheet's URL, carrying its retry counter.
+   *
+   * Reading the counter here is deliberate: it is a signal, so a tile's binding
+   * re-evaluates when a retry bumps it and the browser refetches instead of sitting
+   * on a cached failure.
+   */
   sheetUrl(sheet: number): string {
-    return `${this.base}/static/sprite-${sheet}.png`;
+    const n = this.attemptOf(sheet)();
+    return `${this.base}/static/sprite-${sheet}.png?v=${this.gen}` + (n ? `&r=${n}` : '');
+  }
+
+  private attemptOf(sheet: number) {
+    let s = this.sheetAttempts.get(sheet);
+    if (!s) {
+      s = signal(0);
+      this.sheetAttempts.set(sheet, s);
+    }
+    return s;
   }
 
   /**
    * Resolves once a sheet has decoded, so a tile can drop its placeholder at the
    * right moment rather than flashing empty art. Every tile on a sheet shares one
    * promise, and the browser collapses the requests into a single fetch anyway.
+   *
+   * Retries matter more here than they did per-file. Each sheet holds 512 tiles of
+   * consecutive token ids, so one unreachable sheet blanks a whole contiguous range
+   * rather than a single tile — and the individual files it replaced are gone, so
+   * there is nothing to fall back to. Observed live: an IPFS gateway briefly failed
+   * one sheet and ~500 consecutive phunks vanished.
    */
   loadSheet(sheet: number): Promise<void> {
     let p = this.sheetLoads.get(sheet);
     if (!p) {
       p = new Promise<void>((resolve) => {
-        const img = new Image();
-        // Resolve on error too: a tile revealing a blank cell beats one stuck
-        // behind a placeholder forever.
-        img.onload = () => resolve();
-        img.onerror = () => resolve();
-        img.src = this.sheetUrl(sheet);
+        const attempt = (n: number) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => {
+            if (n >= 4) return resolve(); // give up; the cell stays empty
+            setTimeout(() => {
+              this.attemptOf(sheet).set(n + 1); // re-renders every tile on this sheet
+              attempt(n + 1);
+            }, 500 * (n + 1) + Math.floor(Math.random() * 300));
+          };
+          img.src = this.sheetUrl(sheet);
+        };
+        attempt(this.attemptOf(sheet)());
       });
       this.sheetLoads.set(sheet, p);
     }

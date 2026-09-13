@@ -80,22 +80,42 @@ async function main() {
   const slugs = JSON.parse(collRes.body.toString('utf8')).map(c => c.slug);
   console.log(`collections: ${slugs.length}`);
 
-  // Attribute JSON per collection. Not every collection has one — missing-phunks and
-  // dysto-phunks carry no traits — so these files decide metadata only, never coverage.
+  // Attribute JSON per collection. Two collections were renamed but their Storage
+  // objects were not, so they still live under the old `og-` filenames — the app
+  // reaches for the same names via DataService.ATTRIBUTE_FILE_OVERRIDES. Bundling
+  // them by plain slug fetched a 404 and shipped a build with no traits for either,
+  // which is what "no attributes — traits omitted" was quietly reporting.
+  // Keep this in step with that override map.
+  const FILE_OVERRIDES = {
+    'missing-phunks': 'og-missing-phunks',
+    'dysto-phunks': 'og-dysto-phunks',
+  };
+
   let attrBytes = 0;
+  let attrMissing = 0;
   for (const slug of slugs) {
-    const dest = path.join(dataDir, `${slug}_attributes.json`);
+    const name = `${FILE_OVERRIDES[slug] ?? slug}_attributes.json`;
+    const dest = path.join(dataDir, name);
     let body;
     if (fs.existsSync(dest)) { body = fs.readFileSync(dest); }
     else {
-      const r = await get(c0, `${PREFIX}/data/${slug}_attributes.json`);
-      if (r.status !== 200) { console.log(`  ${slug}: no attributes (${r.status}) — traits omitted`); continue; }
+      const r = await get(c0, `${PREFIX}/data/${name}`);
+      if (r.status !== 200) {
+        attrMissing++;
+        console.log(`  ${slug}: NO ATTRIBUTES (${r.status}) for ${name} — traits will be missing`);
+        continue;
+      }
       body = r.body; fs.writeFileSync(dest, body);
     }
     attrBytes += body.length;
-    console.log(`  ${slug}: ${(body.length / 1048576).toFixed(2)} MB`);
+    console.log(`  ${slug}: ${name} ${(body.length / 1048576).toFixed(2)} MB`);
   }
-  console.log(`attributes total ${(attrBytes / 1048576).toFixed(2)} MB\n`);
+  console.log(`attributes total ${(attrBytes / 1048576).toFixed(2)} MB` + (attrMissing ? `, ${attrMissing} MISSING` : ''));
+  if (attrMissing) {
+    console.error(`\n${attrMissing} collection(s) have no attributes file — refusing to ship a build whose trait filters silently do nothing`);
+    process.exit(1);
+  }
+  console.log('');
 
   // Which images to bundle comes from the ethscriptions table, not from the attribute
   // files. Every call site in the app builds `staticUrl + /static/images/{sha}` from a

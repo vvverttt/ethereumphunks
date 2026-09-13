@@ -10,6 +10,16 @@ const __dirname = path.dirname(__filename);
 const timestamp = moment().format('MMMD').toLowerCase();
 const angularJsonPath = path.join(__dirname, 'angular.json');
 
+// Stamp today's date into appConfig so the footer reports which build is live.
+const appConfigPath = path.join(__dirname, 'src', 'environments', 'app.ts');
+const buildDate = moment().format('YYYY-MM-DD');
+const appConfigSrc = fs.readFileSync(appConfigPath, 'utf8');
+const stamped = appConfigSrc.replace(/buildDate: '[^']*'/, `buildDate: '${buildDate}'`);
+if (stamped !== appConfigSrc) {
+  fs.writeFileSync(appConfigPath, stamped);
+  console.log(`Build date: ${buildDate}`);
+}
+
 let angularJson = JSON.parse(fs.readFileSync(angularJsonPath, 'utf8'));
 
 // Update the outputPath for each configuration. mainnet-ipfs is dated too: it is the

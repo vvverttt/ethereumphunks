@@ -75,17 +75,37 @@ function pngSize(file) {
   return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
 }
 
+/**
+ * Animated PNGs carry an `acTL` chunk. A sheet can only hold one frame, so packing
+ * one silently flattens it to its first frame and the art stops moving. 26 of these
+ * exist in the collection and all of them were being flattened, so they are excluded
+ * and keep their own file.
+ */
+function isAnimated(file) {
+  // acTL must appear before the first IDAT; reading the head is enough and avoids
+  // pulling every image fully into memory.
+  const buf = Buffer.alloc(4096);
+  const fd = fs.openSync(file, 'r');
+  const read = fs.readSync(fd, buf, 0, 4096, 0);
+  fs.closeSync(fd);
+  return buf.subarray(0, read).includes(Buffer.from('acTL'));
+}
+
 const names = fs.readdirSync(imgDir);
 console.log(`scanning ${names.length} images…`);
 
 // Group by dimensions so the dominant tile size is found rather than assumed.
 const sizes = new Map();
+let animated = 0;
 for (const n of names) {
-  const d = pngSize(path.join(imgDir, n));
+  const full = path.join(imgDir, n);
+  const d = pngSize(full);
+  if (d && isAnimated(full)) { animated++; continue; } // keeps its own file
   const key = d ? `${d.w}x${d.h}` : 'not-png';
   if (!sizes.has(key)) sizes.set(key, []);
   sizes.get(key).push(n);
 }
+if (animated) console.log(`${animated} animated PNGs excluded — a sheet cannot hold more than one frame`);
 
 const [tileKey, packable] = [...sizes.entries()]
   .filter(([k]) => k !== 'not-png')

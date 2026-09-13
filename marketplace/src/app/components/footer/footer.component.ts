@@ -27,6 +27,10 @@ export class FooterComponent {
 
   version = environment.version;
 
+  // Stamped by prebuild.js at build time. A version alone could not tell a stale
+  // cached shell from a fresh deploy; the date makes that obvious at a glance.
+  buildDate = (environment as any).buildDate;
+
   // Contract set shown in the footer — overridden per ERC-721C collection (e.g. cryptophunksv67
   // shows the QuantumPhunks market/lottery + the NFT contract) based on the current collection.
   contracts$ = this.store.select(selectMarketSlug).pipe(
