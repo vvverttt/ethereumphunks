@@ -52,8 +52,17 @@ export class SpriteService {
   /** Build generation. Bumping the app version retires every cached sheet and index. */
   private readonly gen = environment.version;
 
+  /**
+   * Settles when the index has loaded (or failed). Anything resolving a sha to a URL
+   * must await this: the per-file images the sheets replaced are deleted from the
+   * build, so a lookup that runs before the index arrives falls back to a URL that
+   * 404s. That is what stopped the splash art loading — it asks for bytes during
+   * startup, well before the index is back.
+   */
+  private readonly loaded: Promise<void>;
+
   constructor() {
-    if (this.enabled) void this.load();
+    this.loaded = this.enabled ? this.load() : Promise.resolve();
   }
 
   private async load(): Promise<void> {
@@ -159,6 +168,9 @@ export class SpriteService {
    */
   async url(sha: string | null | undefined): Promise<string> {
     if (!sha) return 'assets/loadingphunk.png';
+
+    // Never decide before the index is in — see `loaded`.
+    await this.loaded;
 
     const cached = this.tileUrls.get(sha);
     if (cached) return cached;
