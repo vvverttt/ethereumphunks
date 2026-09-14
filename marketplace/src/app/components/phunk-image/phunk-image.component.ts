@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, computed, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { SpriteService } from '@/services/sprite.service';
@@ -102,7 +102,7 @@ const ImageGate = (() => {
     }
   `],
 })
-export class PhunkImageComponent {
+export class PhunkImageComponent implements OnDestroy {
 
   readonly sha = input<string | null | undefined>(null);
   readonly alt = input<string>('');
@@ -133,7 +133,14 @@ export class PhunkImageComponent {
   private readonly slot = signal(false);
 
   constructor() {
-    queueMicrotask(() => {
+    // Wait for the index before deciding. Until it lands `tile()` is null for every
+    // sha, so deciding early made all 250 tiles on a page queue for one of six gate
+    // slots; the sheet-backed ones then switched to sprites and never released, and
+    // the handful that genuinely needed a slot waited forever on the placeholder.
+    void (async () => {
+      await this.spriteSvc.whenLoaded();
+      if (this.destroyed) return;
+
       const t = this.tile();
       if (t) {
         // Sheet-backed: one request serves 512 tiles, so no gate is needed. Drop the
@@ -142,14 +149,28 @@ export class PhunkImageComponent {
         return;
       }
       // Its own file. Queue for a slot rather than starting immediately.
-      void ImageGate.acquire().then(() => this.slot.set(true));
-    });
+      await ImageGate.acquire();
+      if (this.destroyed) { ImageGate.release(); return; }
+      this.slot.set(true);
+    })();
   }
 
-  /** Frees this tile's slot for the next queued one. */
-  private release(): void {
-    if (this.slot()) ImageGate.release();
+  private destroyed = false;
+
+  /** A scrolled-away tile must hand its slot back, or the queue drains to a halt. */
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.release();
   }
+
+  /** Frees this tile's slot for the next queued one, at most once. */
+  private release(): void {
+    if (!this.slot() || this.released) return;
+    this.released = true;
+    ImageGate.release();
+  }
+
+  private released = false;
 
   /** Marks the tile painted so the wrapper's placeholder background is dropped. */
   settle(): void {

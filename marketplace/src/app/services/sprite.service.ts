@@ -65,6 +65,14 @@ export class SpriteService {
     this.loaded = this.enabled ? this.load() : Promise.resolve();
   }
 
+  /**
+   * Settles when the index is in. Callers must await this before concluding a sha is
+   * NOT sheet-backed: until the index lands, `tile()` returns null for everything.
+   */
+  whenLoaded(): Promise<void> {
+    return this.loaded;
+  }
+
   private async load(): Promise<void> {
     try {
       // Versioned, and deliberately NOT force-cache. The index and the sheets are one
