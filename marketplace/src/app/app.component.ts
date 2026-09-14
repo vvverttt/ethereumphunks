@@ -57,13 +57,10 @@ export class AppComponent implements OnInit {
 
   env = environment;
 
-  /**
-   * Shown in the intro popup. Hardcoded rather than derived from a build
-   * timestamp: this should say when the SITE meaningfully changed, not when a
-   * bundle happened to be rebuilt. Bump it when you ship something worth
-   * telling people about.
-   */
-  readonly lastSiteUpdate = 'September 6, 2026';
+  // The intro popup used to carry a hardcoded "Last site update" date. It went stale
+  // the moment anything shipped without someone remembering to bump it, and a wrong
+  // date is worse than none — it made a fresh deploy look like an old one. The footer
+  // already shows the real build date, stamped by prebuild on every build.
 
   chatActive$ = this.store.select(selectChatActive).pipe(map(({ active }) => active));
 
