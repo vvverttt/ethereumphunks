@@ -34,6 +34,24 @@
 
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#67CDFF">
+
+  <script>
+    // Paint the right collection palette before Angular boots.
+    //
+    // ThemeService sets data-collection once it knows which collection is on screen,
+    // but an item page cannot know that until its data arrives, so a reload showed the
+    // default lime and then snapped to blue. The URL tells us on collection routes; for
+    // /details/:hash it does not, so fall back to the collection last viewed.
+    // Purely cosmetic — the app corrects it as soon as the real collection is known.
+    (function () {
+      try {
+        var seg = location.pathname.split('/').filter(Boolean)[0] || '';
+        var last = localStorage.getItem('EtherPhunks_collection') || '';
+        var slug = /^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' ? seg : last;
+        if (slug) document.documentElement.setAttribute('data-collection', slug);
+      } catch (e) { /* private mode: the flash is cosmetic, never block boot */ }
+    })();
+  </script>
 </head>
 <body ontouchstart="" style="-webkit-tap-highlight-color: rgba(0,0,0,0);">
   <app-root id="root"></app-root>

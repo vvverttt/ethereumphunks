@@ -122,8 +122,15 @@
 // documentElement has data-collection="cryptophunksv67" (set by ThemeService), so every
 // other collection keeps its default lime/pink theme untouched.
 :root[data-collection='cryptophunksv67'] {
-  // The global accent is lime (#c3ff00); retune it to the palette cyan so no lime leaks here.
-  --highlight: 121, 250, 230;            // #79fae6
+  // These four mirror ThemeService.collectionOverrides exactly, and they are here so the
+  // correct colours exist in CSS from the first paint. ThemeService sets them as inline
+  // styles, which only happens once Angular has booted and the collection is known — on
+  // a reload of a deep link (an item page especially) that left the lime theme showing
+  // first and flipping to blue a moment later. Keep the two in step.
+  --base-color: 103, 205, 255;          // #67cdff
+  --phunk-bg: 103, 205, 255;            // #67cdff
+  --background: 12, 20, 26;             // #0c141a
+  --highlight: 255, 255, 255;           // white — matches the override the service applies
   // market / event colors retuned to blues that sit with #648595
   --transferred-color: 100, 133, 149;   // #648595 — transfers match the base
   --bid-color: 0, 171, 255;             // #00abff

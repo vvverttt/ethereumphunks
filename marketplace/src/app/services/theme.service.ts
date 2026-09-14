@@ -137,6 +137,14 @@ export class ThemeService {
     // a specific collection without touching the others.
     if (this.activeSlug) this.document.documentElement.dataset['collection'] = this.activeSlug;
     else delete this.document.documentElement.dataset['collection'];
+    // Remembered so the next page load can paint the right palette before the app knows
+    // which collection it is showing — see the restore script in index.html. An item page
+    // cannot learn its collection until its data arrives, so without this every reload
+    // flashed the default lime first.
+    try {
+      if (this.activeSlug) localStorage.setItem('EtherPhunks_collection', this.activeSlug);
+      else localStorage.removeItem('EtherPhunks_collection');
+    } catch { /* private mode — the flash is cosmetic, never break on it */ }
     this.setThemeStyles(this.currentTheme);
   }
 
