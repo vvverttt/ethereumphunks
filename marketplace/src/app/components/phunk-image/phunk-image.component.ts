@@ -5,34 +5,13 @@ import { SpriteService } from '@/services/sprite.service';
 
 import { environment } from 'src/environments/environment';
 
-/**
- * Caps how many tiles may fetch their own file at once.
- *
- * Sheet-backed art needs no gate — one request paints 512 tiles. But the ~133 images
- * too large or too animated to pack still load individually, and a page of them
- * (ethsrocks is 106 at roughly 60 KB each) fires the lot in one burst. The .eth.limo
- * gateway answers a burst with HTTP 429, which broke images and, when it caught a JS
- * chunk or the stylesheet, took the whole page down with "page isn't working".
- *
- * Six matches what a browser would allow over HTTP/1.1 to one host, and is low enough
- * that the gateway does not start shedding.
- */
-const ImageGate = (() => {
-  const MAX = 6;
-  let active = 0;
-  const waiting: (() => void)[] = [];
-  return {
-    acquire(): Promise<void> {
-      if (active < MAX) { active++; return Promise.resolve(); }
-      return new Promise<void>((resolve) => waiting.push(resolve));
-    },
-    release(): void {
-      const next = waiting.shift();
-      if (next) next();          // hand the slot straight over
-      else active = Math.max(0, active - 1);
-    },
-  };
-})();
+// A six-at-a-time gate used to sit here, to stop the gateway answering a burst of
+// unpacked images with HTTP 429. It caused worse problems than it solved: tiles that
+// scrolled away, errored or were reused could leave the queue short, and the rocks
+// page — 106 individual images, the heaviest case — would stall with most tiles on
+// the placeholder. Images now load the ordinary way and lean on `loading="lazy"`,
+// which already limits fetches to what is near the viewport, plus the exponential
+// backoff in retry() for the 429s that do happen.
 
 /**
  * Draws one phunk by sha, from a sprite sheet where possible and from its own file
@@ -122,59 +101,31 @@ export class PhunkImageComponent implements OnDestroy {
   readonly src = computed(() => {
     const sha = this.sha();
     if (!sha) return 'assets/loadingphunk.png';
-    // Hold until a slot is free, so a page of unpacked art cannot flood the gateway.
-    if (!this.slot()) return 'assets/loadingphunk.png';
     const cdn = (environment as any).imageCdnUrl || environment.staticUrl;
     const n = this.attempt();
     return `${cdn}/static/images/${sha}` + (n ? `?r=${n}` : '');
   });
 
-  /** Granted once this tile is allowed to start its own request. */
-  private readonly slot = signal(false);
-
   constructor() {
-    // Wait for the index before deciding. Until it lands `tile()` is null for every
-    // sha, so deciding early made all 250 tiles on a page queue for one of six gate
-    // slots; the sheet-backed ones then switched to sprites and never released, and
-    // the handful that genuinely needed a slot waited forever on the placeholder.
+    // Only sheet-backed tiles need to wait for anything: their placeholder should drop
+    // when the sheet decodes. Tiles loading their own file start immediately, the way a
+    // plain img would, and the browser's own lazy loading keeps that in check.
     void (async () => {
       await this.spriteSvc.whenLoaded();
       if (this.destroyed) return;
-
       const t = this.tile();
-      if (t) {
-        // Sheet-backed: one request serves 512 tiles, so no gate is needed. Drop the
-        // placeholder once the sheet has actually decoded.
-        void this.spriteSvc.loadSheet(t.sheet).then(() => this.settle());
-        return;
-      }
-      // Its own file. Queue for a slot rather than starting immediately.
-      await ImageGate.acquire();
-      if (this.destroyed) { ImageGate.release(); return; }
-      this.slot.set(true);
+      if (t) void this.spriteSvc.loadSheet(t.sheet).then(() => this.settle());
     })();
   }
 
   private destroyed = false;
 
-  /** A scrolled-away tile must hand its slot back, or the queue drains to a halt. */
   ngOnDestroy(): void {
     this.destroyed = true;
-    this.release();
   }
-
-  /** Frees this tile's slot for the next queued one, at most once. */
-  private release(): void {
-    if (!this.slot() || this.released) return;
-    this.released = true;
-    ImageGate.release();
-  }
-
-  private released = false;
 
   /** Marks the tile painted so the wrapper's placeholder background is dropped. */
   settle(): void {
-    this.release();
     this.el.nativeElement.parentElement?.classList.add('img-loaded');
   }
 
