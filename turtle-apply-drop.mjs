@@ -25,8 +25,10 @@ if (n !== before.uris - DROP.size) throw new Error('image drop count wrong');
 if (Object.keys(keptTraits).length !== n) throw new Error('images and traits disagree after the drop');
 if (n !== 1054) throw new Error(`expected 1,054 after the drop, got ${n}`);
 
-fs.writeFileSync(`${OUT}/dataURIs-1054.json`, JSON.stringify(keptUris));
-fs.writeFileSync(`${OUT}/setTraits-1054.json`, JSON.stringify(keptTraits));
+// Same 2-space layout the originals use, so the two generations of payload can be
+// diffed against each other and read by eye.
+fs.writeFileSync(`${OUT}/dataURIs-1054.json`, JSON.stringify(keptUris, null, 2));
+fs.writeFileSync(`${OUT}/setTraits-1054.json`, JSON.stringify(keptTraits, null, 2));
 
 console.log(`dropped ${DROP.size}:  ${[...DROP].map(Number).sort((a, b) => a - b).join(', ')}`);
 console.log(`  images  ${before.uris} -> ${n}`);
