@@ -1,0 +1,359 @@
+{
+  "note": "drop these from the 1,066; their ids join the 15 never-assigned ids as free-draw turtle slots",
+  "built_at": "2026-09-23T02:57:20.123Z",
+  "arithmetic": {
+    "slots": 1081,
+    "needTurtles": 27,
+    "mayShip": 1054,
+    "staged": 1066,
+    "drop": 12
+  },
+  "drop": [
+    {
+      "tokenId": 103,
+      "animal": "Zebra",
+      "rarestTraitSeen": 27,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Beard",
+          "v": "Chinstrap"
+        },
+        {
+          "k": "Hair",
+          "v": "Messy Hair"
+        },
+        {
+          "k": "Hair",
+          "v": "Beret Red"
+        },
+        {
+          "k": "Eyes",
+          "v": "Classic Shield Black"
+        },
+        {
+          "k": "Animal",
+          "v": "Zebra"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Copper"
+        }
+      ]
+    },
+    {
+      "tokenId": 1267,
+      "animal": "Penguin",
+      "rarestTraitSeen": 27,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Plasma"
+        }
+      ]
+    },
+    {
+      "tokenId": 2728,
+      "animal": "Elephant",
+      "rarestTraitSeen": 26,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Hair",
+          "v": "Mohawk"
+        },
+        {
+          "k": "Hair",
+          "v": "Police Cap"
+        },
+        {
+          "k": "Eyes",
+          "v": "Screen Test"
+        },
+        {
+          "k": "Animal",
+          "v": "Elephant"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Neon"
+        }
+      ]
+    },
+    {
+      "tokenId": 3146,
+      "animal": "Whale",
+      "rarestTraitSeen": 26,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Female"
+        },
+        {
+          "k": "Animal",
+          "v": "Whale"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Obsidian"
+        }
+      ]
+    },
+    {
+      "tokenId": 3930,
+      "animal": "Penguin",
+      "rarestTraitSeen": 28,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Hair",
+          "v": "Do-rag"
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Amethyst"
+        }
+      ]
+    },
+    {
+      "tokenId": 4984,
+      "animal": "Hippo",
+      "rarestTraitSeen": 26,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Animal",
+          "v": "Hippo"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Ruby"
+        }
+      ]
+    },
+    {
+      "tokenId": 5414,
+      "animal": "Chimpanzee",
+      "rarestTraitSeen": 27,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Animal",
+          "v": "Chimpanzee"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Copper"
+        }
+      ]
+    },
+    {
+      "tokenId": 6020,
+      "animal": "Hippo",
+      "rarestTraitSeen": 27,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Female"
+        },
+        {
+          "k": "Animal",
+          "v": "Hippo"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Voltage"
+        }
+      ]
+    },
+    {
+      "tokenId": 6545,
+      "animal": "Trex",
+      "rarestTraitSeen": 28,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Beard",
+          "v": "Muttonchops"
+        },
+        {
+          "k": "Hair",
+          "v": "Cap Forward"
+        },
+        {
+          "k": "Eyes",
+          "v": "Classic Shield Black"
+        },
+        {
+          "k": "Animal",
+          "v": "Trex"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Amethyst"
+        }
+      ]
+    },
+    {
+      "tokenId": 7750,
+      "animal": "Zebra",
+      "rarestTraitSeen": 28,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Beard",
+          "v": "Luxurious Beard"
+        },
+        {
+          "k": "Hair",
+          "v": "Frumpy Hair"
+        },
+        {
+          "k": "Eyes",
+          "v": "3D Glasses"
+        },
+        {
+          "k": "Animal",
+          "v": "Zebra"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Amethyst"
+        }
+      ]
+    },
+    {
+      "tokenId": 8263,
+      "animal": "Flamingo",
+      "rarestTraitSeen": 27,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Cheeks",
+          "v": "Rosy Cheeks"
+        },
+        {
+          "k": "Nose",
+          "v": "Clown Nose"
+        },
+        {
+          "k": "Beard",
+          "v": "Handlebars"
+        },
+        {
+          "k": "Eyes",
+          "v": "Classic Shield Black"
+        },
+        {
+          "k": "Animal",
+          "v": "Flamingo"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Plasma"
+        }
+      ]
+    },
+    {
+      "tokenId": 9317,
+      "animal": "Triceratops",
+      "rarestTraitSeen": 28,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male"
+        },
+        {
+          "k": "Animal",
+          "v": "Triceratops"
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Amethyst"
+        }
+      ]
+    }
+  ],
+  "turtleSlots": [
+    103,
+    188,
+    777,
+    1267,
+    1399,
+    2183,
+    2728,
+    2806,
+    3146,
+    3752,
+    3930,
+    4214,
+    4984,
+    5019,
+    5130,
+    5414,
+    6020,
+    6545,
+    6642,
+    7248,
+    7750,
+    8006,
+    8263,
+    8279,
+    9034,
+    9317,
+    9392
+  ],
+  "blanks": [
+    188,
+    777,
+    1399,
+    2183,
+    2806,
+    3752,
+    4214,
+    5019,
+    5130,
+    6642,
+    7248,
+    8006,
+    8279,
+    9034,
+    9392
+  ]
+}

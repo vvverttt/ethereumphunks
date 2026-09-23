@@ -1,0 +1,14 @@
+{
+  "note": "tokenImage() read straight off the contract for every slot the batch would touch; length 0 = no art stored",
+  "built_at": "2026-09-23T03:07:57.431Z",
+  "contract": "0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3",
+  "rpc": "https://ethereum-rpc.publicnode.com",
+  "totalSupply": 8919,
+  "audited": 1081,
+  "writeList": 1054,
+  "turtleSlots": 27,
+  "empty": 1081,
+  "occupied": 0,
+  "unreadable": 0,
+  "collisions": []
+}

@@ -1,0 +1,497 @@
+{
+  "note": "6.7x last sale where there is one; median for never-sold; #10196 by hand; #10197 held back",
+  "built_at": "2026-09-22T05:59:23.571Z",
+  "multiplier": 6.7,
+  "medianEth": 0.469,
+  "holder": "0x19d57a31b982d3d75c16358795a4d19c803e4a72",
+  "lots": [
+    {
+      "tokenId": 10019,
+      "slug": "missing-phunks",
+      "hashId": "0x503d9c667ba206cdf66bd912af64472fbd6482bd1060030c793cac300304e70e",
+      "lastSale": 0.3,
+      "lastSaleDate": "2024-08-10",
+      "reserveEth": 2.01,
+      "reserveWei": "2010000000000000000",
+      "basis": "6.7x last sale (0.3 on 2024-08-10)"
+    },
+    {
+      "tokenId": 10030,
+      "slug": "missing-phunks",
+      "hashId": "0x755bdfe9f18b8b1e86a865b40ddd575bc73539ae7dcad6fc33735c6453221c48",
+      "lastSale": 0.29,
+      "lastSaleDate": "2024-08-10",
+      "reserveEth": 1.943,
+      "reserveWei": "1943000000000000000",
+      "basis": "6.7x last sale (0.29 on 2024-08-10)"
+    },
+    {
+      "tokenId": 10017,
+      "slug": "missing-phunks",
+      "hashId": "0xcbeeb05d99265ea99f51517551683965294733e6e3599d0b0f435e707e3a78ca",
+      "lastSale": 0.25,
+      "lastSaleDate": "2024-08-10",
+      "reserveEth": 1.675,
+      "reserveWei": "1675000000000000000",
+      "basis": "6.7x last sale (0.25 on 2024-08-10)"
+    },
+    {
+      "tokenId": 10008,
+      "slug": "missing-phunks",
+      "hashId": "0x690dddae8a59535c32ebc26f8d214837a1f6e72839b6ebc22f84ffb6d23ba4da",
+      "lastSale": 0.19,
+      "lastSaleDate": "2024-08-23",
+      "reserveEth": 1.273,
+      "reserveWei": "1273000000000000000",
+      "basis": "6.7x last sale (0.19 on 2024-08-23)"
+    },
+    {
+      "tokenId": 10039,
+      "slug": "missing-phunks",
+      "hashId": "0xb50110de0be4d7f8f5d1f7a64187f1460379df4824cf9e5e8c6f237d9e8b6d4f",
+      "lastSale": 0.15,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 1.005,
+      "reserveWei": "1005000000000000000",
+      "basis": "6.7x last sale (0.15 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10171,
+      "slug": "missing-phunks",
+      "hashId": "0xb44566b52b99f7570b75473a7e9c1d08bb247ed1eacb6e92a1a96d34efd60a3e",
+      "lastSale": 0.135,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 0.9045,
+      "reserveWei": "904500000000000000",
+      "basis": "6.7x last sale (0.135 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10149,
+      "slug": "missing-phunks",
+      "hashId": "0x7973b86d8429f2be042a3bc9eae161deed9dc26268506f8301710d81384d7e12",
+      "lastSale": 0.1337,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 0.89579,
+      "reserveWei": "895790000000000000",
+      "basis": "6.7x last sale (0.1337 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10236,
+      "slug": "missing-phunks",
+      "hashId": "0xcb4f1143392cbacbc1dcb6ae7a9ac6f91636e349106ca9e1f0d768bf582d5599",
+      "lastSale": 0.1337,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 0.89579,
+      "reserveWei": "895790000000000000",
+      "basis": "6.7x last sale (0.1337 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10174,
+      "slug": "missing-phunks",
+      "hashId": "0xfc6d410f7795632bc5c57619bbb96ed3b903e7770ce98f8c3943ecaf60bf9f6c",
+      "lastSale": 0.1337,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 0.89579,
+      "reserveWei": "895790000000000000",
+      "basis": "6.7x last sale (0.1337 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10235,
+      "slug": "missing-phunks",
+      "hashId": "0x5bfd39ca20d382be219849f70f918a1419eca46fc790520b7bfb69e416cd726e",
+      "lastSale": 0.1296942069,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 0.868951,
+      "reserveWei": "868951000000000000",
+      "basis": "6.7x last sale (0.1296942069 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10241,
+      "slug": "missing-phunks",
+      "hashId": "0xac8dc2541c6fc1907380a56840d2dc2027f6e15c8db27a3aadc960d12649419d",
+      "lastSale": 0.12,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 0.804,
+      "reserveWei": "804000000000000000",
+      "basis": "6.7x last sale (0.12 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10164,
+      "slug": "missing-phunks",
+      "hashId": "0xca064b64f6fe402ece71b2e7de7790dec841dbc0683b32e83b90e29687a41153",
+      "lastSale": 0.12,
+      "lastSaleDate": "2024-08-12",
+      "reserveEth": 0.804,
+      "reserveWei": "804000000000000000",
+      "basis": "6.7x last sale (0.12 on 2024-08-12)"
+    },
+    {
+      "tokenId": 10196,
+      "slug": "missing-phunks",
+      "hashId": "0x92aede6364e1cec7b1dac431c6172566b69799d05566bb11df933ced552c3cb1",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.67,
+      "reserveWei": "670000000000000000",
+      "basis": "never sold — priced by hand"
+    },
+    {
+      "tokenId": 10071,
+      "slug": "missing-phunks",
+      "hashId": "0xe6a9056daca891914f6f9bcd7c4d3babb5087b88981070e7cbce43609cbae325",
+      "lastSale": 0.0999,
+      "lastSaleDate": "2024-08-30",
+      "reserveEth": 0.66933,
+      "reserveWei": "669330000000000000",
+      "basis": "6.7x last sale (0.0999 on 2024-08-30)"
+    },
+    {
+      "tokenId": 10002,
+      "slug": "missing-phunks",
+      "hashId": "0x4be00bcb8c0d5b6a7b0f25810c2fdd8def2c734029ed4ae45b1eb78304ecbb82",
+      "lastSale": 0.09,
+      "lastSaleDate": "2024-10-05",
+      "reserveEth": 0.603,
+      "reserveWei": "603000000000000000",
+      "basis": "6.7x last sale (0.09 on 2024-10-05)"
+    },
+    {
+      "tokenId": 10135,
+      "slug": "missing-phunks",
+      "hashId": "0x4ef7ed11f9ef5b8c8129bcb833498fa91218c46126aad20aac6e800b740356ad",
+      "lastSale": 0.09,
+      "lastSaleDate": "2024-09-03",
+      "reserveEth": 0.603,
+      "reserveWei": "603000000000000000",
+      "basis": "6.7x last sale (0.09 on 2024-09-03)"
+    },
+    {
+      "tokenId": 10146,
+      "slug": "missing-phunks",
+      "hashId": "0x42b57791186bf16a86c1b5baf3a69333ffe7f41f14157d5461bbbc369c1cc8c0",
+      "lastSale": 0.0888,
+      "lastSaleDate": "2024-08-21",
+      "reserveEth": 0.59496,
+      "reserveWei": "594960000000000000",
+      "basis": "6.7x last sale (0.0888 on 2024-08-21)"
+    },
+    {
+      "tokenId": 10189,
+      "slug": "missing-phunks",
+      "hashId": "0x738cce2c55d94c721e0af8912dc6daf32c22f505b6e53f66e3302c1a2747c696",
+      "lastSale": 0.081234,
+      "lastSaleDate": "2024-09-03",
+      "reserveEth": 0.544268,
+      "reserveWei": "544268000000000000",
+      "basis": "6.7x last sale (0.081234 on 2024-09-03)"
+    },
+    {
+      "tokenId": 10213,
+      "slug": "missing-phunks",
+      "hashId": "0xece0b311d5c7590173b85e65a2c8830e50b3cfe59f7421d4f67f27e93e9d296e",
+      "lastSale": 0.07,
+      "lastSaleDate": "2024-09-03",
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "6.7x last sale (0.07 on 2024-09-03)"
+    },
+    {
+      "tokenId": 10239,
+      "slug": "missing-phunks",
+      "hashId": "0x12cc29ac67dd9db3732c9555291b93d9b81de48209d56749384a324939f5ad96",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10091,
+      "slug": "missing-phunks",
+      "hashId": "0x6e322a842b843bf5f8fb32bfc7abeb4172b589d0ff6c5ef58ea93d115d087a3b",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10240,
+      "slug": "missing-phunks",
+      "hashId": "0x74c5eec4a9bc476c0450514b628c6259aa98a7f3a957d3b1bf0a2175a88e6a8c",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10127,
+      "slug": "missing-phunks",
+      "hashId": "0xbe7768c8cbfe2bf6af32029d11e2ca40d4c2e01f48c79d52b355759fc1aa84e6",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10141,
+      "slug": "missing-phunks",
+      "hashId": "0xd10220aba287cf647ff041914069d4f93b1a316d0c98ceb540e05619a48805d3",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10185,
+      "slug": "missing-phunks",
+      "hashId": "0xd219af338db744cec59a2984bd6a33e60c4bfeb46782e402f5aa4712b8f4e41b",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10217,
+      "slug": "missing-phunks",
+      "hashId": "0xd63bad8c261becaef2f3eb4b74ead2fb808444e4a2944d164362dcb73c206f3d",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10096,
+      "slug": "missing-phunks",
+      "hashId": "0xe81ccd0e6017575fdb8d9d6949b9e2f0d6de708b2be7e92e43983f80e0daf7b7",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10097,
+      "slug": "missing-phunks",
+      "hashId": "0xef6e730f4c8137333a3611a7f25d061e63f2c9f4c5ac82fe1dc1366344fb9258",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10181,
+      "slug": "missing-phunks",
+      "hashId": "0xfb42cc3bcb57cd278833809b8e664c50224eb7ec7ca665ca6f454db7705f1cc4",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10082,
+      "slug": "missing-phunks",
+      "hashId": "0x32effc6407c249f0f8fab8cc76b5b086883705bd1e61edc7eeb13faf9dca78f0",
+      "lastSale": null,
+      "lastSaleDate": null,
+      "reserveEth": 0.469,
+      "reserveWei": "469000000000000000",
+      "basis": "never sold — median of the priced group (0.469)"
+    },
+    {
+      "tokenId": 10228,
+      "slug": "missing-phunks",
+      "hashId": "0x15b91f640cf50ed86a89a7e4bcc29cc33f5a0ba8bfb497c3abfcd806904a497c",
+      "lastSale": 0.069,
+      "lastSaleDate": "2024-01-10",
+      "reserveEth": 0.4623,
+      "reserveWei": "462300000000000000",
+      "basis": "6.7x last sale (0.069 on 2024-01-10)"
+    },
+    {
+      "tokenId": 10173,
+      "slug": "missing-phunks",
+      "hashId": "0x0dd925bcd74de83e73d2a7df03710f79e51aef180322dec17d0b2e2757e3812c",
+      "lastSale": 0.069,
+      "lastSaleDate": "2024-08-20",
+      "reserveEth": 0.4623,
+      "reserveWei": "462300000000000000",
+      "basis": "6.7x last sale (0.069 on 2024-08-20)"
+    },
+    {
+      "tokenId": 10031,
+      "slug": "missing-phunks",
+      "hashId": "0xc2dc7824e7dc3e7dfa2174506ff0d30b83ef999bc63d6c25aae73e98d91f3070",
+      "lastSale": 0.069,
+      "lastSaleDate": "2024-12-26",
+      "reserveEth": 0.4623,
+      "reserveWei": "462300000000000000",
+      "basis": "6.7x last sale (0.069 on 2024-12-26)"
+    },
+    {
+      "tokenId": 10155,
+      "slug": "missing-phunks",
+      "hashId": "0x653c06272b63e632367b10ae77d0f83f91d9d84e31287d4a41be301dae4e234b",
+      "lastSale": 0.06,
+      "lastSaleDate": "2024-08-20",
+      "reserveEth": 0.402,
+      "reserveWei": "402000000000000000",
+      "basis": "6.7x last sale (0.06 on 2024-08-20)"
+    },
+    {
+      "tokenId": 10154,
+      "slug": "missing-phunks",
+      "hashId": "0x59e743a36c55c7bbf28a930826c1fc3329030acc50eb9e4ed9e1eec39caba7e3",
+      "lastSale": 0.05,
+      "lastSaleDate": "2024-01-13",
+      "reserveEth": 0.335,
+      "reserveWei": "335000000000000000",
+      "basis": "6.7x last sale (0.05 on 2024-01-13)"
+    },
+    {
+      "tokenId": 10121,
+      "slug": "missing-phunks",
+      "hashId": "0x7277a288741b41f4b6862d3a27261e93ff633b00376282b734c89dac26644d15",
+      "lastSale": 0.05,
+      "lastSaleDate": "2024-08-20",
+      "reserveEth": 0.335,
+      "reserveWei": "335000000000000000",
+      "basis": "6.7x last sale (0.05 on 2024-08-20)"
+    },
+    {
+      "tokenId": 10249,
+      "slug": "missing-phunks",
+      "hashId": "0x5ce155dc9ca16abff5a8b07012a6ae4ebfdfc9738d416a33538da6cc7173a26c",
+      "lastSale": 0.0496942069,
+      "lastSaleDate": "2024-08-22",
+      "reserveEth": 0.332951,
+      "reserveWei": "332951000000000000",
+      "basis": "6.7x last sale (0.0496942069 on 2024-08-22)"
+    },
+    {
+      "tokenId": 10223,
+      "slug": "missing-phunks",
+      "hashId": "0x92f46caba1cf30123ed214dcbf10e34aa3cb61cf40060cc89da296150b1e830f",
+      "lastSale": 0.0496942069,
+      "lastSaleDate": "2024-08-22",
+      "reserveEth": 0.332951,
+      "reserveWei": "332951000000000000",
+      "basis": "6.7x last sale (0.0496942069 on 2024-08-22)"
+    },
+    {
+      "tokenId": 10210,
+      "slug": "missing-phunks",
+      "hashId": "0xc0d03e15511a9d9925a954914b30a17ef9ca457febf41322a9ff2d9c08d95c59",
+      "lastSale": 0.048,
+      "lastSaleDate": "2024-01-13",
+      "reserveEth": 0.3216,
+      "reserveWei": "321600000000000000",
+      "basis": "6.7x last sale (0.048 on 2024-01-13)"
+    },
+    {
+      "tokenId": 10177,
+      "slug": "missing-phunks",
+      "hashId": "0x30f0def216ec3d32b7d7bf85343526bfb48d9e874a7e7844671e67ee223cfb36",
+      "lastSale": 0.046,
+      "lastSaleDate": "2024-08-20",
+      "reserveEth": 0.3082,
+      "reserveWei": "308200000000000000",
+      "basis": "6.7x last sale (0.046 on 2024-08-20)"
+    },
+    {
+      "tokenId": 10244,
+      "slug": "missing-phunks",
+      "hashId": "0x41f868f6bacf89e060177ca652e3d761a7de72f08cd1469bd0cead1bb80e2b15",
+      "lastSale": 0.046,
+      "lastSaleDate": "2024-08-20",
+      "reserveEth": 0.3082,
+      "reserveWei": "308200000000000000",
+      "basis": "6.7x last sale (0.046 on 2024-08-20)"
+    },
+    {
+      "tokenId": 10111,
+      "slug": "missing-phunks",
+      "hashId": "0x476f12edf2bf9508665359049851cbeab2678a818110900e827d2ea0454d8bcc",
+      "lastSale": 0.046,
+      "lastSaleDate": "2024-08-20",
+      "reserveEth": 0.3082,
+      "reserveWei": "308200000000000000",
+      "basis": "6.7x last sale (0.046 on 2024-08-20)"
+    },
+    {
+      "tokenId": 10130,
+      "slug": "missing-phunks",
+      "hashId": "0x58dce077643b72633797ccc356d84c93dc6c135af4a787b39990a445e05eb4e9",
+      "lastSale": 0.046,
+      "lastSaleDate": "2024-08-20",
+      "reserveEth": 0.3082,
+      "reserveWei": "308200000000000000",
+      "basis": "6.7x last sale (0.046 on 2024-08-20)"
+    },
+    {
+      "tokenId": 10159,
+      "slug": "missing-phunks",
+      "hashId": "0xd1d8b080793d8e6273a3d09086dcc49fedc0f9a165d7672bac743e1926912955",
+      "lastSale": 0.0429,
+      "lastSaleDate": "2026-06-07",
+      "reserveEth": 0.28743,
+      "reserveWei": "287430000000000000",
+      "basis": "6.7x last sale (0.0429 on 2026-06-07)"
+    },
+    {
+      "tokenId": 10318,
+      "slug": "dysto-phunks",
+      "hashId": "0x913860c1bdcb9eb02d4b1451ca78a13e4cec9f8a5dc6c5ae9987b623d02f9c04",
+      "lastSale": 0.035,
+      "lastSaleDate": "2024-12-14",
+      "reserveEth": 0.2345,
+      "reserveWei": "234500000000000000",
+      "basis": "6.7x last sale (0.035 on 2024-12-14)"
+    },
+    {
+      "tokenId": 10254,
+      "slug": "dysto-phunks",
+      "hashId": "0x3085479768ff416f4b9c513ba1cbb4b20ea92792b8f198e959536752df2b5a00",
+      "lastSale": 0.035,
+      "lastSaleDate": "2024-12-13",
+      "reserveEth": 0.2345,
+      "reserveWei": "234500000000000000",
+      "basis": "6.7x last sale (0.035 on 2024-12-13)"
+    },
+    {
+      "tokenId": 10226,
+      "slug": "missing-phunks",
+      "hashId": "0xda272f009032ebd4cc8149c4f81215ae3630c48edbd73b11418133e3d9a1708b",
+      "lastSale": 0.025,
+      "lastSaleDate": "2026-05-21",
+      "reserveEth": 0.1675,
+      "reserveWei": "167500000000000000",
+      "basis": "6.7x last sale (0.025 on 2026-05-21)"
+    },
+    {
+      "tokenId": 10218,
+      "slug": "missing-phunks",
+      "hashId": "0xab841635c4d7e4b05ca3fa3e99eb730f08ff0d1cf4f6642af4cf8d9fd36a7ae7",
+      "lastSale": 0.025,
+      "lastSaleDate": "2026-05-21",
+      "reserveEth": 0.1675,
+      "reserveWei": "167500000000000000",
+      "basis": "6.7x last sale (0.025 on 2026-05-21)"
+    }
+  ],
+  "held": [
+    {
+      "tokenId": 10197,
+      "slug": "missing-phunks",
+      "hashId": "0xa2305bebf95e19927ab16e9b92fdcfc77993823a3bdf5bc6ffc2ea4c76f72df8",
+      "reason": "not for sale"
+    }
+  ]
+}
