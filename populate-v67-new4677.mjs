@@ -28,6 +28,9 @@ import { createHash } from 'crypto';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { JsonRpcProvider, Wallet, Contract, Interface, formatEther, parseUnits, formatUnits } = require('./contracts/node_modules/ethers');
+// PRIVATE_KEY lives in the gitignored .env so the key never has to be typed on a command
+// line, where it would land in shell history. An env var already set still wins.
+require('./contracts/node_modules/dotenv').config();
 
 const PROXY = '0x67b850c3c8790cc7ec76261b65fde60efb6f1fe3';
 
