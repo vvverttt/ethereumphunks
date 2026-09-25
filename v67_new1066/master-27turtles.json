@@ -1,0 +1,968 @@
+{
+  "name": "CryptoPhunksV67",
+  "total_supply": 10000,
+  "collection_items": [
+    {
+      "id": "",
+      "index": 103,
+      "sha": "",
+      "name": "QuantumPhunk #103",
+      "description": "",
+      "image": "images/103.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "1987 Ethscript"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 188,
+      "sha": "",
+      "name": "QuantumPhunk #188",
+      "description": "",
+      "image": "images/188.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Light Saber"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Rise Of The Tmnt Filippo"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 777,
+      "sha": "",
+      "name": "QuantumPhunk #777",
+      "description": "",
+      "image": "images/777.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Red Mohawk"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Og Promo Zamira"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 1267,
+      "sha": "",
+      "name": "QuantumPhunk #1267",
+      "description": "",
+      "image": "images/1267.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Crazy Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Batman Giorgione"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 1399,
+      "sha": "",
+      "name": "QuantumPhunk #1399",
+      "description": "",
+      "image": "images/1399.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Top Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Idw Albrecht"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 2183,
+      "sha": "",
+      "name": "QuantumPhunk #2183",
+      "description": "",
+      "image": "images/2183.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Half Shaved"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cap"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2012 Talena"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 2728,
+      "sha": "",
+      "name": "QuantumPhunk #2728",
+      "description": "",
+      "image": "images/2728.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Do-rag"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Mirage Michaelangelo"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 2806,
+      "sha": "",
+      "name": "QuantumPhunk #2806",
+      "description": "",
+      "image": "images/2806.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Petalburn"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2003 Solina"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 3146,
+      "sha": "",
+      "name": "QuantumPhunk #3146",
+      "description": "",
+      "image": "images/3146.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2021 Leonardo"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 3752,
+      "sha": "",
+      "name": "QuantumPhunk #3752",
+      "description": "",
+      "image": "images/3752.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Wild White Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2021 Selene"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 3930,
+      "sha": "",
+      "name": "QuantumPhunk #3930",
+      "description": "",
+      "image": "images/3930.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Pilot Helmet"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Og Promo Lymera"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 4214,
+      "sha": "",
+      "name": "QuantumPhunk #4214",
+      "description": "",
+      "image": "images/4214.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Full Smile"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Cowboy Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Rise of the TMNT Michaelangelo"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 4984,
+      "sha": "",
+      "name": "QuantumPhunk #4984",
+      "description": "",
+      "image": "images/4984.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Tiara"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2012 Selene"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 5019,
+      "sha": "",
+      "name": "QuantumPhunk #5019",
+      "description": "",
+      "image": "images/5019.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Light Saber"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Left Smile"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Mirage Venus"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 5130,
+      "sha": "",
+      "name": "QuantumPhunk #5130",
+      "description": "",
+      "image": "images/5130.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Diamond Crown"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Batman Jennika"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 5414,
+      "sha": "",
+      "name": "QuantumPhunk #5414",
+      "description": "",
+      "image": "images/5414.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Military Cap"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "1987 Guido"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 6020,
+      "sha": "",
+      "name": "QuantumPhunk #6020",
+      "description": "",
+      "image": "images/6020.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Light Saber"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2003 Tiziano"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 6545,
+      "sha": "",
+      "name": "QuantumPhunk #6545",
+      "description": "",
+      "image": "images/6545.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Blonde Bob"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Idw Azuria"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 6642,
+      "sha": "",
+      "name": "QuantumPhunk #6642",
+      "description": "",
+      "image": "images/6642.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Beanie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "OG Promo Leonardo"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 7248,
+      "sha": "",
+      "name": "QuantumPhunk #7248",
+      "description": "",
+      "image": "images/7248.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Light Saber"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Batman Raphael"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 7750,
+      "sha": "",
+      "name": "QuantumPhunk #7750",
+      "description": "",
+      "image": "images/7750.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Light Saber"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "IDW Amoly"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 8006,
+      "sha": "",
+      "name": "QuantumPhunk #8006",
+      "description": "",
+      "image": "images/8006.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Left Smile"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Shaved Head"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2003 Donatello"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 8263,
+      "sha": "",
+      "name": "QuantumPhunk #8263",
+      "description": "",
+      "image": "images/8263.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Vampire Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Mirage Donatello"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 8279,
+      "sha": "",
+      "name": "QuantumPhunk #8279",
+      "description": "",
+      "image": "images/8279.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Peak Spike"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2012 Raphael"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 9034,
+      "sha": "",
+      "name": "QuantumPhunk #9034",
+      "description": "",
+      "image": "images/9034.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Light Saber"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "2021 Venus"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 9317,
+      "sha": "",
+      "name": "QuantumPhunk #9317",
+      "description": "",
+      "image": "images/9317.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Chain"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Orange Side"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "Rise of the TMNT Larota"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "id": "",
+      "index": 9392,
+      "sha": "",
+      "name": "QuantumPhunk #9392",
+      "description": "",
+      "image": "images/9392.png",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Light Saber"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Full Smile"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Eye Mask"
+        },
+        {
+          "trait_type": "Animal",
+          "value": "Turtle"
+        },
+        {
+          "trait_type": "Skin Tone",
+          "value": "1987 Hans"
+        },
+        {
+          "trait_type": "Attribute Count",
+          "value": "6"
+        }
+      ]
+    }
+  ]
+}

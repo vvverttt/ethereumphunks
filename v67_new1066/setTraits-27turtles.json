@@ -1,0 +1,510 @@
+{
+  "103": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Purple Hair",
+      "Eye Mask",
+      "Turtle",
+      "1987 Ethscript",
+      "5"
+    ]
+  },
+  "188": {
+    "keys": [
+      "Type",
+      "Weapon",
+      "Emotion",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Light Saber",
+      "Smile",
+      "Eye Mask",
+      "Turtle",
+      "Rise Of The Tmnt Filippo",
+      "6"
+    ]
+  },
+  "777": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Red Mohawk",
+      "Eye Mask",
+      "Turtle",
+      "Og Promo Zamira",
+      "5"
+    ]
+  },
+  "1267": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Crazy Hair",
+      "Eye Mask",
+      "Turtle",
+      "Batman Giorgione",
+      "5"
+    ]
+  },
+  "1399": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Top Hat",
+      "Eye Mask",
+      "Turtle",
+      "Idw Albrecht",
+      "5"
+    ]
+  },
+  "2183": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Half Shaved",
+      "Cap",
+      "Eye Mask",
+      "Turtle",
+      "2012 Talena",
+      "6"
+    ]
+  },
+  "2728": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Do-rag",
+      "Eye Mask",
+      "Turtle",
+      "Mirage Michaelangelo",
+      "5"
+    ]
+  },
+  "2806": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Petalburn",
+      "Eye Mask",
+      "Turtle",
+      "2003 Solina",
+      "5"
+    ]
+  },
+  "3146": {
+    "keys": [
+      "Type",
+      "Neck",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Gold Chain",
+      "Eye Mask",
+      "Turtle",
+      "2021 Leonardo",
+      "5"
+    ]
+  },
+  "3752": {
+    "keys": [
+      "Type",
+      "Neck",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Gold Chain",
+      "Wild White Hair",
+      "Eye Mask",
+      "Turtle",
+      "2021 Selene",
+      "6"
+    ]
+  },
+  "3930": {
+    "keys": [
+      "Type",
+      "Neck",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Gold Chain",
+      "Pilot Helmet",
+      "Eye Mask",
+      "Turtle",
+      "Og Promo Lymera",
+      "6"
+    ]
+  },
+  "4214": {
+    "keys": [
+      "Type",
+      "Emotion",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Full Smile",
+      "Cowboy Hat",
+      "Eye Mask",
+      "Turtle",
+      "Rise of the TMNT Michaelangelo",
+      "6"
+    ]
+  },
+  "4984": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Tiara",
+      "Eye Mask",
+      "Turtle",
+      "2012 Selene",
+      "5"
+    ]
+  },
+  "5019": {
+    "keys": [
+      "Type",
+      "Weapon",
+      "Emotion",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Light Saber",
+      "Left Smile",
+      "Eye Mask",
+      "Turtle",
+      "Mirage Venus",
+      "6"
+    ]
+  },
+  "5130": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Diamond Crown",
+      "Eye Mask",
+      "Turtle",
+      "Batman Jennika",
+      "5"
+    ]
+  },
+  "5414": {
+    "keys": [
+      "Type",
+      "Neck",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Gold Chain",
+      "Military Cap",
+      "Eye Mask",
+      "Turtle",
+      "1987 Guido",
+      "6"
+    ]
+  },
+  "6020": {
+    "keys": [
+      "Type",
+      "Weapon",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Light Saber",
+      "Eye Mask",
+      "Turtle",
+      "2003 Tiziano",
+      "5"
+    ]
+  },
+  "6545": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Blonde Bob",
+      "Eye Mask",
+      "Turtle",
+      "Idw Azuria",
+      "5"
+    ]
+  },
+  "6642": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Beanie",
+      "Eye Mask",
+      "Turtle",
+      "OG Promo Leonardo",
+      "5"
+    ]
+  },
+  "7248": {
+    "keys": [
+      "Type",
+      "Weapon",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Light Saber",
+      "Eye Mask",
+      "Turtle",
+      "Batman Raphael",
+      "5"
+    ]
+  },
+  "7750": {
+    "keys": [
+      "Type",
+      "Weapon",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Light Saber",
+      "Eye Mask",
+      "Turtle",
+      "IDW Amoly",
+      "5"
+    ]
+  },
+  "8006": {
+    "keys": [
+      "Type",
+      "Emotion",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Left Smile",
+      "Shaved Head",
+      "Eye Mask",
+      "Turtle",
+      "2003 Donatello",
+      "6"
+    ]
+  },
+  "8263": {
+    "keys": [
+      "Type",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Vampire Hair",
+      "Eye Mask",
+      "Turtle",
+      "Mirage Donatello",
+      "5"
+    ]
+  },
+  "8279": {
+    "keys": [
+      "Type",
+      "Emotion",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Smile",
+      "Peak Spike",
+      "Eye Mask",
+      "Turtle",
+      "2012 Raphael",
+      "6"
+    ]
+  },
+  "9034": {
+    "keys": [
+      "Type",
+      "Weapon",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Light Saber",
+      "Eye Mask",
+      "Turtle",
+      "2021 Venus",
+      "5"
+    ]
+  },
+  "9317": {
+    "keys": [
+      "Type",
+      "Neck",
+      "Hair",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Female",
+      "Gold Chain",
+      "Orange Side",
+      "Eye Mask",
+      "Turtle",
+      "Rise of the TMNT Larota",
+      "6"
+    ]
+  },
+  "9392": {
+    "keys": [
+      "Type",
+      "Weapon",
+      "Emotion",
+      "Eyes",
+      "Animal",
+      "Skin Tone",
+      "Attribute Count"
+    ],
+    "vals": [
+      "Male",
+      "Light Saber",
+      "Full Smile",
+      "Eye Mask",
+      "Turtle",
+      "1987 Hans",
+      "6"
+    ]
+  }
+}
