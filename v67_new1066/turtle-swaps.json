@@ -1,0 +1,433 @@
+{
+  "note": "ids in the 1,066 batch to redraw as Turtle — the plainest Lemur/Penguin pieces",
+  "from": [
+    "Lemur",
+    "Penguin"
+  ],
+  "excluded": {
+    "scarce": [
+      "Alien",
+      "Ape",
+      "Zombie",
+      "Robot",
+      "Madlad"
+    ],
+    "precious": "gradient|gold|diamond|silver|rainbow|holo|prism|chrome|platinum"
+  },
+  "count": 12,
+  "ids": [
+    289,
+    586,
+    1267,
+    3930,
+    4205,
+    4398,
+    5109,
+    5279,
+    6165,
+    7505,
+    7701,
+    8730
+  ],
+  "detail": [
+    {
+      "tokenId": 289,
+      "was": "Penguin",
+      "rarest_trait_seen": 11,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Hair",
+          "v": "Peak Spike",
+          "seen": 243
+        },
+        {
+          "k": "Hair",
+          "v": "Tiger Hat",
+          "seen": 11
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Bronze",
+          "seen": 23
+        }
+      ]
+    },
+    {
+      "tokenId": 586,
+      "was": "Lemur",
+      "rarest_trait_seen": 26,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Animal",
+          "v": "Lemur",
+          "seen": 341
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Sapphire",
+          "seen": 26
+        }
+      ]
+    },
+    {
+      "tokenId": 1267,
+      "was": "Penguin",
+      "rarest_trait_seen": 27,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Plasma",
+          "seen": 27
+        }
+      ]
+    },
+    {
+      "tokenId": 3930,
+      "was": "Penguin",
+      "rarest_trait_seen": 28,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Hair",
+          "v": "Do-rag",
+          "seen": 203
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Amethyst",
+          "seen": 28
+        }
+      ]
+    },
+    {
+      "tokenId": 4205,
+      "was": "Lemur",
+      "rarest_trait_seen": 13,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Female",
+          "seen": 3465
+        },
+        {
+          "k": "Lips",
+          "v": "Hot Lipstick",
+          "seen": 445
+        },
+        {
+          "k": "Hair",
+          "v": "Clown Hair Green",
+          "seen": 168
+        },
+        {
+          "k": "Hair",
+          "v": "Inout",
+          "seen": 13
+        },
+        {
+          "k": "Eyes",
+          "v": "Blueprint",
+          "seen": 41
+        },
+        {
+          "k": "Animal",
+          "v": "Lemur",
+          "seen": 341
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Copper",
+          "seen": 27
+        }
+      ]
+    },
+    {
+      "tokenId": 4398,
+      "was": "Penguin",
+      "rarest_trait_seen": 22,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Hair",
+          "v": "Hoodie",
+          "seen": 363
+        },
+        {
+          "k": "Hair",
+          "v": "M Cowboy Hat Red",
+          "seen": 22
+        },
+        {
+          "k": "Eyes",
+          "v": "Coolwave Shades",
+          "seen": 37
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Ion",
+          "seen": 27
+        }
+      ]
+    },
+    {
+      "tokenId": 5109,
+      "was": "Lemur",
+      "rarest_trait_seen": 20,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Female",
+          "seen": 3465
+        },
+        {
+          "k": "Lips",
+          "v": "Black Lipstick",
+          "seen": 446
+        },
+        {
+          "k": "Neck",
+          "v": "Choker",
+          "seen": 183
+        },
+        {
+          "k": "Hair",
+          "v": "Red Mohawk",
+          "seen": 97
+        },
+        {
+          "k": "Eyes",
+          "v": "Hunting Machine",
+          "seen": 20
+        },
+        {
+          "k": "Animal",
+          "v": "Lemur",
+          "seen": 341
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Bronze",
+          "seen": 23
+        }
+      ]
+    },
+    {
+      "tokenId": 5279,
+      "was": "Penguin",
+      "rarest_trait_seen": 26,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Female",
+          "seen": 3465
+        },
+        {
+          "k": "Lips",
+          "v": "Black Lipstick",
+          "seen": 446
+        },
+        {
+          "k": "Hair",
+          "v": "Sombrero",
+          "seen": 33
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Coral",
+          "seen": 26
+        }
+      ]
+    },
+    {
+      "tokenId": 6165,
+      "was": "Penguin",
+      "rarest_trait_seen": 14,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Hair",
+          "v": "Messy Hair Green",
+          "seen": 29
+        },
+        {
+          "k": "Hair",
+          "v": "Police Visor Hat",
+          "seen": 14
+        },
+        {
+          "k": "Eyes",
+          "v": "Night Vision",
+          "seen": 36
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Emerald",
+          "seen": 26
+        }
+      ]
+    },
+    {
+      "tokenId": 7505,
+      "was": "Penguin",
+      "rarest_trait_seen": 25,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Hair",
+          "v": "Honorable Bull",
+          "seen": 25
+        },
+        {
+          "k": "Eyes",
+          "v": "Thug Life",
+          "seen": 35
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Sapphire",
+          "seen": 26
+        }
+      ]
+    },
+    {
+      "tokenId": 7701,
+      "was": "Lemur",
+      "rarest_trait_seen": 26,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Beard",
+          "v": "Mustache",
+          "seen": 238
+        },
+        {
+          "k": "Hair",
+          "v": "Clown Hair Green",
+          "seen": 168
+        },
+        {
+          "k": "Hair",
+          "v": "Mexico Tan Cap",
+          "seen": 53
+        },
+        {
+          "k": "Eyes",
+          "v": "Fire Eyes Purple",
+          "seen": 46
+        },
+        {
+          "k": "Animal",
+          "v": "Lemur",
+          "seen": 341
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Coral",
+          "seen": 26
+        }
+      ]
+    },
+    {
+      "tokenId": 8730,
+      "was": "Penguin",
+      "rarest_trait_seen": 18,
+      "traits": [
+        {
+          "k": "Type",
+          "v": "Male",
+          "seen": 5995
+        },
+        {
+          "k": "Hair",
+          "v": "Hoodie",
+          "seen": 363
+        },
+        {
+          "k": "Hair",
+          "v": "Innout Hat",
+          "seen": 18
+        },
+        {
+          "k": "Animal",
+          "v": "Penguin",
+          "seen": 358
+        },
+        {
+          "k": "Skin Tone",
+          "v": "Obsidian",
+          "seen": 26
+        }
+      ]
+    }
+  ]
+}
