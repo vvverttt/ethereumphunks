@@ -1,4 +1,4 @@
-@use 'abstracts/variables' as *;
+﻿@use 'abstracts/variables' as *;
 @use 'abstracts/mixins' as *;
 
 // Pixel font
@@ -10,11 +10,14 @@
   font-display: block;
 }
 
-// Lottery palette
-$lottery-bg: #111a00;
-$lottery-accent: #c3ff00;
+// Lottery palette. Retuned from the site's lime to the QuantumPhunks blue so the drop
+// sits on the same #67cdff the collection's art is painted on. The ground is a deep
+// blue-grey rather than black, because the tiles carry #67cdff themselves and a pure
+// black page made them glare; it matches the --background the v67 theme override uses.
+$lottery-bg: #0c141a;
+$lottery-accent: #67cdff;
 $lottery-text: #fff;
-$lottery-muted: #c3ff00;
+$lottery-muted: #67cdff;
 
 :host {
   display: flex;
@@ -94,23 +97,54 @@ $lottery-muted: #c3ff00;
 // Header
 // =========================================================
 
+// Drop header â€” box logo over a monospace release clock.
+//
+// The reference does almost nothing here on purpose: a centred mark, a timestamp, and
+// a lot of air. Everything below the mark is plain monospace at one small size, so the
+// mark stays the only loud thing on the page.
+
+$drop-mono: 'Courier New', Courier, monospace;
+
 .lottery-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  margin-top: 3rem;
+  margin-bottom: 3.5rem;
 
-  h1 {
-    font-family: '04B_30', monospace;
-    font-size: 5rem;
-    font-weight: normal;
-    color: $lottery-accent;
-    line-height: 1.3;
-
-    span {
-      font-size: 4rem;
-      color: $lottery-accent;
-    }
+  .phupreme-mark img {
+    display: block;
+    // The source is 147x46. It was being drawn at 200 wide, a 36% upscale, which is
+    // what made the wordmark soft — there is no more detail in the file to show. Pinned
+    // to its natural width so it is never enlarged.
+    //
+    // No `image-rendering: pixelated` here either: that is for the 24px phunk art. On a
+    // smooth italic wordmark it jagged the curves instead of sharpening them.
+    width: 147px;
+    max-width: 100%;
+    height: auto;
   }
+
+  .drop-clock {
+    margin: 1.6rem 0 0;
+    font-family: $drop-mono;
+    font-size: 1.3rem;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+}
+
+@media (max-width: 600px) {
+  .lottery-header {
+    margin-top: 2rem;
+    margin-bottom: 2.5rem;
+
+    .phupreme-mark img { width: 120px; }
+    .drop-clock { font-size: 1.1rem; }
+  }
+
 }
 
 // =========================================================
@@ -184,11 +218,29 @@ $lottery-muted: #c3ff00;
     padding-bottom: 100%;
   }
 
-  // 2D card flip using scaleX — more reliable on iOS Safari than 3D rotateY+backface-visibility
+  // Every cell carries the QuantumPhunks blue behind the art, on every load. The pieces
+  // are drawn on #67cdff, so without it they read as cut-outs floating on the page.
+  // Painted on the cell rather than the card so it stays put through the flip.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 8%;
+    left: 8%;
+    right: 8%;
+    bottom: 8%;
+    background-color: $lottery-accent;
+    z-index: 0;
+  }
+
+  // 2D card flip using scaleX â€” more reliable on iOS Safari than 3D rotateY+backface-visibility
+  //
+  // Inset matches the blue tile behind it exactly, and on all four sides. The left edge
+  // used to be 10% against 8% everywhere else, which pushed every piece a little right
+  // of its own tile.
   .card-inner {
     position: absolute;
     top: 8%;
-    left: 10%;
+    left: 8%;
     right: 8%;
     bottom: 8%;
     z-index: 2;
@@ -200,8 +252,13 @@ $lottery-muted: #c3ff00;
     left: 0;
     width: 100%;
     height: 100%;
+    // `contain` + centre, not `right bottom`. Anchoring to a corner left each piece
+    // sitting wherever its own art happened to end, so the row never lined up — most
+    // visibly on pieces that carry their own background, which then sat off-centre
+    // inside the blue. The art is square and the tile is square, so contain fills it
+    // exactly while still protecting any piece that is not.
     object-fit: contain;
-    object-position: right bottom;
+    object-position: center;
     image-rendering: pixelated;
     -webkit-transition: opacity 0.12s ease, -webkit-transform 0.18s ease;
     transition: opacity 0.12s ease, transform 0.18s ease;
@@ -255,7 +312,7 @@ $lottery-muted: #c3ff00;
     left: 8%;
     right: 8%;
     bottom: 8%;
-    background-color: #c3ff00;
+    background-color: $lottery-accent;
     z-index: 1;
   }
 
@@ -331,11 +388,17 @@ $lottery-muted: #c3ff00;
   background-color: $lottery-accent;
   color: $lottery-bg;
   border: none;
-  padding: 2rem 3.5rem;
-  font-size: 2.4rem;
-  border-radius: 10px;
+  // Square, full-width and wide-tracked: a checkout bar rather than a game button.
+  // The scale-on-hover is gone too â€” a drop's buy button should feel fixed, not playful.
+  width: 100%;
+  max-width: 460px;
+  padding: 1.7rem 2rem;
+  font-size: 1.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: 0;
   cursor: pointer;
-  transition: all 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, opacity 0.3s ease;
   opacity: 0;
 
   &.shown {
@@ -344,27 +407,33 @@ $lottery-muted: #c3ff00;
 
   &:hover:not(:disabled) {
     background-color: lighten($lottery-accent, 10%);
-    transform: scale(1.05);
   }
 
   &:disabled {
-    opacity: 0.4;
+    // Struck out rather than merely faded: sold out and not-yet-open should read as
+    // states of the drop, not as a broken control.
+    background-color: transparent;
+    border: 1px solid rgba($lottery-accent, 0.35);
+    color: rgba($lottery-accent, 0.5);
     cursor: not-allowed;
   }
 
   &.demo-button {
     background-color: transparent;
-    border: 2px solid $lottery-accent;
+    border: 1px solid rgba($lottery-accent, 0.5);
     color: $lottery-accent;
-    font-size: 1.8rem;
-    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    padding: 1.1rem 2rem;
   }
 }
 
 .price-info {
-  font-family: '04B_30', monospace;
-  font-size: 1.4rem;
-  color: $lottery-muted;
+  font-family: var(--secondary-font-stack);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
   text-align: center;
 
   .pool-info {
@@ -987,3 +1056,4 @@ $lottery-muted: #c3ff00;
   margin-bottom: 0.75rem;
   resize: vertical;
 }
+

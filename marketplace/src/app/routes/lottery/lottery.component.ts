@@ -1,8 +1,9 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal, computed, NgZone } from '@angular/core';
+﻿import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SpriteService } from '@/services/sprite.service';
+import { ThemeService } from '@/services/theme.service';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { Store } from '@ngrx/store';
 
@@ -37,6 +38,36 @@ function getSpinPath(count: number): number[] {
   return path;
 }
 
+/**
+ * Eight fixed line-ups for the reveal grid; one is picked at random per load.
+ *
+ * Hardcoded on purpose. The grid used to page the pool at a random offset, which meant
+ * it showed whatever happened to sit there — and since 4,240 of the 8,919 are plain
+ * Turtles, that was usually eight near-identical faces.
+ *
+ * Every line-up is built to the same recipe, measured against the live trait counts:
+ *   · opens with an animated piece (all 27 animated pieces are Turtles, so this also
+ *     guarantees a turtle in every line-up)
+ *   · a one-of-one animal where they last — only four exist: Hog #77, Alligator #224,
+ *     Rat #256, Rhino #266
+ *   · a dinosaur (Pterodactyl / Stegosaurus / Trex / Triceratops, 125 of each)
+ *   · two scarce Types — Mythic 12, Guardian 15, Cyborg 19, Robot 48, Alien 49,
+ *     Cosmic 70, Ape 81, Zombie 126
+ *   · the rest mid-rarity species, rotated so no two line-ups repeat a face
+ *
+ * Regenerate with marketplace-tmp-presets.mjs if the collection changes.
+ */
+const GRID_LINEUPS: number[][] = [
+  [79, 77, 37, 505, 308, 19, 15, 85],
+  [415, 224, 575, 3661, 529, 411, 331, 372],
+  [619, 256, 1178, 4177, 791, 693, 716, 719],
+  [699, 266, 1803, 1914, 3093, 1139, 1025, 1103],
+  [783, 2347, 1958, 1106, 2135, 2134, 2042, 182],
+  [1097, 2892, 1216, 4879, 2307, 1779, 1781, 974],
+  [1435, 3477, 2715, 4825, 2098, 2119, 2127, 1526],
+  [2167, 4019, 476, 5523, 2677, 2411, 2410, 1323],
+];
+
 const INITIAL_STEP_DELAY = 200;
 const DECAY_FACTOR = 1.12;
 const MIN_ROTATIONS = 3;
@@ -52,6 +83,7 @@ const MAX_STEP_DELAY = 400;
 export class LotteryComponent implements OnInit, OnDestroy {
 
   private readonly spriteSvc = inject(SpriteService);
+  private readonly themeSvc = inject(ThemeService);
 
   @ViewChild('fireworksCanvas', { static: true }) fireworksCanvas!: ElementRef<HTMLDivElement>;
 
@@ -74,7 +106,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   recentWins = signal<LotteryWin[]>([]);
   totalWinsCount = signal(0);
 
-  // ─── Contract state ───
+  // â”€â”€â”€ Contract state â”€â”€â”€
   mintPrice = signal(0n);               // base price per token (wei)
   mintPriceFormatted = computed(() => formatEther(this.mintPrice()));
   poolSize = signal(0);
@@ -86,7 +118,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   isWhitelisted = signal(false);
   discountsEnabled = signal(false);
 
-  // ─── Play options ───
+  // â”€â”€â”€ Play options â”€â”€â”€
   quantity = signal(1);
   effectiveMaxQty = computed(() => {
     const walletRemaining = this.maxPerWallet() > 0 ? Math.max(0, this.maxPerWallet() - this.mintsOf()) : 999;
@@ -94,12 +126,12 @@ export class LotteryComponent implements OnInit, OnDestroy {
   });
   quantityOptions = computed(() => Array.from({ length: this.effectiveMaxQty() }, (_, i) => i + 1));
 
-  // ─── Surrender-for-discount ───
+  // â”€â”€â”€ Surrender-for-discount â”€â”€â”€
   surrenderNfts = signal<OwnedNft[]>([]);
   surrenderLoading = signal(false);
   selectedSurrenders = computed(() => this.surrenderNfts().filter(n => n.selected));
 
-  // ─── Live quote ───
+  // â”€â”€â”€ Live quote â”€â”€â”€
   quoteMint = signal(0n);   // mint payment after discount (wei)
   quoteVrf = signal(0n);    // estimated VRF fee (wei)
   quoteTotal = computed(() => this.quoteMint() + this.quoteVrf());
@@ -114,13 +146,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
   quoteLoading = signal(false);
   private quoteTimer: any;
 
-  // ─── Owner ───
+  // â”€â”€â”€ Owner â”€â”€â”€
   isOwner = signal(false);
   contractSurplus = signal(0n);
   ownerPoolInput = signal('');
   ownerStatus = signal('');
 
-  // ─── Stuck-ETH recovery ───
+  // â”€â”€â”€ Stuck-ETH recovery â”€â”€â”€
   pendingRefund = signal(0n);
   pendingRefundFormatted = computed(() => formatEther(this.pendingRefund()));
   hasPendingRefund = computed(() => this.pendingRefund() > 0n);
@@ -135,11 +167,39 @@ export class LotteryComponent implements OnInit, OnDestroy {
   philipFallback = '/assets/images/lottery/philip.png';
   private philipImageUrl = '';
 
+  /**
+   * The billboard strip across the top — the same eight pieces as the reveal grid, in
+   * the same order. It used to render nine cells by wrapping round, which repeated the
+   * first piece at the end; showing exactly the line-up keeps the top and the grid
+   * telling the same story.
+   */
   headerImages = computed(() => {
     const items = this.gridItems();
-    if (!items.length) return Array.from({ length: 9 }, () => ({ src: '/assets/loadingphunk.png' }));
-    return Array.from({ length: 9 }, (_, i) => ({ src: items[i % items.length].imageUrl }));
+    if (!items.length) return Array.from({ length: 8 }, () => ({ src: '/assets/loadingphunk.png' }));
+    return items.slice(0, 8).map((i) => ({ src: i.imageUrl }));
   });
+
+
+  /**
+   * Drop timestamp, as a release page prints it: `09/19/2026 06:32am LA`.
+   * Ticks once a minute; seconds would be noise at this size.
+   */
+  dropClock = signal('');
+  private clockTimer: any;
+
+
+  private updateClock(): void {
+    // Fixed to Los Angeles regardless of where the visitor is â€” a drop happens at the
+    // store's time, not yours.
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      month: '2-digit', day: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true,
+    }).formatToParts(new Date());
+    const p = (t: string) => parts.find((x) => x.type === t)?.value ?? '';
+    const ampm = p('dayPeriod').toLowerCase().replace(/\s/g, '');
+    this.dropClock.set(`${p('month')}/${p('day')}/${p('year')} ${p('hour')}:${p('minute')}${ampm} LA`);
+  }
 
   private recentWinsSub!: Subscription;
   private totalWinsCountSub!: Subscription;
@@ -162,6 +222,15 @@ export class LotteryComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
+    // Claim the collection this page mints for. /lottery carries no slug in its URL, so
+    // without this the theme service keeps the default lime and writes it as inline
+    // styles — which beat the CSS the pre-boot script sets up, so the top of the page
+    // turned #c3ff00 a moment after every reload.
+    this.themeSvc.setActiveCollection('cryptophunksv67');
+
+    this.updateClock();
+    this.clockTimer = setInterval(() => this.updateClock(), 60_000);
+
     // Fetch token #10298 (Philip) image for grid placeholders
     try {
       const philip = await this.lotterySvc.getEthscriptionByTokenId(10298);
@@ -193,6 +262,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.totalWinsCountSub?.unsubscribe();
     clearTimeout(this.spinTimeout);
     clearInterval(this.confirmTimer);
+    clearInterval(this.clockTimer);
     clearTimeout(this.quoteTimer);
     this.stopFireworks();
     window.removeEventListener('beforeunload', this.beforeUnloadHandler);
@@ -254,7 +324,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // Grid init (prizes = tokenId pool → image via ethscriptions table)
+  // Grid init (prizes = tokenId pool â†’ image via ethscriptions table)
   // =========================================================
 
   private async initGrid() {
@@ -266,40 +336,25 @@ export class LotteryComponent implements OnInit, OnDestroy {
     };
 
     try {
-      const size = this.poolSize();
-      if (size > 0) {
-        const fetchCount = Math.min(size, 50);
-        const maxOffset = Math.max(0, size - fetchCount);
-        const randomOffset = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
-        const tokenIds = await this.lotterySvc.getPoolItems(randomOffset, fetchCount);
-        const rows = await this.lotterySvc.getEthscriptionsByTokenIds(tokenIds);
-        const byToken = new Map(rows.map(r => [r.tokenId, r]));
+      // One of eight fixed line-ups rather than a live pool query. It used to page the
+      // pool at a random offset and shuffle, which meant the grid was whatever happened
+      // to be nearby — usually eight plain turtles — and cost two round trips before
+      // anything appeared. These are curated instead, so every load shows the good ones.
+      const lineup = GRID_LINEUPS[Math.floor(Math.random() * GRID_LINEUPS.length)];
+      const rows = await this.lotterySvc.getEthscriptionsByTokenIds(lineup);
+      const byToken = new Map(rows.map(r => [r.tokenId, r]));
 
-        const seen = new Set<string>();
-        const unique: { hashId: string; sha: string; tokenId: number; slug: string }[] = [];
-        for (const id of tokenIds) {
-          const e = byToken.get(id);
-          if (e?.sha && !seen.has(e.sha)) { seen.add(e.sha); unique.push(e); }
-        }
-
-        for (let i = unique.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [unique[i], unique[j]] = [unique[j], unique[i]];
-        }
-
-        const displayCount = Math.min(unique.length, 8);
-        for (let i = 0; i < displayCount; i++) {
-          const eth = unique[i];
-          items.push({
-            index: i, hashId: eth.hashId || '', sha: eth.sha || '',
-            imageUrl: eth.sha ? await this.spriteSvc.url(eth.sha) : fallback,
-            flipping: false, revealed: false, rightFacing: false,
-          });
-        }
-        pad(items);
-      } else {
-        for (let i = 0; i < 8; i++) items.push({ index: i, hashId: '', sha: '', imageUrl: fallback, flipping: false, revealed: false, rightFacing: false });
+      for (let i = 0; i < lineup.length; i++) {
+        const eth = byToken.get(lineup[i]);
+        items.push({
+          index: i,
+          hashId: eth?.hashId || '',
+          sha: eth?.sha || '',
+          imageUrl: eth?.sha ? await this.spriteSvc.url(eth.sha) : fallback,
+          flipping: false, revealed: false, rightFacing: false,
+        });
       }
+      pad(items);
     } catch {
       for (let i = 0; i < 8; i++) items.push({ index: i, hashId: '', sha: '', imageUrl: fallback, flipping: false, revealed: false, rightFacing: false });
     }
@@ -385,7 +440,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       // quote() reverts CreditExceedsOrder if the surrender is worth more than the order.
       const msg = err?.shortMessage || err?.message || '';
       this.quoteError.set(msg.includes('CreditExceedsOrder')
-        ? 'Surrendered items are worth more than the order — deselect some or raise the quantity.'
+        ? 'Surrendered items are worth more than the order â€” deselect some or raise the quantity.'
         : 'Could not price this selection.');
       this.quoteMint.set(this.mintPrice() * BigInt(quantity));
       this.quoteVrf.set(0n);
@@ -452,7 +507,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
         await this.lotterySvc.ensureSurrenderApprovals(collections);
       }
 
-      // 2) Single tx: requestMint → Chainlink VRF request
+      // 2) Single tx: requestMint â†’ Chainlink VRF request
       const playHash = await this.lotterySvc.requestMint(quantity, collections, tokenIds);
       if (!playHash) throw new Error('Mint transaction failed');
 
@@ -463,7 +518,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       await this.web3Svc.pollReceipt(playHash);
       clearInterval(this.confirmTimer);
 
-      // 4) Wait for the VRF callback → indexer writes lottery_wins (watched via Supabase realtime)
+      // 4) Wait for the VRF callback â†’ indexer writes lottery_wins (watched via Supabase realtime)
       this.spinPhase.set('waiting');
       this.confirmElapsed.set(0);
       this.confirmTimer = setInterval(() => this.confirmElapsed.update(v => v + 1), 1000);
@@ -472,7 +527,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       clearInterval(this.confirmTimer);
 
       if (!wins.length) {
-        // VRF/indexer hasn't landed within the window — leave a clear message; the win will
+        // VRF/indexer hasn't landed within the window â€” leave a clear message; the win will
         // still show in Recent Wins once the indexer catches up. Offer stuck-spin recovery.
         this.spinPhase.set('idle');
         this.errorMessage.set('Your mint is confirmed but the result is still settling. It will appear in Recent Wins shortly.');
@@ -480,7 +535,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // 5) Reveal — spin to the first won token; list them all in the result panel.
+      // 5) Reveal â€” spin to the first won token; list them all in the result panel.
       this.wonPrizes.set(wins);
       this.pendingWinRecords = wins;
 

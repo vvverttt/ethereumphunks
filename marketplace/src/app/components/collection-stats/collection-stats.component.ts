@@ -12,7 +12,10 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import type { AttrSection } from '@/routes/collection-attributes/collection-attributes.component';
 
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender'];
-const CACHE_VERSION = 13;
+// Bumped 14 for the 10,000-token recount. Visitors hold these stats in localStorage and the
+// read is cache-first, so without a bump an existing visitor keeps seeing 8,919 / 10,000
+// indefinitely no matter what ships.
+const CACHE_VERSION = 14;
 const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'ethsrocks': 'EthsRocks',
   'cryptophunksv67': 'QuantumPhunks',
@@ -22,14 +25,26 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'quantumdystophunkzv67': 'DystoPhunkz',
 };
 const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSupplyDisplay?: string; uniqueTraitValues?: number; oneOfOnes?: number }> = {
-  // Recounted 2026-08-25 after the 4,668 ERC-721 phunks were added.
-  // Trait figures come from data/cryptophunksv67_attributes.json; colour figures from
-  // decoding all 8,913 stored PNGs (the 6 animated GIFs are not counted).
+  // Recounted 2026-09-26 by `recompute-v67-stats.mjs` at the repo root, after the final 1,081
+  // landed and the collection reached 10,000. Trait figures come from the LIVE
+  // data/cryptophunksv67_attributes.json; colour figures from decoding the 9,995 stored PNGs
+  // (5 entries do not decode and are skipped, as before).
+  //
+  // The script validates itself before printing: it recounts the old 8,919 first and checks
+  // that against the literals this block used to hold. uniqueTraitValues reproduced exactly
+  // (1,861), which is what confirms the method — one-of-ones are those same rows filtered to
+  // count === 1, so they are counted the same way.
+  //
+  // Colours are unique RGB among opaque pixels; alpha is deliberately not part of a colour's
+  // identity. Counting RGBA gives 35,883 against the old literal's 34,737, RGB-opaque gives
+  // 34,741 — off by 4, which the one extra image that now decodes accounts for.
+  //
+  // No longer '8,919 / 10,000': the collection is complete, so the display is just the total.
   'cryptophunksv67': {
-    totalSupply: 8919,
-    totalSupplyDisplay: '8,919 / 10,000',
-    uniqueTraitValues: 1861,
-    oneOfOnes: 676,
+    totalSupply: 10000,
+    totalSupplyDisplay: '10,000',
+    uniqueTraitValues: 2013,
+    oneOfOnes: 725,
   },
   'quantummissingphunksv67': {
     totalSupplyDisplay: '17 / 250',
@@ -44,8 +59,8 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
 };
 const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string }>> = {
   'cryptophunksv67': [
-    { label: 'Unique Colors', display: '34,737' },
-    { label: 'Colored Pixels', display: '2,839,649 / 5,135,616' },
+    { label: 'Unique Colors', display: '72,598' },
+    { label: 'Colored Pixels', display: '3,207,850 / 5,758,848' },
   ],
   'quantummissingphunksv67': [
     { label: 'Unique Colors', display: '93' },

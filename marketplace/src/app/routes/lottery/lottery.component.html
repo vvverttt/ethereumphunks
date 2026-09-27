@@ -14,10 +14,14 @@
 
 <div class="lottery-page" [class.loaded]="loadedIn()">
 
-  <!-- Header -->
+  <!-- Header — box logo over a monospace release clock, the way a drop page opens. -->
   <div class="lottery-header">
-    <h1>QuantumPhunks<br /><span>Mint Lottery</span></h1>
+    <div class="phupreme-mark">
+      <img src="assets/images/phupreme-dark.png" alt="Phupreme" />
+    </div>
+    <p class="drop-clock">{{ dropClock() }}</p>
   </div>
+
 
   <!-- Grid Container -->
   <div class="grid-container" [class.shown]="loadedIn()" [class.spinning]="spinPhase() !== 'idle'">
@@ -37,6 +41,8 @@
             <div class="frame-border"></div>
           }
 
+          <!-- Face-down: every cell shows the Philip card until a spin flips it to the
+               piece behind. The line-up still decides what each cell is hiding. -->
           <div class="card-inner">
             <img class="card-front" [src]="philipFallback" alt="Prize" />
             <img class="card-back" [src]="item.imageUrl" alt="Prize" />
@@ -297,5 +303,6 @@
       </div>
     </div>
   </section>
+
 
 </div>

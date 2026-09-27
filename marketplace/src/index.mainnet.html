@@ -47,7 +47,12 @@
       try {
         var seg = location.pathname.split('/').filter(Boolean)[0] || '';
         var last = localStorage.getItem('EtherPhunks_collection') || '';
-        var slug = /^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' ? seg : last;
+        // Routes that are not a collection but belong to one. /lottery mints
+        // QuantumPhunks, so it should open on the v67 blue rather than the default
+        // lime and then snap over once the app boots.
+        var owned = { lottery: 'cryptophunksv67', auction: 'cryptophunksv67' };
+        var slug = owned[seg]
+          || (/^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' ? seg : last);
         if (slug) document.documentElement.setAttribute('data-collection', slug);
       } catch (e) { /* private mode: the flash is cosmetic, never block boot */ }
     })();

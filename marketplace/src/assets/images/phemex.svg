@@ -1,0 +1,52 @@
+<!--
+  Phemex — a Pemex-style lockup for the QuantumPhunks drops.
+
+  That house style is a round emblem split into green and red halves with a pale bird
+  form across it, then the wordmark set heavy beside it. This is an original geometric
+  reading of that arrangement rather than a traced crest: the bird is three chevrons and
+  a head, so it holds together when the logo is small.
+
+  SVG loaded through <img> cannot fetch webfonts, so the wordmark uses a heavy system
+  stack. textLength pins the width so it reads the same whichever of those is present.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160" width="520" height="160" role="img" aria-label="Phemex">
+  <title>Phemex</title>
+
+  <defs>
+    <clipPath id="phemex-disc">
+      <circle cx="70" cy="80" r="62"/>
+    </clipPath>
+  </defs>
+
+  <!-- Split disc: green left, red right. -->
+  <g clip-path="url(#phemex-disc)">
+    <rect x="8" y="18" width="62" height="124" fill="#0f7a3d"/>
+    <rect x="70" y="18" width="62" height="124" fill="#d52b1e"/>
+  </g>
+  <circle cx="70" cy="80" r="62" fill="none" stroke="#ffffff" stroke-width="5"/>
+
+  <!-- Stylised eagle: wings spread wide and notched, over a small head and tail.
+       An earlier pass stacked the chevrons vertically, which read as a pine tree rather
+       than a bird — the spread has to be horizontal for the silhouette to land. -->
+  <g fill="#ffffff">
+    <!-- left wing, notched trailing edge -->
+    <polygon points="66,72 18,60 40,78 28,86 66,88"/>
+    <!-- right wing -->
+    <polygon points="74,72 122,60 100,78 112,86 74,88"/>
+    <!-- head, tucked close so the wings stay the silhouette -->
+    <circle cx="70" cy="61" r="7"/>
+    <!-- tail: one taper, not a body. A long straight body made it read as a figure
+         with outstretched arms rather than a bird. -->
+    <polygon points="63,70 77,70 70,104"/>
+  </g>
+
+  <!-- Wordmark. -->
+  <text x="160" y="100"
+        textLength="340"
+        lengthAdjust="spacingAndGlyphs"
+        font-family="'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-weight="900"
+        font-size="62"
+        letter-spacing="2"
+        fill="#ffffff">PHEMEX</text>
+</svg>

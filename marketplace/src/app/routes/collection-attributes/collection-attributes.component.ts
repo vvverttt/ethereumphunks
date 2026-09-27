@@ -15,7 +15,10 @@ import { environment } from 'src/environments/environment';
 const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-const CACHE_VERSION = 26;
+// Bumped 27 for the final 1,081 that completed the collection at 10,000. This cache is
+// cache-first in localStorage, so a returning visitor keeps the 8,919-era trait table — and
+// the new "Ring" trait type and 152 new trait values stay invisible — until the version moves.
+const CACHE_VERSION = 27;
 
 /** Pseudo-tab that stacks every section on one page instead of showing one at a time. */
 const ALL_TAB = 'All';

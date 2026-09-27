@@ -1,0 +1,26 @@
+<!--
+  PTP — an FTP-style lockup for the QuantumPhunks drops.
+
+  That house style is three letters set as heavy as they will go, tight enough to read as
+  one block, with a hard offset shadow behind them rather than any outline or gradient.
+  The shadow is a duplicate of the same text nudged down-right, so the two can never
+  drift apart when the font resolves differently.
+
+  SVG loaded through <img> cannot fetch webfonts, so this uses a heavy system stack.
+  textLength pins the width so it reads the same whichever of those is present.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" width="360" height="150" role="img" aria-label="PTP">
+  <title>PTP</title>
+
+  <g font-family="'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+     font-weight="900"
+     font-size="118"
+     letter-spacing="-4"
+     text-anchor="middle">
+
+    <!-- hard offset shadow -->
+    <text x="188" y="118" textLength="320" lengthAdjust="spacingAndGlyphs" fill="#ff04b4">PTP</text>
+    <!-- face -->
+    <text x="180" y="110" textLength="320" lengthAdjust="spacingAndGlyphs" fill="#ffffff">PTP</text>
+  </g>
+</svg>
