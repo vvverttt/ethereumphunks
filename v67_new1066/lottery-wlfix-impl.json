@@ -1,0 +1,11 @@
+{
+  "implementation": "0x18756f2A8d361cd4b0663C877973Ec1d7A17d0F2",
+  "tx": "0xf389144d5d68fbba8ba8530a3576cb6a8d506b6cc741504ad519bfedd6a3243d",
+  "proxy": "0x702862d4cb2E55452170814AAb9117cDE8287e61",
+  "runtimeBytes": 20688,
+  "gasUsed": "4551335",
+  "costEth": "0.000286903100619885",
+  "fixes": "whitelist discount allowance is returned when a spin is cancelled or refunded",
+  "storage": "adds mapping(uint256=>uint16) _pendingWlDiscQty, taken from __gap (35 -> 34)",
+  "upgradeCall": "upgradeToAndCall(0x18756f2A8d361cd4b0663C877973Ec1d7A17d0F2, 0x)  — UUPS, send to the PROXY"
+}
