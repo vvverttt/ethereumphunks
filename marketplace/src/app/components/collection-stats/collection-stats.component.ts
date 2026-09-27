@@ -30,10 +30,11 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
   // data/cryptophunksv67_attributes.json; colour figures from decoding the 9,995 stored PNGs
   // (5 entries do not decode and are skipped, as before).
   //
-  // The script validates itself before printing: it recounts the old 8,919 first and checks
-  // that against the literals this block used to hold. uniqueTraitValues reproduced exactly
-  // (1,861), which is what confirms the method — one-of-ones are those same rows filtered to
-  // count === 1, so they are counted the same way.
+  // oneOfOnes stays 676. It is NOT derived rarity — it counts tokens carrying the explicit
+  // curated attribute `Special = One of One`, and exactly 676 do, all of them in the original
+  // 8,919. None of the final 1,081 carry it, so completing the collection does not change it.
+  // (Counting count===1 trait pairs instead gives 725, which is a different question and not
+  // what this panel reports.)
   //
   // Colours are unique RGB among opaque pixels; alpha is deliberately not part of a colour's
   // identity. Counting RGBA gives 35,883 against the old literal's 34,737, RGB-opaque gives
@@ -44,7 +45,7 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
     totalSupply: 10000,
     totalSupplyDisplay: '10,000',
     uniqueTraitValues: 2013,
-    oneOfOnes: 725,
+    oneOfOnes: 676,
   },
   'quantummissingphunksv67': {
     totalSupplyDisplay: '17 / 250',
