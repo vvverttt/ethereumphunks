@@ -29,6 +29,7 @@ const KEY = g('SUPABASE_SERVICE_ROLE');
 
 const rows = [];
 const check = (label, ok, detail) => { rows.push([label, ok, detail]); };
+let cloudflareUnverifiable = false;
 
 // ---- 1. the local key -----------------------------------------------------
 // A read proves the key is valid. It does not prove it is a SECRET key — the
@@ -40,23 +41,38 @@ if (!KEY) {
 
   const H = { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' };
   const r = await fetch(`${URL_}/rest/v1/collections?slug=eq.${SLUG}&select=supply`, { headers: H });
-  check('local key can read', r.ok, `HTTP ${r.status}`);
+  check('local key can read', r.ok, r.ok ? `HTTP ${r.status}` : `HTTP ${r.status} — key is dead or wrong`);
 
-  // Write test: PATCH supply to the value it already holds. Idempotent by construction —
-  // reads the current value first and writes that same value back, so a pass changes nothing.
-  const cur = (await (await fetch(`${URL_}/rest/v1/collections?slug=eq.${SLUG}&select=supply`, { headers: H })).json())[0]?.supply;
-  const w = await fetch(`${URL_}/rest/v1/collections?slug=eq.${SLUG}`, {
-    method: 'PATCH', headers: { ...H, Prefer: 'return=minimal' }, body: JSON.stringify({ supply: cur }),
-  });
-  check('local key can WRITE (is secret)', w.ok, `HTTP ${w.status}  supply ${cur} unchanged`);
+  // The value written back is read with the PUBLISHABLE key, deliberately, so the write tests
+  // below do not depend on the secret key being healthy.
+  //
+  // Reading it with the secret key is what made this checker lie once: when the secret key was
+  // revoked the read 401'd, `cur` came back undefined, JSON.stringify({supply: undefined})
+  // collapsed to `{}`, and an empty PATCH is a no-op PostgREST answers 204 to. That turned the
+  // "publishable key cannot write" assertion into a vacuous pass reported as a FAIL of the
+  // opposite claim — it looked like RLS had fallen open when nothing had changed at all.
+  const cur = (await (await fetch(`${URL_}/rest/v1/collections?slug=eq.${SLUG}&select=supply&apikey=${PUBLISHABLE}`)).json())[0]?.supply;
+  const body = JSON.stringify({ supply: cur });
 
-  // And the publishable key must NOT be able to write, or RLS is open.
-  const bad = await fetch(`${URL_}/rest/v1/collections?slug=eq.${SLUG}`, {
-    method: 'PATCH',
-    headers: { apikey: PUBLISHABLE, Authorization: `Bearer ${PUBLISHABLE}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-    body: JSON.stringify({ supply: cur }),
-  });
-  check('publishable key CANNOT write', !bad.ok, `HTTP ${bad.status}`);
+  if (cur === undefined) {
+    check('write tests have a real body', false, 'could not read supply even with the publishable key');
+  } else {
+    // Idempotent by construction: writes supply the same value it already holds.
+    const w = await fetch(`${URL_}/rest/v1/collections?slug=eq.${SLUG}`, {
+      method: 'PATCH', headers: { ...H, Prefer: 'return=minimal' }, body,
+    });
+    check('local key can WRITE (is secret)', w.ok, `HTTP ${w.status}  supply ${cur} unchanged`);
+
+    // And the publishable key must NOT be able to write, or RLS/grants have fallen open.
+    // A non-empty body is essential here — see the note above.
+    const bad = await fetch(`${URL_}/rest/v1/collections?slug=eq.${SLUG}`, {
+      method: 'PATCH',
+      headers: { apikey: PUBLISHABLE, Authorization: `Bearer ${PUBLISHABLE}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body,
+    });
+    const msg = bad.ok ? '' : ((await bad.json().catch(() => ({}))).message || '');
+    check('publishable key CANNOT write', !bad.ok, `HTTP ${bad.status}  ${msg}`);
+  }
 }
 
 // ---- 2. Render (the indexer) ----------------------------------------------
@@ -79,20 +95,28 @@ try {
 }
 
 // ---- 3. Cloudflare Pages (the admin-config function) ---------------------
-// Distinguishing the two failure modes is the whole point:
-//   500 "Missing admin config environment variables" -> the key is NOT set
-//   400 "Missing auth, updates, or signature"        -> the key IS set, we just sent no body
-// The env check runs before body validation (admin-config.js:56), so a 400 is the pass.
+// This probe can only prove the var is SET, never that the key in it is VALID. Read the
+// limitation before trusting a pass:
+//
+//   500 "Missing admin config environment variables" -> var is NOT set
+//   400 "Missing auth, updates, or signature"        -> var IS set (we sent no body)
+//
+// The env check runs before body validation (admin-config.js:56), so a 400 means set. But a
+// revoked key sits in that var and still answers 400 — the function never touches Supabase
+// until after it has verified an on-chain-owner signature, which this script cannot forge.
+// So a dead key here is INVISIBLE from outside. The only real confirmation is to open the
+// admin page and save a setting.
 try {
   const r = await fetch(`${SITE}/api/admin-config`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
     signal: AbortSignal.timeout(20000),
   });
   const body = await r.text();
-  const keySet = r.status === 400;
-  check('Cloudflare Pages has the key', keySet, `HTTP ${r.status}  ${body.slice(0, 60)}`);
+  const varSet = r.status === 400;
+  check('Cloudflare var is SET (not validated)', varSet, `HTTP ${r.status}  ${body.slice(0, 55)}`);
+  if (varSet) cloudflareUnverifiable = true;
 } catch (e) {
-  check('Cloudflare Pages has the key', false, e.name);
+  check('Cloudflare var is SET (not validated)', false, e.name);
 }
 
 // ---- 4. the frontend read path (must be untouched by rotation) -----------
@@ -107,7 +131,11 @@ for (const [label, ok, detail] of rows) {
   if (!ok) bad++;
   console.log(`  [${ok ? 'OK  ' : 'FAIL'}] ${label.padEnd(34)} ${detail || ''}`);
 }
-console.log('');
+if (cloudflareUnverifiable) {
+  console.log('  note: the Cloudflare check above proves only that the var exists. A REVOKED key');
+  console.log('        there answers identically. Confirm by saving a setting on the admin page.');
+  console.log('');
+}
 if (bad) {
   console.log(`${bad} check(s) FAILED — do NOT revoke the old key yet.`);
   process.exit(1);
