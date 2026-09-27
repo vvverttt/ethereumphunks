@@ -1,0 +1,10 @@
+{
+  "implementation": "0x795a5a316cF99748693402B8CdfF46A2F3aFb100",
+  "tx": "0x5af1775ecda600472663af68391511fa2d1dc8e002c42d289ddb3946d1b294db",
+  "runtimeBytes": 13450,
+  "gasUsed": "2986807",
+  "costEth": "0.00016659994279827",
+  "note": "fixes unchecked arithmetic in buyPhunkBatch/_settle; bytecode equals the validated artifact bar the two UUPS __self immutables",
+  "upgradeCall": "upgradeToAndCall(0x795a5a316cF99748693402B8CdfF46A2F3aFb100, 0x)",
+  "proxy": "0xe977EaD9f08cC450FBb54B8f80D2E92b27714b44"
+}
