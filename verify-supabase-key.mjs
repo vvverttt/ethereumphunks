@@ -22,10 +22,12 @@ const SLUG = 'cryptophunksv67';
 const INDEXER = 'https://ethereumphunks.onrender.com';
 const SITE = 'https://quantumphunks.com';
 
-const env = fs.readFileSync('./indexer/.env', 'utf8');
+const env = fs.existsSync('./indexer/.env') ? fs.readFileSync('./indexer/.env', 'utf8') : '';
 const g = (k) => (env.match(new RegExp('^' + k + '=(.+)$', 'm')) || [])[1]?.trim();
-const URL_ = g('SUPABASE_URL');
-const KEY = g('SUPABASE_SERVICE_ROLE');
+const URL_ = process.env.SUPABASE_URL || g('SUPABASE_URL');
+// Not on disk by design since 2026-09-26. Absent is the EXPECTED state, not a failure — pass it
+// in the environment when you actually want the secret-key checks to run.
+const KEY = process.env.SUPABASE_SERVICE_ROLE || g('SUPABASE_SERVICE_ROLE');
 
 const rows = [];
 const check = (label, ok, detail) => { rows.push([label, ok, detail]); };
@@ -35,7 +37,9 @@ let cloudflareUnverifiable = false;
 // A read proves the key is valid. It does not prove it is a SECRET key — the
 // publishable one reads too — so the write below is what distinguishes them.
 if (!KEY) {
-  check('indexer/.env has a key', false, 'SUPABASE_SERVICE_ROLE missing');
+  console.log('\n  no secret key in the environment — that is the intended state; it is not kept');
+  console.log('  on disk. The secret-key checks are skipped. To run them:');
+  console.log('    PowerShell:  $env:SUPABASE_SERVICE_ROLE="sb_secret_..."; node verify-supabase-key.mjs');
 } else {
   check('indexer/.env key format', KEY.startsWith('sb_secret_'), KEY.slice(0, 10) + '…');
 

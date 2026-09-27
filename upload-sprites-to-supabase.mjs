@@ -25,18 +25,31 @@ import path from 'path';
 const RUN = process.env.RUN === '1';
 const BUILD = process.env.BUILD || './marketplace/dist/etherphunks-market-mainnet/browser/static';
 
-const env = fs.readFileSync('./indexer/.env', 'utf8');
+// The secret is deliberately NOT kept in indexer/.env — it was removed 2026-09-26 so no copy
+// of it sits on disk. Pass it for the one command that needs it and it lives only in that
+// shell's memory:
+//
+//   PowerShell:  $env:SUPABASE_SERVICE_ROLE="sb_secret_..."
+//   bash:        export SUPABASE_SERVICE_ROLE=sb_secret_...
+//
+// indexer/.env is still read for SUPABASE_URL, which is not a secret, and as a fallback for
+// the key in case someone has it configured there.
+const env = fs.existsSync('./indexer/.env') ? fs.readFileSync('./indexer/.env', 'utf8') : '';
 const g = (k) => (env.match(new RegExp('^' + k + '=(.+)$', 'm')) || [])[1]?.trim();
-const URL_ = g('SUPABASE_URL');
-const KEY = g('SUPABASE_SERVICE_ROLE');
+const URL_ = process.env.SUPABASE_URL || g('SUPABASE_URL');
+const KEY = process.env.SUPABASE_SERVICE_ROLE || g('SUPABASE_SERVICE_ROLE');
 
 if (!KEY) {
-  console.error('ABORT: SUPABASE_SERVICE_ROLE missing from indexer/.env');
+  console.error('ABORT: no SUPABASE_SERVICE_ROLE in the environment.');
   console.error('');
-  console.error('  The key was rotated, so the old value no longer works. Add the new one:');
-  console.error('    Supabase dashboard -> Project Settings -> API Keys -> the sb_secret_ key');
-  console.error('    indexer/.env:   SUPABASE_SERVICE_ROLE=<the key>');
-  console.error('  indexer/.env is gitignored; the key is never committed.');
+  console.error('  It is intentionally not stored on disk. Set it for this shell only:');
+  console.error('');
+  console.error('    PowerShell:  $env:SUPABASE_SERVICE_ROLE="sb_secret_..."');
+  console.error('                 $env:RUN="1"; node upload-sprites-to-supabase.mjs');
+  console.error('');
+  console.error('    bash:        SUPABASE_SERVICE_ROLE=sb_secret_... RUN=1 node upload-sprites-to-supabase.mjs');
+  console.error('');
+  console.error('  Get it from: Supabase dashboard -> Project Settings -> API Keys');
   process.exit(1);
 }
 

@@ -21,18 +21,22 @@ const SLUG = 'cryptophunksv67';
 const OUT = './v67_new1066';
 const CHUNK = Number(process.env.CHUNK || 200);
 
-const env = fs.readFileSync('./indexer/.env', 'utf8');
+// The secret is NOT kept in indexer/.env (removed 2026-09-26 so no copy sits on disk). Pass it
+// for this one command and it lives only in that shell's memory.
+const env = fs.existsSync('./indexer/.env') ? fs.readFileSync('./indexer/.env', 'utf8') : '';
 const g = (k) => (env.match(new RegExp('^' + k + '=(.+)$', 'm')) || [])[1]?.trim();
-const URL_ = g('SUPABASE_URL');
-const KEY = g('SUPABASE_SERVICE_ROLE');
+const URL_ = process.env.SUPABASE_URL || g('SUPABASE_URL');
+const KEY = process.env.SUPABASE_SERVICE_ROLE || g('SUPABASE_SERVICE_ROLE');
 
-if (!URL_) { console.error('ABORT: SUPABASE_URL missing from indexer/.env'); process.exit(1); }
+if (!URL_) { console.error('ABORT: SUPABASE_URL missing (indexer/.env or the environment)'); process.exit(1); }
 if (!KEY) {
-  console.error('ABORT: SUPABASE_SERVICE_ROLE missing from indexer/.env');
+  console.error('ABORT: no SUPABASE_SERVICE_ROLE in the environment.');
   console.error('');
-  console.error('  Supabase dashboard -> Project Settings -> API Keys -> service_role (or sb_secret_...)');
-  console.error('  Add one line to indexer/.env:   SUPABASE_SERVICE_ROLE=<the key>');
-  console.error('  indexer/.env is gitignored, so the key is never committed.');
+  console.error('  It is intentionally not stored on disk. Set it for this shell only:');
+  console.error('    PowerShell:  $env:SUPABASE_SERVICE_ROLE="sb_secret_..."');
+  console.error('    bash:        export SUPABASE_SERVICE_ROLE=sb_secret_...');
+  console.error('');
+  console.error('  Get it from: Supabase dashboard -> Project Settings -> API Keys');
   process.exit(1);
 }
 const H = { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' };
