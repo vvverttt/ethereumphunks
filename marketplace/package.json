@@ -11,7 +11,7 @@
     "start:mainnet:9000": "ng serve --configuration dev-mainnet --host 127.0.0.1 --port 9000",
     "build": "yarn build:sepolia && yarn build:mainnet",
     "build:sepolia": "yarn prebuild && ng build --configuration sepolia && node copy-to-fixed.js sepolia",
-    "build:mainnet": "yarn prebuild && ng build --configuration mainnet && node copy-to-fixed.js mainnet",
+    "build:mainnet": "yarn prebuild && ng build --configuration mainnet && node bundle-static-assets.mjs --config mainnet && node build-sprite.mjs --config mainnet --prune && node copy-to-fixed.js mainnet",
     "build:production": "ng build --configuration production",
     "build:ipfs": "yarn prebuild && ng build --configuration mainnet-ipfs && node bundle-static-assets.mjs --config mainnet-ipfs && node build-sprite.mjs --config mainnet-ipfs --prune && node disable-sw.mjs --config mainnet-ipfs",
     "test": "ng test",
