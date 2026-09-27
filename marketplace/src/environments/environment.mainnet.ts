@@ -51,16 +51,28 @@ export const environment = {
   } as Record<string, string>,
 
   relayUrl: 'https://ethereumphunks.onrender.com',
-  // Empty = same-origin. The build now bundles /static/images and the sprite sheets, so
-  // Cloudflare Pages serves them and Supabase sees ZERO image traffic. Previously every
-  // tile was its own request to Supabase, which is what pushed Log Ingestion over quota
-  // (it counts requests, not bytes — Egress was only at 29%).
-  staticUrl: '',
+  // MUST be an absolute origin that actually holds the objects. Empty means same-origin,
+  // which only works if the deployed build contains /static and /data — and Cloudflare
+  // rebuilds this project from git with a command that does NOT run bundle-static-assets.mjs
+  // or build-sprite.mjs. Those steps only run under `yarn build:mainnet`, so every auto-build
+  // shipped the app without its assets and the site broke SITEWIDE: images and, worse, every
+  // collection's attributes, because data.service.ts fetches
+  // `${staticUrl}/data/{slug}_attributes.json` and got Cloudflare's SPA fallback HTML back.
+  //
+  // The failure is invisible to a status check — the fallback returns HTTP 200, sometimes even
+  // labelled image/png. Identify it by the bytes: identical response size across unrelated
+  // shas, starting `<!doctype html>`.
+  //
+  // The quota fix does not need same-origin hosting. The saving comes from the SHEETS (one
+  // request per ~512 tiles instead of one per tile), not from who serves them — so the sheets
+  // live in Supabase's `static` bucket alongside the images, which is what this URL points at.
+  // See upload-sprites-to-supabase.mjs.
+  staticUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public',
   // Grid/thumbnail images are served from here (imageUrlPipe). Immutable (sha-addressed), so it
   // belongs on a CDN. Point this at the Cloudflare R2 custom domain once images are uploaded
   // (scripts/upload-images-to-r2.js) to get edge caching + escape Supabase's single-host throttle.
   // Falls back to staticUrl while unset. Objects must live under `/static/images/{sha}`.
-  imageCdnUrl: '',
+  imageCdnUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public',
 
   supabaseUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co',
   supabaseKey: 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe',
