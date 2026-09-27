@@ -138,7 +138,15 @@ contract EtherPhunksMarketV3_2 is EtherPhunksMarketV3_1 {
 
         pendingWithdrawals[currentOwner] += sellerAmount;
 
-        _payRoyalties(royalty);
+        if (royalty > 0) {
+            for (uint i = 0; i < royaltyReceivers.length; i++) {
+                uint share = (royalty * royaltyReceivers[i].share) / 10000;
+                if (share > 0) {
+                    (bool sent,) = royaltyReceivers[i].receiver.call{value: share}("");
+                    require(sent, "Royalty failed");
+                }
+            }
+        }
 
         _transferEthscription(currentOwner, msg.sender, phunkId);
         _addPoints(msg.sender, 67);

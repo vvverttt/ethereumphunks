@@ -1,0 +1,8 @@
+{
+  "implementation": "0x46B4b123149F62714397646df48C501a235aa96e",
+  "tx": "0x917b9d5469110f7ad669d1503deb55d4904480d56dbb7a2750945417658e126d",
+  "deployedAt": "2026-09-27T02:28:03.202Z",
+  "runtimeBytes": 11162,
+  "gasUsed": "2463106",
+  "costEth": "0.00014724249387967"
+}

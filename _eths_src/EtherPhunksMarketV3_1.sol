@@ -189,7 +189,15 @@ contract EtherPhunksMarketV3_1 is
 
         pendingWithdrawals[seller] += sellerAmount;
 
-        _payRoyalties(royalty);
+        if (royalty > 0) {
+            for (uint i = 0; i < royaltyReceivers.length; i++) {
+                uint share = (royalty * royaltyReceivers[i].share) / 10000;
+                if (share > 0) {
+                    (bool sent,) = royaltyReceivers[i].receiver.call{value: share}("");
+                    require(sent, "Royalty transfer failed");
+                }
+            }
+        }
 
         _addPoints(msg.sender, 67);
         _transferEthscription(seller, msg.sender, phunkId);
@@ -215,8 +223,7 @@ contract EtherPhunksMarketV3_1 is
     // Withdrawals (matches V2_1)
     // =========================================================
 
-    /// @dev virtual so V3_5 can correct the checks-effects-interactions order.
-    function withdraw() public virtual nonReentrant {
+    function withdraw() public nonReentrant {
         require(pendingWithdrawals[msg.sender] != 0, "No pending withdrawals");
 
         uint amount = pendingWithdrawals[msg.sender];
@@ -327,21 +334,6 @@ contract EtherPhunksMarketV3_1 is
     // =========================================================
     // Internal helpers
     // =========================================================
-
-    /// @dev Pay out `royalty` across the configured receivers.
-    ///      V3_1/V3_2 behaviour: a direct PUSH, which reverts the whole sale if any
-    ///      receiver rejects the transfer. Marked virtual so V3_5 can switch it to the
-    ///      pull pattern the rest of the contract already uses.
-    function _payRoyalties(uint256 royalty) internal virtual {
-        if (royalty == 0) return;
-        for (uint i = 0; i < royaltyReceivers.length; i++) {
-            uint share = (royalty * royaltyReceivers[i].share) / 10000;
-            if (share > 0) {
-                (bool sent,) = royaltyReceivers[i].receiver.call{value: share}("");
-                require(sent, "Royalty transfer failed");
-            }
-        }
-    }
 
     function _invalidateListing(bytes32 phunkId) internal {
         delete phunksOfferedForSale[phunkId];
