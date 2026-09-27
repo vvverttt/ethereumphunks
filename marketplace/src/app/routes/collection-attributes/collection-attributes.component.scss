@@ -337,24 +337,40 @@
 }
 
 .attr-val-examples {
+  // Fixed tracks, not `repeat(10, 1fr)`.
+  //
+  // The tile is an <app-phunk-image>, whose host is `width:100%; aspect-ratio:1/1` — so with
+  // fractional tracks its HEIGHT was (examples column width) / 10. The row is
+  // `20rem 7rem 6rem 10rem 1fr` and the root is 62.5% (1rem = 10px), so on a ~1400px viewport
+  // each tile resolved to ~97px inside this 50px box: a ~47px overflow that spilled past the
+  // row's bottom border, which is what broke the horizontal lines down the table.
+  //
+  // A fixed track decouples tile size from viewport width, so the row height is constant at
+  // every width. 4rem sits inside the 5rem row with room to breathe and is well under the
+  // size that was overflowing.
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  align-items: end;
+  grid-template-columns: repeat(10, 4rem);
+  justify-content: start;
+  align-items: center;
+  gap: .4rem;
   width: 100%;
   height: 5rem;
+  padding-right: 1.4rem;
 
-  img {
-    width: 100%;
-    height: 5rem;
-    image-rendering: pixelated;
-    object-fit: contain;
-    display: block;
-    cursor: pointer;
-    // Tile colour, not the accent. Many token PNGs have transparent backgrounds, so
-    // this shows through as the artwork's backdrop — it has to match the grid, splash
-    // and activity thumbnails (--phunk-bg: #67cdff on v67, #c3ff00 elsewhere). The old
-    // --highlight resolved to a pale mint (#79fae6) on v67 that read as white.
+  // The backdrop belongs on the HOST, not on `img`.
+  //
+  // app-phunk-image renders a `<div class="sprite-tile">` when the sha is sheet-backed and
+  // only falls back to `<img>` otherwise, so the previous `img`-only rule left every
+  // sprite-backed example with no backdrop at all. Most token PNGs are transparent, so those
+  // sat straight on the dark page instead of the collection's blue.
+  //
+  // Tile colour, not the accent: it has to match the grid, splash and activity thumbnails
+  // (--phunk-bg is #67cdff on v67, #c3ff00 elsewhere). The old --highlight resolved to a pale
+  // mint (#79fae6) on v67 that read as white.
+  app-phunk-image {
+    width: 4rem;
     background-color: rgba(var(--phunk-bg), 1);
+    cursor: pointer;
 
     &:hover { opacity: .75; }
   }
