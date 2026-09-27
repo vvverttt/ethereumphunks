@@ -208,7 +208,6 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
             (bool sent, ) = prevBidder.call{value: prevAmount}("");
             if (!sent) {
                 pendingReturns[prevBidder] += prevAmount;
-                totalPendingReturns += prevAmount;
                 emit RefundEscrowed(prevBidder, prevAmount);
             }
         }
@@ -222,7 +221,6 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         uint256 amount = pendingReturns[msg.sender];
         require(amount > 0, "Nothing to withdraw");
         pendingReturns[msg.sender] = 0;
-        totalPendingReturns -= amount;
         (bool sent, ) = payable(msg.sender).call{value: amount}("");
         require(sent, "Transfer failed");
     }
@@ -251,7 +249,6 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
             (bool sent, ) = treasuryAddress.call{value: auction.amount}("");
             if (!sent) {
                 pendingReturns[treasuryAddress] += auction.amount;
-                totalPendingReturns += auction.amount;
                 emit RefundEscrowed(treasuryAddress, auction.amount);
             }
         } else {
@@ -406,12 +403,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     function withdrawETH(uint256 amount, address payable to) external onlyOwner nonReentrant {
         require(to != address(0), "Invalid address");
-        // Both liabilities, not just the live bid: pendingReturns is money owed to outbid
-        // bidders and to the treasury when a push failed.
-        require(
-            amount <= address(this).balance - totalCommittedETH - totalPendingReturns,
-            "Exceeds available balance"
-        );
+        require(amount <= address(this).balance - totalCommittedETH, "Exceeds available balance");
         (bool sent, ) = to.call{value: amount}("");
         require(sent, "Transfer failed");
     }
@@ -488,7 +480,6 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
                 (bool sent, ) = auction.bidder.call{value: auction.amount}("");
                 if (!sent) {
                     pendingReturns[auction.bidder] += auction.amount;
-                    totalPendingReturns += auction.amount;
                     emit RefundEscrowed(auction.bidder, auction.amount);
                 }
             }
@@ -571,7 +562,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     event Swapped(bytes32 indexed sentHashId, bytes32 indexed receivedHashId, address indexed swapper, uint256 swapNumber);
 
-    function swap(bytes32 sendHashId, bytes32 receiveHashId, bytes32[] calldata proof) external payable virtual nonReentrant whenNotPaused notBlacklisted {
+    function swap(bytes32 sendHashId, bytes32 receiveHashId, bytes32[] calldata proof) external payable nonReentrant whenNotPaused notBlacklisted {
         require(swapEnabled, "Swaps disabled");
         require(_pool.length > 0, "Pool empty");
         require(msg.value >= swapFee, "Insufficient fee");
@@ -621,7 +612,7 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         emit Swapped(sendHashId, receiveHashId, msg.sender, totalSwapped);
     }
 
-    function cancelSwapDeposit(bytes32 hashId) external virtual nonReentrant notBlacklisted {
+    function cancelSwapDeposit(bytes32 hashId) external nonReentrant notBlacklisted {
         require(
             EthscriptionsEscrowerStorage.s().ethscriptionReceivedOnBlockNumber[msg.sender][hashId] > 0,
             "Not deposited"
@@ -630,15 +621,15 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         _transferEthscription(msg.sender, msg.sender, hashId);
     }
 
-    function setSwapEnabled(bool _enabled) external virtual onlyOwner {
+    function setSwapEnabled(bool _enabled) external onlyOwner {
         swapEnabled = _enabled;
     }
 
-    function setSwapMerkleRoot(bytes32 _root) external virtual onlyOwner {
+    function setSwapMerkleRoot(bytes32 _root) external onlyOwner {
         swapMerkleRoot = _root;
     }
 
-    function setSwapFee(uint256 _fee) external virtual onlyOwner {
+    function setSwapFee(uint256 _fee) external onlyOwner {
         swapFee = _fee;
     }
 
@@ -697,12 +688,5 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
 
     // ─── Storage gap for future upgrades (was 44; -1 for blacklisted = 43) ──
 
-    // ─── Aggregate of pendingReturns (V6 audit fix) ───
-    /// @dev Sum of every outstanding `pendingReturns` balance. withdrawETH subtracted only
-    ///      totalCommittedETH, which tracks the LIVE auction bid — so an owner withdrawal
-    ///      could take ETH that outbid bidders were still owed. Taken from this gap (43 -> 42)
-    ///      so V3/V4/V5 storage, which sits after it, is unmoved.
-    uint256 public totalPendingReturns;
-
-    uint256[42] private __gap;
+    uint256[43] private __gap;
 }

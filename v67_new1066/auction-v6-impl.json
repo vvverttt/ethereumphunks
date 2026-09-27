@@ -1,0 +1,24 @@
+{
+  "implementation": "0x13911dCDc56002ddc4EB1FfEb097bb50D6f698dF",
+  "tx": "0x8d6ada90d2c60a3b1d25688dcac5fc85fb715fa0209d8d9699024bf8e5108da1",
+  "deployedAt": "2026-09-27T04:54:16.427Z",
+  "runtimeBytes": 15625,
+  "gasUsed": "3456807",
+  "costEth": "0.000186877710383916",
+  "proxy": "0xc1fa86b53e8e101c93c570f276bc5177832bd031",
+  "proxyAdmin": "0xd043f41f07e7bc140e51971f7dd3c33ab35508ad",
+  "proxyType": "transparent",
+  "upgradeVia": "ProxyAdmin 0xd043f41f07e7bc140e51971f7dd3c33ab35508ad -> upgradeAndCall(proxy, impl, 0x)",
+  "upgradeCalldata": "0x9623609d000000000000000000000000c1fa86b53e8e101c93c570f276bc5177832bd03100000000000000000000000013911dcdc56002ddc4eb1ffeb097bb50d6f698df00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000",
+  "retires": [
+    "buyItem",
+    "swap",
+    "cancelSwapDeposit",
+    "setBuyNowPublic",
+    "setItemBuyNowEnabled",
+    "setSwapEnabled",
+    "setSwapMerkleRoot",
+    "setSwapFee"
+  ],
+  "fixes": "withdrawETH now subtracts totalPendingReturns as well as totalCommittedETH"
+}

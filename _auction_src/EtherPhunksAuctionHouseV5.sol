@@ -64,7 +64,6 @@ contract EtherPhunksAuctionHouseV5 is EtherPhunksAuctionHouseV4 {
     function buyItem(bytes32 hashId, uint8 tier, bytes32[] calldata proof)
         external
         payable
-        virtual
         nonReentrant
         notBlacklisted
     {
@@ -115,7 +114,7 @@ contract EtherPhunksAuctionHouseV5 is EtherPhunksAuctionHouseV4 {
     // ─── Owner config ─────────────────────────────────────────
 
     /// @notice Set the PUBLIC (tier-0, no-whitelist) buy-now price and switch.
-    function setBuyNowPublic(uint256 price, bool enabled) external virtual onlyOwner {
+    function setBuyNowPublic(uint256 price, bool enabled) external onlyOwner {
         if (enabled) require(price > 0, "Price must be > 0");
         buyNowPublicPrice = price;
         buyNowPublicEnabled = enabled;
@@ -123,7 +122,7 @@ contract EtherPhunksAuctionHouseV5 is EtherPhunksAuctionHouseV4 {
     }
 
     /// @notice Master on/off for the entire per-item buy-now feature.
-    function setItemBuyNowEnabled(bool enabled) external virtual onlyOwner {
+    function setItemBuyNowEnabled(bool enabled) external onlyOwner {
         itemBuyNowEnabled = enabled;
         emit ItemBuyNowToggled(enabled);
     }
