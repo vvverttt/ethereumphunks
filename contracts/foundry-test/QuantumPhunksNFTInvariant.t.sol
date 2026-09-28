@@ -2,7 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import {CryptoPhunksV67Flip as CryptoPhunksV67} from "../contracts/V2MainnetUpgrade/QuantumPhunksMarket/QuantumPhunksNFTFlip.sol";
+// The DEPLOYED implementation is CryptoPhunksV67V2 (0x7946b503...). Its base is Flip, so the
+// unit suite still exercises Flip directly; the invariants run against what is actually live.
+import {CryptoPhunksV67Flip} from "../contracts/V2MainnetUpgrade/QuantumPhunksMarket/QuantumPhunksNFTFlip.sol";
+import {CryptoPhunksV67V2 as CryptoPhunksV67} from "../contracts/V2MainnetUpgrade/QuantumPhunksMarket/QuantumPhunksNFTV2.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /// Drives the NFT through random sequences of mints, transfers, approvals and owner config
@@ -20,6 +23,7 @@ contract NFTHandler is Test {
     uint256 public transferAttempts;
     uint256 public blockedApprovalAttempts;
     bool    public blockedOperatorEverApproved;   // must stay false
+    bool    public blockedOperatorEverTransferred; // must stay false — the V2 fix
 
     // Operators the handler may use, and the set it keeps blocked.
     address[3] public operators;
@@ -81,7 +85,27 @@ contract NFTHandler is Test {
         address op = _op(opS); address from = _actor(fromS); address to = _actor(toS);
         if (to == address(0)) return;
         vm.prank(op);
-        try nft.transferFrom(from, to, _id(idS)) {} catch {}
+        // A permanently-blocked operator succeeding here is the exact bug V2 fixes: before it,
+        // blocking stopped new approvals but left existing ones working, so this call could go
+        // through. Recording the success rather than asserting inline keeps the handler
+        // revert-tolerant while still failing the run.
+        try nft.transferFrom(from, to, _id(idS)) {
+            if (shouldBeBlocked[op]) blockedOperatorEverTransferred = true;
+        } catch {}
+    }
+
+    /// Grant an approval while the operator is allowed, so a later block has something to
+    /// revoke. Without this the blocked operator never holds an approval and the transfer
+    /// invariant below would pass vacuously.
+    function approveThenBlock(uint256 whoS) external {
+        address who = _actor(whoS);
+        address op = operators[0];
+        vm.prank(owner);
+        try nft.setBlockedOperator(op, false) {} catch {}      // briefly allow
+        vm.prank(who);
+        try nft.setApprovalForAll(op, true) {} catch {}        // holder approves it
+        vm.prank(owner);
+        try nft.setBlockedOperator(op, true) {} catch {}       // block again
     }
 
     function toggleWhitelist(bool on) external {
@@ -128,7 +152,7 @@ contract QuantumPhunksNFTInvariantTest is Test {
     function setUp() public {
         nft = CryptoPhunksV67(address(new ERC1967Proxy(
             address(new CryptoPhunksV67()),
-            abi.encodeCall(CryptoPhunksV67.initialize, ("CryptoPhunksV67", "QP", treasury, owner))
+            abi.encodeCall(CryptoPhunksV67Flip.initialize, ("CryptoPhunksV67", "QP", treasury, owner))
         )));
         vm.prank(owner);
         nft.setLottery(lottery);
@@ -159,6 +183,12 @@ contract QuantumPhunksNFTInvariantTest is Test {
         for (uint256 i; i < 4; i++) {
             assertFalse(nft.isApprovedForAll(handler.actors(i), blocked), "blocked operator holds approval");
         }
+    }
+
+    /// The fix, stated as an invariant: a blocked operator never moves a token, no matter when
+    /// the approval was granted relative to the block. This is what failed on V1.
+    function invariant_blocked_operator_never_transfers() public view {
+        assertFalse(handler.blockedOperatorEverTransferred(), "a blocked operator transferred a token");
     }
 
     /// The royalty rate is capped at 6.7% and no sequence of setter calls may exceed it.
