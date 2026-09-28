@@ -328,6 +328,45 @@ export class StorageService implements OnModuleInit {
     if (this.hashIdCache && hash) this.hashIdCache.add(hash.toLowerCase());
   }
 
+  // The same 32-byte calldata is ALSO checked against `comments`, so a transfer-shaped
+  // transaction costs two queries, not one — and the logs show both returning "[]" (a 2-byte
+  // body). There are only 112 comments in total, so the same treatment applies.
+  private commentCache: Set<string> | null = null;
+  private commentCacheReady = false;
+  private commentCacheLoading: Promise<void> | null = null;
+
+  private async loadCommentCache(): Promise<void> {
+    if (this.commentCacheReady || this.commentCacheLoading) return this.commentCacheLoading ?? undefined;
+    this.commentCacheLoading = (async () => {
+      try {
+        const set = new Set<string>();
+        for (let from = 0; ; from += 1000) {
+          const { data, error } = await this.supabase
+            .from('comments' + this.suffix)
+            .select('id')
+            .range(from, from + 999);
+          if (error) throw error;
+          for (const r of data ?? []) set.add(String(r.id).toLowerCase());
+          if (!data || data.length < 1000) break;
+        }
+        this.commentCache = set;
+        this.commentCacheReady = true;
+        Logger.log(`comment cache loaded: ${set.size} comments`, 'StorageService');
+      } catch (e) {
+        this.commentCache = null;
+        this.commentCacheReady = false;
+        Logger.warn(`comment cache failed to load, falling back to live lookups: ${e}`, 'StorageService');
+      } finally {
+        this.commentCacheLoading = null;
+      }
+    })();
+    return this.commentCacheLoading;
+  }
+
+  private commentKnownAbsent(id: string): boolean {
+    return this.commentCacheReady && !!this.commentCache && !this.commentCache.has(id?.toLowerCase());
+  }
+
   async checkEthscriptionExistsByHashId(hash: string, retries = 2): Promise<db.Ethscription> {
     // Answer misses from memory. Only a hashId the cache has never seen can be skipped.
     await this.loadHashIdCache();
@@ -1155,6 +1194,9 @@ export class StorageService implements OnModuleInit {
       tic.topic?.length === 66 ? 'hash' :
       undefined;
 
+    // Register before the insert so a delete in the same block still finds it.
+    if (this.commentCache) this.commentCache.add(txn.hash.toLowerCase());
+
     const comment: db.DBComment = {
       id: txn.hash.toLowerCase(),
       topic: tic.topic?.toLowerCase(),
@@ -1181,6 +1223,10 @@ export class StorageService implements OnModuleInit {
    * @returns The comment if found
    */
   async getCommentByHashId(hashId: string): Promise<db.DBComment> {
+    // Answer misses from memory — see the comment cache above.
+    await this.loadCommentCache();
+    if (this.commentKnownAbsent(hashId)) return undefined;
+
     const response: db.CommentResponse = await this.supabase
       .from('comments' + this.suffix)
       .select('*')
