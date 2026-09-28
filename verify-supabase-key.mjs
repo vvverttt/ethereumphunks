@@ -140,8 +140,20 @@ if (cloudflareUnverifiable) {
   console.log('        there answers identically. Confirm by saving a setting on the admin page.');
   console.log('');
 }
+// The closing line used to read "do NOT revoke the old key yet" on any failure, which is only
+// right DURING a rotation. Run after one — the usual case — it gave stale advice about a step
+// already done. Report what is actually broken instead, and let the reader draw the conclusion.
 if (bad) {
-  console.log(`${bad} check(s) FAILED — do NOT revoke the old key yet.`);
+  console.log(`${bad} check(s) FAILED.`);
+  const render = rows.find(([l]) => l.startsWith('Render'));
+  if (render && !render[1]) {
+    console.log('');
+    console.log('  "Unregistered API key" from Render means the old key was revoked before');
+    console.log('  Render got the new one. The indexer is NOT indexing until you paste it into');
+    console.log('  the Render env var SUPABASE_SERVICE_ROLE and redeploy.');
+  }
+  console.log('');
+  console.log('  Mid-rotation, a failure here means do not revoke the old key yet.');
   process.exit(1);
 }
-console.log('all clean — safe to revoke the old key in the Supabase dashboard.');
+console.log('all clean — both production places hold a working key.');
