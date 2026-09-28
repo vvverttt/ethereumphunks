@@ -85,11 +85,23 @@ if (!RUN) {
   process.exit(0);
 }
 
+// Supabase stores objects with `cache-control: no-cache` unless told otherwise. Without this
+// every visitor re-downloads all 21 sheets (5.75 MB) on every page load — which would trade the
+// request-count problem for a worse bandwidth one. The sheets are safe to mark immutable
+// because SpriteService requests them as `sprite-N.png?v=<app version>`, so a new build changes
+// the URL and cannot read a previous generation's sheet out of cache.
+//
+// Matches what set-image-cache-headers.mjs already applied to the images themselves.
+const CACHE = 'public, max-age=31536000, immutable';
+
 const put = async (name, body, type) => {
   for (let a = 0; a < 4; a++) {
     const r = await fetch(`${URL_}/storage/v1/object/static/${name}`, {
       method: 'POST',
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': type, 'x-upsert': 'true' },
+      headers: {
+        apikey: KEY, Authorization: `Bearer ${KEY}`,
+        'Content-Type': type, 'x-upsert': 'true', 'cache-control': CACHE,
+      },
       body,
     });
     if (r.ok) return true;
@@ -114,6 +126,12 @@ if (ok !== sheets.length) {
 // Index last, only once every sheet it references is in place.
 const idxOk = await put('sprite.json', fs.readFileSync(idxPath), 'application/json');
 console.log(`  sprite.json: ${idxOk ? 'uploaded' : 'FAILED'}`);
+
+// Confirm the cache header actually stuck — an uncached sheet is worse than no sheet.
+const probe = await fetch(`${URL_}/storage/v1/object/public/static/sprite-0.png`, { method: 'HEAD' });
+const cc = probe.headers.get('cache-control');
+console.log(`\n  sprite-0.png  HTTP ${probe.status}  cache-control: ${cc}`);
+if (cc !== CACHE) console.log(`  WARNING: expected "${CACHE}" — visitors will re-download the sheets.`);
 
 console.log('\nverify (both must be the real bytes, not an HTML fallback):');
 console.log(`  curl -sI ${URL_}/storage/v1/object/public/static/sprite.json`);
