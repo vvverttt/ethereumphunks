@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import {CryptoPhunksV67} from "../contracts/V2MainnetUpgrade/QuantumPhunksMarket/QuantumPhunksNFT.sol";
+import {CryptoPhunksV67Flip as CryptoPhunksV67} from "../contracts/V2MainnetUpgrade/QuantumPhunksMarket/QuantumPhunksNFTFlip.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
