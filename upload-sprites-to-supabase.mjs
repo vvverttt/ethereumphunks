@@ -128,9 +128,14 @@ const idxOk = await put('sprite.json', fs.readFileSync(idxPath), 'application/js
 console.log(`  sprite.json: ${idxOk ? 'uploaded' : 'FAILED'}`);
 
 // Confirm the cache header actually stuck — an uncached sheet is worse than no sheet.
-const probe = await fetch(`${URL_}/storage/v1/object/public/static/sprite-0.png`, { method: 'HEAD' });
+//
+// The cache-buster is essential and its absence gave a false failure the first time this ran:
+// Supabase fronts storage with a CDN, so a probe right after upload is answered from the
+// pre-upload copy (cf:HIT) and reports the OLD header. The upload had worked; the check was
+// reading stale bytes. Same trap as the bucket JSON in verify-v67-10k.mjs.
+const probe = await fetch(`${URL_}/storage/v1/object/public/static/sprite-0.png?cb=${Date.now()}`, { method: 'HEAD' });
 const cc = probe.headers.get('cache-control');
-console.log(`\n  sprite-0.png  HTTP ${probe.status}  cache-control: ${cc}`);
+console.log(`\n  sprite-0.png  HTTP ${probe.status}  cf:${probe.headers.get('cf-cache-status')}  cache-control: ${cc}`);
 if (cc !== CACHE) console.log(`  WARNING: expected "${CACHE}" — visitors will re-download the sheets.`);
 
 console.log('\nverify (both must be the real bytes, not an HTML fallback):');
