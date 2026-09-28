@@ -70,7 +70,26 @@ async function main() {
 
   const bal = await ethers.provider.getBalance(me);
   const fee = await ethers.provider.getFeeData();
-  const gas = 3_200_000n;                       // generous; actual is well under
+
+  // ESTIMATE the gas — never hardcode it.
+  //
+  // A hardcoded 3,200,000 here burned a deploy: storing the runtime code alone costs 200 gas
+  // per byte, so 22,533 bytes is ~4.5M before the constructor executes at all. The tx ran out
+  // of gas, reverted with status 0, and still charged the full limit.
+  //
+  // estimateGas asks the node what it actually takes; the floor below is a sanity check that
+  // the estimate is not obviously too small for a contract this size.
+  const factoryForEstimate = new vanillaEthers.ContractFactory(
+    (await artifacts.readArtifact(NAME)).abi,
+    (await artifacts.readArtifact(NAME)).bytecode,
+    wallet,
+  );
+  const deployTx = await factoryForEstimate.getDeployTransaction();
+  const estimated = await ethers.provider.estimateGas({ from: me, data: deployTx.data });
+  const floor = BigInt(size) * 200n + 100_000n;          // code deposit + a minimum for execution
+  const gas = ((estimated > floor ? estimated : floor) * 125n) / 100n;   // +25% headroom
+
+  console.log(`gas estimate: ${estimated.toLocaleString()}  (floor ${floor.toLocaleString()}) -> limit ${gas.toLocaleString()}`);
   const cost = gas * (fee.maxFeePerGas ?? fee.gasPrice ?? 0n);
   console.log(`deployer:  ${me}`);
   console.log(`balance:   ${ethers.formatEther(bal)} ETH`);
