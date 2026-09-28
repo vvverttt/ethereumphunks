@@ -175,7 +175,103 @@ console.log(`sample -> v67_1081_events_sample.json`);
 console.log(`range: block ${Math.min(...out.map((e) => e.blockNumber))} .. ${Math.max(...out.map((e) => e.blockNumber))}`);
 console.log(`dates: ${out.reduce((a, e) => e.blockTimestamp < a ? e.blockTimestamp : a, '9')} .. ${out.reduce((a, e) => e.blockTimestamp > a ? e.blockTimestamp : a, '0')}`);
 
-if (!RUN) { console.log('\nDRY RUN — re-run with RUN=1'); process.exit(0); }
+// ---- SQL output ------------------------------------------------------------
+// For running in the Supabase SQL editor instead of writing through PostgREST, so no secret
+// key has to leave the dashboard.
+//
+// Written as INSERT ... SELECT ... WHERE NOT EXISTS rather than ON CONFLICT: that form is
+// idempotent whatever indexes the table happens to have, whereas `ON CONFLICT ("txId")` errors
+// outright unless a unique constraint exists on exactly that column. Re-running is a no-op
+// either way.
+//
+// Column names are camelCase, so every one must stay double-quoted, and "from"/"to" are
+// reserved words that would be a syntax error unquoted.
+if (process.env.SQL === '1') {
+  const COLS = ['txId', 'type', 'hashId', 'from', 'to', 'blockHash', 'txIndex', 'txHash', 'blockNumber', 'blockTimestamp', 'value'];
+  const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
+  const cast = { txIndex: '::int', blockNumber: '::int', blockTimestamp: '::timestamptz' };
+  const quoted = COLS.map((c) => `"${c}"`).join(', ');
+
+  // Almost every byte of the naive form is repeated: the 1,081 rows share only a handful of
+  // transactions, so txHash/blockHash/blockNumber/blockTimestamp/txIndex/from/to/type/value are
+  // the same across large groups. Emitting the per-transaction data ONCE and joining cuts the
+  // file from ~470 KB to something that pastes comfortably.
+  //
+  // Only done when the invariants that make it safe actually hold — checked, not assumed.
+  const tos = new Set(out.map((e) => e.to));
+  const froms = new Set(out.map((e) => e.from));
+  const types = new Set(out.map((e) => e.type));
+  const values = new Set(out.map((e) => e.value));
+  const compressible = tos.size === 1 && froms.size === 1 && types.size === 1 && values.size === 1;
+
+  const lines = [
+    `-- Activity history for the final 1,081 QuantumPhunks.`,
+    `-- Generated ${new Date().toISOString()} by backfill-v67-1081-events.mjs from on-chain`,
+    `-- Transfer logs (blocks ${Math.min(...out.map((e) => e.blockNumber))}-${Math.max(...out.map((e) => e.blockNumber))}).`,
+    `--`,
+    `-- ${out.length} rows, all type 'created', shaped exactly as the indexer's buildEvent writes them.`,
+    `-- Safe to run more than once: each row is skipped if its txId is already present.`,
+    `--`,
+    `-- Paste into the Supabase SQL editor and Run. The query at the bottom verifies it.`,
+    ``,
+  ];
+
+  if (compressible) {
+    // One row per transaction.
+    const txKey = (e) => e.txHash;
+    const txs = [...new Map(out.map((e) => [txKey(e), e])).values()];
+    const txNum = new Map(txs.map((e, i) => [txKey(e), i + 1]));
+
+    lines.push(`-- ${txs.length} mint transactions, ${out.length} tokens between them.`);
+    lines.push(`WITH tx(n, "txHash", "blockHash", "blockNumber", "blockTimestamp", "txIndex") AS (VALUES`);
+    lines.push(txs.map((e, i) =>
+      `  (${i + 1}, ${q(e.txHash)}, ${q(e.blockHash)}, ${e.blockNumber}${i === 0 ? '::int' : ''}, ${q(e.blockTimestamp)}${i === 0 ? '::timestamptz' : ''}, ${e.txIndex}${i === 0 ? '::int' : ''})`
+    ).join(',\n'));
+    lines.push(`),`);
+    // One row per token: which transaction it came from, its hashId, and its log index.
+    lines.push(`m(n, "hashId", "logIndex") AS (VALUES`);
+    lines.push(out.map((e, i) =>
+      `  (${txNum.get(txKey(e))}, ${q(e.hashId)}, ${q(e.txId.slice(e.txHash.length))})`
+    ).join(',\n'));
+    lines.push(`)`);
+    lines.push(`INSERT INTO public.events (${quoted})`);
+    lines.push(`SELECT tx."txHash" || m."logIndex", ${q([...types][0])}, m."hashId", ${q([...froms][0])}, ${q([...tos][0])},`);
+    lines.push(`       tx."blockHash", tx."txIndex", tx."txHash", tx."blockNumber", tx."blockTimestamp", ${q([...values][0])}`);
+    lines.push(`FROM m JOIN tx USING (n)`);
+    lines.push(`WHERE NOT EXISTS (`);
+    lines.push(`  SELECT 1 FROM public.events e WHERE e."txId" = tx."txHash" || m."logIndex"`);
+    lines.push(`);`);
+    lines.push('');
+  } else {
+    for (let i = 0; i < out.length; i += 250) {
+      const slice = out.slice(i, i + 250);
+      lines.push(`INSERT INTO public.events (${quoted})`);
+      lines.push(`SELECT ${quoted} FROM (VALUES`);
+      lines.push(slice.map((e, n) =>
+        '  (' + COLS.map((c) => q(e[c]) + ((n === 0 && cast[c]) ? cast[c] : '')).join(', ') + ')'
+      ).join(',\n'));
+      lines.push(`) AS v(${quoted})`);
+      lines.push(`WHERE NOT EXISTS (SELECT 1 FROM public.events e WHERE e."txId" = v."txId");`);
+      lines.push('');
+    }
+  }
+
+  // A check to run afterwards, so the result is verified rather than assumed.
+  lines.push(`-- Verify: should return 0`);
+  lines.push(`SELECT count(*) AS tokens_still_without_history`);
+  lines.push(`FROM public.ethscriptions t`);
+  lines.push(`WHERE t.slug = 'cryptophunksv67'`);
+  lines.push(`  AND NOT EXISTS (SELECT 1 FROM public.events e WHERE e."hashId" = t."hashId");`);
+  lines.push('');
+
+  fs.writeFileSync('./v67-1081-events.sql', lines.join('\n'));
+  const kb = (fs.statSync('./v67-1081-events.sql').size / 1024).toFixed(0);
+  console.log(`\nSQL written -> v67-1081-events.sql   (${out.length} rows, ${kb} KB)`);
+  console.log('Paste it into the Supabase SQL editor and Run. The last query verifies it: expect 0.');
+  process.exit(0);
+}
+
+if (!RUN) { console.log('\nDRY RUN — re-run with RUN=1, or SQL=1 to emit SQL instead'); process.exit(0); }
 
 let done = 0, failed = 0;
 for (let i = 0; i < out.length; i += 250) {
