@@ -271,7 +271,67 @@ export class StorageService implements OnModuleInit {
    * @param hash - The hash ID to check
    * @returns The ethscription if found, null otherwise
    */
+  // ===================== hashId existence cache =====================
+  //
+  // Every mainnet transaction whose calldata is exactly 32 bytes looks like an ethscription
+  // transfer, so the indexer asks Supabase "do I know this hashId?" for each one. Almost all
+  // are misses — unrelated contracts that happen to take a single word of calldata — and at
+  // ~300 blocks an hour those misses were the largest remaining source of Log Ingestion.
+  //
+  // The whole set is small enough to hold: 10,578 rows, well under a megabyte. So a miss is
+  // answered from memory and never reaches the network.
+  //
+  // SAFETY: the cache can only skip a query when it is CERTAIN the hashId is absent. If it has
+  // not loaded, or loading failed, `cacheReady` stays false and every call queries exactly as
+  // before. A cache problem therefore degrades to today's behaviour — never to a missed
+  // transfer, which would corrupt ownership.
+  private hashIdCache: Set<string> | null = null;
+  private cacheReady = false;
+  private cacheLoading: Promise<void> | null = null;
+
+  private async loadHashIdCache(): Promise<void> {
+    if (this.cacheReady || this.cacheLoading) return this.cacheLoading ?? undefined;
+    this.cacheLoading = (async () => {
+      try {
+        const set = new Set<string>();
+        for (let from = 0; ; from += 1000) {
+          const { data, error } = await this.supabase
+            .from('ethscriptions' + this.suffix)
+            .select('hashId')
+            .range(from, from + 999);
+          if (error) throw error;
+          for (const r of data ?? []) set.add(String(r.hashId).toLowerCase());
+          if (!data || data.length < 1000) break;
+        }
+        this.hashIdCache = set;
+        this.cacheReady = true;
+        Logger.log(`hashId cache loaded: ${set.size} ethscriptions`, 'StorageService');
+      } catch (e) {
+        // Leave cacheReady false — every lookup falls through to a live query.
+        this.hashIdCache = null;
+        this.cacheReady = false;
+        Logger.warn(`hashId cache failed to load, falling back to live lookups: ${e}`, 'StorageService');
+      } finally {
+        this.cacheLoading = null;
+      }
+    })();
+    return this.cacheLoading;
+  }
+
+  /** True only when the cache is loaded AND certain this hashId is not an ethscription. */
+  private knownAbsent(hash: string): boolean {
+    return this.cacheReady && !!this.hashIdCache && !this.hashIdCache.has(hash?.toLowerCase());
+  }
+
+  /** Keep the cache correct as new ethscriptions are indexed. */
+  public noteHashId(hash: string): void {
+    if (this.hashIdCache && hash) this.hashIdCache.add(hash.toLowerCase());
+  }
+
   async checkEthscriptionExistsByHashId(hash: string, retries = 2): Promise<db.Ethscription> {
+    // Answer misses from memory. Only a hashId the cache has never seen can be skipped.
+    await this.loadHashIdCache();
+    if (this.knownAbsent(hash)) return null;
     try {
       const response: db.EthscriptionResponse = await this.supabase
         .from('ethscriptions' + this.suffix)
@@ -299,6 +359,14 @@ export class StorageService implements OnModuleInit {
    */
   async checkEthscriptionsExistsByHashIds(hashes: string[]): Promise<Ethscription[]> {
     if (!hashes.length) return null;
+
+    // Drop the hashes the cache knows are absent before querying. An ESIP-5 batch is often
+    // hundreds of words of unrelated calldata, so this usually removes the query entirely.
+    await this.loadHashIdCache();
+    if (this.cacheReady) {
+      hashes = hashes.filter((h) => !this.knownAbsent(h));
+      if (!hashes.length) return [];
+    }
 
     // We check these in batches of 100
     const batchSize = 100;
@@ -502,6 +570,11 @@ export class StorageService implements OnModuleInit {
       ]);
 
     if (error) throw error.message;
+
+    // Register it with the existence cache immediately. A transfer of this ethscription can
+    // appear in the very next transaction, and if the cache still considered it absent that
+    // transfer would be skipped and ownership would silently diverge from the chain.
+    this.noteHashId(txn.hash);
     Logger.log('Ethscription created', txn.hash.toLowerCase());
   }
 
