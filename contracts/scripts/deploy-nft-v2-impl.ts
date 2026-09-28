@@ -15,16 +15,38 @@
  * Dry-run by default. RUN=1 to broadcast.
  */
 import hre from 'hardhat';
+import fs from 'fs';
+import path from 'path';
 import { ethers as vanillaEthers } from 'ethers';
 
 const PROXY = '0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3';
 const NAME = 'contracts/V2MainnetUpgrade/QuantumPhunksMarket/QuantumPhunksNFTV2.sol:CryptoPhunksV67V2';
+const DEPLOYER = '0x10dc1ABC3E14a494C78d1e6F15185264154D5949';
 const LIVE = process.env.RUN === '1';
+
+/**
+ * The deployer is the burner, whose key is PRIVATE_KEY in the REPO-ROOT .env.
+ *
+ * Not hardhat's signer: hardhat.config runs dotenv from contracts/, so it picks up
+ * contracts/.env and then contracts/.env.deploy, which override MAINNET_PK to a different
+ * wallet entirely. Reading the root file directly keeps the deployer explicit instead of
+ * whichever address that chain of overrides happens to resolve to.
+ */
+function burnerKey(): string {
+  const p = path.join(__dirname, '..', '..', '.env');
+  const env = fs.readFileSync(p, 'utf8');
+  const m = env.match(/^PRIVATE_KEY=(0x)?([a-fA-F0-9]{64})$/m);
+  if (!m) throw new Error(`PRIVATE_KEY not found in ${p}`);
+  return '0x' + m[2];
+}
 
 async function main() {
   const { ethers, upgrades, artifacts } = hre as any;
-  const [signer] = await ethers.getSigners();
-  const me = await signer.getAddress();
+  const wallet = new vanillaEthers.Wallet(burnerKey(), ethers.provider);
+  const me = wallet.address;
+  if (me.toLowerCase() !== DEPLOYER.toLowerCase()) {
+    throw new Error(`root .env PRIVATE_KEY is ${me}, expected the deployer ${DEPLOYER}`);
+  }
 
   const net = await ethers.provider.getNetwork();
   if (net.chainId !== 1n) throw new Error(`wrong network: ${net.chainId}`);
@@ -61,7 +83,6 @@ async function main() {
   }
   if (bal < cost) throw new Error('insufficient balance for the deploy');
 
-  const wallet = new vanillaEthers.Wallet((signer as any).privateKey ?? process.env.PRIVATE_KEY!, ethers.provider);
   const factory = new vanillaEthers.ContractFactory(art.abi, art.bytecode, wallet);
   const tx = await factory.getDeployTransaction();
   const sent = await wallet.sendTransaction({ data: tx.data, gasLimit: gas });
