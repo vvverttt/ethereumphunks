@@ -276,12 +276,20 @@ export class AuctionService {
   // ─── Buy-now (V3) ────────────────────────────────────────────────────────────
 
   /**
-   * On-chain buy-now config. The contract is the source of truth for whether buy-now is live —
-   * never gate the UI on the bundled whitelist alone, since the owner can disable buy-now or
-   * rotate the merkle root at any time via setBuyNow().
+   * RETIRED ON-CHAIN. Auction house V7 (impl 0x4208c05B…, live 2026-09-29) reverts Retired()
+   * from buyNow, buyNow2, buyItem and every setter that configured them.
+   *
+   * Returning OFF unconditionally rather than reading the contract, because the stored flags
+   * still say otherwise: `buyNow2Enabled` reads TRUE and `buyNow2Price` reads 0.167 ETH on
+   * mainnet right now. V7 deliberately left storage untouched so the flag could not be flipped
+   * back on — which means a contract read reports buy-now as ENABLED for a function that always
+   * reverts. Trusting it would render the Buy Now button and revert on click.
+   *
+   * The read is kept below, unreachable, so the shape is obvious if buy-now is ever revived.
    */
   async getBuyNowConfig(): Promise<{ enabled: boolean; price: bigint; root: string }> {
     const OFF = { enabled: false, price: 0n, root: '0x' };
+    return OFF;   // retired on-chain — see the note above
     // Read via the resilient fallback client (the same one every other auction read uses), NOT
     // wagmi's single-transport public client. On a flaky gateway (e.g. eth.limo) the wagmi read
     // could hang, and because this sits on the Buy Now click path it wedged txPending=true, which
@@ -317,6 +325,10 @@ export class AuctionService {
    * so the UI gate is convenience only, never the security boundary.
    */
   async buyNow(proof: string[], priceWei: bigint): Promise<string | undefined> {
+    // Retired on-chain in auction V7 — the contract reverts Retired(). Failing here with a
+    // readable message beats sending a transaction that is guaranteed to revert and
+    // costing the user gas to learn that.
+    throw new Error('Buy Now has been retired on-chain (auction V7).');
     await this.web3Svc.switchNetwork();
 
     const chainId = environment.chainId;
@@ -341,9 +353,21 @@ export class AuctionService {
     return hash;
   }
 
-  /** Tier-2 buy-now config (buyNow2* selectors). Same resilient read + hard timeout as tier 1. */
+  /**
+   * RETIRED ON-CHAIN. Auction house V7 (impl 0x4208c05B…, live 2026-09-29) reverts Retired()
+   * from buyNow, buyNow2, buyItem and every setter that configured them.
+   *
+   * Returning OFF unconditionally rather than reading the contract, because the stored flags
+   * still say otherwise: `buyNow2Enabled` reads TRUE and `buyNow2Price` reads 0.167 ETH on
+   * mainnet right now. V7 deliberately left storage untouched so the flag could not be flipped
+   * back on — which means a contract read reports buy-now as ENABLED for a function that always
+   * reverts. Trusting it would render the Buy Now button and revert on click.
+   *
+   * The read is kept below, unreachable, so the shape is obvious if buy-now is ever revived.
+   */
   async getBuyNow2Config(): Promise<{ enabled: boolean; price: bigint; root: string }> {
     const OFF = { enabled: false, price: 0n, root: '0x' };
+    return OFF;   // retired on-chain — see the note above
     const read = (async () => {
       const results = await (this.web3Svc.l1DedicatedClient as any).multicall({
         contracts: [
@@ -366,6 +390,10 @@ export class AuctionService {
 
   /** Tier-2 take: identical to {buyNow} but hits the buyNow2 selector. */
   async buyNow2(proof: string[], priceWei: bigint): Promise<string | undefined> {
+    // Retired on-chain in auction V7 — the contract reverts Retired(). Failing here with a
+    // readable message beats sending a transaction that is guaranteed to revert and
+    // costing the user gas to learn that.
+    throw new Error('Buy Now has been retired on-chain (auction V7).');
     await this.web3Svc.switchNetwork();
     const chainId = environment.chainId;
     let walletClient;
