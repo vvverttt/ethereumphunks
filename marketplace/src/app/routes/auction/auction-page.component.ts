@@ -735,11 +735,11 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       // wallet eligible for BOTH sees just the 0.167 button; tier 1 shows only when not in tier 2.
       const showT1 = !!p1 && !p2;
       this.buyNow1Proof.set(showT1 ? p1 : null);
-      this.buyNow1Live.set(showT1);
+      this.buyNow1Live.set(false);   // retired on-chain (V7) — never offer it
       this.buyNow1PriceEth.set(BUYNOW_TIER1_ETH);
 
       this.buyNow2Proof.set(p2);
-      this.buyNow2Live.set(!!p2);
+      this.buyNow2Live.set(false);   // retired on-chain (V7) — never offer it
       this.buyNow2PriceEth.set(BUYNOW_TIER2_ETH);
     } catch {
       this.buyNow1Live.set(false); this.buyNow1Proof.set(null);

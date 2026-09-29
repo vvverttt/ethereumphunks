@@ -108,12 +108,12 @@ export class BidPanelComponent {
 
   // A tier's button shows when the window is open, that tier is live on-chain, and the wallet is
   // eligible for it. A wallet in both tiers sees both buttons (EthsRocks left, Missing/Dysto right).
-  get showBuyNow1(): boolean {
-    return this.buyNowWindowOpen && this.buyNow1Live && this.connected && this.buyNow1Eligible;
-  }
-  get showBuyNow2(): boolean {
-    return this.buyNowWindowOpen && this.buyNow2Live && this.connected && this.buyNow2Eligible;
-  }
+  /** Always false: buy-now is retired on-chain (auction V7). Kept so any remaining
+   *  reference compiles and resolves to "hidden" rather than silently breaking. */
+  get showBuyNow1(): boolean { return false; }
+  /** Always false: buy-now is retired on-chain (auction V7). Kept so any remaining
+   *  reference compiles and resolves to "hidden" rather than silently breaking. */
+  get showBuyNow2(): boolean { return false; }
   get canBuyNow1(): boolean { return this.showBuyNow1 && !this.txPending; }
   get canBuyNow2(): boolean { return this.showBuyNow2 && !this.txPending; }
 }
