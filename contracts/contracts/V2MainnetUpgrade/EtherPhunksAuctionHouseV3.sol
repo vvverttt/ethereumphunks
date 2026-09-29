@@ -44,8 +44,10 @@ contract EtherPhunksAuctionHouseV3 is EtherPhunksAuctionHouseV2 {
     ///         met). The instant anyone bids, this reverts for that item and it
     ///         must play out as a normal auction.
     /// @param proof merkle proof that msg.sender is in the ethsrocks snapshot
+    /// @dev virtual so V7 can retire it — see EtherPhunksAuctionHouseV7.
     function buyNow(bytes32[] calldata proof)
         external
+        virtual
         payable
         nonReentrant
         whenNotPaused
@@ -95,7 +97,8 @@ contract EtherPhunksAuctionHouseV3 is EtherPhunksAuctionHouseV2 {
 
     // ─── Owner config ────────────────────────────────────────
 
-    function setBuyNow(bytes32 merkleRoot, uint256 price, bool enabled) external onlyOwner {
+    /// @dev virtual so V7 can retire it.
+    function setBuyNow(bytes32 merkleRoot, uint256 price, bool enabled) external virtual onlyOwner {
         // Guard the footgun: enabling with a zero price would give whitelisted
         // holders free items; enabling with a zero root would let nobody in.
         if (enabled) {

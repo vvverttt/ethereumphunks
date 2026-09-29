@@ -395,7 +395,8 @@ contract EtherPhunksAuctionHouseV2 is Initializable, EthscriptionsEscrower, Owna
         }
     }
 
-    function setPointsAddress(address _pointsAddress) external onlyOwner {
+    /// @dev virtual so V7 can add the zero-address check.
+    function setPointsAddress(address _pointsAddress) external virtual onlyOwner {
         pointsAddress = _pointsAddress;
     }
 

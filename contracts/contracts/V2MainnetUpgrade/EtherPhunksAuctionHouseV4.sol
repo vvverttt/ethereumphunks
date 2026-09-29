@@ -33,8 +33,10 @@ contract EtherPhunksAuctionHouseV4 is EtherPhunksAuctionHouseV3 {
     ///         in the tier-2 whitelist. Same no-bid-window invariant — only before any bid exists, so
     ///         there is nothing to refund and the ethscription-escrow path stays clean.
     /// @param proof merkle proof that msg.sender is in the tier-2 snapshot
+    /// @dev virtual so V7 can retire it — see EtherPhunksAuctionHouseV7.
     function buyNow2(bytes32[] calldata proof)
         external
+        virtual
         payable
         nonReentrant
         whenNotPaused
@@ -74,7 +76,8 @@ contract EtherPhunksAuctionHouseV4 is EtherPhunksAuctionHouseV3 {
 
     // ─── Owner config ────────────────────────────────────────
 
-    function setBuyNow2(bytes32 merkleRoot, uint256 price, bool enabled) external onlyOwner {
+    /// @dev virtual so V7 can retire it.
+    function setBuyNow2(bytes32 merkleRoot, uint256 price, bool enabled) external virtual onlyOwner {
         if (enabled) {
             require(price > 0, "Price must be > 0");
             require(merkleRoot != bytes32(0), "Root must be set");
