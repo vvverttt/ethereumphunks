@@ -363,6 +363,20 @@ export class StorageService implements OnModuleInit {
     return this.commentCacheLoading;
   }
 
+  /**
+   * Cache state, surfaced on /admin/health.
+   *
+   * Without this there is no way to tell from outside whether a deploy actually picked up the
+   * caches — the indexer looks identical either way, it just makes far more Supabase calls.
+   * That ambiguity cost a day of guessing at Log Ingestion numbers.
+   */
+  public cacheStatus(): { hashIds: number | null; comments: number | null } {
+    return {
+      hashIds: this.cacheReady && this.hashIdCache ? this.hashIdCache.size : null,
+      comments: this.commentCacheReady && this.commentCache ? this.commentCache.size : null,
+    };
+  }
+
   private commentKnownAbsent(id: string): boolean {
     return this.commentCacheReady && !!this.commentCache && !this.commentCache.has(id?.toLowerCase());
   }

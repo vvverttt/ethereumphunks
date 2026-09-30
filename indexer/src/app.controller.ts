@@ -23,7 +23,7 @@ export class AppController {
    * Render auto-restarts a stuck indexer.
    */
   @Get('health')
-  async health(): Promise<{ ok: boolean; lastIndexed: number | null; head: number; gap: number; threshold: number }> {
+  async health(): Promise<{ ok: boolean; lastIndexed: number | null; head: number; gap: number; threshold: number; caches: { hashIds: number | null; comments: number | null } }> {
     let lastIndexed: number | null = null;
     let head = 0;
     try {
@@ -39,7 +39,10 @@ export class AppController {
     }
 
     const gap = lastIndexed === null ? 0 : head - lastIndexed;
-    const body = { ok: gap <= HEALTH_BLOCK_GAP_THRESHOLD, lastIndexed, head, gap, threshold: HEALTH_BLOCK_GAP_THRESHOLD };
+    // caches: null means not loaded — the build predates them, or loading failed and every
+    // lookup is hitting Supabase. Numbers mean they are live and misses cost nothing.
+    const caches = this.storageSvc.cacheStatus();
+    const body = { ok: gap <= HEALTH_BLOCK_GAP_THRESHOLD, lastIndexed, head, gap, threshold: HEALTH_BLOCK_GAP_THRESHOLD, caches };
     if (!body.ok) throw new HttpException(body, HttpStatus.SERVICE_UNAVAILABLE);
     return body;
   }
