@@ -121,7 +121,8 @@ contract QuantumPhunksMarketMultiV2 is OwnableUpgradeable, UUPSUpgradeable, Reen
         }
     }
     /// @dev royalty -> receiver's pull balance, remainder -> seller's.
-    function _settle(address collection, uint256 tokenId, address seller, uint256 price) internal {
+    /// @dev virtual so V3 can apply the low-price fee.
+    function _settle(address collection, uint256 tokenId, address seller, uint256 price) internal virtual {
         (address recv, uint256 royalty) = ICollection(collection).royaltyInfo(tokenId, price);
         if (royalty > price) royalty = price;
         // Checked on purpose. `price` reaches here from buyPhunkBatch as the SELLER's
@@ -360,5 +361,6 @@ contract QuantumPhunksMarketMultiV2 is OwnableUpgradeable, UUPSUpgradeable, Reen
         emit TraitBidAccepted(c, id, t, v, pricePerItem, msg.sender, bidder);
     }
 
-    uint256[38] private __gap;
+    // 38 -> 36: V3 appends lowPriceThreshold and lowPriceBps.
+    uint256[36] private __gap;
 }
