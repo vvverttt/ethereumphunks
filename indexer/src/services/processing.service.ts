@@ -79,10 +79,26 @@ export class ProcessingService {
 
     // Add the events to the database
     if (events.length) await this.storageSvc.addEvents(events);
-    // Update the block in db
+    // Update the block in db.
+    //
+    // Awaited and caught, where it used to be fire-and-forget. updateLastBlock throws on a
+    // Supabase error, so an unawaited call made every failed checkpoint an anonymous
+    // "Unhandled promise rejection" with no indication of which block or why — during the
+    // 2026-10-02 Supabase outage the logs filled with hundreds of them and said nothing useful.
+    //
+    // Swallowed rather than rethrown on purpose: the checkpoint is an upsert of the current
+    // block number, so a miss is self-correcting — the next successful write supersedes it, and
+    // on restart getLastBlock rewinds 10 blocks anyway. Letting it halt indexing over a
+    // transient database blip would be worse than lagging the checkpoint.
     if (updateBlockDb) {
-      this.storageSvc.updateLastBlock(blockNumber, createdAt);
-      // this.telegramSvc.sendMessage('Status:', `Processed block ${blockNumber} (L1)`);
+      try {
+        await this.storageSvc.updateLastBlock(blockNumber, createdAt);
+      } catch (e: any) {
+        Logger.warn(
+          `Checkpoint write failed for block ${blockNumber} (will self-correct): ${e?.message || e}`,
+          'ProcessingService',
+        );
+      }
     }
 
     // Add the block to the processed blocks
