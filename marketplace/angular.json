@@ -35,6 +35,7 @@
               "src/assets",
               "src/_redirects",
               "src/_headers",
+              "src/robots.txt",
               "src/manifest.webmanifest"
             ],
             "stylePreprocessorOptions": {
@@ -78,7 +79,7 @@
             },
             "sepolia": {
               "outputPath": {
-                "base": "dist/etherphunks-market-sepolia_sep15"
+                "base": "dist/etherphunks-market-sepolia_sep28"
               },
               "budgets": [
                 {
@@ -106,7 +107,7 @@
             },
             "mainnet": {
               "outputPath": {
-                "base": "dist/etherphunks-market-mainnet_sep15"
+                "base": "dist/etherphunks-market-mainnet_sep28"
               },
               "budgets": [
                 {
@@ -162,7 +163,7 @@
             },
             "mainnet-ipfs": {
               "outputPath": {
-                "base": "dist/etherphunks-market-ipfs_sep15"
+                "base": "dist/etherphunks-market-ipfs_sep28"
               },
               "budgets": [
                 {
