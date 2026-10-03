@@ -85,9 +85,18 @@ for (const name of targets) {
   });
   if (!put.ok) { console.log(`      FAILED ${put.status}: ${(await put.text()).slice(0, 120)}`); continue; }
 
-  const after = await fetch(`${URL_}/storage/v1/object/public/data/${name}?cb=${Date.now()}`);
-  const got = after.headers.get('cache-control');
-  const gotSize = (await after.arrayBuffer()).byteLength;
+  // Re-read with retries. A cache-buster defeats the BROWSER cache but not Cloudflare's edge,
+  // which keeps serving its copy for a few seconds after the upload. Checking once reported
+  // "no-cache" on files that had in fact been updated correctly — a verification step that
+  // cries wolf is worse than none, because the next person distrusts the real failures too.
+  let after, got, gotSize = 0;
+  for (let a = 0; a < 6; a++) {
+    after = await fetch(`${URL_}/storage/v1/object/public/data/${name}?cb=${Date.now()}${Math.random()}`);
+    got = after.headers.get('cache-control');
+    gotSize = (await after.arrayBuffer()).byteLength;
+    if (got === CACHE) break;
+    await new Promise((r) => setTimeout(r, 5000));
+  }
   // Size must be unchanged — this is a metadata edit, and a size change means bytes were lost.
   console.log(`      now "${got}"  ${gotSize === size ? 'size unchanged' : `SIZE CHANGED ${size} -> ${gotSize}  INVESTIGATE`}`);
   changed++;
