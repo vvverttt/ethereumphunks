@@ -83,8 +83,19 @@ export class EthscriptionsService {
     }
 
     // Check if possible batch transfer
+    //
+    // Same auction exclusion as the single-transfer branch above, and for the same
+    // reason — it was missing here, which double-counted every batch deposit. A deposit
+    // into the auction house IS an ESIP-5 batch transfer (the pool fallback reads the
+    // hashIds straight out of calldata), so this branch produced a `transfer` event,
+    // and then the contract's own PoolDeposited log produced a second one with a
+    // `-pool-deposit-` txId. Two rows, same tx, same from/to, both shown in activity.
+    //
+    // Depositing one item was always correct, because a 32-byte calldata transfer takes
+    // the guarded branch above; only batches of two or more duplicated. That is why it
+    // went unnoticed until two Phikings were deposited in a single transaction.
     const possibleBatchTransfer = this.utilitySvc.possibleBatchTransfer(input);
-    if (!possibleTransfer && possibleBatchTransfer) {
+    if (!possibleTransfer && possibleBatchTransfer && !auctionAddressesL1.has(toAddress)) {
       // console.log({ possibleBatchTransfer });
       const eventArr = await this.processEsip5(
         transaction as Transaction,
