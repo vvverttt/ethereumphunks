@@ -1,0 +1,229 @@
+{
+  "name": "Phunklloween",
+  "slug": "phunklloween",
+  "singleName": "Phunklloween",
+  "description": "Phunklloween \u2014 a fully on-chain Ethscription collection of Halloween icons.",
+  "logo_index": 10396,
+  "collection_items": [
+    {
+      "index": 10387,
+      "name": "Michael Myers",
+      "id": "0x7e1287a5f5433f437fafc6edae5e072de0ceb142bcdbc78b2f446d8c9778f061",
+      "sha": "8cf384d96c3f9378c90196bef15ee15b6a41e3ea40fb674cb8b8c94fe1ece97a",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Michael Myers"
+        },
+        {
+          "trait_type": "Head",
+          "value": "White Mask"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Bloody Knife"
+        }
+      ]
+    },
+    {
+      "index": 10389,
+      "name": "Coraline",
+      "id": "0x795b1c2972a8c3b24a7e3a933935061c07e5b30a14f0b5f413d2144462267db6",
+      "sha": "260faff454fde50639c292cb4bce945c05223da492729e69c3923a1d4370536f",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Coraline"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Blue Bob"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Purple Eyeshadow"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Star Hair Clip"
+        }
+      ]
+    },
+    {
+      "index": 10390,
+      "name": "Scary Godmother",
+      "id": "0x6a0d5f8792d22c63c4c898ed482c4e9331dd95c3d4f7505bab633f0537798680",
+      "sha": "98cd3af6b3397d1b722a41dc78b915664f3d497a8205098c35767ba4b05d90fb",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Witch"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Scary Godmother"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Purple Witch Hat"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Orange Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Black Eyeshadow"
+        },
+        {
+          "trait_type": "Cheeks",
+          "value": "Rosy Cheeks"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Red Lipstick"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Orange Glow"
+        }
+      ]
+    },
+    {
+      "index": 10391,
+      "name": "Wednesday Addams",
+      "id": "0x8ef7e32551033d6eff971fc0e045df39aef684249181ca59bb8c5d9dd7fa7105",
+      "sha": "9c4b5b9027ba42573968e8559a2cf9c3e58ac5a179b866c61a1de01cb8382a65",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Wednesday Addams"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Braids"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Black Eyeshadow"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "White Collar"
+        }
+      ]
+    },
+    {
+      "index": 10394,
+      "name": "Candyman",
+      "id": "0x9244219686675c311cff3b00f1c0b3f440888ef3a8eca9b0b7759d0e57004870",
+      "sha": "ea4dce34f95618bede0d16a3b9d4976bd13b41bd2bedbaa039be0d299a02746d",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Candyman"
+        },
+        {
+          "trait_type": "Beard",
+          "value": "Black Beard"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Spots"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Silver Hook"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Bees"
+        }
+      ]
+    },
+    {
+      "index": 10395,
+      "name": "Dracula",
+      "id": "0x6b31f5941c4b36ae41564136c2c8cef9328df261ef502c0a9650b5cefb31f84b",
+      "sha": "c27da4c74cf8b755ced1675efb45af057737a844a144230dd2d2b1a152924e9d",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Vampire"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Dracula"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Widow's Peak"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Red"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Bloody Fangs"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Red Cape"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Bats"
+        }
+      ]
+    },
+    {
+      "index": 10396,
+      "name": "Jack-O-Lantern",
+      "id": "0x39d21a4390bc3a544a36049a580d38851577331dd075658ac0d49e247f7f8c4f",
+      "sha": "38d422fb1bf7b4b1a1eceeaf475b2c99fd612f450b624e001d26898990b24680",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Pumpkin"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Jack-O-Lantern"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Carved Pumpkin"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Flames"
+        }
+      ]
+    }
+  ]
+}
