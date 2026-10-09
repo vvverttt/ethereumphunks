@@ -40,6 +40,14 @@ export interface ResolvedTier {
  * item details page. The contract re-verifies enabled/price/proof/inPool on every buy, so everything
  * here is convenience: it only decides which button to show and the exact value to send.
  */
+const RETIRED_ABI = [{
+  inputs: [],
+  name: 'retiredFeaturesV7',
+  outputs: [{ internalType: 'string[]', name: 'list', type: 'string[]' }],
+  stateMutability: 'pure',
+  type: 'function',
+}] as const;
+
 @Injectable({ providedIn: 'root' })
 export class PoolBuyNowService {
 
@@ -86,9 +94,22 @@ export class PoolBuyNowService {
           { address: AUCTION_ADDRESS, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNow2Enabled' },
           { address: AUCTION_ADDRESS, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNow2Price' },
           { address: AUCTION_ADDRESS, abi: EtherPhunksAuctionHouseV2ABI, functionName: 'buyNow2MerkleRoot' },
+          // Ask the contract what it has retired, rather than trusting the flags above.
+          //
+          // V7 retired buyItem, but it did NOT clear the V5 storage it reads: on mainnet
+          // itemBuyNowEnabled is still true and buyNowPublicPrice is still 0.267 ETH. Gating
+          // the UI on those alone advertised a Buy Now that reverts with Retired() the moment
+          // anyone clicks it — and setItemBuyNowEnabled is itself retired, so the flag cannot
+          // be turned off on-chain. The retirement list is the only honest source.
+          //
+          // allowFailure keeps this safe on contracts without the function (auction2 is not on
+          // V7): the call simply fails, retired stays empty, and the flags are used as before.
+          { address: AUCTION_ADDRESS, abi: RETIRED_ABI, functionName: 'retiredFeaturesV7' },
         ],
         allowFailure: true,
       });
+      const retired = (r[9]?.result as readonly string[] | undefined) ?? [];
+      if (retired.some((f) => f === 'buyItem')) return OFF;
       return {
         itemEnabled: (r[0]?.result as boolean) ?? false,
         publicEnabled: (r[1]?.result as boolean) ?? false,
