@@ -11,6 +11,7 @@ import { AttributeItem } from '@/models/attributes';
 
 import { DataService } from '@/services/data.service';
 import { PixelArtService } from '@/services/pixel-art.service';
+import { SpriteService } from '@/services/sprite.service';
 import { ImageService } from '@/services/image.service';
 
 import { environment } from 'src/environments/environment';
@@ -91,7 +92,8 @@ export class SplashComponent {
   constructor(
     private pixelArtSvc: PixelArtService,
     private imageSvc: ImageService,
-    private dataSvc: DataService
+    private dataSvc: DataService,
+    private spriteSvc: SpriteService
   ) {}
 
   // async formatImages(images: Image[]): Promise<Image[]> {
@@ -177,8 +179,13 @@ export class SplashComponent {
 
           if (!isSmallPixelArt && image.byteLength > this.MAX_IMAGE_SIZE) {
             // Non-pixel-art image (e.g. photos/rocks) — use direct URL
+            // Resolve through the sprite service rather than building the path by
+            // hand: build-sprite --prune deletes every packed image, so a raw
+            // /static/images/{sha} is a 404 for anything in a sheet. Unsprited art
+            // (the large rocks this branch is really for) resolves to that same file
+            // URL anyway, so this is correct in both cases.
             return {
-              src: `${environment.staticUrl}/static/images/${sha}`,
+              src: await this.spriteSvc.url(sha),
               type: 'photo' as const
             };
           }
