@@ -84,6 +84,20 @@ export const environment = {
   // — only the ~133 the sprite sheets could not absorb, since build-sprite.mjs --prune deletes
   // the rest once they are packed into sheets.
   imageCdnUrl: '',
+  // MUST stay true while the build runs `build-sprite.mjs --prune`.
+  //
+  // SpriteService is gated on this flag: with it unset the index is never fetched,
+  // tile() returns null for every sha, and PhunkImageComponent falls back to
+  // `<img src="/static/images/{sha}">`. --prune deletes the ~10,452 sheet-backed
+  // images from the build, so that fallback 404s for all of them and the grids render
+  // as broken-image icons — only the ~133 files pruning leaves behind still appear
+  // (the rocks, the animated ones), which is what makes the failure look partial and
+  // collection-specific rather than total.
+  //
+  // This was live on 2026-10-09: the Cloudflare build command gained the bundling and
+  // --prune steps while this flag was still absent here, which mainnet-ipfs had set
+  // all along — hence eth.limo rendering correctly while .com did not.
+  sprites: true,
 
   supabaseUrl: 'https://kfnprbhoodmgfhqojmqp.supabase.co',
   supabaseKey: 'sb_publishable_c-JzxJH0a6_ex9vDW3ItFg_-G3jkuHe',
