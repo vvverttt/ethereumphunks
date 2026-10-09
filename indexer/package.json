@@ -15,8 +15,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@bull-board/api": "^5.9.1",
-    "@bull-board/express": "^5.9.1",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/axios": "^3.0.1",
     "@nestjs/bull": "^10.0.1",
@@ -50,7 +48,7 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.5",
     "svgson": "^5.3.1",
-    "viem": "^2.9.23"
+    "viem": "2.22.13"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.2.1",
