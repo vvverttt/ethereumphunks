@@ -1,5 +1,5 @@
 /**
- * Onboards the "Phunklloween" Ethscription collection (7 items, #10387–10396)
+ * Onboards the "Phunklloween" Ethscription collection (#10387 and up, see manifest)
  * into Supabase: collection row, attributes_new, storage images, attributes JSON.
  *
  * Mirrors import-phikings.js, with one deliberate difference: the images are pulled

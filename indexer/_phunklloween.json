@@ -2,7 +2,7 @@
   "name": "Phunklloween",
   "slug": "phunklloween",
   "singleName": "Phunklloween",
-  "description": "Phunklloween \u2014 a fully on-chain Ethscription collection of Halloween icons.",
+  "description": "Phunklloween — a fully on-chain Ethscription collection of Halloween icons.",
   "logo_index": 10396,
   "collection_items": [
     {
@@ -30,6 +30,46 @@
         {
           "trait_type": "Weapon",
           "value": "Bloody Knife"
+        }
+      ]
+    },
+    {
+      "index": 10388,
+      "name": "Black Cat",
+      "id": "0xedeec0667336f3f0bccb3e1576abb265a21a192e584ed0d09e2b290b00b09be1",
+      "sha": "3115bad04200478d110016753f605310a430447110043e32a96d3f827cc854ab",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Cat"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Black Cat"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Witch Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Pink Inner Ears"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Whiskers"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Buckled Collar"
         }
       ]
     },
@@ -134,6 +174,74 @@
       ]
     },
     {
+      "index": 10392,
+      "name": "Mummy",
+      "id": "0xad25f406ef3d69d6d4468f8f97fb06e550416cd45f391b48f52e5f3a8049826d",
+      "sha": "7049447a09b9651c46ae4682a2f061ad3333e6fb871107e0b9433bc4ad639c8a",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Mummy"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Mummy"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Bandage Wraps"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Rotten Teeth"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Unraveling Bandages"
+        }
+      ]
+    },
+    {
+      "index": 10393,
+      "name": "Slimer",
+      "id": "0x5d1414744cbe4fb4a1ccc9560050e240a26b66b68871f6b95421131c49e42d1c",
+      "sha": "f4abc2dddd7e4458d750b096c182ba2cc61d54221569007dafaa401f6d9ac3a3",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ghost"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Slimer"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Crooked Teeth"
+        },
+        {
+          "trait_type": "Tongue",
+          "value": "Pink Tongue"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Grin"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Green Slime"
+        }
+      ]
+    },
+    {
       "index": 10394,
       "name": "Candyman",
       "id": "0x9244219686675c311cff3b00f1c0b3f440888ef3a8eca9b0b7759d0e57004870",
@@ -222,6 +330,162 @@
         {
           "trait_type": "Aura",
           "value": "Flames"
+        }
+      ]
+    },
+    {
+      "index": 10397,
+      "name": "Hannah Marie",
+      "id": "0x2a51d1619b3f3beb62ff965d015b8f0bc40a3635e59dbb118e07901134b797d1",
+      "sha": "5b004beb9bd54528b93a7984ccd47cebf35cc06a7000603f758385f7aea2f9ba",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Hannah Marie"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Gold Crown"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Cheeks",
+          "value": "Rosy Cheeks"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Red Lipstick"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Pink Dress"
+        },
+        {
+          "trait_type": "Wings",
+          "value": "Angel Wings"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Candlelight"
+        }
+      ]
+    },
+    {
+      "index": 10398,
+      "name": "Regan",
+      "id": "0xaa29b790b888d758881296212d25297915f978626c5c578cf08429d04f0b228a",
+      "sha": "8d3b4be467cec6a77f43cd06c52da15904ad1ba98606569e5ff60b9bb0db65c6",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Possessed"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Regan"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Scars"
+        },
+        {
+          "trait_type": "Mouth",
+          "value": "Green Vomit"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "White Nightgown"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Green Glow"
+        }
+      ]
+    },
+    {
+      "index": 10399,
+      "name": "Jack Skellington",
+      "id": "0x31a572591b64ef9d3e6eff9b7ea3504ec500a596f46cd76557bdc499b813ad24",
+      "sha": "e59761e7a96514673d14fc8d9834376d06c7f71f5f7870ef9fb916e57cd17634",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Skeleton"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Jack Skellington"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Skull"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Hollow"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Stitched Grin"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Orange Glow"
+        }
+      ]
+    },
+    {
+      "index": 10420,
+      "name": "Frankenstein",
+      "id": "0xc9ce31272029788d64808e323717df58c73834d560a3d0b460d84dcf68ebf092",
+      "sha": "803e496edb8d22850a2a0d3c630dd8fc2ed6da459437984a8258c67bdde8d9c2",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Frankenstein"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Bolts"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Flat Top"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Stitches"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Purple Collar"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Green Glow"
         }
       ]
     }
