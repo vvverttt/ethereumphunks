@@ -34,46 +34,6 @@
       ]
     },
     {
-      "index": 10388,
-      "name": "Black Cat",
-      "id": "0xedeec0667336f3f0bccb3e1576abb265a21a192e584ed0d09e2b290b00b09be1",
-      "sha": "3115bad04200478d110016753f605310a430447110043e32a96d3f827cc854ab",
-      "attributes": [
-        {
-          "trait_type": "Type",
-          "value": "Cat"
-        },
-        {
-          "trait_type": "Character",
-          "value": "Black Cat"
-        },
-        {
-          "trait_type": "Head",
-          "value": "Black Witch Hat"
-        },
-        {
-          "trait_type": "Eyes",
-          "value": "Gold"
-        },
-        {
-          "trait_type": "Ears",
-          "value": "Pink Inner Ears"
-        },
-        {
-          "trait_type": "Teeth",
-          "value": "Fangs"
-        },
-        {
-          "trait_type": "Face",
-          "value": "Whiskers"
-        },
-        {
-          "trait_type": "Neck",
-          "value": "Buckled Collar"
-        }
-      ]
-    },
-    {
       "index": 10389,
       "name": "Coraline",
       "id": "0x795b1c2972a8c3b24a7e3a933935061c07e5b30a14f0b5f413d2144462267db6",
@@ -446,6 +406,46 @@
         {
           "trait_type": "Aura",
           "value": "Orange Glow"
+        }
+      ]
+    },
+    {
+      "index": 10400,
+      "name": "Black Cat",
+      "id": "0xedeec0667336f3f0bccb3e1576abb265a21a192e584ed0d09e2b290b00b09be1",
+      "sha": "3115bad04200478d110016753f605310a430447110043e32a96d3f827cc854ab",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Cat"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Black Cat"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Witch Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Ears",
+          "value": "Pink Inner Ears"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Whiskers"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Buckled Collar"
         }
       ]
     },
