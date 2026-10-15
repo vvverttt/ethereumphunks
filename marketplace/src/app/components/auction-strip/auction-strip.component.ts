@@ -67,6 +67,9 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
   bids = signal<AuctionBidEvent[]>([]);
   bidsOpen = signal<boolean>(false);
 
+  /** True once a read has fully succeeded; keeps a failed refresh from blanking the bar. */
+  private loaded = signal<boolean>(false);
+
   private poll: any;
 
   /** The strip is for THIS collection's live item only. */
@@ -140,31 +143,44 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
     return formatEther(v);
   }
 
+  /**
+   * Refresh, atomically.
+   *
+   * Everything is gathered into locals and committed only once the whole read has
+   * succeeded. That matters because this runs on a 30s poll: a half-applied update would
+   * briefly pair a new auction with the previous item's art, and — worse — clearing state
+   * inside the catch would make a live bar VANISH on one dropped request and come back
+   * 30 seconds later. A refresh that fails leaves the last good values on screen; only a
+   * first load that never succeeded leaves the strip hidden.
+   */
   private async load() {
     try {
       const { auction, reservePrice, minBidIncrement } = await this.auctionSvc.getInitialData();
+      const eth = await this.auctionSvc.getEthscriptionByHashId(auction.hashId);
+      if (!eth) throw new Error('auction item not indexed yet');
+
+      const [image, itemReserve, bids] = await Promise.all([
+        this.spriteSvc.url(eth.sha),
+        // Per-item reserve wins over the house default when one is set.
+        this.auctionSvc.getItemReservePrice(auction.hashId),
+        // Bids come from the indexer, newest first. The list is height-capped in CSS, so
+        // a long auction cannot grow the bar — however many land, the panel scrolls.
+        this.auctionSvc.getBidHistory(auction.auctionId),
+      ]);
+
       this.auction.set(auction);
       this.minIncrement.set(minBidIncrement);
       this.ended.set(auction.endTime * 1000 < Date.now());
-
-      const eth = await this.auctionSvc.getEthscriptionByHashId(auction.hashId);
-      if (!eth) { this.itemSlug.set(''); return; }
-
       this.itemSlug.set(eth.slug);
       this.tokenId.set(eth.tokenId);
-      this.image.set(await this.spriteSvc.url(eth.sha));
-
-      // Per-item reserve wins over the house default when one is set.
-      const itemReserve = await this.auctionSvc.getItemReservePrice(auction.hashId);
+      this.image.set(image);
       this.reserveEth.set(formatEther(itemReserve > 0n ? itemReserve : reservePrice));
-
-      // Bids come from the indexer, newest first. The list is height-capped in CSS, so
-      // a long auction cannot grow the bar — however many land, the panel scrolls.
-      this.bids.set(await this.auctionSvc.getBidHistory(auction.auctionId));
+      this.bids.set(bids);
+      this.loaded.set(true);
     } catch {
-      // A collection page must never break because the auction house is unreachable.
-      // Staying invisible is the correct failure here.
-      this.itemSlug.set('');
+      // A collection page must never break because the auction house is unreachable —
+      // but it must not flicker either. Hide only if there has never been a good read.
+      if (!this.loaded()) this.itemSlug.set('');
     }
   }
 
