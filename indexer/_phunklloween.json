@@ -181,7 +181,7 @@
         },
         {
           "trait_type": "Eyes",
-          "value": "Gold"
+          "value": "Scary"
         },
         {
           "trait_type": "Teeth",
@@ -332,8 +332,8 @@
           "value": "Angel Wings"
         },
         {
-          "trait_type": "Aura",
-          "value": "Candlelight"
+          "trait_type": "Item",
+          "value": "Flashlight"
         }
       ]
     },
@@ -357,7 +357,7 @@
         },
         {
           "trait_type": "Eyes",
-          "value": "Green"
+          "value": "Green Glow"
         },
         {
           "trait_type": "Face",
@@ -432,16 +432,8 @@
           "value": "Gold"
         },
         {
-          "trait_type": "Ears",
-          "value": "Pink Inner Ears"
-        },
-        {
           "trait_type": "Teeth",
           "value": "Fangs"
-        },
-        {
-          "trait_type": "Face",
-          "value": "Whiskers"
         },
         {
           "trait_type": "Neck",
