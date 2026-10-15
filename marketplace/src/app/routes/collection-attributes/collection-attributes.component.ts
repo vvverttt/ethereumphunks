@@ -15,10 +15,11 @@ import { environment } from 'src/environments/environment';
 const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-// Bumped 27 for the final 1,081 that completed the collection at 10,000. This cache is
-// cache-first in localStorage, so a returning visitor keeps the 8,919-era trait table — and
-// the new "Ring" trait type and 152 new trait values stay invisible — until the version moves.
-const CACHE_VERSION = 27;
+// Bumped 28 for Phunklloween's second batch, which took it from 7 items to 14 and added the
+// "Tongue", "Wings", "Item" and "Mouth" trait types. This cache is cache-first in
+// localStorage and does NOT consult the attributes file's ETag, so a returning visitor keeps
+// the old trait table until the version moves — a deploy alone is not enough.
+const CACHE_VERSION = 28;
 
 /** Pseudo-tab that stacks every section on one page instead of showing one at a time. */
 const ALL_TAB = 'All';
