@@ -10,6 +10,7 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 import { RecentActivityComponent } from '@/components/recent-activity/recent-activity.component';
 import { SplashComponent } from '@/components/splash/splash.component';
+import { AuctionStripComponent } from '@/components/auction-strip/auction-strip.component';
 import { BrbComponent } from '@/components/brb/brb.component';
 import { MintComponent } from '@/components/mint/mint.component';
 import { CalcPipe } from '@/pipes/calculate.pipe';
@@ -49,6 +50,7 @@ const LINKED_SLUG_MAP: Record<string, string> = {
     WaIntersectionObserver,
 
     SplashComponent,
+    AuctionStripComponent,
     PhunkGridComponent,
     RecentActivityComponent,
     BrbComponent,

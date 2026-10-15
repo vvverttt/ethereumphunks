@@ -42,6 +42,11 @@
     [mintImage]="activeCollection.mintEnabled ? mintImage() : null"
   />
 
+  <!-- A band under the billboard, not over it. Renders itself only when the item
+       currently under the hammer belongs to THIS collection, so it occupies no space
+       at all on the pages where no auction is running. -->
+  <app-auction-strip [slug]="activeCollection.slug" />
+
   @if ((config$ | async)?.maintenance) {
     <app-brb />
   }

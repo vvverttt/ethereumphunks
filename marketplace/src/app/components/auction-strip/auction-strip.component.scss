@@ -1,0 +1,308 @@
+@use 'abstracts/variables' as *;
+
+// A band of its own, directly under the billboard — it covers no art and pushes nothing
+// around, but still sits above the fold where it gets seen. Deliberately NOT an overlay:
+// floating it over the splash hid the very images the page is there to show.
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.auction-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+
+  padding: 0.9rem 2rem;
+  background-color: rgba(var(--black), 1);
+  border-top: 2px solid rgba(var(--auction-color), 1);
+  border-bottom: 2px solid rgba(var(--auction-color), 1);
+  color: rgba(var(--white), 1);
+  font-family: var(--primary-font-stack);
+
+  &.ended {
+    border-top-color: rgba(var(--white), 0.3);
+    border-bottom-color: rgba(var(--white), 0.3);
+  }
+}
+
+// ── the item ──────────────────────────────────────────────────────────────────
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  color: inherit;
+  flex: 0 0 auto;
+
+  img {
+    display: block;
+    width: 3.6rem;
+    height: 3.6rem;
+    image-rendering: pixelated;
+    background-color: #67cdff;
+  }
+
+  .id {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.4rem;
+    white-space: nowrap;
+  }
+
+  &:hover .id { color: rgba(var(--auction-color), 1); }
+}
+
+// ── current bid / timer ───────────────────────────────────────────────────────
+.figures {
+  display: flex;
+  gap: 2.4rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+
+  .label {
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    white-space: nowrap;
+  }
+
+  .value {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.5rem;
+    white-space: nowrap;
+
+    i { font-style: normal; font-size: 1.1rem; opacity: 0.7; }
+  }
+
+  .ended-label { color: rgba(var(--white), 0.6); }
+
+  // The shared timer renders its own markup. Two things need correcting for a compact
+  // dark band:
+  //
+  //  · its "day/hr/min/sec" labels are position:absolute at bottom:-1.5rem, i.e. OUTSIDE
+  //    the element's box — in a one-line bar they land on top of the row beneath;
+  //  · those labels hard-code `--text-color`, which is BLACK in the light theme, so on
+  //    this black band they would be invisible anyway.
+  //
+  // The digits already read as hr:min:sec unaided, so drop the labels here rather than
+  // reserve a row of padding for text nobody can see.
+  .timer app-timer {
+    font-family: var(--secondary-font-stack);
+    font-size: 1.5rem;
+    color: rgba(var(--white), 1);
+
+    ::ng-deep .label { display: none; }
+  }
+}
+
+// ── bid ───────────────────────────────────────────────────────────────────────
+.bid {
+  display: flex;
+  gap: 0.8rem;
+  flex: 0 0 auto;
+
+  input {
+    width: 11rem;
+    padding: 0.8rem 1rem;
+    font-family: var(--secondary-font-stack);
+    // 16px floor, deliberately. The root is 62.5%, so the 1.4rem this started at was
+    // 14px — and iOS Safari zooms the whole page when a focused input is under 16px,
+    // which on an iPhone leaves the bidder scrolled sideways mid-bid.
+    font-size: 1.6rem;
+    color: rgba(var(--white), 1);
+    background-color: rgba(var(--white), 0.08);
+    border: 1px solid rgba(var(--white), 0.25);
+
+    &::placeholder { color: rgba(var(--white), 0.4); }
+    &:focus { outline: none; border-color: rgba(var(--auction-color), 1); }
+    &:disabled { opacity: 0.5; }
+
+    // The spinners cramp an already-tight field.
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    & { -moz-appearance: textfield; appearance: textfield; }
+  }
+
+  button {
+    padding: 0.8rem 2rem;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.4rem;
+    color: rgba(var(--black), 1);
+    background-color: rgba(var(--auction-color), 1);
+    border: 0;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) { background-color: rgba(var(--white), 1); }
+    &:disabled { opacity: 0.6; cursor: default; }
+  }
+}
+
+.settle-link,
+.more {
+  font-size: 1.2rem;
+  color: rgba(var(--auction-color), 1);
+  text-decoration: none;
+  white-space: nowrap;
+  flex: 0 0 auto;
+
+  &:hover { text-decoration: underline; }
+}
+
+.more { opacity: 0.8; }
+
+// ── messages ──────────────────────────────────────────────────────────────────
+.msg {
+  flex: 1 0 100%;
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.4;
+
+  &.hint { opacity: 0.55; }
+  &.error { color: rgba(var(--magma), 1); opacity: 1; }
+}
+
+// ── bids ──────────────────────────────────────────────────────────────────────
+.bids-toggle {
+  flex: 0 0 auto;
+  padding: 0.4rem 0.9rem;
+  font-family: var(--primary-font-stack);
+  font-size: 1.2rem;
+  color: rgba(var(--white), 1);
+  background: none;
+  border: 1px solid rgba(var(--white), 0.3);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover { border-color: rgba(var(--auction-color), 1); }
+
+  .caret {
+    display: inline-block;
+    margin-left: 0.4rem;
+    transition: transform 0.15s ease;
+    &.open { transform: rotate(90deg); }
+  }
+}
+
+// The one part that can grow without bound, so it is the one part that scrolls.
+// max-height is in rem rather than a row count because the rows are a fixed height —
+// about six before it starts scrolling, which is enough to read without the bar
+// turning into a page of its own.
+.bid-list {
+  flex: 1 0 100%;
+  max-height: 14rem;
+  overflow-y: auto;
+  overflow-x: hidden;         // long values wrap or ellipsis; the bar never scrolls sideways
+  overscroll-behavior: contain; // scrolling the list does not grab the page
+  margin: 0.2rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(var(--white), 0.15);
+
+  li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.2rem;
+    padding: 0.5rem 0.2rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid rgba(var(--white), 0.07);
+
+    &:last-child { border-bottom: 0; }
+    &.top .amt { color: rgba(var(--auction-color), 1); }
+  }
+
+  .who {
+    font-family: var(--secondary-font-stack);
+    opacity: 0.7;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .amt {
+    font-family: var(--secondary-font-stack);
+    white-space: nowrap;
+    flex: 0 0 auto;
+
+    i { font-style: normal; font-size: 1rem; opacity: 0.6; }
+  }
+
+  // Keep the scrollbar from looking like a browser default dropped into the design.
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--auction-color), 0.6) transparent;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(var(--auction-color), 0.6); }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// ── device sizes ──────────────────────────────────────────────────────────────
+// $mobile 800px covers every phone AND iPad portrait (768). $tablet 1040px covers
+// iPad landscape (1024) and iPad Pro portrait (1024). Below 460px is the small-phone
+// band the rest of the app already uses — iPhone SE at 375 and Android at 360 land
+// there, and that is where a single row genuinely stops fitting.
+
+// iPad landscape / small laptops: one row still, just tighter.
+@media (max-width: $tablet) {
+  .auction-strip { gap: 1.2rem; padding: 0.9rem 1.4rem; }
+  .figures { gap: 1.8rem; }
+  .bid input { width: 9.5rem; }
+}
+
+// Phones and iPad portrait: the bid form takes its own full-width row so the field
+// is thumb-sized instead of squeezed next to the price.
+@media (max-width: $mobile) {
+  .auction-strip { gap: 1rem 1.2rem; padding: 0.9rem 1.2rem; }
+
+  .figures { flex: 1 1 auto; gap: 1.6rem; }
+
+  .bid {
+    flex: 1 0 100%;
+    input { flex: 1 1 auto; width: auto; min-width: 0; }
+    button { padding: 0.8rem 2.4rem; }
+  }
+
+  .more { display: none; }              // /auction is in the menu on mobile
+  .bid-list { max-height: 12rem; }
+}
+
+// Small phones: the item and the figures stack rather than fight for one line.
+@media (max-width: 460px) {
+  .auction-strip { gap: 0.8rem 1rem; padding: 0.8rem 1rem; }
+
+  .item {
+    flex: 1 0 100%;
+    img { width: 3.2rem; height: 3.2rem; }
+  }
+
+  .figures {
+    flex: 1 0 100%;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .figure .value { font-size: 1.4rem; }
+  .bids-toggle { flex: 1 0 auto; }
+  .bid-list { max-height: 10.5rem; }
+}

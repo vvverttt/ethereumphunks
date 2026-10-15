@@ -61,6 +61,16 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
   'phikings': {
     oneOfOnes: 67,
   },
+  // Phunklloween is 67 handcrafted 1/1s, so every piece in it is a One of One — the same
+  // shape as phikings above. Derived counting gives 71, but that counts trait VALUES used
+  // exactly once, which is a different question from how many 1/1 artworks there are (the
+  // cryptophunksv67 note above makes the same point: 725 vs the curated 676).
+  //
+  // This is the full collection, not the 14 inscribed so far, so it does not move as the
+  // remaining pieces land.
+  'phunklloween': {
+    oneOfOnes: 67,
+  },
 };
 const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string }>> = {
   'cryptophunksv67': [
