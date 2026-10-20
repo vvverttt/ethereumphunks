@@ -341,6 +341,15 @@ $spooky-frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
   background-image: linear-gradient(180deg, #ff9a2e 0%, #ff8c1a 50%, #f07a0a 100%);
 }
 
+// The history slider tints each thumbnail and number from its image, inline, for the
+// dark ground. On orange: lime tiles (the collection's #c3ff00) and dark purple
+// numbers, so both read. !important is what beats the inline styles.
+:host-context([data-collection='phunklloween']) .auction-history ::ng-deep app-auction-slider {
+  .slide-item img,
+  .slide-item .img-placeholder { background-color: #c3ff00 !important; }
+  .phunk-id { color: rgb(var(--text-color)) !important; }
+}
+
 // ─── Pool & Swap Section (Auction 2) ──────────────────────
 
 $swap-accent: #7c4dff;
