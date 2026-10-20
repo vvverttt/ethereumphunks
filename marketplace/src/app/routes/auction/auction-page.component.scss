@@ -194,6 +194,50 @@
   }
 }
 
+// ─── Phunklloween hero ────────────────────────────────────
+// Purple night sky with a glow behind the item and an orange frame, after the
+// collection's "1/1 Auction" poster. Orange is also fed in as --auction-accent.
+
+$spooky-orange: #ff8c1a;
+$spooky-frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff8c1a' d='M5 0h1v1h-1zM6 0h1v1h-1zM7 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM11 0h1v1h-1zM12 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM15 0h1v1h-1zM16 0h1v1h-1zM17 0h1v1h-1zM18 0h1v1h-1zM3 1h1v1h-1zM4 1h1v1h-1zM19 1h1v1h-1zM20 1h1v1h-1zM2 2h1v1h-1zM21 2h1v1h-1zM1 3h1v1h-1zM22 3h1v1h-1zM1 4h1v1h-1zM22 4h1v1h-1zM0 5h1v1h-1zM23 5h1v1h-1zM0 6h1v1h-1zM23 6h1v1h-1zM0 7h1v1h-1zM23 7h1v1h-1zM0 8h1v1h-1zM23 8h1v1h-1zM0 9h1v1h-1zM23 9h1v1h-1zM0 10h1v1h-1zM23 10h1v1h-1zM0 11h1v1h-1zM23 11h1v1h-1zM0 12h1v1h-1zM23 12h1v1h-1zM0 13h1v1h-1zM23 13h1v1h-1zM0 14h1v1h-1zM23 14h1v1h-1zM0 15h1v1h-1zM23 15h1v1h-1zM0 16h1v1h-1zM23 16h1v1h-1zM0 17h1v1h-1zM23 17h1v1h-1zM0 18h1v1h-1zM23 18h1v1h-1zM1 19h1v1h-1zM22 19h1v1h-1zM1 20h1v1h-1zM22 20h1v1h-1zM2 21h1v1h-1zM21 21h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM5 23h1v1h-1zM6 23h1v1h-1zM7 23h1v1h-1zM8 23h1v1h-1zM9 23h1v1h-1zM10 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM13 23h1v1h-1zM14 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1z'/%3E%3C/svg%3E");
+
+.auction.spooky {
+  background-color: #3f00a6;
+  background-image:
+    radial-gradient(ellipse 55% 45% at 50% 32%, rgba(214, 60, 255, .45), transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% 45%, rgba(124, 58, 255, .55), transparent 75%),
+    linear-gradient(180deg, #4500b0 0%, #5c16d8 50%, #3a009c 100%);
+  box-shadow: inset 0 -.4rem 0 0 $spooky-orange;
+
+  // The orange frame, drawn as pixels: a 24-unit 9-slice with stepped corners,
+  // like the poster's border. Each unit renders at .5rem (4rem border / 8-unit slice).
+  // Inset from the edges, under the content, never clickable.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 2rem;
+    border: 4rem solid transparent;
+    border-image: $spooky-frame 8 / 4rem stretch;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .inner { z-index: 1; }
+
+  .auction-house-tag {
+    background: $spooky-orange !important;
+    color: #2a0070 !important;
+  }
+
+  @media (max-width: $tablet) {
+    &::before {
+      inset: calc(1rem + env(safe-area-inset-top)) 1rem 1rem;
+      border-width: 2.4rem;
+      border-image-width: 2.4rem;
+    }
+  }
+}
+
 // ─── Phunk Image ──────────────────────────────────────────
 
 .phunk-image-wrapper {

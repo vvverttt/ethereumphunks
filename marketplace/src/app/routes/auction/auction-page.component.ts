@@ -2,7 +2,8 @@ import { Component, OnDestroy, OnInit, computed, inject, signal, effect } from '
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { firstValueFrom } from 'rxjs';
+import { combineLatest, firstValueFrom } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { formatEther, encodePacked, keccak256 } from 'viem';
 import { supabase } from '@/services/supabase';
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
@@ -29,6 +30,8 @@ import { BidPanelComponent } from '@/components/auction/bid-panel/bid-panel.comp
 import { AuctionSliderComponent } from '@/components/auction/auction-slider/auction-slider.component';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
+import * as dataStateActions from '@/state/actions/data-state.actions';
 
 // Buy-now tier prices are fixed, so we display them from constants instead of reading them on-chain
 // on every refresh (saves RPC). Only an actual purchase reads the live price (doBuyNow), so the tx
@@ -360,6 +363,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   private pollInterval: any;
   private realtimeChannel: any;
   private walletSub?: { unsubscribe(): void };
+  private headerCollectionSub?: { unsubscribe(): void };
 
   constructor(
     private store: Store<GlobalState>,
@@ -372,6 +376,17 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     // The Auction House trades ETHSCRIPTIONS, so it uses the default lime (#c3ff00) theme — NOT the
     // v67 blue. Force the default here so arriving from a blue v67 market page doesn't carry over.
     this.themeSvc.setActiveCollection('');
+
+    // The header's collection switcher follows the item under the hammer, so a
+    // Phunklloween auction reads "Phunklloween" up there, not the last market visited.
+    // Store only; the theme stays forced to the default above.
+    this.headerCollectionSub = combineLatest([
+      toObservable(this.phunkSlug),
+      this.store.select(dataStateSelectors.selectCollections),
+    ]).subscribe(([slug, collections]) => {
+      const collection = slug && collections?.find((c) => c.slug === slug);
+      if (collection) this.store.dispatch(dataStateActions.setActiveCollection({ activeCollection: { ...collection } }));
+    });
 
     // Check for address override from route data (auction house 2)
     const overrideAddress = this.route.snapshot.data['auctionAddress'];
@@ -503,6 +518,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     clearTimeout(this.pollInterval);
     if (this.realtimeChannel) supabase.removeChannel(this.realtimeChannel);
     this.walletSub?.unsubscribe();
+    this.headerCollectionSub?.unsubscribe();
   }
 
   async loadAuction() {

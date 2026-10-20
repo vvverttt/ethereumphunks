@@ -66,7 +66,7 @@ export class AppComponent implements OnInit {
 
   statusBarVisible = signal(true);
 
-  // One-time "collections are view-only / not live yet" notice on first load.
+  // Intro notice shown on entering the auction house.
   showIntro = signal(false);
 
   constructor(
@@ -87,17 +87,10 @@ export class AppComponent implements OnInit {
     this.setStatusBarVisible();
   }
 
-  // Pages (by first URL segment) that show an intro notice on entry: the three
-  // QuantumPhunks (V67) collections (view-only / not live), EthsRocks (its own
-  // testing note), the two OG collections (EtherPhunks-market trading note), and
-  // the auction house (auction / auction2).
-  private readonly noticeSlugs = new Set([
-    'cryptophunksv67', 'quantummissingphunksv67', 'quantumdystophunkzv67', 'ethsrocks',
-    'missing-phunks', 'dysto-phunks', 'auction', 'auction2',
-  ]);
-
-  // The collection slug that triggered the currently-shown notice.
-  introSlug = signal('');
+  // Pages (by first URL segment) that show an intro notice on entry. Only the
+  // auction house now; the collection notices (V67, EthsRocks, Missing/Dysto)
+  // were retired once those collections went live.
+  private readonly noticeSlugs = new Set(['auction', 'auction2']);
 
   dismissIntro(): void {
     this.showIntro.set(false);
@@ -177,11 +170,9 @@ export class AppComponent implements OnInit {
       distinctUntilChanged(),
     ).subscribe((firstSegment: string) => {
       if (this.noticeSlugs.has(firstSegment)) {
-        this.introSlug.set(firstSegment);
         this.showIntro.set(true);
       } else {
-        // Left the collection page (e.g. went to the auction house) — make sure
-        // a notice from the previous page doesn't linger.
+        // Left the auction house — make sure its notice doesn't linger.
         this.showIntro.set(false);
       }
     });

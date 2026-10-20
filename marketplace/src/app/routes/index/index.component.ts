@@ -17,7 +17,6 @@ import { CalcPipe } from '@/pipes/calculate.pipe';
 import { MosaicComponent } from '@/components/mosaic/mosaic.component';
 import { CollectionStatsComponent } from '@/components/collection-stats/collection-stats.component';
 import { CollectionSalesComponent } from '@/components/collection-sales/collection-sales.component';
-import { TimerComponent } from '@/components/auction/timer/timer.component';
 
 import { DataService } from '@/services/data.service';
 import { ThemeService } from '@/services/theme.service';
@@ -58,7 +57,6 @@ const LINKED_SLUG_MAP: Record<string, string> = {
     MosaicComponent,
     CollectionStatsComponent,
     CollectionSalesComponent,
-    TimerComponent,
     CalcPipe,
   ],
   selector: 'app-index',
@@ -98,22 +96,6 @@ export class IndexComponent {
 
   mintImage = signal<string | null>(null);
   openFaq = signal<string | null>(null);
-
-  // ── Phikings launch popup (shown on the /phikings landing page) ──
-  /** Phikings went LIVE on Fri Jul 31, 2026 (~9am PT). Timestamp is in the past, so the popup
-   *  shows the "IT'S LIVE" + Buy state, not the countdown. */
-  readonly phikingsLaunchMs = new Date('2026-07-31T09:00:00-07:00').getTime();
-  /** True once the launch moment has passed — now always true, so the live popup shows. */
-  phikingsLaunchPassed = signal(Date.now() >= this.phikingsLaunchMs);
-  /** Dismissed for the current visit; reset each time the /phikings landing is (re)entered. */
-  phikingsDismissed = signal(false);
-
-  dismissPhikings(): void {
-    this.phikingsDismissed.set(true);
-  }
-  onPhikingsTimer(e: { left: number }): void {
-    if (e && e.left <= 0) this.phikingsLaunchPassed.set(true);
-  }
 
   defaultFaq = [
     { q: 'What are QuantumPhunks?', a: 'QuantumPhunks are a culture-driven extension of the punk format, born from the Phunks ethos of anti-corporate values and decentralized open-source spirit. Created by Vert and Arkan, we begin from original punk combinations translated onto animal-based characters, with new combinations introduced, weaker pairings replaced, and hundreds of one-of-one pieces constructed by hand. Roughly 50 to 67 percent of the work was hand-manipulated through editing CSV trait generation files, adding traits to generation runs, selectively regenerating outputs, and performing manual trait and image edits throughout. Custom scripts and AI-assisted tools supported generation and trait assembly, but authorship remained hands-on at every stage. Every piece is stored fully on-chain as an Ethscription, inscribed directly into the calldata of Ethereum transactions. No IPFS, no Arweave, no external servers. Ethereum acts as the sole source of truth, preserving the data exactly as it was inscribed. The format extends beyond 10,000 through a deliberate numbering system that incorporates Missing Phunks from #10,000 to #10,250, DystoPhunkz from #10,251 onward, and EthsRocks, completing the collection as a structured evolution of the punk format. 1,481 unique trait values across 25 trait types, including 10 Phunk types, 16 variants, 719 total one-of-ones, many hidden details, and hidden one-of-ones. Drawing from decades of punk derivatives, themes, culture, memes, nostalgia, and history, QuantumPhunks are a comprehensive 24x24 study of the punk format, built to move the culture forward while honoring its roots.' },
@@ -189,8 +171,6 @@ export class IndexComponent {
   ) {
     this.activeCollection$.subscribe((collection) => {
       if (!collection) return;
-      // Phikings launch popup re-shows on each visit to its landing page.
-      if (collection.slug === 'phikings') this.phikingsDismissed.set(false);
       const customFaq = this.collectionFaqs[collection.slug];
       if (customFaq) {
         // OG collections only show their own custom FAQ

@@ -1,37 +1,5 @@
 @if ((activeCollection$ | async); as activeCollection) {
 
-  <!-- Phikings launch popup — countdown before launch, then a LIVE + buy CTA. Dismissible; re-shows on each visit to /phikings. -->
-  @if (activeCollection.slug === 'phikings' && !phikingsDismissed()) {
-    <div class="phikings-popup-overlay" (click)="dismissPhikings()">
-      <div class="phikings-popup" (click)="$event.stopPropagation()">
-        <button type="button" class="phikings-popup-close" (click)="dismissPhikings()" aria-label="Close">&times;</button>
-        <h2 class="phikings-popup-kicker">PHIKINGS</h2>
-
-        @if (!phikingsLaunchPassed()) {
-          <!-- Before launch: countdown to noon Pacific -->
-          <p class="phikings-popup-title">LIVE PHRIDAY</p>
-          <div class="phikings-popup-timer">
-            <app-timer [endTime]="phikingsLaunchMs" (event)="onPhikingsTimer($event)" />
-          </div>
-          <button type="button" class="phikings-popup-dismiss" (click)="dismissPhikings()">Got it</button>
-          <p class="popup-version">v{{ env.version }}</p>
-        } @else {
-          <!-- Live: 59 Phikings carry active listings, so "Enter" drops buyers straight
-               onto the listings grid where everything for sale is priced and buyable.
-               (Previously pointed at /all, from when they sold only via per-item
-               buy-now on their /details pages.) -->
-          <p class="phikings-popup-title">IT&rsquo;S LIVE</p>
-          <p class="phikings-popup-sub">Phikings are live. Grab one on the market.</p>
-          <a
-            class="phikings-popup-cta"
-            [routerLink]="['/phikings', 'market', 'listings']"
-            (click)="dismissPhikings()">Enter</a>
-          <p class="popup-version">v{{ env.version }}</p>
-        }
-      </div>
-    </div>
-  }
-
   @if ((config$ | async)?.hiddenSlugs?.includes(activeCollection.slug)) {
     <div class="hidden-collection">
       <img src="/assets/loader-phunk.gif" alt="Coming soon" />
