@@ -220,3 +220,8 @@ section {
     }
   }
 }
+
+// Phunklloween: the auction hero's shaded purple under the splash instead of a flat fill.
+:host-context([data-collection='phunklloween']) .sections-wrapper {
+  @include phunklloween-glow;
+}

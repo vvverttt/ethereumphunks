@@ -89,3 +89,14 @@
     border-left: .3rem solid rgba(0, 0, 0, 0);
   }
 }
+
+// Phunklloween's shaded purple — the auction hero's glow — for a long page section.
+// Fixed to the viewport so the glow stays in view while scrolling; iOS ignores `fixed`
+// and scrolls it with the content, which still reads.
+@mixin phunklloween-glow {
+  background-image:
+    radial-gradient(ellipse 55% 45% at 50% 32%, rgba(214, 60, 255, .45), transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% 45%, rgba(124, 58, 255, .55), transparent 75%),
+    linear-gradient(180deg, #4500b0 0%, #5c16d8 50%, #3a009c 100%);
+  background-attachment: fixed;
+}

@@ -66,6 +66,16 @@ export class ThemeService {
       '--header-highlight': '255, 255, 255',
       '--background': '12, 20, 26',          // #0c141a — dark blue-grey page bg (replaces the green-tinted 17,26,0)
     },
+    // Halloween collection: the auction hero's purple as the page bg under the splash.
+    // Mirrored in main.scss for first paint — keep the two in step.
+    phunklloween: {
+      '--background': '69, 0, 176',          // #4500b0 — same purple as the auction hero
+      // Every pink accent (header text, Go/Connect buttons, links, item numbers) goes orange.
+      '--pink': '255, 140, 26',              // #ff8c1a
+      '--button-color': '255, 140, 26',
+      '--header-text': '255, 140, 26',
+      '--header-highlight-active': '255, 140, 26',
+    },
   };
   private activeSlug = '';
   private currentTheme: Theme = 'dark';
@@ -89,10 +99,7 @@ export class ThemeService {
   setThemeStyles(theme: Theme) {
     this.currentTheme = theme;
     const previousTheme = localStorage.getItem('EtherPhunks_theme');
-    const themeStyles = {
-      ...this.themeStyles[theme as keyof ThemeStyles],
-      ...(this.collectionOverrides[this.activeSlug] || {}),
-    } as ThemeProperties;
+    const themeStyles = this.getEffectiveStyles(theme);
     Object.keys(themeStyles).map((property: string) => {
       this.document.documentElement.style.setProperty(
         property as string,
@@ -146,6 +153,18 @@ export class ThemeService {
       else localStorage.removeItem('EtherPhunks_collection');
     } catch { /* private mode — the flash is cosmetic, never break on it */ }
     this.setThemeStyles(this.currentTheme);
+  }
+
+  /**
+   * The base (dark/light) theme with the active collection's overrides on top. Anything
+   * that writes a theme var must read it from here, not from `themeStyles` directly, or
+   * it paints the base colour over the collection's (e.g. pink over Phunklloween orange).
+   */
+  getEffectiveStyles(theme: Theme): ThemeProperties {
+    return {
+      ...this.themeStyles[theme as keyof ThemeStyles],
+      ...(this.collectionOverrides[this.activeSlug] || {}),
+    } as ThemeProperties;
   }
 
   /**

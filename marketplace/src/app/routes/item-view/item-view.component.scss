@@ -59,6 +59,11 @@ app-phunk-billboard {
   z-index: 1;
   background-color: rgba(var(--background), 1);
 
+  // Phunklloween items: the same shaded purple as the collection page, not a flat fill.
+  :host-context([data-collection='phunklloween']) & {
+    @include phunklloween-glow;
+  }
+
   .inner {
     position: relative;
     max-width: 120rem;

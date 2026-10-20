@@ -117,6 +117,16 @@
   }
 }
 
+// Phunklloween — the auction hero's purple as the page background. Mirrors ThemeService.collectionOverrides
+// so a reload paints purple from the first frame instead of flashing the green.
+:root[data-collection='phunklloween'] {
+  --background: 69, 0, 176;             // #4500b0 — same purple as the auction hero
+  --pink: 255, 140, 26;                 // #ff8c1a — every pink accent goes orange
+  --button-color: 255, 140, 26;
+  --header-text: 255, 140, 26;
+  --header-highlight-active: 255, 140, 26;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // cryptophunksv67 (ERC-721C) — scoped #648595 blue-grey scheme. Applied only when
 // documentElement has data-collection="cryptophunksv67" (set by ThemeService), so every

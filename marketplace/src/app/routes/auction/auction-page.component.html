@@ -1,4 +1,4 @@
-<div class="auction-page" [ngStyle]="{'--auction-accent': (phunkSlug() === 'phunklloween' ? '255, 140, 26' : accentColor()) || null}">
+<div class="auction-page" [ngStyle]="{'--auction-accent': (spooky() ? '255, 140, 26' : accentColor()) || null}">
   @if (false) {
     <div class="loading-state">Loading auction...</div>
   } @else {
@@ -10,7 +10,7 @@
 
     <!-- ========== HERO SECTION ========== -->
     <!-- Phunklloween gets its own purple-and-orange hero, matching the collection's poster art. -->
-    <section class="auction" [class.spooky]="phunkSlug() === 'phunklloween'" [style.background-image]="accentColor() && phunkSlug() !== 'phunklloween' ? 'linear-gradient(rgba(' + accentColor() + ', 0.15), rgba(' + accentColor() + ', 0.15))' : null">
+    <section class="auction" [class.spooky]="spooky()" [style.background-image]="accentColor() && !spooky() ? 'linear-gradient(rgba(' + accentColor() + ', 0.15), rgba(' + accentColor() + ', 0.15))' : null">
       <div class="inner">
 
         <!-- Auction House Brand -->

@@ -33,6 +33,12 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as dataStateActions from '@/state/actions/data-state.actions';
 
+const AUCTION_SLUG_KEY = 'EtherPhunks_auction_collection';
+
+function readAuctionSlug(): string {
+  try { return localStorage.getItem(AUCTION_SLUG_KEY) || ''; } catch { return ''; }
+}
+
 // Buy-now tier prices are fixed, so we display them from constants instead of reading them on-chain
 // on every refresh (saves RPC). Only an actual purchase reads the live price (doBuyNow), so the tx
 // value always matches the contract even if the owner is mid-changing it. Tier 1 = Missing/Dysto,
@@ -65,6 +71,13 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   phunkImage = signal<string>('');
   phunkTokenId = signal<number>(0);
   phunkSlug = signal<string>('');
+  /** Collection of the last item this page showed. Remembered (and read by the boot
+   *  script in index.mainnet.html) so a reload paints that collection's theme from the
+   *  first frame, instead of flipping colours once the chain read returns. */
+  lastSlug = signal<string>(readAuctionSlug());
+  /** The live item's collection, or the remembered one until the live item loads. */
+  displaySlug = computed(() => this.phunkSlug() || this.lastSlug());
+  spooky = computed(() => this.displaySlug() === 'phunklloween');
   phunkSha = signal<string>('');
   collectionName = signal<string>('');
   poolSize = signal<number>(0);
@@ -374,18 +387,25 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     private themeSvc: ThemeService,
   ) {
     // The Auction House trades ETHSCRIPTIONS, so it uses the default lime (#c3ff00) theme — NOT the
-    // v67 blue. Force the default here so arriving from a blue v67 market page doesn't carry over.
-    this.themeSvc.setActiveCollection('');
+    // v67 blue — with one exception: Phunklloween items bring their purple page and orange
+    // header. Set synchronously from the remembered slug so arriving from a blue v67 market
+    // page doesn't carry over, and a Phunklloween auction never flashes lime first.
+    this.themeSvc.setActiveCollection(this.spooky() ? 'phunklloween' : '');
 
-    // The header's collection switcher follows the item under the hammer, so a
-    // Phunklloween auction reads "Phunklloween" up there, not the last market visited.
-    // Store only; the theme stays forced to the default above.
+    // The header's collection switcher and the theme follow the item under the hammer,
+    // so a Phunklloween auction reads "Phunklloween" up there, not the last market visited.
     this.headerCollectionSub = combineLatest([
-      toObservable(this.phunkSlug),
+      toObservable(this.displaySlug),
       this.store.select(dataStateSelectors.selectCollections),
     ]).subscribe(([slug, collections]) => {
       const collection = slug && collections?.find((c) => c.slug === slug);
       if (collection) this.store.dispatch(dataStateActions.setActiveCollection({ activeCollection: { ...collection } }));
+      this.themeSvc.setActiveCollection(slug === 'phunklloween' ? slug : '');
+      const live = this.phunkSlug();
+      if (live && live !== this.lastSlug()) {
+        this.lastSlug.set(live);
+        try { localStorage.setItem(AUCTION_SLUG_KEY, live); } catch { /* private mode: cosmetic only */ }
+      }
     });
 
     // Check for address override from route data (auction house 2)

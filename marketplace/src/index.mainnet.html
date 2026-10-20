@@ -50,9 +50,16 @@
         // Routes that are not a collection but belong to one. /lottery mints
         // QuantumPhunks, so it should open on the v67 blue rather than the default
         // lime and then snap over once the app boots.
-        var owned = { lottery: 'cryptophunksv67', auction: 'cryptophunksv67' };
-        var slug = owned[seg]
-          || (/^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' ? seg : last);
+        var owned = { lottery: 'cryptophunksv67' };
+        var slug;
+        if (seg === 'auction' || seg === 'auction2') {
+          // The auction house is lime, except while a Phunklloween item is up: the
+          // auction page remembers the last item's collection under this key.
+          slug = localStorage.getItem('EtherPhunks_auction_collection') === 'phunklloween' ? 'phunklloween' : '';
+        } else {
+          slug = owned[seg]
+            || (/^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' ? seg : last);
+        }
         if (slug) document.documentElement.setAttribute('data-collection', slug);
       } catch (e) { /* private mode: the flash is cosmetic, never block boot */ }
     })();

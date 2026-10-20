@@ -28,6 +28,24 @@
   }
 }
 
+// Phunklloween: the purple-and-orange of the auction hero, so the bar reads as the
+// same event. Orange replaces --auction-color for every accent below (borders,
+// hover, the Bid button, the bid-list scrollbar).
+:host-context([data-collection='phunklloween']) {
+  .auction-strip {
+    --auction-color: 255, 140, 26;      // #ff8c1a
+    // Same purples as the auction hero (.auction.spooky), glow centred on the bar.
+    background-color: #3f00a6;
+    background-image:
+      radial-gradient(ellipse 50% 140% at 50% 50%, rgba(214, 60, 255, .35), transparent 70%),
+      linear-gradient(180deg, #4500b0 0%, #5c16d8 50%, #3a009c 100%);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+  }
+
+  .item img { background-color: #5c16d8; }
+}
+
 // ── the item ──────────────────────────────────────────────────────────────────
 .item {
   display: flex;

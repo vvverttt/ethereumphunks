@@ -123,7 +123,9 @@ export class AppStateEffects {
       this.store.select(appStateSelectors.selectTheme)
     ),
     tap(([_, menuActive, theme]) => {
-      const activeTheme = (this.themeSvc.themeStyles as any)[theme];
+      // Effective styles, so a collection's own header colour survives the menu toggling
+      // (every navigation closes the menu, which used to repaint the header base pink).
+      const activeTheme = this.themeSvc.getEffectiveStyles(theme) as any;
       if (!document.documentElement.style.getPropertyValue('--header-text')) return;
       document.documentElement.style.setProperty(
         '--header-text',
