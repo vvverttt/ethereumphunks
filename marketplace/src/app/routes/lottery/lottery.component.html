@@ -153,7 +153,7 @@
   }
 
   <!-- Play Button -->
-  <div class="action-area">
+  <div class="action-area" [class.teaser]="comingSoon()">
     @if (comingSoon()) {
       <p class="soon-tag" [class.shown]="buttonShown()">coming soon</p>
     } @else {

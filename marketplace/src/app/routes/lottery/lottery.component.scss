@@ -104,6 +104,10 @@ $lottery-muted: #67cdff;
 // mark stays the only loud thing on the page.
 
 $drop-mono: 'Courier New', Courier, monospace;
+// Space between the release clock and the grid — and, in teaser mode, between the grid and
+// "coming soon", so the column is evenly spaced.
+$drop-gap: 3.5rem;
+$drop-gap-mobile: 2.5rem;
 
 .lottery-header {
   display: flex;
@@ -111,7 +115,7 @@ $drop-mono: 'Courier New', Courier, monospace;
   align-items: center;
   text-align: center;
   margin-top: 3rem;
-  margin-bottom: 3.5rem;
+  margin-bottom: $drop-gap;
 
   .phupreme-mark img {
     display: block;
@@ -139,7 +143,7 @@ $drop-mono: 'Courier New', Courier, monospace;
 @media (max-width: 600px) {
   .lottery-header {
     margin-top: 2rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: $drop-gap-mobile;
 
     .phupreme-mark img { width: 120px; }
     .drop-clock { font-size: 1.1rem; }
@@ -381,6 +385,15 @@ $drop-mono: 'Courier New', Courier, monospace;
   align-items: center;
   margin-top: 2rem;
   gap: 2.5rem;
+
+  // Teaser: "coming soon" sits as far below the grid as the clock sits above it.
+  &.teaser {
+    margin-top: $drop-gap;
+
+    @media (max-width: 600px) {
+      margin-top: $drop-gap-mobile;
+    }
+  }
 }
 
 .play-button {
