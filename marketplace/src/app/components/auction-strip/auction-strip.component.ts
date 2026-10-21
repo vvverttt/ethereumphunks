@@ -157,18 +157,12 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
    */
   private async load() {
     try {
-      const { auction, reservePrice, minBidIncrement } = await this.auctionSvc.getInitialData();
-      const eth = await this.auctionSvc.getEthscriptionByHashId(auction.hashId);
+      // Shared with the menu's auction card, so having both open doesn't double the reads.
+      // Per-item reserve wins over the house default when one is set. Bids come from the
+      // indexer, newest first; the list is height-capped in CSS, so the panel scrolls.
+      const { auction, reservePrice, minBidIncrement, eth, itemReserve, bids } = await this.auctionSvc.getLiveSnapshot();
       if (!eth) throw new Error('auction item not indexed yet');
-
-      const [image, itemReserve, bids] = await Promise.all([
-        this.spriteSvc.url(eth.sha),
-        // Per-item reserve wins over the house default when one is set.
-        this.auctionSvc.getItemReservePrice(auction.hashId),
-        // Bids come from the indexer, newest first. The list is height-capped in CSS, so
-        // a long auction cannot grow the bar — however many land, the panel scrolls.
-        this.auctionSvc.getBidHistory(auction.auctionId),
-      ]);
+      const image = await this.spriteSvc.url(eth.sha);
 
       this.auction.set(auction);
       this.minIncrement.set(minBidIncrement);
@@ -206,6 +200,7 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
         await this.web3Svc.pollReceipt(hash);
         this.txHash.set('');
         this.bid.set('');
+        this.auctionSvc.dropLiveSnapshot();   // show the new bid now, not after the shared TTL
         await this.load();
       }
     } catch (err: any) {

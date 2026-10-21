@@ -16,10 +16,27 @@
   height: 100%;
   transform: translateX(100%);
 
-  background-color: rgba(var(--bid-color), .75);
+  background-color: rgba(var(--m-panel), var(--m-panel-alpha));
   color: rgba(var(--white), 1);
 
   backdrop-filter: blur(1rem);
+
+  // ── Menu palette ────────────────────────────────────────────────────────────────────
+  // Every box takes its colours from these, so each link is its own colour and the panel
+  // matches the collection on screen. Set per theme below (QuantumPhunks, Phunklloween);
+  // these defaults are the ethscription collections' lime-and-pink. RGB triplets.
+  --m-panel: 13, 19, 3;            // near-black olive glass, the page's own cast (#111a00)
+  --m-panel-alpha: .94;
+  --m-accent: 195, 255, 0;         // active toggles
+  --m-accent-fg: 19, 19, 19;
+  --m-toggle-border: 255, 4, 180;
+  --m-shadow: 255, 4, 180;         // the offset under every box
+  --m-lead-bg: 195, 255, 0;    --m-lead-fg: 19, 19, 19;
+  --m-lead-title: 255, 4, 180; --m-lead-badge: 255, 4, 180; --m-lead-badge-fg: 255, 255, 255;
+  --m-ext-bg: 255, 4, 180;     --m-ext-fg: 255, 255, 255;  --m-ext-shadow: 195, 255, 0;
+  --m-dys-bg: 0, 255, 200;     --m-dys-fg: 19, 19, 19;
+  --m-lot-bg: 255, 255, 255;   --m-lot-fg: 19, 19, 19;
+  --m-auc-bg: 0, 0, 0;         --m-auc-alpha: .55;        --m-auc-title: 195, 255, 0;
 
   @media (max-width: $mobile) {
     height: 100%;
@@ -34,25 +51,51 @@
   }
 }
 
-// cryptophunksv67: deep-teal menu panel that complements the bright #67cdff content, and the
-// clashing link buttons unified to the #67cdff brand blue (black text/arrows) so they match.
+// QuantumPhunks (cryptophunksv67): deep navy glass like its #0c141a page, a white leaderboard in
+// the logo's pink, the brand blue, aqua, and Phupreme in its own pink box.
 :host-context([data-collection='cryptophunksv67']) {
-  background-color: rgba(35, 92, 99, 0.94); // #235c63
+  --m-panel: 10, 27, 38;           // #0a1b26
+  --m-panel-alpha: .95;
+  --m-accent: 103, 205, 255;       // #67cdff
+  --m-accent-fg: 12, 20, 26;
+  --m-toggle-border: 103, 205, 255;
+  --m-shadow: 0, 171, 255;         // #00abff
+  --m-lead-bg: 255, 255, 255;  --m-lead-fg: 12, 20, 26;
+  --m-lead-title: 255, 4, 180; --m-lead-badge: 255, 4, 180; --m-lead-badge-fg: 255, 255, 255;
+  --m-ext-bg: 103, 205, 255;   --m-ext-fg: 12, 20, 26;     --m-ext-shadow: 0, 171, 255;
+  --m-dys-bg: 121, 250, 230;   --m-dys-fg: 12, 20, 26;     // #79fae6
+  --m-lot-bg: 255, 4, 180;     --m-lot-fg: 255, 255, 255;  // Phupreme pink
+  --m-auc-bg: 12, 20, 26;      --m-auc-alpha: .9;          --m-auc-title: 103, 205, 255;
 
+  // Rarely shown links keep the brand blue they had here.
   section {
-    .dystolabz-button,
-    .lottery-button,
     .lottery-pro-button,
     .ethsrocks-button,
     .owners-button,
-    .vault-button,
-    .curated-button {
+    .vault-button {
       background-color: #67cdff;
       color: rgba(var(--black), 1);
 
       .arrow svg path { fill: rgba(var(--black), 1); }
     }
   }
+}
+
+// Phunklloween: midnight-purple glass over the purple page, then pumpkin, candy corn, royal
+// purple, toxic green and bone: a distinct Halloween colour per link, on dark ink shadows.
+:host-context([data-collection='phunklloween']) {
+  --m-panel: 24, 5, 54;            // #180536
+  --m-panel-alpha: .93;
+  --m-accent: 255, 140, 26;        // #ff8c1a
+  --m-accent-fg: 24, 5, 54;
+  --m-toggle-border: 255, 140, 26;
+  --m-shadow: 10, 2, 26;           // ink
+  --m-lead-bg: 255, 140, 26;   --m-lead-fg: 24, 5, 54;
+  --m-lead-title: 24, 5, 54;   --m-lead-badge: 24, 5, 54;  --m-lead-badge-fg: 255, 140, 26;
+  --m-ext-bg: 255, 210, 63;    --m-ext-fg: 24, 5, 54;      --m-ext-shadow: 10, 2, 26;   // #ffd23f
+  --m-dys-bg: 157, 255, 60;    --m-dys-fg: 24, 5, 54;      // #9dff3c
+  --m-lot-bg: 245, 239, 224;   --m-lot-fg: 24, 5, 54;      // bone
+  --m-auc-bg: 69, 0, 176;      --m-auc-alpha: .92;         --m-auc-title: 255, 140, 26; // #4500b0
 }
 
 // Gas + blocks, pinned to the bottom of the panel over every section.
@@ -245,12 +288,12 @@ section {
       margin-bottom: 3rem;
 
       font-family: var(--secondary-font-stack);
-      color: rgba(var(--black), 1);
+      color: rgba(var(--m-dys-fg), 1);
       font-size: 1.4rem;
       text-decoration: none;
 
-      background-color: #c3ff00;
-      box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
+      background-color: rgba(var(--m-dys-bg), 1);
+      box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
 
       cursor: pointer;
 
@@ -260,7 +303,7 @@ section {
           height: 2rem;
 
           path {
-            fill: rgba(var(--black), 1);
+            fill: rgba(var(--m-dys-fg), 1);
           }
         }
       }
@@ -279,7 +322,7 @@ section {
 
       button {
         height: 3rem;
-        border: .2rem solid rgba(var(--pink), 1);
+        border: .2rem solid rgba(var(--m-toggle-border), 1);
         padding: 0 .8rem;
 
         font-family: var(--secondary-font-stack);
@@ -293,9 +336,9 @@ section {
         transition: background-color .12s ease, color .12s ease, transform .12s ease;
 
         &.active {
-          color: rgba(var(--black), 1);
-          background-color: rgba(var(--highlight), 1);
-          border-color: rgba(var(--highlight), 1);
+          color: rgba(var(--m-accent-fg), 1);
+          background-color: rgba(var(--m-accent), 1);
+          border-color: rgba(var(--m-accent), 1);
         }
 
         &:active {
@@ -420,12 +463,12 @@ section {
       margin-bottom: 1.5rem;
 
       font-family: var(--secondary-font-stack);
-      color: rgba(var(--black), 1);
+      color: rgba(var(--m-lot-fg), 1);
       font-size: 1.4rem;
       text-decoration: none;
 
-      background-color: #00d4ff;
-      box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
+      background-color: rgba(var(--m-lot-bg), 1);
+      box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
 
       cursor: pointer;
 
@@ -435,7 +478,7 @@ section {
           height: 2rem;
 
           path {
-            fill: rgba(var(--black), 1);
+            fill: rgba(var(--m-lot-fg), 1);
           }
         }
       }
@@ -625,11 +668,11 @@ section {
       margin-bottom: 3rem;
 
       font-family: var(--secondary-font-stack);
-      color: rgba(var(--black), 1);
+      color: rgba(var(--m-ext-fg), 1);
       font-size: 1.6rem;
 
-      background-color: rgba(var(--auction-color), 1);
-      box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
+      background-color: rgba(var(--m-ext-bg), 1);
+      box-shadow: -.3rem .3rem 0 0 rgba(var(--m-ext-shadow), 1);
 
       cursor: pointer;
 
@@ -637,6 +680,10 @@ section {
         svg {
           width: 1rem;
           height: 2rem;
+
+          path {
+            fill: rgba(var(--m-ext-fg), 1);
+          }
         }
       }
 
@@ -660,7 +707,7 @@ section {
 
       background-color: rgba(var(--background), .8);
       border: 1px solid rgba(var(--white), .3);
-      box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
+      box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
 
       cursor: pointer;
 
@@ -688,10 +735,10 @@ section {
       margin-bottom: 3rem;
 
       font-family: var(--secondary-font-stack);
-      color: rgba(var(--black), 1);
+      color: rgba(var(--m-lead-fg), 1);
 
-      background-color: rgba(var(--highlight), 1);
-      box-shadow: -.3rem .3rem 0 0 rgba(var(--pink), 1);
+      background-color: rgba(var(--m-lead-bg), 1);
+      box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
 
       cursor: pointer;
 
@@ -721,7 +768,7 @@ section {
 
           font-size: 1.6rem;
           font-weight: normal;
-          color: rgba(var(--pink), 1);
+          color: rgba(var(--m-lead-title), 1);
         }
 
         .label {
@@ -756,8 +803,8 @@ section {
           padding-top: .5rem;
 
           grid-area: points;
-          background-color: rgba(var(--pink), 1);
-          color: rgba(var(--white), 1);
+          background-color: rgba(var(--m-lead-badge), 1);
+          color: rgba(var(--m-lead-badge-fg), 1);
           text-align: center;
         }
       }

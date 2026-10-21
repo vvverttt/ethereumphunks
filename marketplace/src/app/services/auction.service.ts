@@ -53,6 +53,24 @@ export interface SettledAuction {
   settledTimestamp: number;
 }
 
+/** Everything the 30 s pollers (collection-page auction bar, menu auction card) show. */
+export interface LiveAuctionSnapshot {
+  auction: AuctionData;
+  reservePrice: bigint;
+  minBidIncrement: number;
+  eth: { hashId: string; sha: string; tokenId: number; slug: string } | null;
+  itemReserve: bigint;
+  bids: AuctionBidEvent[];
+}
+
+// Shared by every AuctionService instance. The collection page's auction bar and the menu's
+// auction card each have their own service and both refresh every 30 s; whichever reads second
+// within SNAPSHOT_TTL_MS reuses the first one's read (and reads in flight are merged), so having
+// both open does not double the RPC and Supabase calls. The auction page does not use it: it
+// refreshes on live bid events and must always read fresh.
+const SNAPSHOT_TTL_MS = 25_000;
+const snapshots = new Map<string, { at: number; value: Promise<LiveAuctionSnapshot> }>();
+
 @Injectable()
 export class AuctionService {
 
@@ -175,6 +193,32 @@ export class AuctionService {
       abi: EtherPhunksAuctionHouseV2ABI,
       functionName: 'reservePrice',
     });
+  }
+
+  /** One shared read of the live auction for the pollers (see SNAPSHOT_TTL_MS). */
+  getLiveSnapshot(): Promise<LiveAuctionSnapshot> {
+    const key = this.address;
+    const hit = snapshots.get(key);
+    if (hit && Date.now() - hit.at < SNAPSHOT_TTL_MS) return hit.value;
+
+    const value = (async (): Promise<LiveAuctionSnapshot> => {
+      const { auction, reservePrice, minBidIncrement } = await this.getInitialData();
+      const eth = await this.getEthscriptionByHashId(auction.hashId);
+      const [itemReserve, bids] = await Promise.all([
+        this.getItemReservePrice(auction.hashId),
+        this.getBidHistory(auction.auctionId),
+      ]);
+      return { auction, reservePrice, minBidIncrement, eth, itemReserve, bids };
+    })();
+    snapshots.set(key, { at: Date.now(), value });
+    value.catch(() => snapshots.delete(key));
+    return value;
+  }
+
+  /** After this visitor's own bid or settle: drop the shared reads so the next one is fresh. */
+  dropLiveSnapshot() {
+    snapshots.delete(this.address);
+    try { localStorage.removeItem(`auction_initial_${this.address}`); } catch {}
   }
 
   async getItemReservePrice(hashId: string): Promise<bigint> {

@@ -5,11 +5,13 @@
 
 .auction-card {
   display: block;
-  padding: 1.4rem 1.5rem 2.4rem;
+  padding: 1.1rem 1.4rem 2rem;
 
   color: rgba(var(--white), 1);
   text-decoration: none;
-  background-color: rgba(var(--black), .55);
+  // Colours come from the menu's palette (menu.component.scss), so the card matches the theme.
+  background-color: rgba(var(--m-auc-bg, 0, 0, 0), var(--m-auc-alpha, .55));
+  box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow, 0, 0, 0), 1);
   cursor: pointer;
 
   &:active {
@@ -20,18 +22,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: .9rem;
     font-family: var(--secondary-font-stack);
-    font-size: 1.4rem;
-    letter-spacing: .06em;
+    font-size: 1.5rem;
+    letter-spacing: .04em;
+    color: rgba(var(--m-auc-title, 255, 255, 255), 1);
+
+    .logo {
+      width: 4.6rem;
+      height: 4.6rem;
+      flex: none;
+      image-rendering: pixelated;
+    }
 
     .arrow {
-      width: .7rem;
-      height: 1.2rem;
+      width: .9rem;
+      height: 1.5rem;
       flex: none;
 
       path {
-        fill: rgba(var(--white), 1);
+        fill: rgba(var(--m-auc-title, 255, 255, 255), 1);
       }
     }
   }
@@ -40,15 +50,15 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1.4rem;
+    gap: .8rem;
+    margin-top: 1rem;
   }
 
   .item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .4rem;
+    gap: .5rem;
     flex: none;
 
     img {
@@ -60,7 +70,7 @@
 
     .id {
       font-family: var(--secondary-font-stack);
-      font-size: 1rem;
+      font-size: 1.1rem;
     }
   }
 
@@ -68,18 +78,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .5rem;
+    gap: .45rem;
     min-width: 0;
 
     .label {
-      font-size: 1rem;
+      font-size: 1.05rem;
       color: rgba(var(--white), .6);
       white-space: nowrap;
     }
 
     .value {
       font-family: var(--secondary-font-stack);
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       white-space: nowrap;
     }
   }

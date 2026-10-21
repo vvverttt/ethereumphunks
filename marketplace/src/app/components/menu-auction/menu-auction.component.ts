@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, computed, inject, input, output, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { formatEther } from 'viem';
 
 import { AuctionService, AuctionData } from '@/services/auction.service';
@@ -13,7 +13,7 @@ import { visibleInterval } from '@/utils/visible-interval';
  * the time left — a link to the auction house. Without a live auction it is just the link.
  *
  * The menu renders it only while open, and while it is it re-reads every 30 s (not in a hidden
- * tab) — the same reads the collection page's auction bar makes.
+ * tab). The read is shared with the collection page's auction bar, so both open costs one.
  */
 @Component({
   selector: 'app-menu-auction',
@@ -30,6 +30,7 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
   private readonly auctionSvc = inject(AuctionService);
   private readonly spriteSvc = inject(SpriteService);
   private readonly preferences = inject(PhunkPreferencesService);
+  private readonly router = inject(Router);
 
   title = input.required<string>();
   /** Clicked through to the auction house. */
@@ -62,7 +63,11 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     await this.load();
-    this.stopPoll = visibleInterval(() => this.load(), 30_000);
+    // On the auction page itself the page shows the auction live, so the card keeps its first
+    // read (its countdown still ticks) instead of polling alongside it.
+    this.stopPoll = visibleInterval(() => {
+      if (!this.router.url.startsWith('/auction')) this.load();
+    }, 30_000);
   }
 
   ngOnDestroy() {
@@ -71,13 +76,10 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
 
   private async load() {
     try {
-      const { auction } = await this.auctionSvc.getInitialData();
-      const eth = await this.auctionSvc.getEthscriptionByHashId(auction.hashId);
+      // Shared with the collection page's auction bar (see AuctionService.getLiveSnapshot).
+      const { auction, eth, bids } = await this.auctionSvc.getLiveSnapshot();
       if (!eth) return;
-      const [image, bids] = await Promise.all([
-        this.spriteSvc.url(eth.sha),
-        this.auctionSvc.getBidHistory(auction.auctionId),
-      ]);
+      const image = await this.spriteSvc.url(eth.sha);
       this.auction.set(auction);
       this.tokenId.set(eth.tokenId);
       this.image.set(image);
