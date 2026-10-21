@@ -15,11 +15,14 @@ import { environment } from 'src/environments/environment';
 import { DataService } from '@/services/data.service';
 
 import { selectNotifHoverState, selectNotifications } from '../selectors/notification.selectors';
-import { selectCurrentBlock, selectWalletAddress } from '../selectors/app-state.selectors';
+import { selectWalletAddress } from '../selectors/app-state.selectors';
 
 import { setCurrentBlock, setWalletAddress } from '../actions/app-state.actions';
 import { removeNotification, setNotifications, upsertNotification } from '../actions/notification.actions';
 import { UtilService } from '@/services/util.service';
+
+/** ~5 minutes of blocks between "your item sold" checks (see onBlockNumber$). */
+const MISSED_EVENTS_EVERY_BLOCKS = 25;
 
 
 @Injectable()
@@ -78,26 +81,29 @@ export class NotificationEffects {
     })
   ), { dispatch: false });
 
+  // "Your item sold" alerts only need to arrive eventually, so the events query runs at most once
+  // every MISSED_EVENTS_EVERY_BLOCKS (~5 min) rather than on every block tick. The stored mark only
+  // advances when the query has run, so the next one covers everything since — nothing is missed.
   onBlockNumber$ = createEffect(() => this.actions$.pipe(
     ofType(setCurrentBlock),
     withLatestFrom(this.store.select(selectWalletAddress)),
     switchMap(([action, address]) => {
+      const key = `EtherPhunks_currentBlock_${environment.chainId}`;
       const currentBlock = action.currentBlock;
-      const storedBlock = localStorage.getItem(`EtherPhunks_currentBlock_${environment.chainId}`);
-      // console.log({currentBlock, storedBlock}, currentBlock - Number(storedBlock));
-      if (address && storedBlock && (currentBlock - Number(storedBlock)) > 0) {
-        return this.dataSvc.fetchMissedEvents(address, Number(storedBlock)).pipe(
-          tap((events) => {
-            // console.log('missed events', events);
-            for (const event of events) this.checkEventForPurchaseFromUser(event, address);
-          }),
-          catchError((err) => of([])),
-        );
-      }
-      return of([]);
+      const storedBlock = Number(localStorage.getItem(key)) || 0;
+      const markChecked = () => localStorage.setItem(key, JSON.stringify(currentBlock));
+
+      if (!address || !storedBlock) { markChecked(); return of([]); }
+      if (currentBlock - storedBlock < MISSED_EVENTS_EVERY_BLOCKS) return of([]);
+
+      return this.dataSvc.fetchMissedEvents(address, storedBlock).pipe(
+        tap((events) => {
+          for (const event of events) this.checkEventForPurchaseFromUser(event, address);
+          markChecked();
+        }),
+        catchError(() => of([])),
+      );
     }),
-    withLatestFrom(this.store.select(selectCurrentBlock)),
-    tap(([_, blockNumber]) => localStorage.setItem(`EtherPhunks_currentBlock_${environment.chainId}`, JSON.stringify(blockNumber))),
   ), { dispatch: false });
 
   constructor(

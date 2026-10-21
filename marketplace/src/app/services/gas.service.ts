@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, interval, switchMap, catchError, of, startWith, filter } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, catchError, of, startWith } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { visibleTimer } from '@/utils/visible-interval';
 
 export interface GasData {
   FastGasPrice: string;
@@ -38,10 +39,12 @@ export class GasService {
   gas$ = this.gasSubject.asObservable();
 
   constructor() {
-    interval(60_000)
+    // Every 2 minutes while the tab is visible — the number is informational (wallets price
+    // their own transactions) and the first RPC tried is a keyed Alchemy one. Hidden tabs make
+    // no calls, and coming back to the tab refreshes it straight away.
+    visibleTimer(120_000)
       .pipe(
-        startWith(0),
-        filter(() => typeof document === 'undefined' || document.visibilityState === 'visible'),
+        startWith(undefined),
         switchMap(() => this.fetchGasPrice())
       )
       .subscribe(data => {
