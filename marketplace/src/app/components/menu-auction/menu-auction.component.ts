@@ -19,6 +19,9 @@ import { visibleInterval } from '@/utils/visible-interval';
   selector: 'app-menu-auction',
   standalone: true,
   imports: [RouterModule, TimerComponent],
+  // AuctionService is not root-provided (each user may point it at another auction house) —
+  // without this the card failed to construct and vanished from the menu.
+  providers: [AuctionService],
   templateUrl: './menu-auction.component.html',
   styleUrls: ['./menu-auction.component.scss'],
 })
