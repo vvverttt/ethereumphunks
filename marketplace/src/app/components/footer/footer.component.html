@@ -24,9 +24,7 @@
       }
       {{ t('marketplace') }}: <a [href]="explorerUrl + '/address/' + c.marketplace" target="_blank"><app-address [address]="c.marketplace" /></a><br />
       {{ t('points') }}: <a [href]="explorerUrl + '/address/' + c.points" target="_blank"><app-address [address]="c.points" /></a><br />
-      @if ((config$ | async)?.showLottery !== false) {
-        {{ t('lottery') }}: <a [href]="explorerUrl + '/address/' + c.lottery" target="_blank"><app-address [address]="c.lottery" /></a><br />
-      }
+      <!-- Lottery contract line hidden until Phupreme launches; restore it from git history. -->
       @if ((config$ | async)?.showAuction !== false) {
         {{ t('auction') }}: <a [href]="explorerUrl + '/address/' + c.auction" target="_blank"><app-address [address]="c.auction" /></a><br />
       }
