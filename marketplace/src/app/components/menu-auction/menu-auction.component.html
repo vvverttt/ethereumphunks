@@ -1,0 +1,27 @@
+<a class="auction-card" routerLink="/auction" (click)="navigate.emit()">
+  <div class="title">{{ title() }}</div>
+
+  @if (live()) {
+    <div class="body">
+      <div class="item">
+        <img [src]="image()" alt="" />
+        <span class="id">#{{ tokenId() }}</span>
+      </div>
+
+      <div class="stat">
+        <span class="label">{{ t('bids') }}</span>
+        <span class="value">{{ bidCount() }}</span>
+      </div>
+
+      <div class="stat">
+        <span class="label">{{ t('current') }}</span>
+        <span class="value">Ξ{{ currentEth() }}</span>
+      </div>
+
+      <div class="stat remaining">
+        <span class="label">{{ t('timeRemaining') }}</span>
+        <app-timer class="value" [endTime]="endTimeMs()" />
+      </div>
+    </div>
+  }
+</a>

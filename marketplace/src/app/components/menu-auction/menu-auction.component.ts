@@ -1,0 +1,86 @@
+import { Component, OnDestroy, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { formatEther } from 'viem';
+
+import { AuctionService, AuctionData } from '@/services/auction.service';
+import { SpriteService } from '@/services/sprite.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { TimerComponent } from '@/components/auction/timer/timer.component';
+import { visibleInterval } from '@/utils/visible-interval';
+
+/**
+ * The live auction as a card in the menu panel: the item, its bid count, the standing bid and
+ * the time left — a link to the auction house. Without a live auction it is just the link.
+ *
+ * The menu renders it only while open, and while it is it re-reads every 30 s (not in a hidden
+ * tab) — the same reads the collection page's auction bar makes.
+ */
+@Component({
+  selector: 'app-menu-auction',
+  standalone: true,
+  imports: [RouterModule, TimerComponent],
+  templateUrl: './menu-auction.component.html',
+  styleUrls: ['./menu-auction.component.scss'],
+})
+export class MenuAuctionComponent implements OnInit, OnDestroy {
+
+  private readonly auctionSvc = inject(AuctionService);
+  private readonly spriteSvc = inject(SpriteService);
+  private readonly preferences = inject(PhunkPreferencesService);
+
+  title = input.required<string>();
+  /** Clicked through to the auction house. */
+  navigate = output<void>();
+
+  auction = signal<AuctionData | null>(null);
+  image = signal('');
+  tokenId = signal(0);
+  bidCount = signal(0);
+
+  live = computed(() => {
+    const a = this.auction();
+    return !!a && !a.settled && a.startTime > 0 && !!this.image();
+  });
+
+  /** Standing bid, at most 4 decimals ("0.0081"); 0 before the first bid. */
+  currentEth = computed(() => {
+    const a = this.auction();
+    if (!a || a.amount === 0n) return '0';
+    return String(parseFloat(Number(formatEther(a.amount)).toFixed(4)));
+  });
+
+  endTimeMs = computed(() => (this.auction()?.endTime ?? 0) * 1000);
+
+  private stopPoll?: () => void;
+
+  t(key: string): string {
+    return this.preferences.t(key);
+  }
+
+  async ngOnInit() {
+    await this.load();
+    this.stopPoll = visibleInterval(() => this.load(), 30_000);
+  }
+
+  ngOnDestroy() {
+    this.stopPoll?.();
+  }
+
+  private async load() {
+    try {
+      const { auction } = await this.auctionSvc.getInitialData();
+      const eth = await this.auctionSvc.getEthscriptionByHashId(auction.hashId);
+      if (!eth) return;
+      const [image, bids] = await Promise.all([
+        this.spriteSvc.url(eth.sha),
+        this.auctionSvc.getBidHistory(auction.auctionId),
+      ]);
+      this.auction.set(auction);
+      this.tokenId.set(eth.tokenId);
+      this.image.set(image);
+      this.bidCount.set(bids.length);
+    } catch {
+      // Keep the last good read; with none, the card is just the link.
+    }
+  }
+}

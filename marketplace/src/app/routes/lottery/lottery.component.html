@@ -53,6 +53,9 @@
   </div>
 
   <!-- Whitelist-only notice -->
+  <!-- Teaser mode (lottery not active yet): only the title, date and grid above, plus the
+       "coming soon" status below. Everything else returns once it is activated. -->
+  @if (!comingSoon()) {
   @if (whitelistEnabled() && (connected$ | async) && !isWhitelisted()) {
     <div class="pending-commitment">
       <p>This is a whitelist-only phase and your wallet isn't on the list yet.</p>
@@ -147,8 +150,15 @@
     </div>
   }
 
+  }
+
   <!-- Play Button -->
   <div class="action-area">
+    @if (comingSoon()) {
+      <button class="play-button soon" [class.shown]="buttonShown()" disabled>
+        <span class="pulse"></span>Coming Soon
+      </button>
+    } @else {
     <button
       class="play-button"
       [class.shown]="buttonShown()"
@@ -189,6 +199,7 @@
 
     @if (errorMessage()) {
       <p class="error-text">{{ errorMessage() }}</p>
+    }
     }
   </div>
 
@@ -250,6 +261,7 @@
     </div>
   }
 
+  @if (!comingSoon()) {
   <!-- How It Works -->
   <section class="how-it-works">
     <div class="inner">
@@ -303,6 +315,7 @@
       </div>
     </div>
   </section>
+  }
 
 
 </div>

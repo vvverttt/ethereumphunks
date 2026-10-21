@@ -1,0 +1,73 @@
+:host {
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+.auction-card {
+  display: block;
+  padding: 1.4rem 1.5rem 2.4rem;
+
+  color: rgba(var(--white), 1);
+  text-decoration: none;
+  background-color: rgba(var(--black), .55);
+  cursor: pointer;
+
+  &:active {
+    transform: translate(0, 1px);
+  }
+
+  .title {
+    text-align: center;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.4rem;
+    letter-spacing: .06em;
+  }
+
+  .body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.4rem;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+    flex: none;
+
+    img {
+      width: 5rem;
+      height: 5rem;
+      image-rendering: pixelated;
+      background-color: rgba(var(--phunk-bg), 1);
+    }
+
+    .id {
+      font-family: var(--secondary-font-stack);
+      font-size: 1rem;
+    }
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    min-width: 0;
+
+    .label {
+      font-size: 1rem;
+      color: rgba(var(--white), .6);
+      white-space: nowrap;
+    }
+
+    .value {
+      font-family: var(--secondary-font-stack);
+      font-size: 1.4rem;
+      white-space: nowrap;
+    }
+  }
+}

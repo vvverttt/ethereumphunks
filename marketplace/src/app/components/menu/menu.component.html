@@ -75,17 +75,10 @@
     }
 
     @if ((config$ | async)?.showAuction !== false) {
-      <a
-        class="auction-button"
-        routerLink="/auction"
-        (click)="goToAuction()">
-
-        <span>{{ t('auctionHouse') }}</span>
-
-        <div class="arrow">
-          <ng-template [ngTemplateOutlet]="arrowIcon" />
-        </div>
-      </a>
+      <!-- Live auction card; mounted only while the menu is open, so it loads only then. -->
+      @if (menuOpen$ | async) {
+        <app-menu-auction [title]="t('auctionHouse')" (navigate)="goToAuction()" />
+      }
     }
 
 

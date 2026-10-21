@@ -17,6 +17,7 @@ import { NotificationComponent } from '@/components/notifications/notification/n
 import { LeaderboardComponent } from '@/components/leaderboard/leaderboard.component';
 import { CollectionsComponent } from '@/components/collections/collections.component';
 import { StatusBarComponent } from '@/components/status-bar/status-bar.component';
+import { MenuAuctionComponent } from '@/components/menu-auction/menu-auction.component';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -49,6 +50,7 @@ import { environment } from '@/../environments/environment';
     LeaderboardComponent,
     CollectionsComponent,
     StatusBarComponent,
+    MenuAuctionComponent,
     FormatCashPipe,
 
     WalletAddressDirective

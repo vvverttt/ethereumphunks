@@ -29,7 +29,7 @@
     <div class="indexer">
       <div class="block">
         <div class="label">{{ t('currentBlock') }}</div>
-        <div class="value">{{ blocks[0] || 'waiting..' }}</div>
+        <div class="value">{{ blocks[0] ? (blocks[0] | number) : 'waiting..' }}</div>
       </div>
 
       @if (isOwner()) {
@@ -38,7 +38,7 @@
           [class]="getIndexerClass(blocks[0] - blocks[1], blocks[1])">
 
           <div class="label">{{ t('indexer') }}</div>
-          <div class="value">{{ blocks[1] || 'waiting..' }}</div>
+          <div class="value">{{ blocks[1] ? (blocks[1] | number) : 'waiting..' }}</div>
         </div>
       }
     </div>

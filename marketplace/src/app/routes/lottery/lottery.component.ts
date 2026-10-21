@@ -111,6 +111,11 @@ export class LotteryComponent implements OnInit, OnDestroy {
   mintPriceFormatted = computed(() => formatEther(this.mintPrice()));
   poolSize = signal(0);
   isActive = signal(true);
+  // Until the lottery is activated (and until its state has been read), the page is a teaser:
+  // title, date and grid, with a "coming soon" status — no price, mint controls or wins feed.
+  // Activating it from the owner panel brings the full page back.
+  private activeKnown = signal(false);
+  comingSoon = computed(() => !this.activeKnown() || !this.isActive());
   maxBatchSize = signal(8);
   maxPerWallet = signal(67);
   mintsOf = signal(0);
@@ -242,7 +247,8 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
     await this.loadContractState();
     await this.initGrid();
-    this.subscribeRecentWins();
+    // Teaser mode shows no wins and no price, so skip those reads until it is live.
+    if (!this.comingSoon()) this.subscribeRecentWins();
 
     const address = await firstValueFrom(this.address$);
     if (address) await this.loadWalletState(address);
@@ -254,7 +260,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
     setTimeout(() => this.buttonShown.set(true), 1400);
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
 
-    this.refreshQuote();
+    if (!this.comingSoon()) this.refreshQuote();
   }
 
   ngOnDestroy() {
@@ -285,6 +291,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       ]);
       this.mintPrice.set(price);
       this.isActive.set(active);
+      this.activeKnown.set(true);
       this.poolSize.set(Number(size));
       this.maxBatchSize.set(maxBatch);
       this.maxPerWallet.set(maxWallet);
@@ -296,6 +303,8 @@ export class LotteryComponent implements OnInit, OnDestroy {
   }
 
   private async loadWalletState(address: string) {
+    // Teaser mode: the owner panel is the only wallet-specific thing on the page.
+    if (this.comingSoon()) return this.loadOwnerState(address);
     try {
       const [mints, whitelisted, refund] = await Promise.all([
         this.lotterySvc.getMintsOf(address),
@@ -309,17 +318,24 @@ export class LotteryComponent implements OnInit, OnDestroy {
       // Clamp quantity to what's now allowed
       if (this.quantity() > this.effectiveMaxQty()) this.quantity.set(this.effectiveMaxQty());
 
-      // Owner check
-      const owner = await this.lotterySvc.getOwner();
-      this.isOwner.set(owner.toLowerCase() === address.toLowerCase());
-      if (this.isOwner()) {
-        this.lotterySvc.getWithdrawableSurplus().then(s => this.contractSurplus.set(s)).catch(() => {});
-      }
+      await this.loadOwnerState(address);
 
       if (this.discountsEnabled()) this.loadSurrenderNfts(address);
       this.refreshQuote();
     } catch (err) {
       console.error('Failed to load wallet state:', err);
+    }
+  }
+
+  private async loadOwnerState(address: string) {
+    try {
+      const owner = await this.lotterySvc.getOwner();
+      this.isOwner.set(owner.toLowerCase() === address.toLowerCase());
+      if (this.isOwner()) {
+        this.lotterySvc.getWithdrawableSurplus().then(s => this.contractSurplus.set(s)).catch(() => {});
+      }
+    } catch (err) {
+      console.error('Failed to load owner state:', err);
     }
   }
 
@@ -793,8 +809,18 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const hash = await this.lotterySvc.setActive(!this.isActive());
       if (hash) {
         await this.web3Svc.pollReceipt(hash);
+        const wasTeaser = this.comingSoon();
         this.isActive.set(await this.lotterySvc.isActive());
         this.ownerStatus.set('Lottery ' + (this.isActive() ? 'activated' : 'paused'));
+        // Leaving teaser mode: start what it skipped.
+        if (wasTeaser && !this.comingSoon()) {
+          this.recentWinsSub?.unsubscribe();
+          this.totalWinsCountSub?.unsubscribe();
+          this.subscribeRecentWins();
+          const address = await firstValueFrom(this.address$);
+          if (address) await this.loadWalletState(address);
+          this.refreshQuote();
+        }
       }
     } catch (err: any) {
       this.ownerStatus.set(err?.shortMessage || err?.message || 'Update failed');

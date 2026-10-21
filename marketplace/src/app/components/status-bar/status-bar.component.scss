@@ -4,8 +4,9 @@
 :host {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  // Grouped in the middle of the panel, gas then blocks, rather than pushed to its edges.
+  justify-content: center;
+  gap: 2.5rem;
   // Sits at the bottom of the menu panel, so it takes the panel's own background (the purple
   // glow on Phunklloween, the collection's colour elsewhere) instead of painting one.
   background: transparent;
