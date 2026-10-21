@@ -12,14 +12,14 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import type { AttrSection } from '@/routes/collection-attributes/collection-attributes.component';
 
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender'];
-// Bumped 15 for Phunklloween's second batch (7 items -> 14). Visitors hold these stats in
+// Bumped 16 for Phunklloween's third batch (14 items -> 23). Visitors hold these stats in
 // localStorage and the read is cache-first, so without a bump an existing visitor keeps the
 // old counts no matter what ships.
 //
 // Note this deliberately does NOT track collection-attributes' CACHE_VERSION even though both
 // read `{slug}__attr_page`: only that component writes the entry, so the mismatch means this
 // panel always recomputes from the attributes file rather than trusting a cached table.
-const CACHE_VERSION = 15;
+const CACHE_VERSION = 16;
 const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'ethsrocks': 'EthsRocks',
   'cryptophunksv67': 'QuantumPhunks',
@@ -66,7 +66,7 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
   // exactly once, which is a different question from how many 1/1 artworks there are (the
   // cryptophunksv67 note above makes the same point: 725 vs the curated 676).
   //
-  // This is the full collection, not the 14 inscribed so far, so it does not move as the
+  // This is the full collection, not the 23 inscribed so far, so it does not move as the
   // remaining pieces land.
   'phunklloween': {
     oneOfOnes: 67,

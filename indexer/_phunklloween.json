@@ -34,6 +34,38 @@
       ]
     },
     {
+      "index": 10388,
+      "name": "Black Cat",
+      "id": "0xedeec0667336f3f0bccb3e1576abb265a21a192e584ed0d09e2b290b00b09be1",
+      "sha": "3115bad04200478d110016753f605310a430447110043e32a96d3f827cc854ab",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Cat"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Black Cat"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Witch Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Buckled Collar"
+        }
+      ]
+    },
+    {
       "index": 10389,
       "name": "Coraline",
       "id": "0x795b1c2972a8c3b24a7e3a933935061c07e5b30a14f0b5f413d2144462267db6",
@@ -411,33 +443,193 @@
     },
     {
       "index": 10400,
-      "name": "Black Cat",
-      "id": "0xedeec0667336f3f0bccb3e1576abb265a21a192e584ed0d09e2b290b00b09be1",
-      "sha": "3115bad04200478d110016753f605310a430447110043e32a96d3f827cc854ab",
+      "name": "Lily Munster",
+      "id": "0x03c43da78c9d22552cecc3f8d3cc40ccdd04e2df220a026b8f59b28d8b4a552b",
+      "sha": "b70e963da28b743dce4b14e37cdaafaa5dd6bdc3901c14525a5128667af1ef74",
       "attributes": [
         {
           "trait_type": "Type",
-          "value": "Cat"
+          "value": "Vampire"
         },
         {
           "trait_type": "Character",
-          "value": "Black Cat"
+          "value": "Lily Munster"
         },
         {
-          "trait_type": "Head",
-          "value": "Black Witch Hat"
+          "trait_type": "Hair",
+          "value": "Black Hair with White Streak"
         },
         {
           "trait_type": "Eyes",
-          "value": "Gold"
+          "value": "Purple Eyeshadow"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Red Lipstick"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Gold Pendant"
+        }
+      ]
+    },
+    {
+      "index": 10401,
+      "name": "Pumpkinhead",
+      "id": "0xa807fafe854777edafd8a14e8e52a4003d929548c841c605e93bcee6057fad76",
+      "sha": "6704cd0f9d17ce95fb930f346cbc5585ed217b10af06c79b5c6697950eaab1b9",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Pumpkinhead"
         },
         {
           "trait_type": "Teeth",
           "value": "Fangs"
+        }
+      ]
+    },
+    {
+      "index": 10402,
+      "name": "Witch",
+      "id": "0x60e9e9f1e82a51783b8c88aa521aa8b7894a74f5c32188bb4ee721908debc3e2",
+      "sha": "eae347ac2810de3190fb8bb0695ac24ec7e8484db03186034b0e7a38b4a3b7ce",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Witch"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Witch"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Purple Witch Hat"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Blue Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Purple Eyeshadow"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Broom"
+        }
+      ]
+    },
+    {
+      "index": 10403,
+      "name": "Ghostface",
+      "id": "0xca0a44fd28cfbf8d30a16596e320dc262e1db4159de4cee0766c08b0585e1fbb",
+      "sha": "dd0858d03cf09207a1adaa7a0812bd4b3899879f94b63032a45e50a6bb9b0209",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Ghostface"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Hoodie"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Ghostface Mask"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Scream"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Bloody Knife"
+        }
+      ]
+    },
+    {
+      "index": 10414,
+      "name": "Scarecrow",
+      "id": "0xfe25931b5d591e8be5a018ad76f2c9a82ba27d041125d02d98566db6b880058f",
+      "sha": "18cbae309e010d1581e9db239affa3e2c331cf0c1ffcba3c0d1638a8a7036b3b",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Scarecrow"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Scarecrow"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Brown Hat"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Straw Hair"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Stitched Grin"
+        }
+      ]
+    },
+    {
+      "index": 10415,
+      "name": "Chucky",
+      "id": "0x692ab948731d41d3904a73e34947a1c573209131f50963c1de0602a8943845cf",
+      "sha": "d7b188dab022abe581788dedcd8a835b9ac0ed4371d6440abfa03e1d65f8b6f0",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Doll"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Chucky"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Orange Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Blue"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Scars"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Grin"
         },
         {
           "trait_type": "Neck",
-          "value": "Buckled Collar"
+          "value": "Striped Shirt"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Bloody Knife"
         }
       ]
     },
@@ -478,6 +670,90 @@
         {
           "trait_type": "Aura",
           "value": "Green Glow"
+        }
+      ]
+    },
+    {
+      "index": 10428,
+      "name": "Leatherface",
+      "id": "0xf3c173ae6fac3d53ac91429526da251e785beed590de9c34df08f61d0bf3fc97",
+      "sha": "9702ee4b0f226cb844b1866e6ce2a8f7a28e83773de7304d2d5f8faf15f41f8d",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Leatherface"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Skin Mask"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Crooked Teeth"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Chainsaw"
+        }
+      ]
+    },
+    {
+      "index": 10433,
+      "name": "Casper",
+      "id": "0x8a45269a47bb7c7b148f903420569479bb4746f24470974933493367021cc19c",
+      "sha": "76056672bbd0c04505b2c424e3aa520680487076e753f35d905571a949e6cfbc",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ghost"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Casper"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "White Glow"
+        }
+      ]
+    },
+    {
+      "index": 10436,
+      "name": "Jason Voorhees",
+      "id": "0x511151306d0b668ab9dfef5dcdaa0213eddcad1cc5acc1b01e4a8aaeaf171a07",
+      "sha": "30816a76d770a72dcdba6ec1624fa4506b0d7159922bdecd34803b5f0f0bf98c",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Jason Voorhees"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Hockey Mask"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Green Jacket"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Machete"
         }
       ]
     }
