@@ -12,6 +12,8 @@
 // Layout produced (matches the URLs the app builds when staticUrl is ''):
 //   <buildDir>/static/images/{sha}              — no extension, as Supabase serves it
 //   <buildDir>/data/{slug}_attributes.json
+//   <buildDir>/data/collections.json            — logo + preview pool per collection
+//   <buildDir>/static/collections/{slug}-{hash}.{ext}   — the logos, named by content
 //
 // Safe to re-run: anything already present is skipped. A cacheDir of {sha}.png
 // files (see fetch-collection-shas.mjs) avoids re-downloading; whatever is missing
@@ -20,6 +22,7 @@
 import fs from 'fs';
 import path from 'path';
 import http2 from 'http2';
+import { createHash } from 'crypto';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 
@@ -71,6 +74,61 @@ const get = (client, p) => new Promise((resolve, reject) => {
   req.setTimeout(30000, () => req.destroy(new Error('timeout')));
 });
 
+const post = (client, p, json) => new Promise((resolve, reject) => {
+  const req = client.request({ ':method': 'POST', ':path': p, 'content-type': 'application/json' });
+  const chunks = []; let status = 0;
+  req.on('response', h => { status = h[':status']; });
+  req.on('data', d => chunks.push(d));
+  req.on('end', () => resolve({ status, body: Buffer.concat(chunks) }));
+  req.on('error', reject);
+  req.setTimeout(30000, () => req.destroy(new Error('timeout')));
+  req.end(JSON.stringify(json));
+});
+
+// The part of a collection that only changes when one is onboarded — its logo and a pool of
+// preview items — so the app can stop asking Postgres for it on every page load (see
+// DataService.fetchCollections, which merges this with the small live columns). The RPC it
+// stands in for returned ~139 KB per visit, ~100 KB of it one logo stored as a data URI, and
+// sorted every item of every collection by RANDOM() to pick the previews.
+//
+// Optional by design: on any failure it writes nothing and the app falls back to the RPC.
+const PREVIEW_POOL = 40;
+const LOGO_EXT = { 'image/png': 'png', 'image/gif': 'gif', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/svg+xml': 'svg' };
+
+async function bundleCollections(client) {
+  const r = await post(client, `/rest/v1/rpc/fetch_collections_with_previews?apikey=${KEY}`, { preview_limit: PREVIEW_POOL, show_inactive: false });
+  if (r.status !== 200) throw new Error(`fetch_collections_with_previews: ${r.status}`);
+  const rows = JSON.parse(r.body.toString('utf8')).map(x => x.ethscription || x);
+  const logoDir = path.join(BUILD, 'static', 'collections');
+  fs.mkdirSync(logoDir, { recursive: true });
+
+  const collections = {};
+  for (const c of rows) {
+    let image = c.image || null;
+    let bytes = null, mime = null;
+    const dataUri = typeof image === 'string' && image.match(/^data:([^;,]+);base64,(.*)$/s);
+    if (dataUri) { mime = dataUri[1]; bytes = Buffer.from(dataUri[2], 'base64'); }
+    else if (typeof image === 'string' && image.startsWith(`${HOST}/`)) {
+      // logo in our own Storage: bundle it too, so showing it costs no Supabase egress
+      const lr = await get(client, image.slice(HOST.length)).catch(() => null);
+      if (lr?.status === 200 && lr.body.length) { bytes = lr.body; mime = image.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png'; }
+    }
+    if (bytes && LOGO_EXT[mime]) {
+      const file = `${c.slug}-${createHash('sha256').update(bytes).digest('hex').slice(0, 10)}.${LOGO_EXT[mime]}`;
+      fs.writeFileSync(path.join(logoDir, file), bytes);
+      image = `/static/collections/${file}`;
+    }
+    collections[c.slug] = {
+      image,
+      previews: (c.previews || []).map(p => ({ hashId: p.hashId, tokenId: p.tokenId, slug: c.slug, sha: p.sha })),
+    };
+  }
+  const out = { generated: new Date().toISOString(), collections };
+  fs.writeFileSync(path.join(dataDir, 'collections.json'), JSON.stringify(out));
+  const size = fs.statSync(path.join(dataDir, 'collections.json')).size;
+  console.log(`collections snapshot: ${rows.length} collections, ${(size / 1024).toFixed(1)} KB, logos in static/collections/\n`);
+}
+
 async function main() {
   const c0 = await connect();
 
@@ -116,6 +174,9 @@ async function main() {
     process.exit(1);
   }
   console.log('');
+
+  try { await bundleCollections(c0); }
+  catch (e) { console.log(`collections snapshot skipped (${e.message}) — the app will use the RPC\n`); }
 
   // Which images to bundle comes from the ethscriptions table, not from the attribute
   // files. Every call site in the app builds `staticUrl + /static/images/{sha}` from a

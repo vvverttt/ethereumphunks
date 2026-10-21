@@ -6,6 +6,11 @@
   Content-Type: image/png
   Cache-Control: public, max-age=31536000, immutable
 
+# Collection logos bundled by bundle-static-assets.mjs. The file name carries a hash of the
+# content, so a changed logo gets a new name and these can be cached for good.
+/static/collections/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /ngsw.json
   Cache-Control: no-cache, no-store, must-revalidate
 

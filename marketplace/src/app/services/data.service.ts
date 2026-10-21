@@ -1208,13 +1208,22 @@ export class DataService {
    * @param previewLimit Number of preview items per collection
    */
   fetchCollections(onlyDisabled = false): Observable<Collection[]> {
-    let params: any = {
+    // The admin's inactive list stays on the RPC: rare, and it needs every row.
+    if (onlyDisabled) return this.fetchCollectionsRpc(true);
+    return from(this.fetchCollectionsLight()).pipe(
+      catchError(() => of(null)),
+      switchMap((light) => light ? of(light) : this.fetchCollectionsRpc(false)),
+    );
+  }
+
+  private fetchCollectionsRpc(showInactive: boolean): Observable<Collection[]> {
+    const params: any = {
       preview_limit: 20,
-      show_inactive: onlyDisabled,
+      show_inactive: showInactive,
     };
 
-    // Initial fetch
-    const rpcFetch$: Observable<Collection[]> = from(
+    // No realtime channel — collections rarely change, saves DB IO
+    return from(
       supabase.rpc(
         'fetch_collections_with_previews' + this.suffix,
         params
@@ -1222,24 +1231,66 @@ export class DataService {
     ).pipe(
       map((res: any) => {
         if (!res.data) return [];
-        return res.data
-          .map((item: any) => ({
-            ...item.ethscription,
-            previews: item.ethscription?.previews || [],
-          }))
-          .sort((a: Collection, b: Collection) => a.id - b.id)
-          .filter((item: Collection) => {
-            if (environment.standalone) {
-              return item.slug === environment.defaultCollection;
-            }
-            return true;
-          });
+        return this.orderCollections(res.data.map((item: any) => ({
+          ...item.ethscription,
+          previews: item.ethscription?.previews || [],
+        })));
       }),
-      // tap((res) => console.log('fetchCollections', res)),
     );
+  }
 
-    // No realtime channel — collections rarely change, saves DB IO
-    return rpcFetch$;
+  /**
+   * Collections without asking Postgres for anything heavy. A collection's logo and its preview
+   * pool only change when it is onboarded, so the build bundles them into data/collections.json
+   * (bundle-static-assets.mjs) and a visit reads only the small live columns — active, supply,
+   * the mint flags — from the collections table, so admin toggles still apply at once.
+   *
+   * The RPC this replaces returned ~139 KB on every page load (one logo is a ~100 KB data URI)
+   * and sorted every item of every collection by RANDOM() to pick the previews. The random pick
+   * now happens here, from the bundled pool.
+   *
+   * Returns null — and the caller falls back to the RPC — when there is no bundle (dev, sepolia)
+   * or a collection went live after this build.
+   */
+  private async fetchCollectionsLight(): Promise<Collection[] | null> {
+    if (this.suffix) return null;
+    const res = await fetch(`${environment.staticUrl}/data/collections.json`);
+    if (!res.ok) return null;
+    const bundled = (await res.json())?.collections;
+    if (!bundled) return null;
+
+    const { data, error } = await supabase
+      .from('collections')
+      .select('id,slug,name,shortName,singleName,description,supply,active,mintEnabled,isMinting,hasBackgrounds')
+      .eq('active', true);
+    if (error || !data?.length) return null;
+
+    const collections: Collection[] = [];
+    for (const row of data as any[]) {
+      const b = bundled[row.slug];
+      if (!b) return null;
+      collections.push({
+        ...row,
+        image: typeof b.image === 'string' && b.image.startsWith('/') ? environment.staticUrl + b.image : b.image,
+        previews: this.pickRandom(b.previews || [], 20),
+      });
+    }
+    return this.orderCollections(collections);
+  }
+
+  private orderCollections(collections: Collection[]): Collection[] {
+    return collections
+      .sort((a, b) => a.id - b.id)
+      .filter((item) => !environment.standalone || item.slug === environment.defaultCollection);
+  }
+
+  private pickRandom<T>(pool: T[], n: number): T[] {
+    const a = pool.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a.slice(0, n);
   }
 
   /**
