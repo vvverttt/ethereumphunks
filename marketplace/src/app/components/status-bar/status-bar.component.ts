@@ -1,6 +1,8 @@
 import { Component, effect, input, OnDestroy, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AsyncPipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { Subscription, map } from 'rxjs';
+import { isAdminWallet } from '@/constants/admin-wallets';
 
 import { Store } from '@ngrx/store';
 import { GlobalState } from '@/models/global-state';
@@ -38,6 +40,13 @@ export class StatusBarComponent implements OnDestroy {
     this.store.select(appStateSelectors.selectIndexerBlock),
   ]);
 
+  // The indexer block and its live logs are for the owner wallet only. DataService polls the
+  // indexer block from Supabase only for that wallet too, so no other visitor pays for it.
+  isOwner = toSignal(
+    this.store.select(appStateSelectors.selectWalletAddress).pipe(map((address) => isAdminWallet(address))),
+    { initialValue: false },
+  );
+
   logItems = signal<LogItem[]>([]);
   loadingLogs = signal(false);
   loadingCountdown = signal<number | null>(null);
@@ -62,7 +71,7 @@ export class StatusBarComponent implements OnDestroy {
   ) {
     effect(() => {
       const visible = this.visible();
-      if (!visible && this.expanded()) {
+      if ((!visible || !this.isOwner()) && this.expanded()) {
         untracked(() => this.expanded.set(false));
       }
     });
@@ -86,6 +95,7 @@ export class StatusBarComponent implements OnDestroy {
   }
 
   expandCollapse() {
+    if (!this.isOwner()) return;
     this.expanded.update(expanded => !expanded);
   }
 

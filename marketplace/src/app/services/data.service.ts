@@ -16,7 +16,7 @@ import { AttributeItem } from '@/models/attributes';
 
 import { RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
-import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
+import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, merge, filter, share, catchError, debounceTime, distinctUntilChanged, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
 import { visibleTimer } from '@/utils/visible-interval';
 
 import { environment } from 'src/environments/environment';
@@ -53,7 +53,12 @@ export class DataService {
   ) {
 
     // Listen for blocks and set indexer block
-    this.listenForBlocks().pipe(
+    // The indexer block number only feeds the status bar, which shows it to the owner wallet
+    // alone — so only that wallet polls Supabase for it.
+    this.walletAddress$.pipe(
+      map((address) => isAdminWallet(address)),
+      distinctUntilChanged(),
+      switchMap((isOwner) => isOwner ? this.listenForBlocks() : EMPTY),
       tap((blockNumber) => {
         this.store.dispatch(appStateActions.setIndexerBlock({ indexerBlock: blockNumber }));
       }),

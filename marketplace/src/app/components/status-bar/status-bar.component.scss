@@ -123,6 +123,7 @@
   align-items: center;
 
   cursor: pointer;
+  &.static { cursor: default; }
 
   font-family: var(--secondary-font-stack);
   font-size: .8rem;

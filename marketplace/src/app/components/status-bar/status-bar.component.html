@@ -18,10 +18,12 @@
 }
 
 @if (blocks$ | async; as blocks) {
+  <!-- Indexer block + logs: owner wallet only (see isOwner). Everyone sees the chain block. -->
   <div
     class="blocks-wrapper"
     [class.active]="expanded()"
-    [title]="(blocks[0] - blocks[1]) ? (blocks[0] - blocks[1]) + ' ' + t('blocksBehind') : t('synced')"
+    [class.static]="!isOwner()"
+    [title]="!isOwner() ? '' : (blocks[0] - blocks[1]) ? (blocks[0] - blocks[1]) + ' ' + t('blocksBehind') : t('synced')"
     (click)="expandCollapse()">
 
     <div class="indexer">
@@ -30,18 +32,22 @@
         <div class="value">{{ blocks[0] || 'waiting..' }}</div>
       </div>
 
-      <div
-        class="block"
-        [class]="getIndexerClass(blocks[0] - blocks[1], blocks[1])">
+      @if (isOwner()) {
+        <div
+          class="block"
+          [class]="getIndexerClass(blocks[0] - blocks[1], blocks[1])">
 
-        <div class="label">{{ t('indexer') }}</div>
-        <div class="value">{{ blocks[1] || 'waiting..' }}</div>
-      </div>
+          <div class="label">{{ t('indexer') }}</div>
+          <div class="value">{{ blocks[1] || 'waiting..' }}</div>
+        </div>
+      }
     </div>
 
-    <button class="expand-button">
-      <ng-template [ngTemplateOutlet]="arrowIcon" />
-    </button>
+    @if (isOwner()) {
+      <button class="expand-button">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </button>
+    }
   </div>
 }
 

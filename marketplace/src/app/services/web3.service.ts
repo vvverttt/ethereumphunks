@@ -444,8 +444,21 @@ export class Web3Service {
       }, delayMs);
     };
 
+    // Set when polls were skipped, so the next real one refetches the wallet's points once.
+    let skipped = false;
+
     const pollPointsEvents = async () => {
       if (stopped || this.pointsWatcherPollInFlight) return;
+      // Only the connected wallet's own PointsAdded events do anything (pointsChanged$ refetches
+      // that wallet's points), so with no wallet — most visitors, and every crawler — or a hidden
+      // tab, skip both RPC calls. The cursor is dropped so the next real poll starts at the head.
+      const account = getAccount(this.config).address;
+      if (!account || (typeof document !== 'undefined' && document.hidden)) {
+        this.pointsLastProcessedBlock = undefined;
+        skipped = true;
+        scheduleNextPoll(60_000);
+        return;
+      }
       this.pointsWatcherPollInFlight = true;
       try {
         const latest = await this.l1PollingClient.getBlockNumber();
@@ -454,6 +467,11 @@ export class Web3Service {
         if (this.pointsLastProcessedBlock === undefined) {
           this.pointsLastProcessedBlock = latest;
           this.pointsWatcherRetryAttempt = 0;
+          // Events from the skipped stretch were never read; one authoritative refetch covers them.
+          if (skipped) {
+            skipped = false;
+            this.store.dispatch(appStateActions.fetchUserPoints({ address: account.toLowerCase() }));
+          }
           scheduleNextPoll(60_000);
           return;
         }
