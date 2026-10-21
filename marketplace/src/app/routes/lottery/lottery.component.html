@@ -41,10 +41,10 @@
             <div class="frame-border"></div>
           }
 
-          <!-- Face-down: every cell shows the Philip card until a spin flips it to the
-               piece behind. The line-up still decides what each cell is hiding. -->
+          <!-- Face-down: cells alternate QuantumPhunks #118 / #1016 until a spin flips them
+               to the piece behind. The line-up still decides what each cell is hiding. -->
           <div class="card-inner">
-            <img class="card-front" [src]="philipFallback" alt="Prize" />
+            <img class="card-front" [src]="faceFor(i)" alt="Prize" />
             <img class="card-back" [src]="item.imageUrl" alt="Prize" />
           </div>
         </div>
@@ -155,9 +155,7 @@
   <!-- Play Button -->
   <div class="action-area">
     @if (comingSoon()) {
-      <button class="play-button soon" [class.shown]="buttonShown()" disabled>
-        <span class="pulse"></span>Coming Soon
-      </button>
+      <p class="soon-tag" [class.shown]="buttonShown()">coming soon</p>
     } @else {
     <button
       class="play-button"

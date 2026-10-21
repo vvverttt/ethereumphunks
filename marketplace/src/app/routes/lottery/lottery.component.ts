@@ -57,6 +57,10 @@ function getSpinPath(count: number): number[] {
  *
  * Regenerate with marketplace-tmp-presets.mjs if the collection changes.
  */
+// Face-down art for the grid: QuantumPhunks #118 and #1016 in a checkerboard (4 each).
+const FACE_TOKEN_IDS = [118, 1016];
+const GRID_COLUMNS = 4;   // .images-grid is 4 wide at every breakpoint
+
 const GRID_LINEUPS: number[][] = [
   [79, 77, 37, 505, 308, 19, 15, 85],
   [415, 224, 575, 3661, 529, 411, 331, 372],
@@ -92,7 +96,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
   gridItems = signal<LotteryGridItem[]>(
     Array.from({ length: 8 }, (_, i) => ({
-      index: i, hashId: '', sha: '', imageUrl: '/assets/images/lottery/philip.png',
+      index: i, hashId: '', sha: '', imageUrl: '/assets/loadingphunk.png',
       flipping: false, revealed: false, rightFacing: false,
     }))
   );
@@ -169,8 +173,13 @@ export class LotteryComponent implements OnInit, OnDestroy {
   private confirmTimer: any;
 
   staticUrl = environment.staticUrl;
-  philipFallback = '/assets/images/lottery/philip.png';
-  private philipImageUrl = '';
+  /** Face-down art, checkerboarded across the cells (see FACE_TOKEN_IDS): each row starts
+   *  one along from the row above, so no column repeats the same piece. */
+  faceImages = signal<string[]>(['/assets/loadingphunk.png']);
+  faceFor(i: number): string {
+    const faces = this.faceImages();
+    return faces[(i + Math.floor(i / GRID_COLUMNS)) % faces.length];
+  }
 
   /**
    * The billboard strip across the top — the same eight pieces as the reveal grid, in
@@ -236,13 +245,14 @@ export class LotteryComponent implements OnInit, OnDestroy {
     this.updateClock();
     this.clockTimer = setInterval(() => this.updateClock(), 60_000);
 
-    // Fetch token #10298 (Philip) image for grid placeholders
+    // Face-down art for the grid: QuantumPhunks #118 and #1016, every other cell.
     try {
-      const philip = await this.lotterySvc.getEthscriptionByTokenId(10298);
-      if (philip?.sha) {
-        this.philipImageUrl = await this.spriteSvc.url(philip.sha);
-        this.philipFallback = this.philipImageUrl;
-      }
+      const rows = await this.lotterySvc.getEthscriptionsByTokenIds(FACE_TOKEN_IDS);
+      const shaOf = new Map(rows.map(r => [r.tokenId, r.sha]));
+      const faces = await Promise.all(
+        FACE_TOKEN_IDS.filter(id => shaOf.get(id)).map(id => this.spriteSvc.url(shaOf.get(id)!)),
+      );
+      if (faces.length) this.faceImages.set(faces);
     } catch {}
 
     await this.loadContractState();
@@ -345,7 +355,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
   private async initGrid() {
     const items: LotteryGridItem[] = [];
-    const fallback = this.philipImageUrl || '/assets/images/lottery/philip.png';
+    const fallback = this.faceImages()[0];
     const pad = (from: LotteryGridItem[]) => {
       while (from.length < 8) from.push({ index: from.length, hashId: '', sha: '', imageUrl: fallback, flipping: false, revealed: false, rightFacing: false });
       return from;
