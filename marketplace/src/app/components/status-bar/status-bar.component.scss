@@ -5,10 +5,30 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background-color: rgba(var(--black), 1);
+  // The page background of whichever collection is showing — dark green on the ethscription
+  // collections, dark blue-grey on QuantumPhunks — rather than a fixed near-black that matched
+  // none of them. Phunklloween takes its orange instead, below.
+  background-color: rgba(var(--background), 1);
   padding: 1rem 1.5rem;
 
   height: 4.5rem;
+}
+
+// Phunklloween: the theme's orange (its --pink is #ff8c1a), with dark text so it stays legible.
+:host-context([data-collection='phunklloween']) {
+  background-color: rgba(var(--pink), 1);
+
+  .network-gas .gas,
+  .network-gas .network,
+  .blocks-wrapper,
+  .blocks-wrapper.active {
+    color: rgba(var(--black), .9);
+  }
+
+  .blocks-wrapper .expand-button svg path,
+  .blocks-wrapper.active .expand-button svg path {
+    fill: rgba(var(--black), .9);
+  }
 }
 
 .logger {

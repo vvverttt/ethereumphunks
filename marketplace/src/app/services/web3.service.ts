@@ -435,6 +435,10 @@ export class Web3Service {
   startPointsWatcher(): void {
     if (this.pointsWatcher) return;
     let stopped = false;
+    // A real poll (eth_blockNumber + eth_getLogs) every 10 min: points only need to show up
+    // eventually, and the 500-block read window (~100 min) still covers every gap. The cheap
+    // "wallet connected and tab visible?" check below stays at a minute and makes no RPC call.
+    const POINTS_POLL_MS = 10 * 60_000;
 
     const scheduleNextPoll = (delayMs: number) => {
       if (stopped) return;
@@ -456,7 +460,7 @@ export class Web3Service {
       if (!account || (typeof document !== 'undefined' && document.hidden)) {
         this.pointsLastProcessedBlock = undefined;
         skipped = true;
-        scheduleNextPoll(60_000);
+        scheduleNextPoll(60_000);   // no RPC: just checks again whether to start
         return;
       }
       this.pointsWatcherPollInFlight = true;
@@ -472,13 +476,13 @@ export class Web3Service {
             skipped = false;
             this.store.dispatch(appStateActions.fetchUserPoints({ address: account.toLowerCase() }));
           }
-          scheduleNextPoll(60_000);
+          scheduleNextPoll(POINTS_POLL_MS);
           return;
         }
 
         if (latest <= this.pointsLastProcessedBlock) {
           this.pointsWatcherRetryAttempt = 0;
-          scheduleNextPoll(60_000);
+          scheduleNextPoll(POINTS_POLL_MS);
           return;
         }
 
@@ -510,7 +514,7 @@ export class Web3Service {
 
         this.pointsLastProcessedBlock = latest;
         this.pointsWatcherRetryAttempt = 0;
-        scheduleNextPoll(60_000);
+        scheduleNextPoll(POINTS_POLL_MS);
       } catch (error) {
         console.error('[Web3Service] Points poll error, retrying:', error);
         this.pointsWatcherRetryAttempt += 1;
