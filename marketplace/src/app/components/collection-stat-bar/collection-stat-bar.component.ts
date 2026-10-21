@@ -37,7 +37,8 @@ export class CollectionStatBarComponent {
       if (!slug) return;
       this.loaded.set(false);
 
-      const sub = this.dataSvc.fetchCollectionStatSummary(slug).subscribe({
+      // Live: re-reads after a sale (see watchCollectionStatSummary), no polling.
+      const sub = this.dataSvc.watchCollectionStatSummary(slug).subscribe({
         next: (s) => {
           this.floor.set(s.floor);
           this.listed.set(s.listed);

@@ -1407,6 +1407,25 @@ export class DataService {
     return result$;
   }
 
+  /**
+   * The stat summary, refreshed when the collection's rows change. A sale moves an item's owner,
+   * which arrives on the per-collection realtime channel the Recent Activity feed already holds,
+   * so this adds no channel and no polling — it just drops the cached summary and re-reads it.
+   * (On ERC-721 collections a listing doesn't move the item, so Floor/Listed catch up on the next
+   * load or after CACHE_TTL rather than live.)
+   */
+  watchCollectionStatSummary(slug: string): Observable<{
+    floor: number | null; listed: number; sales: number; volume: number; supply: number;
+  }> {
+    return merge(
+      this.fetchCollectionStatSummary(slug),
+      this.watchEthscriptionsBySlug(slug).pipe(
+        tap(() => this.statSummaryCache.delete(slug)),
+        switchMap(() => this.fetchCollectionStatSummary(slug)),
+      ),
+    );
+  }
+
   fetchStats(slug: string, days: number = 1000): Observable<any> {
     const endDate = new Date();
     const startDate = new Date();
