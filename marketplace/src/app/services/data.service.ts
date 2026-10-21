@@ -16,7 +16,8 @@ import { AttributeItem } from '@/models/attributes';
 
 import { RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
-import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, timer, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
+import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, merge, filter, share, catchError, debounceTime, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
+import { visibleTimer } from '@/utils/visible-interval';
 
 import { environment } from 'src/environments/environment';
 import { isErc721c } from '@/constants/erc721c';
@@ -141,8 +142,9 @@ export class DataService {
     // Initial fetch
     const initial$ = fetchBlock();
 
-    // Poll every 60s (no realtime channel needed — saves DB IO)
-    const polling$ = timer(60_000, 60_000).pipe(
+    // Poll every 60s (no realtime channel needed — saves DB IO), and not at all while the tab
+    // is hidden: it refreshes the moment the visitor comes back.
+    const polling$ = visibleTimer(60_000).pipe(
       switchMap(() => fetchBlock()),
       filter((block) => block > 0),
     );

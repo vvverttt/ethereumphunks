@@ -10,6 +10,7 @@ import { AuctionService, AuctionData, AuctionBidEvent } from '@/services/auction
 import { Web3Service } from '@/services/web3.service';
 import { SpriteService } from '@/services/sprite.service';
 import { TimerComponent } from '@/components/auction/timer/timer.component';
+import { visibleInterval } from '@/utils/visible-interval';
 
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -70,7 +71,7 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
   /** True once a read has fully succeeded; keeps a failed refresh from blanking the bar. */
   private loaded = signal<boolean>(false);
 
-  private poll: any;
+  private stopPoll?: () => void;
 
   /** The strip is for THIS collection's live item only. */
   visible = computed<boolean>(() => {
@@ -106,12 +107,13 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     await this.load();
     // The auction page owns the heavy refresh; here a slow poll is enough to keep the
-    // price honest without adding RPC load to every collection-page visit.
-    this.poll = setInterval(() => this.load(), 30_000);
+    // price honest without adding RPC load to every collection-page visit. Paused while the
+    // tab is hidden — each tick is three Supabase reads plus RPC — and refreshed on return.
+    this.stopPoll = visibleInterval(() => this.load(), 30_000);
   }
 
   ngOnDestroy() {
-    clearInterval(this.poll);
+    this.stopPoll?.();
   }
 
   /**
