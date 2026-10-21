@@ -14,7 +14,6 @@ import { CommentWithReplies } from '@/models/comment';
 import { Collection } from '@/models/data.state';
 import { AttributeItem } from '@/models/attributes';
 
-import { RealtimePostgresUpdatePayload, RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 
 import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, merge, filter, share, catchError, debounceTime, distinctUntilChanged, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
 import { visibleTimer } from '@/utils/visible-interval';
@@ -1656,49 +1655,6 @@ export class DataService {
 
     // Start fetching from the root topic
     return await fetchReplies(rootTopic.toLowerCase());
-  }
-
-  /**
-   * Fetches comment changes for a given topic
-   * @param topics Array of topics to fetch changes for
-   */
-  getCommentChanges(topics: string[]): Observable<void> {
-    // console.log('getCommentChanges', topics);
-    const table = 'comments' + this.suffix;
-
-    const isInserted = (payload: RealtimePostgresInsertPayload<{
-      [key: string]: any;
-    }>, topics: string[]) => {
-      const topic = payload.new.topic || payload.new.id;
-      return topics.includes(topic);
-    };
-
-    const isUpdated = (payload: RealtimePostgresUpdatePayload<{
-      [key: string]: any;
-    }>, topics: string[]) => {
-      const topic = payload.new.topic || payload.new.id;
-      return topics.includes(topic);
-    };
-
-    return new Observable(subscriber => {
-      const subscription = supabase
-        .channel('comments')
-        .on('postgres_changes',
-          { event: 'INSERT', schema: 'public', table },
-          (payload) => {
-            if (isInserted(payload, topics)) subscriber.next();
-          }
-        )
-        .on('postgres_changes',
-          { event: 'UPDATE', schema: 'public', table },
-          (payload) => {
-            if (isUpdated(payload, topics)) subscriber.next();
-          }
-        )
-        .subscribe();
-
-      return () => subscription.unsubscribe();
-    });
   }
 
   /**

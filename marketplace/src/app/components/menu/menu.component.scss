@@ -55,6 +55,16 @@
   }
 }
 
+// Gas + blocks, pinned to the bottom of the panel over every section.
+.menu-status {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 1.5rem;
+}
+
 section {
   position: absolute;
   top: 0;
@@ -66,6 +76,8 @@ section {
 
   padding: 0 3rem;
   padding-top: calc(var(--header-height) + 1rem);
+  // room for .menu-status, so the last items can scroll clear of it
+  padding-bottom: 6rem;
 
   overflow: scroll;
   scrollbar-width: none;

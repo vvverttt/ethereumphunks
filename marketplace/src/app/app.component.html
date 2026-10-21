@@ -40,12 +40,7 @@
   (selected)="web3Svc.connectWithConnector($event)"
   (closed)="web3Svc.connectDialogOpen.set(false)" />
 
-<div
-  class="status-wrapper"
-  [class.visible]="statusBarVisible()">
-
-  <app-status-bar [visible]="statusBarVisible()" />
-</div>
+<!-- The status bar (gas, blocks) lives at the bottom of the menu panel — see app-menu. -->
 
 <!-- Chat disabled for now -->
 <!-- @if ((chatActive$ | async)) {

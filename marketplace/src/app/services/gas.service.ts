@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, switchMap, catchError, of, startWith } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, catchError, of, startWith, filter, tap, ignoreElements, merge, share } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { visibleTimer } from '@/utils/visible-interval';
 
@@ -36,21 +36,22 @@ export class GasService {
     suggestBaseFee: '...'
   });
 
-  gas$ = this.gasSubject.asObservable();
+  private lastFetch = 0;
 
-  constructor() {
-    // Every 2 minutes while the tab is visible — the number is informational (wallets price
-    // their own transactions) and the first RPC tried is a keyed Alchemy one. Hidden tabs make
-    // no calls, and coming back to the tab refreshes it straight away.
-    visibleTimer(120_000)
-      .pipe(
-        startWith(undefined),
-        switchMap(() => this.fetchGasPrice())
-      )
-      .subscribe(data => {
-        this.gasSubject.next(data);
-      });
-  }
+  // Polls only while something is showing the price — the status bar, which lives in the menu
+  // and is rendered only while the menu is open — every 2 minutes, and not in a hidden tab.
+  // The number is informational (wallets price their own transactions) and the first RPC tried
+  // is a keyed Alchemy one. Opening the menu shows the last price at once and refreshes it if
+  // it is more than 30 s old, so opening and closing it repeatedly doesn't refetch each time.
+  private poll$ = visibleTimer(120_000).pipe(
+    startWith(undefined),
+    filter(() => Date.now() - this.lastFetch > 30_000),
+    switchMap(() => this.fetchGasPrice()),
+    tap((data) => { this.lastFetch = Date.now(); this.gasSubject.next(data); }),
+    ignoreElements(),
+  );
+
+  gas$ = merge(this.gasSubject, this.poll$).pipe(share());
 
   private fetchGasPrice(): Observable<GasData> {
     return this.fetchGasPriceFromRpc(0);

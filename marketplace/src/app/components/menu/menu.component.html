@@ -248,6 +248,14 @@
   <app-collections />
 </section>
 
+<!-- Gas + blocks pinned to the bottom of the panel. Rendered only while the menu is open, so
+     the gas price is only polled while someone can see it (GasService polls per subscriber). -->
+@if (menuOpen$ | async) {
+  <div class="menu-status">
+    <app-status-bar [visible]="true" />
+  </div>
+}
+
 <ng-template #sectionHeader>
   <div class="section-header">
     <button (click)="navigateMenu('main')">

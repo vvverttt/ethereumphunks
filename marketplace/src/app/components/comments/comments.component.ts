@@ -5,15 +5,15 @@ import { FormsModule } from '@angular/forms';
 
 import { Store } from '@ngrx/store';
 
-import { from } from 'rxjs';
-import { switchMap, startWith } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, from } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { DataService } from '@/services/data.service';
 import { Web3Service } from '@/services/web3.service';
 import { UtilService } from '@/services/util.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
-import { Comment, CommentWithReplies } from '@/models/comment';
+import { Comment } from '@/models/comment';
 import { GlobalState, Notification } from '@/models/global-state';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
@@ -46,19 +46,17 @@ export class CommentsComponent {
   expanded = signal<Record<string, boolean>>({});
   replyActive = signal<string | null>(null);
 
-  comments$ = this.hashId$.pipe(
-    switchMap((hashId: string) => {
-      return from(this.dataSvc.fetchComments(hashId)).pipe(
-        switchMap((initialComments: CommentWithReplies[]) => {
-          const topics = [hashId, ...this.getAllTopicsAndIds(initialComments)];
-          return this.dataSvc.getCommentChanges(topics).pipe(
-            switchMap(() => from(this.dataSvc.fetchComments(hashId))),
-            startWith(initialComments)
-          );
-        })
-      );
-    })
+  // Comments are rare, so there is no realtime channel: that subscribed every item-page view to
+  // every comment write on the site. They load once per item, and after this visitor posts or
+  // deletes one they are re-read a few seconds later, once the indexer has written the row.
+  private refresh$ = new BehaviorSubject<void>(undefined);
+  comments$ = combineLatest([this.hashId$, this.refresh$]).pipe(
+    switchMap(([hashId]) => from(this.dataSvc.fetchComments(hashId))),
   );
+
+  private refreshAfterIndexing() {
+    for (const ms of [6_000, 20_000]) setTimeout(() => this.refresh$.next(), ms);
+  }
 
   connectedAddress$ = this.store.select(selectWalletAddress);
 
@@ -72,21 +70,6 @@ export class CommentsComponent {
 
   t(key: string): string {
     return this.preferences.t(key);
-  }
-
-  getAllTopicsAndIds(comments: CommentWithReplies[]): string[] {
-    const uniqueTopics = new Set<string>();
-
-    const addCommentTopicsAndIds = (comment: CommentWithReplies) => {
-      if (comment.topic) uniqueTopics.add(comment.topic);
-      if (comment.id) uniqueTopics.add(comment.id);
-      if (comment.replies && comment.replies.length > 0) {
-        comment.replies.forEach(reply => addCommentTopicsAndIds(reply as CommentWithReplies));
-      }
-    };
-
-    comments.forEach(comment => addCommentTopicsAndIds(comment));
-    return Array.from(uniqueTopics);
   }
 
   /**
@@ -144,6 +127,7 @@ export class CommentsComponent {
         type: 'complete',
         hash: receipt.transactionHash,
       };
+      this.refreshAfterIndexing();
 
     } catch (err) {
       console.log(err);
@@ -222,6 +206,7 @@ export class CommentsComponent {
       };
 
       this.store.dispatch(upsertNotification({ notification }));
+      this.refreshAfterIndexing();
     } catch (error) {
       notification = {
         ...notification,

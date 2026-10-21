@@ -4,26 +4,23 @@
 :host {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
-  // The page background of whichever collection is showing — dark green on the ethscription
-  // collections, dark blue-grey on QuantumPhunks, purple on Phunklloween — rather than a fixed
-  // near-black that matched none of them.
-  background-color: rgba(var(--background), 1);
+  // Sits at the bottom of the menu panel, so it takes the panel's own background (the purple
+  // glow on Phunklloween, the collection's colour elsewhere) instead of painting one.
+  background: transparent;
   padding: 1rem 1.5rem;
 
   height: 4.5rem;
 }
 
-// Phunklloween: the same shaded purple glow as its collection and item pages. The glow is fixed
-// to the viewport, so the bar shows exactly the slice of it that sits behind it.
-:host-context([data-collection='phunklloween']) {
-  @include phunklloween-glow;
-}
-
 .logger {
 
+  // Inside the menu panel (whose transform makes it the containing block): spans the panel's
+  // width, just above the bar.
   position: fixed;
   bottom: 4.5rem;
+  left: 0;
   right: 0;
   z-index: 1000;
 
@@ -61,7 +58,7 @@
   }
 
   app-logger {
-    max-width: 60rem;
+    max-width: none;
     height: 30rem;
     border: .2rem solid rgba(var(--base-color), 1);
     border-top: none;

@@ -21,8 +21,8 @@ import { setCurrentBlock, setWalletAddress } from '../actions/app-state.actions'
 import { removeNotification, setNotifications, upsertNotification } from '../actions/notification.actions';
 import { UtilService } from '@/services/util.service';
 
-/** ~5 minutes of blocks between "your item sold" checks (see onBlockNumber$). */
-const MISSED_EVENTS_EVERY_BLOCKS = 25;
+/** ~15 minutes of blocks between "your item sold" checks (see onBlockNumber$). */
+const MISSED_EVENTS_EVERY_BLOCKS = 75;
 
 
 @Injectable()
@@ -82,7 +82,7 @@ export class NotificationEffects {
   ), { dispatch: false });
 
   // "Your item sold" alerts only need to arrive eventually, so the events query runs at most once
-  // every MISSED_EVENTS_EVERY_BLOCKS (~5 min) rather than on every block tick. The stored mark only
+  // every MISSED_EVENTS_EVERY_BLOCKS (~15 min) rather than on every block tick. The stored mark only
   // advances when the query has run, so the next one covers everything since — nothing is missed.
   onBlockNumber$ = createEffect(() => this.actions$.pipe(
     ofType(setCurrentBlock),

@@ -8,12 +8,13 @@ import { visibleInterval } from '@/utils/visible-interval';
 export class PwaUpdateService {
   constructor(private swUpdate: SwUpdate) {
     if (swUpdate.isEnabled) {
-      // Check immediately on load, then every 5 minutes while the tab is visible. A new version
+      // Check immediately on load, then every 15 minutes while the tab is visible. A new version
       // reloads the tab (below), so a hidden tab that kept checking reloaded itself in the
-      // background on every deploy and re-ran all its startup queries for nobody. It now checks
-      // the moment the visitor comes back instead.
+      // background on every deploy and re-ran all its startup queries for nobody. A check that
+      // came due while hidden now runs the moment the visitor comes back (and every page load
+      // checks too).
       swUpdate.checkForUpdate();
-      visibleInterval(() => swUpdate.checkForUpdate(), 5 * 60 * 1000);
+      visibleInterval(() => swUpdate.checkForUpdate(), 15 * 60 * 1000);
 
       // Auto-activate new versions immediately
       swUpdate.versionUpdates.subscribe(event => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, merge, map, switchMap } from 'rxjs';
+import { EMPTY, Observable, from, merge, map, switchMap } from 'rxjs';
 import { formatEther, parseGwei } from 'viem';
 import { getWalletClient } from '@wagmi/core';
 
@@ -374,6 +374,22 @@ export class LotteryService {
   // Wins (written by the indexer from RandomMinted; watched via Supabase realtime)
   // =========================================================
 
+  /**
+   * Live updates on the wins lists only while the lottery is running. While it is inactive no
+   * win can be written, so a realtime channel per visitor would cost a subscription for
+   * nothing — the lists just load once. Read once a minute at most (both lists ask); a failed
+   * read keeps them live, as before.
+   */
+  private activeCheck?: { at: number; active: Promise<boolean> };
+  private liveWhileActive<T>(changes$: Observable<void>, query$: Observable<T>): Observable<T> {
+    if (!this.activeCheck || Date.now() - this.activeCheck.at > 60_000) {
+      this.activeCheck = { at: Date.now(), active: this.isActive().catch(() => true) };
+    }
+    return from(this.activeCheck.active).pipe(
+      switchMap((active) => active ? changes$.pipe(switchMap(() => query$)) : EMPTY),
+    );
+  }
+
   fetchRecentWins(): Observable<LotteryWin[]> {
     const addr = this._address.toLowerCase();
     const query$ = from(
@@ -393,7 +409,7 @@ export class LotteryService {
       return () => { supabase.removeChannel(channel); };
     });
 
-    return merge(query$, changes$.pipe(switchMap(() => query$)));
+    return merge(query$, this.liveWhileActive(changes$, query$));
   }
 
   fetchAllWins(): Observable<LotteryWin[]> {
@@ -415,7 +431,7 @@ export class LotteryService {
       return () => { supabase.removeChannel(channel); };
     });
 
-    return merge(query$, changes$.pipe(switchMap(() => query$)));
+    return merge(query$, this.liveWhileActive(changes$, query$));
   }
 
   fetchTotalWinsCount(): Observable<number> {

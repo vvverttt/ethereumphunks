@@ -16,6 +16,7 @@ import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component
 import { NotificationComponent } from '@/components/notifications/notification/notification.component';
 import { LeaderboardComponent } from '@/components/leaderboard/leaderboard.component';
 import { CollectionsComponent } from '@/components/collections/collections.component';
+import { StatusBarComponent } from '@/components/status-bar/status-bar.component';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -47,6 +48,7 @@ import { environment } from '@/../environments/environment';
     NotificationComponent,
     LeaderboardComponent,
     CollectionsComponent,
+    StatusBarComponent,
     FormatCashPipe,
 
     WalletAddressDirective
@@ -71,6 +73,9 @@ export class MenuComponent {
       !active && this.store.dispatch(appStateActions.setActiveMenuNav({ activeMenuNav: 'main' }));
     }),
   );
+  // Plain open/closed for the template — menuActive$ above has side effects (leaderboard fetch)
+  // that a second subscriber would repeat.
+  menuOpen$ = this.store.select(appStateSelectors.selectMenuActive);
 
   activeMenuNav$ = this.store.select(appStateSelectors.selectActiveMenuNav);
   activeCollection$ = this.store.select(dataStateSelectors.selectActiveCollection);

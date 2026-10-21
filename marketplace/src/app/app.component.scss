@@ -92,23 +92,6 @@ main {
   pointer-events: none;
 }
 
-.status-wrapper {
-  position: fixed;
-  z-index: 993;
-  bottom: 0;
-  right: 0;
-
-  @include trans($duration: .2s);
-
-  @media (max-width: $mobile) {
-    bottom: -100%;
-
-    &.visible {
-      bottom: 0;
-    }
-  }
-}
-
 .chat-panel {
   position: fixed;
   z-index: 994;

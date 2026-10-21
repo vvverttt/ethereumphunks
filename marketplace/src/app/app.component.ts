@@ -11,7 +11,6 @@ import { HeaderComponent } from '@/components/header/header.component';
 import { FooterComponent } from '@/components/footer/footer.component';
 import { MenuComponent } from '@/components/menu/menu.component';
 import { NotificationsComponent } from '@/components/notifications/notifications.component';
-import { StatusBarComponent } from '@/components/status-bar/status-bar.component';
 import { ModalComponent } from '@/components/modal/modal.component';
 import { ChatComponent } from '@/components/chat/chat.component';
 import { ConnectDialogComponent } from '@/components/connect-dialog/connect-dialog.component';
@@ -23,12 +22,11 @@ import { PwaUpdateService } from '@/services/pwa-update.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { selectChatActive } from '@/state/selectors/chat.selectors';
-import { selectIsMobile } from '@/state/selectors/app-state.selectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as dataStateActions from '@/state/actions/data-state.actions';
 
-import { asyncScheduler, fromEvent, debounceTime, distinctUntilChanged, filter, map, observeOn, scan, startWith, tap, withLatestFrom } from 'rxjs';
+import { asyncScheduler, fromEvent, debounceTime, distinctUntilChanged, filter, map, observeOn, scan, startWith, tap } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 
@@ -43,7 +41,6 @@ import { environment } from 'src/environments/environment';
     HeaderComponent,
     FooterComponent,
     NotificationsComponent,
-    StatusBarComponent,
     ModalComponent,
     ChatComponent,
     ConnectDialogComponent,
@@ -64,8 +61,6 @@ export class AppComponent implements OnInit {
 
   chatActive$ = this.store.select(selectChatActive).pipe(map(({ active }) => active));
 
-  statusBarVisible = signal(true);
-
   // Intro notice shown on entering the auction house.
   showIntro = signal(false);
 
@@ -83,8 +78,6 @@ export class AppComponent implements OnInit {
     this.store.dispatch(appStateActions.initGlobalConfig());
     this.store.dispatch(dataStateActions.fetchCollections());
     this.store.dispatch(appStateActions.fetchActiveMultiplier());
-
-    this.setStatusBarVisible();
   }
 
   // Pages (by first URL segment) that show an intro notice on entry. Only the
@@ -139,17 +132,7 @@ export class AppComponent implements OnInit {
 
     fromEvent(window, 'resize').pipe(
       debounceTime(100),
-      tap(() => {
-        this.setIsMobile();
-        this.setStatusBarVisible();
-      })
-    ).subscribe();
-
-    // scroll event
-    fromEvent(window, 'scroll').pipe(
-      withLatestFrom(this.store.select(selectIsMobile)),
-      filter(([_, isMobile]) => !!isMobile),
-      tap(([$event, isMobile]) => this.setStatusBarVisible())
+      tap(() => this.setIsMobile())
     ).subscribe();
 
     this.setIsMobile();
@@ -180,14 +163,5 @@ export class AppComponent implements OnInit {
 
   setIsMobile(): void {
     this.store.dispatch(appStateActions.setIsMobile({ isMobile: window.innerWidth < 801 }))
-  }
-
-  setStatusBarVisible() {
-    if (window.innerWidth > 800) {
-      this.statusBarVisible.set(true);
-    } else {
-      const scrollY = window.scrollY;
-      this.statusBarVisible.set(scrollY > 100);
-    }
   }
 }
