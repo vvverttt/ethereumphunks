@@ -205,8 +205,19 @@ export class DataService {
   }
 
   fetchAttributes(slug: string): Observable<AttributeItem> {
-    return this.http.get<AttributeItem>(`${environment.staticUrl}/data/${this.attributesFileName(slug)}`).pipe(
-      switchMap((res: AttributeItem) => from(this.cacheAttributes(slug, res))),
+    // fetch() with cache: 'no-cache', and the ETag read off this same response. The file is
+    // served with max-age=3600, so a plain GET could come straight from the browser's HTTP
+    // cache — the OLD file — right after attributesChangedRemotely() saw the NEW ETag. That
+    // stored old traits under the new tag, and every later check then matched: the visitor
+    // was stuck on stale traits until the next app version. Body and tag from one response
+    // cannot disagree, and no-cache makes the browser revalidate instead of trusting its copy.
+    const url = `${environment.staticUrl}/data/${this.attributesFileName(slug)}`;
+    return from(fetch(url, { cache: 'no-cache' }).then(async (res) => {
+      if (!res.ok) throw { status: res.status };
+      const tag = res.headers.get('etag') || res.headers.get('content-length');
+      return { body: await res.json() as AttributeItem, tag };
+    })).pipe(
+      switchMap(({ body, tag }) => from(this.cacheAttributes(slug, body, tag))),
       tap((res: AttributeItem) => this.createFilters(slug, res)),
       // Traits are decoration; the collection must still render without them.
       // Without this, a missing or renamed attributes file errors the observable
@@ -225,11 +236,11 @@ export class DataService {
    * @param slug Collection slug
    * @param attributes Attributes
    */
-  private async cacheAttributes(slug: string, attributes: AttributeItem) {
+  private async cacheAttributes(slug: string, attributes: AttributeItem, tag: string | null) {
     const stored = await this.storageSvc.setItem<AttributeItem>(`${slug}__attributes`, attributes);
-    // remember what the file looked like when we cached it, so we can tell later
+    // Remember what the file looked like when we cached it, so we can tell later. The tag
+    // comes from the response the body came from, never from a separate request.
     try {
-      const tag = await this.attributesEtag(slug);
       if (tag) await this.storageSvc.setItem<string>(`${slug}__attributes_etag`, tag);
     } catch { /* never let cache bookkeeping break the data path */ }
     return stored;
@@ -238,7 +249,8 @@ export class DataService {
   /** ETag (falling back to length) of the remote attributes file, or null if unreachable. */
   private async attributesEtag(slug: string): Promise<string | null> {
     try {
-      const res = await fetch(`${environment.staticUrl}/data/${this.attributesFileName(slug)}`, { method: 'HEAD' });
+      // no-cache: revalidate with the server rather than answer from the browser's own copy.
+      const res = await fetch(`${environment.staticUrl}/data/${this.attributesFileName(slug)}`, { method: 'HEAD', cache: 'no-cache' });
       if (!res.ok) return null;
       return res.headers.get('etag') || res.headers.get('content-length');
     } catch { return null; }

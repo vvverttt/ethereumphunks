@@ -15,11 +15,12 @@ import { environment } from 'src/environments/environment';
 const EXAMPLES = 10;
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender', 'sex'];
 const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
-// Bumped 29 for Phunklloween's third batch, which took it from 14 items to 23 (no new trait
-// types, but new values and new counts throughout). This cache is cache-first in
+// Bumped 30 to rebuild tables that 6.8.6 computed from a stale attributes file: a browser
+// could store the old file under the new ETag (fixed in data.service fetchAttributes), and
+// this table was then built from it and cached. 29 was Phunklloween's third batch (14 -> 23). This cache is cache-first in
 // localStorage and does NOT consult the attributes file's ETag, so a returning visitor keeps
 // the old trait table until the version moves — a deploy alone is not enough.
-const CACHE_VERSION = 29;
+const CACHE_VERSION = 30;
 
 /** Pseudo-tab that stacks every section on one page instead of showing one at a time. */
 const ALL_TAB = 'All';

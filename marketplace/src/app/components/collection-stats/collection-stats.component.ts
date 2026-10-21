@@ -12,14 +12,15 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import type { AttrSection } from '@/routes/collection-attributes/collection-attributes.component';
 
 const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender'];
-// Bumped 16 for Phunklloween's third batch (14 items -> 23). Visitors hold these stats in
-// localStorage and the read is cache-first, so without a bump an existing visitor keeps the
-// old counts no matter what ships.
+// Bumped 17 to rebuild stats computed from a stale attributes file (see 6.8.7 in
+// data.service fetchAttributes); 16 was Phunklloween's third batch (14 items -> 23). Visitors
+// hold these stats in localStorage and the read is cache-first, so without a bump an existing
+// visitor keeps the old counts no matter what ships.
 //
 // Note this deliberately does NOT track collection-attributes' CACHE_VERSION even though both
 // read `{slug}__attr_page`: only that component writes the entry, so the mismatch means this
 // panel always recomputes from the attributes file rather than trusting a cached table.
-const CACHE_VERSION = 16;
+const CACHE_VERSION = 17;
 const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'ethsrocks': 'EthsRocks',
   'cryptophunksv67': 'QuantumPhunks',
