@@ -6,7 +6,7 @@ import { AuctionService, AuctionData } from '@/services/auction.service';
 import { SpriteService } from '@/services/sprite.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { TimerComponent } from '@/components/auction/timer/timer.component';
-import { visibleInterval } from '@/utils/visible-interval';
+import { auctionPoll } from '@/utils/visible-interval';
 
 /**
  * The live auction as a card in the menu panel: the item, its bid count, the standing bid and
@@ -65,9 +65,10 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
     await this.load();
     // On the auction page itself the page shows the auction live, so the card keeps its first
     // read (its countdown still ticks) instead of polling alongside it.
-    this.stopPoll = visibleInterval(() => {
+    // Every 60 s, tightening to 10 s in the last 5 minutes.
+    this.stopPoll = auctionPoll(() => {
       if (!this.router.url.startsWith('/auction')) this.load();
-    }, 30_000);
+    }, () => this.endTimeMs());
   }
 
   ngOnDestroy() {

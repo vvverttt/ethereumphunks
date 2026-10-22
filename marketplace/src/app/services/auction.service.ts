@@ -72,7 +72,10 @@ export interface LiveAuctionSnapshot {
 // both open does not double the RPC and Supabase calls. The auction page does not use it: it
 // refreshes on live bid events and must always read fresh.
 const SNAPSHOT_TTL_MS = 25_000;
-const snapshots = new Map<string, { at: number; value: Promise<LiveAuctionSnapshot> }>();
+// In an auction's last 5 minutes the pollers refresh every 10 s, so the shared read must not
+// outlive that.
+const SNAPSHOT_TTL_ENDING_MS = 5_000;
+const snapshots = new Map<string, { at: number; value: Promise<LiveAuctionSnapshot>; endsAt?: number }>();
 
 @Injectable()
 export class AuctionService {
@@ -102,13 +105,13 @@ export class AuctionService {
     reservePrice: bigint;
     minBidIncrement: number;
   }> {
-    // Try cache first (10s TTL)
+    // Try cache first (8s TTL, under the 10s refresh of an auction's last minutes)
     try {
       const cacheKey = `auction_initial_${this.address}`;
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const { data, ts } = JSON.parse(cached);
-        if (Date.now() - ts < 10000) {
+        if (Date.now() - ts < 8000) {
           // Revive bigints from string
           return {
             auction: { ...data.auction, amount: BigInt(data.auction.amount) },
@@ -202,7 +205,8 @@ export class AuctionService {
   getLiveSnapshot(): Promise<LiveAuctionSnapshot> {
     const key = this.address;
     const hit = snapshots.get(key);
-    if (hit && Date.now() - hit.at < SNAPSHOT_TTL_MS) return hit.value;
+    const endingSoon = !!hit?.endsAt && hit.endsAt - Date.now() < 5 * 60_000;
+    if (hit && Date.now() - hit.at < (endingSoon ? SNAPSHOT_TTL_ENDING_MS : SNAPSHOT_TTL_MS)) return hit.value;
 
     const value = (async (): Promise<LiveAuctionSnapshot> => {
       const { auction, reservePrice, minBidIncrement } = await this.getInitialData();
@@ -213,8 +217,9 @@ export class AuctionService {
       ]);
       return { auction, reservePrice, minBidIncrement, eth, itemReserve, bids };
     })();
-    snapshots.set(key, { at: Date.now(), value });
-    value.catch(() => snapshots.delete(key));
+    const entry: { at: number; value: Promise<LiveAuctionSnapshot>; endsAt?: number } = { at: Date.now(), value };
+    snapshots.set(key, entry);
+    value.then((s) => { entry.endsAt = Number(s.auction.endTime) * 1000; }, () => snapshots.delete(key));
     return value;
   }
 

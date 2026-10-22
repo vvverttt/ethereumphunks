@@ -36,6 +36,20 @@ export function visibleInterval(fn: () => void, periodMs: number): () => void {
   };
 }
 
+/**
+ * Auction refresh cadence: every 60 s normally, every 10 s in an auction's last 5 minutes, when
+ * late bids keep extending the end and a stale price or "ended" clock would mislead. Ticks every
+ * 10 s and runs `load` only when the current cadence is due. Paused while the tab is hidden.
+ */
+export function auctionPoll(load: () => void, endTimeMs: () => number): () => void {
+  let last = Date.now();
+  return visibleInterval(() => {
+    const left = endTimeMs() - Date.now();
+    const period = left > 0 && left < 5 * 60_000 ? 10_000 : 60_000;
+    if (Date.now() - last >= period - 500) { last = Date.now(); load(); }
+  }, 10_000);
+}
+
 /** visibleInterval as an Observable: emits on each tick the visitor can see; unsubscribe to stop. */
 export function visibleTimer(periodMs: number): Observable<void> {
   return new Observable<void>((subscriber) => visibleInterval(() => subscriber.next(), periodMs));
