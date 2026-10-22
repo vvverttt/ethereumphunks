@@ -889,7 +889,6 @@ export class AdminComponent implements OnInit {
   async checkHealth() {
     const rpcs = [
       { name: 'Ankr A',      url: 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8' },
-      { name: 'Ankr B',      url: 'https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f' },
       { name: 'Alchemy A (backup)', url: (environment as any).frontendBackupRpcUrl || '' },
       { name: 'Alchemy B (receipt)', url: (environment as any).receiptRpcUrl || environment.rpcHttpProvider },
       { name: 'Primary RPC', url: environment.rpcHttpProvider },

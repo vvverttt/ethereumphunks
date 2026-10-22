@@ -33,6 +33,12 @@ import { magma } from '@/constants/magmaChain';
 import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPublicClient, decodeEventLog, decodeFunctionData, encodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
+// The ONE Ankr endpoint. Ankr's terms (effective 2026-11-15) allow a single Freemium
+// account per organisation, so the second and third keys were retired — two of them were
+// here in the bundle, the third only in the indexer's Render env. Declared once so a
+// future key rotation is a one-line change rather than a hunt through four files.
+const ANKR = 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8';
+
 const marketAddress = environment.marketAddress;
 
 // Minimal ERC-721 approval ABI (QuantumPhunks market is approval-based, not escrow).
@@ -109,22 +115,24 @@ export class Web3Service {
         ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
         http('https://eth.llamarpc.com'),
         http('https://1rpc.io/eth'),
-        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
-        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+        http(ANKR),
         http(relayRpcUrl),
       ], { rank: false }),
     });
 
     this.l1PollingClient = createPublicClient({
       chain: this.chains[0],
+      // Ankr sits LAST here on purpose. This client polls continuously, so it was by far
+      // the biggest consumer of the Ankr quota back when two Ankr keys led the list.
+      // Ankr's one-free-account-per-org rule leaves a single key carrying everything, so
+      // the continuous path goes to Alchemy first and Ankr only catches a failure.
       transport: fallback([
-        http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
         ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-        http('https://eth.llamarpc.com'),
-        http('https://1rpc.io/eth'),
         http(receiptRpcUrl),
         http(environment.rpcHttpProvider),
+        http('https://eth.llamarpc.com'),
+        http('https://1rpc.io/eth'),
+        http(ANKR),
       ], { rank: false, retryCount: 0 }),
     });
 
@@ -147,7 +155,7 @@ export class Web3Service {
         http('https://1rpc.io/eth'),
         http(environment.rpcHttpProvider),
         http(receiptRpcUrl),
-        http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
+        http(ANKR),
         http(relayRpcUrl),
       ], { rank: false, retryCount: 0 }),
     });
@@ -166,8 +174,7 @@ export class Web3Service {
           ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
           http('https://eth.llamarpc.com'),
           http('https://1rpc.io/eth'),
-          http('https://rpc.ankr.com/eth/229b890a1dea15c5330378688e793eb0c44185c264c00144c928240d7cb0ec3f'),
-          http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
+          http(ANKR),
           http(relayRpcUrl),
         ]),
         6969696969: http(environment.magmaRpcHttpProvider)
