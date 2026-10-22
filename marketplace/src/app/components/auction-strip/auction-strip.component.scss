@@ -43,7 +43,6 @@
     border-bottom-width: 3px;
   }
 
-  .item img { background-color: #5c16d8; }
 }
 
 // ── the item ──────────────────────────────────────────────────────────────────
@@ -60,7 +59,7 @@
     width: 3.6rem;
     height: 3.6rem;
     image-rendering: pixelated;
-    background-color: #67cdff;
+    background-color: #c3ff00;   // auctions are ethscriptions: their lime, on every theme
   }
 
   .id {
