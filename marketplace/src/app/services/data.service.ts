@@ -1513,13 +1513,23 @@ export class DataService {
   async fetchPoolHashIds(slug: string): Promise<Set<string>> {
     const auction = ((environment as any).auctionAddress || '').toLowerCase();
     if (!slug || !auction) return new Set<string>();
-    const { data } = await supabase
-      .from('ethscriptions' + this.suffix)
-      .select('hashId')
-      .eq('slug', slug)
-      .eq('owner', auction);
-    return new Set<string>((data || []).map((r: any) => (r.hashId || '').toLowerCase()));
+    // One read per collection per minute, shared by every grid on the page (an item page,
+    // its grids and the menu used to each ask again).
+    const hit = this.poolHashIdCache.get(slug);
+    if (hit && Date.now() - hit.at < 60_000) return hit.ids;
+    const ids = (async () => {
+      const { data } = await supabase
+        .from('ethscriptions' + this.suffix)
+        .select('hashId')
+        .eq('slug', slug)
+        .eq('owner', auction);
+      return new Set<string>((data || []).map((r: any) => (r.hashId || '').toLowerCase()));
+    })();
+    this.poolHashIdCache.set(slug, { at: Date.now(), ids });
+    ids.catch(() => this.poolHashIdCache.delete(slug));
+    return ids;
   }
+  private poolHashIdCache = new Map<string, { at: number; ids: Promise<Set<string>> }>();
 
   /**
    * Fetches mint progress for a collection

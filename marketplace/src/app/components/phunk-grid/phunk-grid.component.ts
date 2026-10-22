@@ -159,7 +159,8 @@ export class PhunkGridComponent implements OnChanges {
    *  would pay, then (re)build the synthetic listing map. No-op for collections with no pool items. */
   private async refreshPoolListings(): Promise<void> {
     const slug = (this.phunkData || []).find((p) => p.slug)?.slug || '';
-    if (!this.auctionAddress || !slug) {
+    // Preview rows (the menu's collection list) never show prices, so they skip the pool read.
+    if (!this.auctionAddress || !slug || this.viewType === 'preview') {
       this.poolPriceWei = null;
       if (this.poolListings.size) this.poolListings = new Map();
       return;
