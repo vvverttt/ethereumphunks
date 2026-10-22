@@ -122,17 +122,26 @@ export class Web3Service {
 
     this.l1PollingClient = createPublicClient({
       chain: this.chains[0],
-      // Ankr sits LAST here on purpose. This client polls continuously, so it was by far
-      // the biggest consumer of the Ankr quota back when two Ankr keys led the list.
-      // Ankr's one-free-account-per-org rule leaves a single key carrying everything, so
-      // the continuous path goes to Alchemy first and Ankr only catches a failure.
+      // Ankr FIRST here, deliberately, and it is worth writing down why because the
+      // obvious reasoning points the other way.
+      //
+      // 6.8.26 briefly demoted Ankr to last, to protect the single remaining Ankr key.
+      // That was wrong: the two providers are limited on different axes. Alchemy's Free
+      // ceiling is THROUGHPUT — 500 CU/s — and we are already hitting it (764 CU/s peak,
+      // 429s, 2026-10-21), while sitting at only 6.2M of 30M monthly CUs. Ankr's limit is
+      // one account, not a rate.
+      //
+      // So steady, cheap, predictable traffic — this client's block polling — belongs on
+      // Ankr, which keeps Alchemy's per-second headroom free for the bursty eth_call
+      // reads that actually threaten the cap. Moving polling onto Alchemy added baseline
+      // to the one meter with no room left.
       transport: fallback([
+        http(ANKR),
         ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-        http(receiptRpcUrl),
-        http(environment.rpcHttpProvider),
         http('https://eth.llamarpc.com'),
         http('https://1rpc.io/eth'),
-        http(ANKR),
+        http(receiptRpcUrl),
+        http(environment.rpcHttpProvider),
       ], { rank: false, retryCount: 0 }),
     });
 
