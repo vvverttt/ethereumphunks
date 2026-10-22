@@ -51,3 +51,13 @@ if (!fs.existsSync(safety)) {
 
 fs.copyFileSync(safety, worker);
 console.log('service worker: ngsw-worker.js replaced with the safety worker (unregisters and clears ngsw caches)');
+
+// Pinata refuses 0-byte files, and the compiler can emit an empty chunk that other chunks
+// still import, so it can't simply be dropped. A comment makes it non-empty and changes nothing.
+for (const name of fs.readdirSync(BUILD)) {
+  const file = path.join(BUILD, name);
+  if (name.endsWith('.js') && fs.statSync(file).size === 0) {
+    fs.writeFileSync(file, '/* empty module */\n');
+    console.log(`filled empty ${name} so it can be pinned`);
+  }
+}
