@@ -10,6 +10,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
+import { tokenNumber } from '@/pipes/token-number.pipe';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
 import { GlobalState } from '@/models/global-state';
 import { Event } from '@/models/db';
@@ -118,9 +119,7 @@ export class CollectionSalesComponent {
   }
 
   displayId(e: Event): string {
-    const id = e.tokenId ?? 0;
-    const abs = id < 0 ? -id : id;
-    return e.slug === 'ethsrocks' ? `-${abs}` : `${abs}`;
+    return tokenNumber(e.tokenId, e.slug);
   }
 
   // fetch_events does not return txHash, so it cannot be part of the key — the

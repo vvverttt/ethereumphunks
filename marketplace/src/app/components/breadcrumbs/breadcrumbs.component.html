@@ -9,7 +9,7 @@
               {{ phunk.collection?.name }}
             </button>
             <span class="divider">/</span>
-            <span class="number">{{ phunk.slug === 'ethsrocks' ? '-' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) : (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId) }}</span>
+            <span class="number">{{ phunk.tokenId | tokenNumber: phunk.slug }}</span>
           </div>
 
           <div class="save-pfp">

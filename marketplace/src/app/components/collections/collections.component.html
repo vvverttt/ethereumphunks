@@ -2,7 +2,7 @@
 
 <div class="collections">
   @for (collection of (collections$ | async); track $index) {
-    <div class="collection">
+    <div class="collection" [attr.data-row]="collection.slug">
       <a
         class="header"
         [routerLink]="['/', 'curated', collection.slug]">
@@ -11,7 +11,7 @@
           <div class="collection-image">
             <img [src]="collection.image" alt="{{ collection.name }}" />
           </div>
-          <div class="title">{{ collection.name }}</div>
+          <div class="title" [title]="collection.name">{{ collection.label }}</div>
         </div>
 
         <div class="arrow">

@@ -81,12 +81,14 @@
 </div>
 
 <ng-template #logo>
-  @if ((activeCollection$ | async)?.slug === 'cryptophunksv67') {
+  <!-- From the theme on screen, so the logo always matches the colours around it. -->
+  @if (themeSvc.themeSlug() === 'cryptophunksv67') {
     <!-- Pre-coloured (white wordmark, pink smiley) — no CSS filter, so the smiley keeps its own colour. -->
     <img src="assets/quantumphunks-logo.svg" alt="QuantumPhunks" width="250" height="38" />
-  } @else if ((activeCollection$ | async)?.slug === 'phunklloween') {
-    <!-- Halloween: the pink wordmark recoloured to the collection's orange (#ff8c1a). -->
-    <img src="assets/etherphunks-logo-orange.svg" alt="EtherPhunks" width="250" height="38" />
+  } @else if (themedLogos.has(themeSvc.themeSlug())) {
+    <!-- The QuantumPhunks logo in the collection's two colours: wordmark in its page colour,
+         smiley in its accent (see ThemeService.collectionOverrides). -->
+    <img [src]="'assets/etherphunks-logo-' + themeSvc.themeSlug() + '.svg'" alt="EtherPhunks" width="250" height="38" />
   } @else if ((theme$ | async) === 'dark') {
     <img src="assets/etherphunks-logo-pink.svg" alt="EtherPhunks" width="250" height="38" />
   } @else {

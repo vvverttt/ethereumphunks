@@ -15,6 +15,7 @@ import { Web3Service } from '@/services/web3.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
+import { TokenNumberPipe } from '@/pipes/token-number.pipe';
 import { CollectionStatBarComponent } from '@/components/collection-stat-bar/collection-stat-bar.component';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 
@@ -47,6 +48,7 @@ import { firstValueFrom, map, tap } from 'rxjs';
 
     WalletAddressDirective,
     WeiToEthPipe,
+    TokenNumberPipe,
     CollectionStatBarComponent,
     PhunkImageComponent,
   ],
@@ -156,6 +158,7 @@ export class RecentActivityComponent {
     if (t === 'PhunkBought') return 'prismatic-bought';
     if (t === 'created') return 'prismatic-created';
     if (t === 'PrizeAwarded') return 'prismatic-won';
+    if (t === 'AuctionCreated') return 'prismatic-onauction';
     if (t === 'AuctionBid') return 'prismatic-bid';
     if (t === 'BidEntered' || t === 'BidAccepted' || t === 'BidConfirmed' || t === 'BidWithdrawn' || t === 'BidRefunded') return 'prismatic-marketbid';
     if (t === 'transfer' || t === 'bridgeIn' || t === 'bridgeOut') return 'prismatic-transfer';

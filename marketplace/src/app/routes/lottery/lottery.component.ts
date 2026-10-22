@@ -195,7 +195,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
 
   /**
-   * Drop timestamp, as a release page prints it: `09/19/2026 06:32am LA`.
+   * Drop timestamp, as a release page prints it: `09/19/2026 06:32am CDMX` (Mexico City time).
    * Ticks once a minute; seconds would be noise at this size.
    */
   dropClock = signal('');
@@ -203,16 +203,16 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
 
   private updateClock(): void {
-    // Fixed to Los Angeles regardless of where the visitor is â€” a drop happens at the
+    // Fixed to Mexico City regardless of where the visitor is: a drop happens at the
     // store's time, not yours.
     const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/Los_Angeles',
+      timeZone: 'America/Mexico_City',
       month: '2-digit', day: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit', hour12: true,
     }).formatToParts(new Date());
     const p = (t: string) => parts.find((x) => x.type === t)?.value ?? '';
     const ampm = p('dayPeriod').toLowerCase().replace(/\s/g, '');
-    this.dropClock.set(`${p('month')}/${p('day')}/${p('year')} ${p('hour')}:${p('minute')}${ampm} LA`);
+    this.dropClock.set(`${p('month')}/${p('day')}/${p('year')} ${p('hour')}:${p('minute')}${ampm} CDMX`);
   }
 
   private recentWinsSub!: Subscription;

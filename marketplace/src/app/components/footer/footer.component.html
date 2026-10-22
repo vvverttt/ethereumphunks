@@ -9,7 +9,10 @@
   </div>
 
   <div class="phupreme-logo">
-    @if ((theme$ | async) === 'dark') {
+    <!-- Orange while a Phunklloween item or page is on screen, like its other pink accents. -->
+    @if (themeSvc.themeSlug() === 'phunklloween') {
+      <img src="assets/images/phupreme-orange.png" alt="Phupreme" />
+    } @else if ((theme$ | async) === 'dark') {
       <img src="assets/images/phupreme-dark.png" alt="Phupreme" />
     } @else {
       <img src="assets/images/phupreme.png" alt="Phupreme" />

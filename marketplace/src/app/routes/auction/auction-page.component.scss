@@ -30,10 +30,14 @@
   }
 }
 
+// Desktop gutter for the hero and history: 16rem on wide screens, shrinking with the window so
+// a tablet in landscape (1040–1400px) never pushes the art into the number.
+$gutter: clamp(4rem, 9vw, 16rem);
+
 .auction-house-header {
   position: absolute;
   top: 1rem;
-  left: 13rem;
+  left: clamp(3rem, 7vw, 13rem);
   z-index: 10;
 
   .auction-house-brand {
@@ -146,13 +150,13 @@
     justify-content: flex-start;
     width: 100%;
     max-width: var(--max-width);
-    padding: 0 16rem 0 16rem;
+    padding: 0 $gutter;
     margin: 0 auto;
   }
 
   app-phunk-info {
     position: absolute;
-    right: 16rem;
+    right: $gutter;
     top: 50%;
     transform: translateY(-50%);
   }
@@ -176,7 +180,7 @@
     }
 
     app-phunk-info {
-      position: static;
+      position: relative;   // keeps its prev/next arrows anchored to it, not to the hero
       transform: none;
       order: 1;
       width: 100%;
@@ -248,19 +252,18 @@ $spooky-frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
   margin-top: 7rem;
   margin-left: 0;
 
+  // 42rem on wide screens, scaling down with the window on narrower desktops and tablets.
   .phunk-fallback {
-    width: 42rem;
-    height: 42rem;
-    max-width: 42rem;
-    max-height: 42rem;
+    width: clamp(30rem, 32vw, 42rem);
+    height: clamp(30rem, 32vw, 42rem);
     object-fit: contain;
     image-rendering: pixelated;
     display: block;
   }
 
   .placeholder {
-    width: 42rem;
-    height: 42rem;
+    width: clamp(30rem, 32vw, 42rem);
+    height: clamp(30rem, 32vw, 42rem);
   }
 
   // QuantumPhunks only: drop them down so their feet sit on the divider line
@@ -318,7 +321,7 @@ $spooky-frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
     width: 100%;
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 0 16rem;
+    padding: 0 $gutter;
     min-height: max(34rem, calc(27rem + (var(--bid-count, 0) * 3.2rem)));
 
     @media (max-width: $tablet) {

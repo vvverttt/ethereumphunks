@@ -5,6 +5,7 @@ import { DataService } from '@/services/data.service';
 import { TraitCountPipe } from '@/pipes/trait-count.pipe';
 import { RarityTierPipe } from '@/pipes/rarity-tier.pipe';
 import { Attribute } from '@/models/attributes';
+import { tokenNumber } from '@/pipes/token-number.pipe';
 
 @Component({
   selector: 'app-phunk-info',
@@ -30,12 +31,11 @@ export class PhunkInfoComponent implements OnChanges {
 
   /**
    * Big token-id shown next to the collection name. EthsRocks use the "-N"
-   * convention (e.g. "-0", "-77") to match the auction slider and breadcrumbs;
+   * convention (e.g. "0", "-77") to match the auction slider and breadcrumbs;
    * every other collection shows the plain (absolute) id.
    */
   get displayTokenId(): string {
-    const abs = this.tokenId < 0 ? -this.tokenId : this.tokenId;
-    return this.slug === 'ethsrocks' ? '-' + abs : String(abs);
+    return tokenNumber(this.tokenId, this.slug);
   }
 
   constructor(private dataSvc: DataService) {}
@@ -46,20 +46,31 @@ export class PhunkInfoComponent implements OnChanges {
     }
   }
 
+  // Slugs already re-read this visit (see loadAttributes).
+  private refreshed = new Set<string>();
+
   private loadAttributes() {
-    this.dataSvc.getAttributes(this.slug).subscribe(attrItem => {
-      if (attrItem && attrItem[this.sha]) {
-        const attrs = attrItem[this.sha];
-        // Sort: "Sex"/"Type" first
-        const sorted = [...attrs].sort((a, b) => {
-          if (a.k === 'Sex' || a.k === 'Type') return -1;
-          if (b.k === 'Sex' || b.k === 'Type') return 1;
-          return 0;
-        });
-        this.attributes.set(sorted);
-      } else {
-        this.attributes.set([]);
-      }
+    const slug = this.slug, sha = this.sha;
+    this.dataSvc.getAttributes(slug).subscribe(attrItem => {
+      if (attrItem?.[sha]) { this.showAttributes(attrItem[sha]); return; }
+      this.attributes.set([]);
+      // Not in this device's copy — a file cached before the item was added (a new drop). Read
+      // it fresh, once per collection per visit, so the traits still show.
+      if (this.refreshed.has(slug)) return;
+      this.refreshed.add(slug);
+      this.dataSvc.refreshAttributes(slug).subscribe(fresh => {
+        if (fresh?.[sha] && this.sha === sha) this.showAttributes(fresh[sha]);
+      });
     });
+  }
+
+  private showAttributes(attrs: Attribute[]) {
+    // Sort: "Sex"/"Type" first
+    const sorted = [...attrs].sort((a, b) => {
+      if (a.k === 'Sex' || a.k === 'Type') return -1;
+      if (b.k === 'Sex' || b.k === 'Type') return 1;
+      return 0;
+    });
+    this.attributes.set(sorted);
   }
 }

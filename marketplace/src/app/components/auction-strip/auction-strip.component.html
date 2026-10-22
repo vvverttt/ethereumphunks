@@ -11,7 +11,13 @@
     <div class="figures">
       <div class="figure">
         <span class="label">{{ hasBids() ? 'Current bid' : 'Opening bid' }}</span>
-        <span class="value">{{ hasBids() ? currentEth() : minNextEth() }} <i>ETH</i></span>
+        <!-- A bid that spells something gets the word right under those digits. -->
+        @if (hasBids() && (currentEth() | bidEggParts); as p) {
+          <span class="value has-egg">{{ p.before }}<span class="egg-num">{{ p.match }}<span class="egg-word">{{ p.word }}</span></span>{{ p.after }} <i>ETH</i></span>
+          <span class="egg-line">{{ p.line }}</span>
+        } @else {
+          <span class="value">{{ hasBids() ? currentEth() : minNextEth() }} <i>ETH</i></span>
+        }
       </div>
 
       <div class="figure">
@@ -80,7 +86,7 @@
         @for (b of bids(); track b.txHash; let i = $index) {
           <li [class.top]="i === 0">
             <span class="who" [title]="b.sender">{{ shortAddr(b.sender) }}</span>
-            <span class="amt">{{ bidEth(b.value) }} <i>ETH</i></span>
+            <span class="amt">{{ bidEth(b.value) }} <i>ETH</i>@if (b.value | bidWord; as word) { <span class="egg-word">{{ word }}</span>}</span>
           </li>
         }
       </ol>

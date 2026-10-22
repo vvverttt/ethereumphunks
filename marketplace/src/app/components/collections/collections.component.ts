@@ -7,6 +7,7 @@ import { GlobalState } from '@/models/global-state';
 
 import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { tokenNumber } from '@/pipes/token-number.pipe';
 
 import { PhunkGridComponent } from '../phunk-grid/phunk-grid.component';
 import { selectCollections } from '@/state/selectors/data-state.selectors';
@@ -36,7 +37,6 @@ export class CollectionsComponent {
   }
 
   private readonly permanentlyHiddenSlugs = new Set([
-    'cryptophunksv67',
     'ethereumphunks',
     'etherphunks',
     // Superseded by the OG collections they were re-issued from, which are listed
@@ -45,6 +45,20 @@ export class CollectionsComponent {
     'quantumdystophunkzv67',
   ]);
 
+  /**
+   * Where each collection sits in the CryptoPhunksV67 numbering. Shown in place of its name, and
+   * the list follows it: EthsRocks count down from 0, QuantumPhunks run from 1, and each drop
+   * after them carries on from the last. A collection not listed here shows its name, last.
+   */
+  private readonly numbering: Record<string, [number, number]> = {
+    ethsrocks: [0, -105],
+    cryptophunksv67: [1, 10000],
+    'missing-phunks': [10000, 10250],
+    'dysto-phunks': [10251, 10319],
+    phikings: [10320, 10386],
+    phunklloween: [10387, 10453],
+  };
+
   collections$ = combineLatest([
     this.store.select(selectCollections),
     this.store.select(appStateSelectors.selectConfig),
@@ -52,14 +66,22 @@ export class CollectionsComponent {
     filter(([collections]) => !!collections),
     map(([collections, config]) => {
       const hiddenSlugs = new Set(config?.hiddenSlugs || []);
-      const filtered = collections.filter(c =>
-        !this.permanentlyHiddenSlugs.has(c.slug) && !hiddenSlugs.has(c.slug)
-      );
-      const ethsRocks = filtered.filter(c => c.slug === 'ethsrocks');
-      const rest = filtered.filter(c => c.slug !== 'ethsrocks');
-      return [...ethsRocks, ...rest];
+      const order = Object.keys(this.numbering);
+      const rank = (slug: string) => {
+        const i = order.indexOf(slug);
+        return i < 0 ? order.length : i;
+      };
+      return collections
+        .filter(c => !this.permanentlyHiddenSlugs.has(c.slug) && !hiddenSlugs.has(c.slug))
+        .sort((a, b) => rank(a.slug) - rank(b.slug))
+        .map(c => ({ ...c, label: this.label(c.slug, c.name) }));
     })
   )
+
+  private label(slug: string, name: string): string {
+    const range = this.numbering[slug];
+    return range ? `#${tokenNumber(range[0], slug)} – #${tokenNumber(range[1], slug)}` : name;
+  }
 
   constructor(
     private dataSvc: DataService,

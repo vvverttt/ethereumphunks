@@ -17,12 +17,26 @@ import { catchError, EMPTY, filter, from, map, merge, mergeMap, of, switchMap, t
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as marketStateActions from '@/state/actions/market-state.actions';
+import * as dataStateActions from '@/state/actions/data-state.actions';
+import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
 import { ChatService } from '@/services/chat.service';
 
 import { environment } from 'src/environments/environment';
 import { formatEther } from 'viem';
 import { StorageService } from '@/services/storage.service';
+
+// Pages that aren't a collection but always wear one's colours, so arriving from another page
+// never carries its colours or logo over. Mirrored in the pre-boot script in index.mainnet.html.
+// Collection pages take theirs from the slug (onCollectionThemeSlug$); the auction and item
+// pages from the item on screen.
+const FIXED_THEME_PAGES: Record<string, string> = {
+  phupreme: 'cryptophunksv67',  // Phupreme, its wins and its pool
+  lottery: 'cryptophunksv67',   // old Phupreme links, redirected
+  owners: 'cryptophunksv67',
+  admin: 'cryptophunksv67',
+};
+
 @Injectable()
 export class AppStateEffects {
 
@@ -157,6 +171,19 @@ export class AppStateEffects {
   onCollectionThemeSlug$ = createEffect(() => this.actions$.pipe(
     ofType(marketStateActions.setMarketSlug),
     tap((action) => this.themeSvc.setActiveCollection((action as any).marketSlug || '')),
+  ), { dispatch: false });
+
+  onFixedThemePage$ = createEffect(() => this.actions$.pipe(
+    ofType(ROUTER_NAVIGATION),
+    map((action: any) => FIXED_THEME_PAGES[String(action.payload.event.urlAfterRedirects).split(/[?#]/)[0].split('/')[1] || '']),
+    filter((slug): slug is string => !!slug),
+    withLatestFrom(this.store.select(dataStateSelectors.selectCollections)),
+    tap(([slug, collections]) => {
+      this.themeSvc.setActiveCollection(slug);
+      // The header's collection switcher follows the colours too.
+      const collection = collections?.find((c) => c.slug === slug);
+      if (collection) this.store.dispatch(dataStateActions.setActiveCollection({ activeCollection: { ...collection } }));
+    }),
   ), { dispatch: false });
 
   onNewBlockCheckCooldown$ = createEffect(() => this.actions$.pipe(

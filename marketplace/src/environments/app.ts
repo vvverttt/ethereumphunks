@@ -1,9 +1,9 @@
 export const appConfig = {
-  version: '6.8.22',
+  version: '6.8.23',
   // Stamped by prebuild.js on every build. Shown in the footer next to the version,
   // so it is possible to tell at a glance which build a deploy is actually serving —
   // a version alone could not distinguish a stale cached shell from a fresh pin.
-  buildDate: '2026-10-21',
+  buildDate: '2026-10-22',
   standalone: false,
   defaultCollection: 'cryptophunksv67',
 };

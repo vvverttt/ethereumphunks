@@ -210,6 +210,12 @@ export class DataService {
     return `${DataService.ATTRIBUTE_FILE_OVERRIDES[slug] ?? slug}_attributes.json`;
   }
 
+  /** Re-reads a collection's attributes file past every cache (an item was missing from it). */
+  refreshAttributes(slug: string): Observable<AttributeItem> {
+    this.attributeCache.delete(slug);
+    return this.fetchAttributes(slug);
+  }
+
   fetchAttributes(slug: string): Observable<AttributeItem> {
     // fetch() with cache: 'no-cache', and the ETag read off this same response. The file is
     // served with max-age=3600, so a plain GET could come straight from the browser's HTTP

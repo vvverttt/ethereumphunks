@@ -78,7 +78,7 @@
         <div class="labels-wrapper">
 
           <div class="token-id" [ngClass]="tokenIdClass(event)">
-            #{{ event.slug === 'ethsrocks' ? '-' + ((event.tokenId ?? 0) < 0 ? -(event.tokenId ?? 0) : (event.tokenId ?? 0)) : ((event.tokenId ?? 0) < 0 ? -(event.tokenId ?? 0) : (event.tokenId ?? 0)) }}
+            #{{ event.tokenId | tokenNumber: event.slug }}
           </div>
 
           <div class="label">

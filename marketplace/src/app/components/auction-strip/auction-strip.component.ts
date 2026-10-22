@@ -10,6 +10,7 @@ import { AuctionService, AuctionData, AuctionBidEvent } from '@/services/auction
 import { Web3Service } from '@/services/web3.service';
 import { SpriteService } from '@/services/sprite.service';
 import { TimerComponent } from '@/components/auction/timer/timer.component';
+import { BidEggPartsPipe, BidWordPipe } from '@/pipes/bid-word.pipe';
 import { visibleInterval } from '@/utils/visible-interval';
 
 import { GlobalState } from '@/models/global-state';
@@ -31,7 +32,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TimerComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TimerComponent, BidWordPipe, BidEggPartsPipe],
   // AuctionService is deliberately NOT providedIn:'root' — the auction page supplies its
   // own instance. Without this the injector has nothing to resolve, inject() throws during
   // construction, and the failure takes the whole collection page down with it.

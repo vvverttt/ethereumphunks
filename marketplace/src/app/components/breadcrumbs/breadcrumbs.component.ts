@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { DataService } from '@/services/data.service';
 
 import { Phunk } from '@/models/db';
+import { TokenNumberPipe, tokenNumber } from '@/pipes/token-number.pipe';
 
 import { filter, tap } from 'rxjs';
 import { EthscriptionService } from '@/services/ethscription.service';
@@ -17,6 +18,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
+    TokenNumberPipe,
   ],
   selector: 'app-breadcrumbs',
   templateUrl: './breadcrumbs.component.html',
@@ -347,7 +349,7 @@ export class BreadcrumbsComponent {
     if (!this.phunk()) return;
 
     const phunk = this.phunk()!;
-    const displayId = phunk.slug === 'ethsrocks' ? '-' + Math.abs(phunk.tokenId) : Math.abs(phunk.tokenId);
+    const displayId = tokenNumber(phunk.tokenId, phunk.slug);
     const name = (phunk.collection?.singleName?.replace(/ /g, '-') || 'item') + '#' + displayId;
 
     // Get the original (decoded) image so we can detect animation / true aspect ratio.

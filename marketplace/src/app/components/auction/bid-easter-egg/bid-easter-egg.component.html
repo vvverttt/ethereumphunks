@@ -1,0 +1,29 @@
+@if (egg(); as e) {
+  @if (bid(); as b) {
+    <div class="overlay" (click)="close()">
+      <div class="card" (click)="$event.stopPropagation()" role="dialog" [attr.aria-label]="e.word">
+
+        @if (pairs(e); as ps) {
+          <div class="calc">
+            @for (p of ps; track $index) {
+              <div class="pair" [style.animation-delay]="(600 + $index * 90) + 'ms'">
+                <span class="digit">{{ p.digit }}</span>
+                <span class="letter">{{ p.letter }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="calc stacked">
+            <span class="digits">{{ e.digits }}</span>
+            <span class="word">{{ e.word }}</span>
+          </div>
+        }
+
+        <p class="line">You bid <strong>{{ e.word }}</strong>.</p>
+        <p class="caption">{{ line() }}</p>
+
+        <button type="button" class="close" (click)="close()">Close</button>
+      </div>
+    </div>
+  }
+}

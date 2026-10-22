@@ -49,7 +49,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 .25rem rgba(255, 215, 0, .55));
+  filter: drop-shadow(0 0 .3rem rgba(255, 215, 0, .7));
   will-change: background-position;
   animation: boughtPrism 3.2s linear infinite;
 }
@@ -66,7 +66,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 .22rem rgba(0, 255, 231, .7));
+  filter: drop-shadow(0 0 .3rem rgba(0, 255, 231, .7));
   will-change: background-position;
   animation: createdDiamondPrism 3.4s linear infinite;
 }
@@ -76,15 +76,16 @@
   font: inherit;
   line-height: inherit;
   letter-spacing: inherit;
-  color: #00ffe7;
-  background: linear-gradient(90deg, #00ffe7, #37f5ff, #5ce1e6, #00ffe7, #37f5ff, #5ce1e6, #00ffe7);
+  // Legendary gold with a bright sheen.
+  color: #ffd84d;
+  background: linear-gradient(90deg, #ffc400, #ffe066, #fff7cc, #ffe066, #ffc400, #ffe066, #ffc400);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 .24rem rgba(0, 255, 231, .75));
+  filter: drop-shadow(0 0 .3rem rgba(255, 216, 77, .7));
   will-change: background-position;
-  animation: wonDiamondPrism 3.1s linear infinite;
+  animation: wonDiamondPrism 5s linear infinite;
 }
 
 @keyframes boughtPrism {
@@ -124,7 +125,45 @@
   --pink: 255, 140, 26;                 // #ff8c1a — every pink accent goes orange
   --button-color: 255, 140, 26;
   --header-text: 255, 140, 26;
+  --header-highlight: 0, 0, 0;
   --header-highlight-active: 255, 140, 26;
+}
+
+// The ethscription collections' own themes. Mirrors ThemeService.collectionOverrides.
+:root[data-collection='ethsrocks'] {
+  --background: 74, 13, 20;    // #4a0d14
+  --pink: 255, 51, 85;          // #ff3355
+  --button-color: 255, 51, 85;
+  --header-text: 255, 51, 85;
+  --header-highlight: 74, 13, 20;
+  --header-highlight-active: 255, 51, 85;
+}
+
+:root[data-collection='missing-phunks'] {
+  --background: 28, 42, 51;    // #1c2a33
+  --pink: 99, 133, 150;          // #638596
+  --button-color: 99, 133, 150;
+  --header-text: 99, 133, 150;
+  --header-highlight: 28, 42, 51;
+  --header-highlight-active: 99, 133, 150;
+}
+
+:root[data-collection='dysto-phunks'] {
+  --background: 13, 26, 18;    // #0d1a12
+  --pink: 16, 154, 62;          // #109a3e
+  --button-color: 16, 154, 62;
+  --header-text: 16, 154, 62;
+  --header-highlight: 13, 26, 18;
+  --header-highlight-active: 16, 154, 62;
+}
+
+:root[data-collection='phikings'] {
+  --background: 150, 112, 0;    // #967000
+  --pink: 224, 165, 38;          // #e0a526
+  --button-color: 224, 165, 38;
+  --header-text: 224, 165, 38;
+  --header-highlight: 92, 68, 0;
+  --header-highlight-active: 224, 165, 38;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,17 +201,13 @@
   .prismatic-bought {
     background: linear-gradient(90deg, #66cdff, #54c7ff, #66cdff, #54c7ff, #66cdff);
     background-size: 200% 100%; -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .25rem rgba(102, 205, 255, .55));
+    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .3rem rgba(102, 205, 255, .7));
   }
-  .prismatic-won {
-    background: linear-gradient(90deg, #79fae6, #66cdff, #79fae6, #66cdff, #79fae6);
-    background-size: 200% 100%; -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .24rem rgba(121, 250, 230, .7));
-  }
+  // Wins keep the global violet-to-pink here too, so they stand apart from the blue Created.
   .prismatic-created {
     background: linear-gradient(90deg, #79fae6, #00abff, #54c7ff, #79fae6, #00abff, #79fae6);
     background-size: 200% 100%; -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .22rem rgba(0, 171, 255, .6));
+    -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 .3rem rgba(0, 171, 255, .7));
   }
   .prismatic-bid, .prismatic-marketbid { color: #00abff !important; -webkit-text-fill-color: #00abff !important; background: none !important; }
   .prismatic-transfer { color: #79fae6 !important; -webkit-text-fill-color: #79fae6 !important; background: none !important; }

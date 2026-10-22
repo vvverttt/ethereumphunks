@@ -1,6 +1,9 @@
 @use 'abstracts/variables' as *;
 @use 'abstracts/mixins' as *;
 
+// The gas/blocks strip at the bottom of the panel (app-status-bar is 4.5rem tall).
+$menu-status-height: 4.5rem;
+
 :host {
   position: relative;
   display: flex;
@@ -35,7 +38,7 @@
   --m-lead-title: 255, 4, 180; --m-lead-badge: 255, 4, 180; --m-lead-badge-fg: 255, 255, 255;
   --m-ext-bg: 255, 4, 180;     --m-ext-fg: 255, 255, 255;  --m-ext-shadow: 195, 255, 0;
   --m-dys-bg: 0, 255, 200;     --m-dys-fg: 19, 19, 19;
-  --m-lot-bg: 255, 255, 255;   --m-lot-fg: 19, 19, 19;
+  --m-lot-bg: 237, 28, 36;    --m-lot-fg: 255, 255, 255;  // Phupreme: Supreme red (#ed1c24); the themed collections use their accent
   --m-auc-bg: 0, 0, 0;         --m-auc-alpha: .55;        --m-auc-title: 195, 255, 0;
 
   @media (max-width: $mobile) {
@@ -64,7 +67,7 @@
   --m-lead-title: 255, 4, 180; --m-lead-badge: 255, 4, 180; --m-lead-badge-fg: 255, 255, 255;
   --m-ext-bg: 103, 205, 255;   --m-ext-fg: 12, 20, 26;     --m-ext-shadow: 0, 171, 255;
   --m-dys-bg: 121, 250, 230;   --m-dys-fg: 12, 20, 26;     // #79fae6
-  --m-lot-bg: 255, 4, 180;     --m-lot-fg: 255, 255, 255;  // Phupreme pink
+  --m-lot-bg: 237, 28, 36;     --m-lot-fg: 255, 255, 255;  // Phupreme red
   --m-auc-bg: 12, 20, 26;      --m-auc-alpha: .9;          --m-auc-title: 103, 205, 255;
 
   // Rarely shown links keep the brand blue they had here.
@@ -94,33 +97,79 @@
   --m-lead-title: 24, 5, 54;   --m-lead-badge: 24, 5, 54;  --m-lead-badge-fg: 255, 140, 26;
   --m-ext-bg: 255, 210, 63;    --m-ext-fg: 24, 5, 54;      --m-ext-shadow: 10, 2, 26;   // #ffd23f
   --m-dys-bg: 157, 255, 60;    --m-dys-fg: 24, 5, 54;      // #9dff3c
-  --m-lot-bg: 245, 239, 224;   --m-lot-fg: 24, 5, 54;      // bone
+  --m-lot-bg: 255, 140, 26;    --m-lot-fg: 0, 0, 0;        // Phupreme in the page's orange
   --m-auc-bg: 69, 0, 176;      --m-auc-alpha: .92;         --m-auc-title: 255, 140, 26; // #4500b0
 }
 
-// Gas + blocks, pinned to the bottom of the panel over every section.
+// The other themed collections: the panel takes the page colour, toggles the accent.
+:host-context([data-collection='ethsrocks']) {
+  --m-shadow: 255, 51, 85;  --m-ext-shadow: 255, 51, 85;   // button shadows in this page's accent
+  --m-lot-bg: 255, 51, 85;  --m-lot-fg: 255, 255, 255;   // Phupreme in this page's accent
+  --m-panel: 74, 13, 20;
+  --m-panel-alpha: .95;
+  --m-accent: 255, 51, 85;
+  --m-accent-fg: 74, 13, 20;
+  --m-toggle-border: 255, 51, 85;
+  --m-auc-title: 255, 51, 85;
+}
+
+:host-context([data-collection='missing-phunks']) {
+  --m-shadow: 99, 133, 150;  --m-ext-shadow: 99, 133, 150;   // button shadows in this page's accent
+  --m-lot-bg: 99, 133, 150;  --m-lot-fg: 255, 255, 255;   // Phupreme in this page's accent
+  --m-panel: 28, 42, 51;
+  --m-panel-alpha: .95;
+  --m-accent: 99, 133, 150;
+  --m-accent-fg: 28, 42, 51;
+  --m-toggle-border: 99, 133, 150;
+  --m-auc-title: 99, 133, 150;
+}
+
+:host-context([data-collection='dysto-phunks']) {
+  --m-shadow: 16, 154, 62;  --m-ext-shadow: 16, 154, 62;   // button shadows in this page's accent
+  --m-lot-bg: 16, 154, 62;  --m-lot-fg: 255, 255, 255;   // Phupreme in this page's accent
+  --m-panel: 13, 26, 18;
+  --m-panel-alpha: .95;
+  --m-accent: 16, 154, 62;
+  --m-accent-fg: 13, 26, 18;
+  --m-toggle-border: 16, 154, 62;
+  --m-auc-title: 16, 154, 62;
+}
+
+:host-context([data-collection='phikings']) {
+  --m-shadow: 224, 165, 38;  --m-ext-shadow: 224, 165, 38;   // button shadows in this page's accent
+  --m-lot-bg: 224, 165, 38;  --m-lot-fg: 92, 68, 0;   // Phupreme in this page's accent
+  --m-panel: 150, 112, 0;
+  --m-panel-alpha: .95;
+  --m-accent: 224, 165, 38;
+  --m-accent-fg: 92, 68, 0;
+  --m-toggle-border: 224, 165, 38;
+  --m-auc-title: 224, 165, 38;
+}
+
+// Gas + blocks, in a strip of its own along the bottom of the panel. The sections stop where
+// it starts (see `section` below), so nothing ever scrolls underneath it, on any screen.
 .menu-status {
   position: absolute;
   z-index: 2;
   left: 0;
   right: 0;
   bottom: 0;
+  height: $menu-status-height;
   padding: 0 1.5rem;
 }
 
+// Each section scrolls in the space between the site header and the gas/blocks strip, so its
+// links never slide under the header's buttons or the strip.
 section {
   position: absolute;
-  top: 0;
+  top: var(--header-height);
   left: 0;
   width: 100%;
   max-width: var(--slideout-width);
-  height: 100%;
+  height: calc(100% - var(--header-height) - #{$menu-status-height});
   transform: translateX(0);
 
-  padding: 0 3rem;
-  padding-top: calc(var(--header-height) + 1rem);
-  // room for .menu-status, so the last items can scroll clear of it
-  padding-bottom: 6rem;
+  padding: 1rem 3rem 3rem;
 
   overflow: scroll;
   scrollbar-width: none;
@@ -285,7 +334,7 @@ section {
       justify-content: space-between;
 
       padding: 1.2rem 1.5rem 1rem;
-      margin-bottom: 3rem;
+      margin-bottom: 1.5rem;
 
       font-family: var(--secondary-font-stack);
       color: rgba(var(--m-dys-fg), 1);
@@ -313,20 +362,21 @@ section {
       }
     }
 
+    // Kept small and on as few rows as possible, so it doesn't crowd the links above.
     .preference-switcher {
       display: grid;
       grid-template-columns: 1fr;
       align-items: stretch;
-      gap: .8rem;
+      gap: .6rem;
       margin: 0 0 1.5rem;
 
       button {
-        height: 3rem;
-        border: .2rem solid rgba(var(--m-toggle-border), 1);
-        padding: 0 .8rem;
+        height: 2.4rem;
+        border: .15rem solid rgba(var(--m-toggle-border), 1);
+        padding: 0 .6rem;
 
         font-family: var(--secondary-font-stack);
-        font-size: 1rem;
+        font-size: .85rem;
         color: rgba(var(--white), 1);
 
         background-color: rgba(var(--background), .8);
@@ -364,7 +414,7 @@ section {
 
           flex: 1;
           min-width: 0;
-          padding: 0 .65rem;
+          padding: 0 .4rem;
           overflow: hidden;
 
           span {
@@ -379,7 +429,7 @@ section {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         padding-top: .5rem;
-        border-top: .2rem solid rgba(var(--highlight), 1);
+        border-top: .15rem solid rgba(var(--highlight), 1);
 
         button {
           display: flex;
@@ -389,12 +439,12 @@ section {
           min-width: 3.4rem;
           width: auto;
           padding: 0;
-          font-size: 1.6rem;
+          font-size: 1.3rem;
           line-height: 1;
 
           &.sample-default {
             font-family: var(--primary-font-stack);
-            font-size: 1.6rem;
+            font-size: 1.3rem;
           }
 
           &.sample-blockscript {
@@ -408,10 +458,6 @@ section {
       }
 
       @media (max-width: 480px) {
-        .language-options {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
         .font-options {
           padding-top: .5rem;
           border-top: .2rem solid rgba(var(--highlight), 1);
@@ -932,8 +978,7 @@ section {
   }
 
   @media (max-width: $mobile) {
-    padding: 0 1.5rem;
-    padding-top: calc(var(--header-height) + 1rem);
+    padding: 1rem 1.5rem 3rem;
 
     &.main {
       .stats-wrapper {

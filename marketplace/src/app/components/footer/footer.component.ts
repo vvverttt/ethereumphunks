@@ -8,6 +8,7 @@ import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { ThemeService } from '@/services/theme.service';
 import { ERC721C_CONTRACT_SETS } from '@/constants/erc721c';
 
 @Component({
@@ -49,6 +50,7 @@ export class FooterComponent {
   constructor(
     private store: Store<GlobalState>,
     public preferences: PhunkPreferencesService,
+    public themeSvc: ThemeService,
   ) {}
 
   t(key: string): string {

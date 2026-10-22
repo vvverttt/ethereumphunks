@@ -56,7 +56,7 @@ h1, h2 {
 }
 
 h1 {
-  font-size: 3.6rem;
+  font-size: clamp(2.8rem, 2.6vw, 3.6rem);
   padding-bottom: 1rem;
 }
 
@@ -64,7 +64,7 @@ h2 {
   position: relative;
   display: flex;
   align-items: center;
-  font-size: 9.8rem;
+  font-size: clamp(7rem, 6.6vw, 9.8rem);
   color: rgba(var(--auction-accent, var(--pink)), 1);
   line-height: 1;
 }
@@ -173,6 +173,20 @@ h2 {
   .pool-label {
     padding-top: .6rem;
   }
+
+  // Stacked layout: the block is full width, so mid-height arrows ended up on the frame's
+  // left edge. They sit on the title's row instead, top-left, clear of everything.
+  .prev-auction,
+  .next-auction {
+    top: 0;
+    transform: none;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .next-auction {
+    left: 4.4rem;
+  }
 }
 
 @media (max-width: $mobile) {
@@ -186,11 +200,10 @@ h2 {
 
   .prev-auction,
   .next-auction {
-    top: 50%;
     font-size: 2.4rem;
   }
 
   .next-auction {
-    left: 4rem;
+    left: 3.6rem;
   }
 }

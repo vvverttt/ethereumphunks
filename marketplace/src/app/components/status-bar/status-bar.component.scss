@@ -69,8 +69,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 60rem;
-    max-width: 60rem;
+    // The panel's width (the logger spans it), not a fixed 60rem that ran past a 46rem panel.
     height: 30rem;
     padding: 2rem;
     border: .2rem solid rgba(var(--base-color), 1);

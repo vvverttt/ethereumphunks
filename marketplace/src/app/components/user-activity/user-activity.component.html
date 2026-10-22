@@ -35,7 +35,7 @@
           </td>
           <td>
             <div class="cell-inner">
-              #{{ event.slug === 'ethsrocks' ? '-' + (event.tokenId < 0 ? -event.tokenId : event.tokenId) : (event.tokenId < 0 ? -event.tokenId : event.tokenId) }}
+              #{{ event.tokenId | tokenNumber: event.slug }}
             </div>
           </td>
           <td>
@@ -74,7 +74,7 @@
 
         <div class="labels-wrapper">
 
-          <div class="token-id">#{{ event.slug === 'ethsrocks' ? '-' + (event.tokenId < 0 ? -event.tokenId : event.tokenId) : (event.tokenId < 0 ? -event.tokenId : event.tokenId) }}</div>
+          <div class="token-id">#{{ event.tokenId | tokenNumber: event.slug }}</div>
 
           <div class="label">
             @if (event.type) {

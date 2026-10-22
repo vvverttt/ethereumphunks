@@ -10,6 +10,19 @@
   left: 0;
   width: 100%;
 
+  // Same colour as .header-backdrop underneath, so nothing changes on screen. It is here for
+  // iOS 26 Safari, which ignores theme-color and tints the top of the screen from this fixed
+  // header's own background. With none, it reused the colour it first sampled for as long as
+  // this element lived, so the top kept the first page's colour through every collection and
+  // page change. With one, Safari reads the current colour each time.
+  background-color: rgba(var(--base-color), 1);
+
+  // The menu and the market's side panel slide in under the header and show through behind
+  // its buttons; .header-backdrop (below them) still colours the rest of the strip.
+  &.panel-open {
+    background-color: transparent;
+  }
+
   pointer-events: none;
 
   .inner {

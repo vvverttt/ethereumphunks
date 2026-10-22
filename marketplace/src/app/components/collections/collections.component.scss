@@ -28,7 +28,70 @@ h2 {
   width: 100%;
   margin-bottom: 3rem;
 
-  background-color: rgba(var(--pink), 1);
+  // Each row wears its own collection's colour, whichever theme the menu is in: the
+  // ethscription collections pink, QuantumPhunks its blue, Phunklloween its orange.
+  --row-bg: 255, 4, 180;     // #ff04b4
+  --row-fg: 110, 0, 72;       // deep magenta
+  background-color: rgba(var(--row-bg), 1);
+
+  // Text and the logo square's shadow are a deep shade of the row's own colour, and the row
+  // gets the same holographic foil as the header switcher, under its content.
+  position: relative;
+  isolation: isolate;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(115deg, rgba(255, 255, 255, 0) 0 5px, rgba(255, 255, 255, .2) 5px 6px),
+      linear-gradient(90deg, #ff7ad9, #ffe36e, #7dffb0, #6fd3ff, #b48cff, #ff7ad9);
+    background-size: 100% 100%, 300% 100%;
+    mix-blend-mode: overlay;
+    opacity: .6;
+    animation: holo-foil 9s linear infinite;
+  }
+
+  > * { position: relative; z-index: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after { animation: none; }
+  }
+
+  &[data-row='cryptophunksv67'] {
+    --row-bg: 0, 171, 255;   // #00abff — the deeper brand blue of the QuantumPhunks page
+    --row-fg: 0, 62, 112;     // deep blue
+    --phunk-bg: 103, 205, 255;
+
+    .header .collection-details .collection-image img { background-color: #67cdff; }
+  }
+
+  &[data-row='ethsrocks'] {
+    --row-bg: 255, 51, 85;
+    --row-fg: 112, 12, 32;    // dark ruby
+  }
+
+  &[data-row='missing-phunks'] {
+    --row-bg: 99, 133, 150;
+    --row-fg: 30, 48, 58;     // deep slate
+  }
+
+  &[data-row='dysto-phunks'] {
+    --row-bg: 16, 154, 62;
+    --row-fg: 4, 62, 22;      // deep green
+  }
+
+  &[data-row='phikings'] {
+    --row-bg: 224, 165, 38;
+    --row-fg: 92, 68, 0;       // dark gold
+  }
+
+  &[data-row='phunklloween'] {
+    --row-bg: 255, 140, 26;  // #ff8c1a
+    --row-fg: 112, 52, 0;     // burnt orange
+  }
 
   .header {
     display: flex;
@@ -38,7 +101,7 @@ h2 {
     padding: 1.5rem;
 
     text-decoration: none;
-    color: rgba(var(--text-color), 1);
+    color: rgba(var(--row-fg), 1);
 
     .collection-details {
       display: flex;
@@ -57,7 +120,8 @@ h2 {
           image-rendering: pixelated;
           background-color: #c3ff00; // ethscription collections' background is lime, not the v67 blue
 
-          box-shadow: -.3rem -.3rem 0 0 rgba(var(--bid-color), 1);
+          // In the row's text colour, so the logo's square stands out on every row colour.
+          box-shadow: -.3rem -.3rem 0 0 rgba(var(--row-fg), 1);
         }
       }
 
@@ -71,7 +135,7 @@ h2 {
       svg {
         display: block;
         path {
-          fill: rgba(var(--text-color), 1);
+          fill: rgba(var(--row-fg), 1);
         }
       }
     }
@@ -88,4 +152,9 @@ h2 {
   &:last-child {
     margin-bottom: 0;
   }
+}
+
+@keyframes holo-foil {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 0, 300% 0; }
 }

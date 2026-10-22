@@ -63,6 +63,9 @@
         />
 
         <!-- Bid Panel aligned to same inner edges -->
+        <!-- Easter eggs for bids that spell something; only the bidder sees theirs. -->
+        <app-bid-easter-egg [bids]="bids()" />
+
         <app-bid-panel
           [auction]="auction()"
           [bids]="bids()"

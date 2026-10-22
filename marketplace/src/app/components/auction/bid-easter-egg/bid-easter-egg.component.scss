@@ -1,0 +1,158 @@
+@use 'abstracts/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, .8);
+  animation: fade .2s ease;
+}
+
+.card {
+  width: 100%;
+  min-width: 0;
+  max-width: 46rem;
+  padding: 3rem 2.5rem 2.5rem;
+  text-align: center;
+  font-family: var(--secondary-font-stack);
+  color: rgba(var(--black), 1);
+  background-color: rgba(var(--base-color), 1);
+  box-shadow: -.6rem .6rem 0 0 rgba(var(--pink), 1);
+  animation: pop .45s cubic-bezier(.2, 1.6, .4, 1);
+
+  @media (max-width: $mobile) {
+    padding: 2.5rem 1.6rem 2rem;
+  }
+}
+
+// The bid's digits on a calculator display, each flipping to its letter.
+.calc {
+  display: flex;
+  justify-content: center;
+  gap: .4rem;
+  margin: 0 auto 1.6rem;
+  padding: 1.2rem 1rem;
+  width: fit-content;
+  max-width: 100%;
+  background-color: #1d2b1a;
+  box-shadow: inset 0 0 0 .3rem rgba(0, 0, 0, .6);
+}
+
+.pair {
+  position: relative;
+  width: 3.4rem;
+  height: 4.6rem;
+  perspective: 30rem;
+  animation: flip 1.4s ease forwards;
+  transform-style: preserve-3d;
+
+  @media (max-width: 400px) {
+    width: 2.8rem;
+    height: 4rem;
+  }
+
+  span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.4rem;
+    backface-visibility: hidden;
+
+    @media (max-width: 400px) {
+      font-size: 2.8rem;
+    }
+  }
+
+  .digit {
+    color: #9cff6a;
+    text-shadow: 0 0 .6rem rgba(156, 255, 106, .8);
+  }
+
+  .letter {
+    color: #ff5fd2;
+    text-shadow: 0 0 .8rem rgba(255, 95, 210, .95);
+    transform: rotateX(180deg);
+  }
+}
+
+.calc.stacked {
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  padding: 1.4rem 2.4rem;
+
+  .digits {
+    font-size: 3.4rem;
+    color: #9cff6a;
+    text-shadow: 0 0 .6rem rgba(156, 255, 106, .8);
+  }
+
+  .word {
+    font-size: 2.6rem;
+    color: #ff5fd2;
+    text-shadow: 0 0 .8rem rgba(255, 95, 210, .95);
+    animation: fade .4s ease .8s both;
+  }
+}
+
+.caption {
+  margin: 0 0 2rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.line {
+  margin: 0 0 .6rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-family: var(--primary-font-stack);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.5;
+
+  strong {
+    font-family: var(--secondary-font-stack);
+    font-weight: 400;
+    color: #ff2fb9;
+    -webkit-text-fill-color: #ff2fb9;
+  }
+}
+
+button {
+  font-family: var(--secondary-font-stack);
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  border: 0;
+  padding: 1.1rem 2.4rem;
+  cursor: pointer;
+
+  &:active { transform: translate(0, 1px); }
+  &:disabled { opacity: .6; cursor: default; }
+
+  &.close {
+    padding: 1.1rem 4rem;
+    color: #fff;
+    background-color: #000;
+  }
+}
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+@keyframes flip { to { transform: rotateX(180deg); } }
+@keyframes jiggle {
+  0%, 100% { transform: scale(1, 1); }
+  25% { transform: scale(1.06, .95); }
+  50% { transform: scale(.96, 1.04); }
+  75% { transform: scale(1.03, .98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .card, .calc.stacked .word { animation: none; }
+  .pair { animation-duration: .01s; }
+}

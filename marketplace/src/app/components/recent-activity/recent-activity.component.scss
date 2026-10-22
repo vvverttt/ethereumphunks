@@ -256,12 +256,14 @@ section {
         // so the digits keep their original stroke width — gradient text
         // rendering can make some digits look thinner than others.
         &.prismatic-bought { color: #ffd700; -webkit-text-fill-color: #ffd700; background: none; }
-        &.prismatic-won    { color: #00d4ff; -webkit-text-fill-color: #00d4ff; background: none; }
-        &.prismatic-bid    { color: #ff00cc; -webkit-text-fill-color: #ff00cc; background: none; }
+        &.prismatic-won    { color: #ffd84d; -webkit-text-fill-color: #ffd84d; background: none; text-shadow: 0 0 .4rem rgba(255, 216, 77, .75); }
+        &.prismatic-bid    { color: #ff00cc; -webkit-text-fill-color: #ff00cc; background: none; text-shadow: 0 0 .4rem rgba(255, 0, 204, .75); }
         &.prismatic-marketbid { color: #9e03ff; -webkit-text-fill-color: #9e03ff; background: none; }
         &.prismatic-created { color: #00d4ff; -webkit-text-fill-color: #00d4ff; background: none; }
         &.prismatic-transfer { color: #02ff64; -webkit-text-fill-color: #02ff64; background: none; }
         &.prismatic-offered  { color: #00ffc8; -webkit-text-fill-color: #00ffc8; background: none; }
+        // On Auction: lime, glowing, on a tile of the same lime.
+        &.prismatic-onauction { color: #c3ff00; -webkit-text-fill-color: #c3ff00; background: none; text-shadow: 0 0 .4rem rgba(195, 255, 0, .75); }
       }
 
       .label {
@@ -291,7 +293,7 @@ section {
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          filter: drop-shadow(0 0 .25rem rgba(255, 215, 0, .55));
+          filter: drop-shadow(0 0 .3rem rgba(255, 215, 0, .7));
           will-change: background-position;
           animation: boughtPrism 3.2s linear infinite;
         }
@@ -301,20 +303,24 @@ section {
           font: inherit;
           line-height: inherit;
           letter-spacing: inherit;
-          background: linear-gradient(90deg, #00d4ff, #4fa8ff, #00d4ff, #4fa8ff, #00d4ff);
-          background-size: 200% 100%;
+          // Legendary gold: a bright sheen sweeping slowly through, with the same glow as the
+          // other highlighted actions.
+          font-weight: 700;
+          background: linear-gradient(90deg, #ffc400, #ffe066, #fff7cc, #ffe066, #ffc400, #ffe066, #fff7cc, #ffe066, #ffc400);
+          background-size: 300% 100%;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          filter: drop-shadow(0 0 .4rem rgba(0, 212, 255, .8));
+          filter: drop-shadow(0 0 .3rem rgba(255, 216, 77, .7));
           will-change: background-position;
-          animation: boughtPrism 2.4s linear infinite;
+          animation: boughtPrism 5s linear infinite;
         }
 
         .prismatic-bid {
           display: inline-block;
           font: inherit;
           color: #ff00cc;
+          text-shadow: 0 0 .4rem rgba(255, 0, 204, .75);
         }
 
         // Same two colours the token-id already uses for these events, so the
@@ -348,7 +354,7 @@ section {
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          filter: drop-shadow(0 0 .25rem rgba(0, 212, 255, .55));
+          filter: drop-shadow(0 0 .3rem rgba(0, 212, 255, .7));
           will-change: background-position;
           animation: boughtPrism 3.2s linear infinite;
         }
@@ -406,9 +412,9 @@ section {
     // Defined after the group loop so these win the cascade.
     $prismatic-box-colors: (
       auctionbid: #ff00cc,        // pink — matches prismatic-bid
-      auctionsettled: #00d4ff,    // cyan — matches prismatic-won
-      auctioncreated: #00d4ff,    // cyan
-      prizeawarded: #00d4ff,      // cyan — matches prismatic-won
+      auctionsettled: #ffc400,    // legendary gold — matches prismatic-won
+      auctioncreated: #c3ff00,    // lime — matches the glowing On Auction number
+      prizeawarded: #ffc400,      // legendary gold — matches prismatic-won
       phunkbought: #ffd700,       // gold — matches prismatic-bought
       created: #00d4ff,           // cyan — matches prismatic-created
       bidentered: #9e03ff,        // purple — distinct from AuctionBid pink
@@ -515,3 +521,4 @@ section {
     }
   }
 }
+

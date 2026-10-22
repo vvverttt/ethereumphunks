@@ -6,6 +6,7 @@ import { formatEther } from 'viem';
 import { TimerComponent } from '@/components/auction/timer/timer.component';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
+import { BidEggPartsPipe, BidWordPipe } from '@/pipes/bid-word.pipe';
 import { AuctionData, AuctionBidEvent } from '@/services/auction.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
@@ -18,6 +19,8 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
     TimerComponent,
     WalletAddressDirective,
     WeiToEthPipe,
+    BidWordPipe,
+    BidEggPartsPipe,
   ],
   templateUrl: './bid-panel.component.html',
   styleUrls: ['./bid-panel.component.scss'],

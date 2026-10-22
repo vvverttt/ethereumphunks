@@ -26,18 +26,22 @@ export const routes: Routes = [
     redirectTo: ':slug/market/:marketType',
     pathMatch: 'full'
   },
+  // Phupreme (the QuantumPhunks mint lottery). Its old /lottery links redirect here.
+  { path: 'lottery', redirectTo: 'phupreme', pathMatch: 'full' },
+  { path: 'lottery/wins', redirectTo: 'phupreme/wins', pathMatch: 'full' },
+  { path: 'lottery/pool', redirectTo: 'phupreme/pool', pathMatch: 'full' },
   {
-    path: 'lottery',
+    path: 'phupreme',
     canActivate: [featureVisibleGuard('showLottery')],
     loadComponent: () => import('@/routes/lottery/lottery.component').then(mod => mod.LotteryComponent)
   },
   {
-    path: 'lottery/wins',
+    path: 'phupreme/wins',
     canActivate: [featureVisibleGuard('showLottery')],
     loadComponent: () => import('@/routes/lottery/lottery-wins.component').then(mod => mod.LotteryWinsComponent)
   },
   {
-    path: 'lottery/pool',
+    path: 'phupreme/pool',
     canActivate: [featureVisibleGuard('showLottery')],
     loadComponent: () => import('@/routes/lottery/lottery-pool.component').then(mod => mod.LotteryPoolComponent)
   },

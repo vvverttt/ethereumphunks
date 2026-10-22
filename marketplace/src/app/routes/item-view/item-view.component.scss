@@ -63,6 +63,18 @@ app-phunk-billboard {
   :host-context([data-collection='phunklloween']) & {
     @include phunklloween-glow;
   }
+  :host-context([data-collection='ethsrocks']) & {
+    @include collection-glow(rgb(255, 92, 120), #62121d, #4a0d14, #2a060b);
+  }
+  :host-context([data-collection='missing-phunks']) & {
+    @include collection-glow(rgb(99, 133, 150), #24363f, #1c2a33, #121c22);
+  }
+  :host-context([data-collection='dysto-phunks']) & {
+    @include collection-glow(rgb(16, 154, 62), #132a1c, #0d1a12, #08120c);
+  }
+  :host-context([data-collection='phikings']) & {
+    @include collection-glow(rgb(224, 165, 38), #b08a10, #967000, #5c4400);
+  }
 
   .inner {
     position: relative;

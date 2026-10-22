@@ -17,6 +17,7 @@ import { DataService } from '@/services/data.service';
 import { PoolBuyNowService } from '@/services/pool-buy-now.service';
 
 import { ItemLinkPipe } from '@/pipes/item-link.pipe';
+import { TokenNumberPipe } from '@/pipes/token-number.pipe';
 
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 
@@ -47,6 +48,7 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
     SortPipe,
     AttributeFilterPipe,
     ItemLinkPipe,
+    TokenNumberPipe,
   ],
   host:  {
     '[class.selectable]': 'selectable',

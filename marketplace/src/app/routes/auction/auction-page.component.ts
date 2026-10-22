@@ -27,6 +27,7 @@ const AUCTION_SWAP_ABI = [
 ] as const;
 import { PhunkInfoComponent } from '@/components/auction/phunk-info/phunk-info.component';
 import { BidPanelComponent } from '@/components/auction/bid-panel/bid-panel.component';
+import { BidEasterEggComponent } from '@/components/auction/bid-easter-egg/bid-easter-egg.component';
 import { AuctionSliderComponent } from '@/components/auction/auction-slider/auction-slider.component';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -53,6 +54,7 @@ const BUYNOW_TIER2_ETH = '0.167';
     CommonModule,
     PhunkInfoComponent,
     BidPanelComponent,
+    BidEasterEggComponent,
     AuctionSliderComponent,
     PhunkImageComponent,
   ],

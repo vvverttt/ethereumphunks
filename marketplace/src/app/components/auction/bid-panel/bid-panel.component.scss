@@ -5,7 +5,7 @@
   position: absolute;
   z-index: 99;
   top: 0;
-  right: 10rem;
+  right: clamp(2rem, 6vw, 10rem);
   width: 100%;
   max-width: 48rem;
   background-color: rgba(var(--background), 1);
@@ -26,7 +26,9 @@
 
 .bid-info {
   display: grid;
-  grid-template-columns: 6rem 1fr 1fr;
+  // The timer keeps the width it needs; the current bid takes what's left and wraps a long
+  // amount (e.g. Ξ0.008008135) onto a second line instead of running into the timer.
+  grid-template-columns: 6rem minmax(0, 1fr) max-content;
   align-items: start;
   gap: 0 1rem;
 
@@ -53,13 +55,30 @@
         padding-right: .25rem;
       }
     }
+
+    // A long amount (Ξ0.008008135) gets a smaller size so it stays on one line.
+    &.current-bid .value.long {
+      font-size: 1.5rem;
+      // An absurd 18-decimal bid still can't run into the timer.
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
   @media (max-width: $mobile) {
-    grid-template-columns: 5rem 1fr 1fr;
+    grid-template-columns: 5rem minmax(0, 1fr) max-content;
+
+    .bid-info-item .label {
+      font-size: 1.1rem;
+      white-space: normal;
+    }
 
     .bid-info-item .value {
       font-size: 1.6rem;
+    }
+
+    .bid-info-item.current-bid .value.long {
+      font-size: 1.2rem;
     }
   }
 }
@@ -166,8 +185,9 @@
 
   // Overlay states
   &.connect-active {
+    // Hidden outright: a blurred form left the dark Bid button as a smudge over the message.
     .form {
-      filter: blur(2rem);
+      visibility: hidden;
     }
 
     .connect {
@@ -266,11 +286,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 1rem;
       padding: .5rem 0;
+
+      // The bidder's name gives way (with "…") so a long row never widens the page.
+      app-address {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
 
       .bid-amount-wrapper {
         display: flex;
         align-items: center;
+        flex: none;
 
         span {
           padding-right: 1rem;
@@ -290,3 +320,63 @@
 
 // Buy-now styles removed in 6.7.98 — the markup went with it when auction V7
 // retired buyNow/buyNow2/buyItem on-chain. Nothing references these selectors any more.
+
+// The word a bid spells on a calculator (BOOBIES for 8008135): hot pink with a white edge
+// and a soft glow, readable on any panel colour.
+.egg-word {
+  display: block;
+  width: fit-content;
+  margin-top: .3rem;
+  font-family: var(--secondary-font-stack);
+  font-size: 1.1rem;
+  letter-spacing: .12em;
+  color: #ff2fb9;
+  -webkit-text-fill-color: #ff2fb9;
+  text-shadow:
+    -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
+    0 0 .5rem rgba(255, 47, 185, .8);
+  white-space: nowrap;
+}
+
+.bid-amount-wrapper .egg-word { display: inline-block; margin: 0 .6rem; }
+
+// Phones: the calculator word drops under the amount instead of widening the row.
+@media (max-width: $mobile) {
+  .bid-history .bid-item .bid-amount-wrapper {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 60%;
+
+    .egg-word { order: 3; margin: .3rem 0 0; }
+  }
+}
+
+// The word sits centred under the digits that spell it.
+.value.has-egg {
+  padding-bottom: 1.6rem;
+  overflow: visible !important;
+}
+
+.egg-num {
+  position: relative;
+  display: inline-block;
+
+  .egg-word {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: .2rem;
+  }
+}
+
+// A warrior line under the word, fixed for each bid.
+.egg-line {
+  display: block;
+  font-family: var(--primary-font-stack);
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-style: italic;
+  opacity: .8;
+  white-space: normal;
+}

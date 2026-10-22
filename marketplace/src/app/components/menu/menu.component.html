@@ -50,7 +50,7 @@
         class="curated-button"
         (click)="navigateMenu('curated')">
 
-        <span>{{ t('curatedCollections') }}</span>
+        <span>{{ t('curatedCollectionsButton') }}</span>
 
         <div class="arrow">
           <ng-template [ngTemplateOutlet]="arrowIcon" />
@@ -62,7 +62,7 @@
       <div class="lottery-group">
         <a
           class="lottery-button"
-          routerLink="/lottery"
+          routerLink="/phupreme"
           (click)="goToLottery()">
 
           <span>{{ t('philipLottery') }}</span>
@@ -73,14 +73,6 @@
         </a>
       </div>
     }
-
-    @if ((config$ | async)?.showAuction !== false) {
-      <!-- Live auction card; mounted only while the menu is open, so it loads only then. -->
-      @if (menuOpen$ | async) {
-        <app-menu-auction [title]="t('auctionHouse')" (navigate)="goToAuction()" />
-      }
-    }
-
 
     <a
       class="dystolabz-button"
@@ -94,6 +86,13 @@
         <ng-template [ngTemplateOutlet]="arrowIcon" />
       </div>
     </a>
+
+    @if ((config$ | async)?.showAuction !== false) {
+      <!-- Live auction card; mounted only while the menu is open, so it loads only then. -->
+      @if (menuOpen$ | async) {
+        <app-menu-auction [title]="t('auctionHouse')" (navigate)="goToAuction()" />
+      }
+    }
 
     <div class="preference-switcher" [attr.aria-label]="t('languageAndFontControls')">
       <div class="language-options">

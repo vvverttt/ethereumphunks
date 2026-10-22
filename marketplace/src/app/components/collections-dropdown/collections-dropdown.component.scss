@@ -11,13 +11,14 @@
   background-color: rgba(var(--base-color), 1);
 }
 
-// The four ethscription collections keep the original lime button. Only the
+// The ethscription collections (Phunklloween too) keep the original lime button. Only the
 // background is set here — the pink drop-shadow and black text come from the
 // base rule and are deliberately left alone.
 :host-context([data-collection='missing-phunks']),
 :host-context([data-collection='dysto-phunks']),
 :host-context([data-collection='ethsrocks']),
-:host-context([data-collection='phikings']) {
+:host-context([data-collection='phikings']),
+:host-context([data-collection='phunklloween']) {
   .curated-wrapper .curated-button {
     background-color: #c3ff00;
   }
@@ -96,10 +97,12 @@
 
     display: flex;
     flex-direction: column;
-    padding: .5rem;
+    padding: 0;
 
-    box-shadow: -.3rem .3rem 0 0 rgba(var(--black), 1);
-    background-color: rgba(var(--pink));
+    // One block of rows, each in its own collection's colour: a hard black frame and shadow
+    // keep the edges crisp.
+    border: .2rem solid rgba(0, 0, 0, 1);
+    box-shadow: -.3rem .3rem 0 0 rgba(0, 0, 0, 1);
 
     @include trans($duration: .2s);
     transform: translate3d(0, -3.5rem, 0);
@@ -107,17 +110,56 @@
     visibility: hidden;
     pointer-events: none;
 
+    // Each row wears its own collection's colour, on every page: the ethscription collections
+    // pink, QuantumPhunks its blue, Phunklloween its orange.
     a {
+      --row-bg: 255, 4, 180;     // #ff04b4
+      --row-fg: 255, 255, 255;
+
       display: flex;
       align-items: center;
 
-      padding: 0 .5rem;
-      margin: 0 0 .5rem;
+      padding: .25rem .5rem;
+      margin: 0;
 
       font-size: 1.2rem;
-      color: rgba(var(--black), 1);
+      color: rgba(0, 0, 0, 1);     // black on every row colour
+      background-color: rgba(var(--row-bg), 1);
+      // Crisp 1px highlight along the top and hairlines between rows, so each block ends sharply.
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
+      border-bottom: 1px solid rgba(0, 0, 0, .55);
+
+      // Holographic foil over the row colour: a slowly drifting rainbow blended into it, with
+      // fine diagonal foil lines. The text and logo sit above it, crisp.
+      position: relative;
+      isolation: isolate;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(115deg, rgba(255, 255, 255, 0) 0 5px, rgba(255, 255, 255, .2) 5px 6px),
+          linear-gradient(90deg, #ff7ad9, #ffe36e, #7dffb0, #6fd3ff, #b48cff, #ff7ad9);
+        background-size: 100% 100%, 300% 100%;
+        mix-blend-mode: overlay;
+        opacity: .6;
+        animation: holo-foil 9s linear infinite;
+        transition: opacity .2s ease;
+      }
+
+      > * { position: relative; z-index: 1; }
+
+      &:hover::after { opacity: .85; }
+
+      @media (prefers-reduced-motion: reduce) {
+        &::after { animation: none; }
+      }
       font-weight: 400;
       text-decoration: none;
+      image-rendering: pixelated;
 
       .image-wrapper {
         width: 3.6rem;
@@ -139,25 +181,53 @@
         transform: translateY(.1rem);
       }
 
+      // The collection on screen: lime with the inset corner shadow, as it always was.
       &.active {
+        color: rgba(var(--black), 1);
         background-color: #c3ff00;
         box-shadow: inset -.3rem .3rem 0 0 rgba(var(--black), 1);
 
-        .image-wrapper {
-          background: none;
-        }
+        .image-wrapper { background: none; }
       }
 
-      // QuantumPhunks (cryptophunksv67) is the ERC-721C collection — its dropdown row is always
-      // #67cdff (matches the v67 phunk-bg tiles); every other row stays lime, on every page.
+      // QuantumPhunks' logo sits on its own #67cdff tile background.
       &[data-slug='cryptophunksv67'] {
+        --row-bg: 0, 171, 255;   // #00abff
+        --row-fg: 12, 20, 26;
+
         .image-wrapper { background-color: #67cdff; }
 
+        // Selected: its own #67cdff instead of lime, as before.
         &.active {
           background-color: #67cdff;
 
           .image-wrapper { background: none; }
         }
+      }
+
+      &[data-slug='ethsrocks'] {
+        --row-bg: 255, 51, 85;
+        --row-fg: 74, 13, 20;
+      }
+
+      &[data-slug='missing-phunks'] {
+        --row-bg: 99, 133, 150;
+        --row-fg: 28, 42, 51;
+      }
+
+      &[data-slug='dysto-phunks'] {
+        --row-bg: 16, 154, 62;
+        --row-fg: 13, 26, 18;
+      }
+
+      &[data-slug='phikings'] {
+        --row-bg: 224, 165, 38;
+        --row-fg: 150, 112, 0;
+      }
+
+      &[data-slug='phunklloween'] {
+        --row-bg: 255, 140, 26;  // #ff8c1a
+        --row-fg: 0, 0, 0;
       }
 
       &:active {
@@ -166,6 +236,7 @@
 
       &:last-child {
         margin: 0;
+        border-bottom: 0;
       }
     }
   }
@@ -200,8 +271,10 @@
       left: auto;
       width: 100%;
 
+      // Logos only: each sits on a band of its row's colour, so the collection colours still show.
       a {
-        justify-content: flex-end;
+        justify-content: center;
+        padding: .3rem 0;
 
         span {
           display: none;
@@ -209,10 +282,15 @@
 
         .image-wrapper {
           margin: 0;
-          width: 100%;
-          height: 4rem;
+          width: 3.6rem;
+          height: 3.6rem;
         }
       }
     }
   }
+}
+
+@keyframes holo-foil {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 0, 300% 0; }
 }

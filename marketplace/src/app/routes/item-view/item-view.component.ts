@@ -23,6 +23,7 @@ import { RarityTierPipe } from '@/pipes/rarity-tier.pipe';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
 import { QueryParamsPipe } from '@/pipes/query-params.pipe';
+import { tokenNumber } from '@/pipes/token-number.pipe';
 import { IsNumberPipe } from '@/pipes/is-number';
 
 import { DataService } from '@/services/data.service';
@@ -107,9 +108,7 @@ export class ItemViewComponent {
     if (phunk?.name) return phunk.name;
 
     const single = phunk?.collection?.singleName ?? '';
-    const id = phunk?.tokenId ?? 0;
-    const abs = id < 0 ? -id : id;
-    return `${single} ${phunk?.slug === 'ethsrocks' ? '-' + abs : abs}`;
+    return `${single} ${tokenNumber(phunk?.tokenId, phunk?.slug)}`;
   }
 
 
