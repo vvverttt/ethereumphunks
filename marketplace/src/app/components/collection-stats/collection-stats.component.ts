@@ -20,7 +20,7 @@ const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender
 // Note this deliberately does NOT track collection-attributes' CACHE_VERSION even though both
 // read `{slug}__attr_page`: only that component writes the entry, so the mismatch means this
 // panel always recomputes from the attributes file rather than trusting a cached table.
-const CACHE_VERSION = 17;
+const CACHE_VERSION = 18;
 const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'ethsrocks': 'EthsRocks',
   'cryptophunksv67': 'QuantumPhunks',

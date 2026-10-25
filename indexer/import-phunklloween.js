@@ -145,7 +145,13 @@ async function main() {
   console.log('\n📦 Step 2: Upserting attributes_new rows...');
   const attrRows = items.map((item) => {
     const values = {};
-    item.attributes.forEach((a) => { values[a.trait_type] = a.value; });
+    // A repeated trait type (Orson's two Eyes) becomes a list, as in cryptophunksv67's rows:
+    // { "Hair": ["Messy Hair", "Military Cap"] }. A plain key would keep only the last value.
+    item.attributes.forEach((a) => {
+      const k = a.trait_type;
+      if (!(k in values)) values[k] = a.value;
+      else values[k] = [].concat(values[k], a.value);
+    });
     return { sha: item.sha, values, slug, tokenId: item.index };
   });
   const { error: attrError } = await supabase

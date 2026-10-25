@@ -474,6 +474,14 @@
         {
           "trait_type": "Neck",
           "value": "Gold Pendant"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Purple Glow"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
         }
       ]
     },
@@ -530,6 +538,10 @@
         {
           "trait_type": "Item",
           "value": "Broom"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
         }
       ]
     },
@@ -566,6 +578,254 @@
       ]
     },
     {
+      "index": 10404,
+      "name": "Orson",
+      "id": "0xc199914462322ece7e8d2bfecf3a98e43b41c2d100c2ce75e6a3ab4eec91c63b",
+      "sha": "1aeed73d7092425f5815e4235e743f13c67a0eb242f02c14b11ca85aff5d33c5",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Orson"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Dark Blue Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Red"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Glasses"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Stitches"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
+        }
+      ]
+    },
+    {
+      "index": 10405,
+      "name": "Crypt Keeper",
+      "id": "0xf2fccb5665a3378357c3ff5bad4d2fe4c92d9e224753974bd08a3cbe6dae905b",
+      "sha": "25878cec6ec36f3e4608f8f90bdc047f329d2be011c4884e45af1bbb0ba62113",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Crypt Keeper"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "White Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Blue"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Crooked Teeth"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Grin"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Red Bow Tie"
+        }
+      ]
+    },
+    {
+      "index": 10406,
+      "name": "Phantom of the Opera",
+      "id": "0x756ef1a7ed11f7ec79d7f2bce695dd81855a48db4a515989285fe29453ebdcfb",
+      "sha": "7cdaae366aa4199514bacb65577962f1688d6535915e986cb8d07d09c810fb26",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Phantom of the Opera"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Hair"
+        },
+        {
+          "trait_type": "Face",
+          "value": "White Half Mask"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Red Rose"
+        }
+      ]
+    },
+    {
+      "index": 10407,
+      "name": "Freddy Krueger",
+      "id": "0xb0c0b992c37170bd3f13bf442eaacf5cb01f627283449a58ef8859c2692a77d6",
+      "sha": "bb20289fd0963f6a72bcf17df0a1ec507454118ac24c8dd75cbc9c6d8a7f3bd8",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Freddy Krueger"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Brown Fedora"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Burns"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Striped Sweater"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Claw Glove"
+        }
+      ]
+    },
+    {
+      "index": 10408,
+      "name": "Uncle Fester",
+      "id": "0x6c37a5da00d2e28a9ba06e4250845467fe09045535a917cb7a52aa4914236172",
+      "sha": "6315397914eb5259b2bd3911dadbece46396ae36718362e582a415c7825d5712",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Uncle Fester"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Bald"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Dark Circles"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Crooked Teeth"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Grey Coat"
+        }
+      ]
+    },
+    {
+      "index": 10409,
+      "name": "Grim Reaper",
+      "id": "0x2aa75bfade52e9387873ef04294cf9571e82b57a84d7159b1fbac7657013b7a1",
+      "sha": "9075e0c51a124cf13d19c43063cc88eda474d8374115282f88852c55776513bd",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Skeleton"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Grim Reaper"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Hood"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Hollow"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Scythe"
+        }
+      ]
+    },
+    {
+      "index": 10410,
+      "name": "Samara",
+      "id": "0xe9007bd94fcf4f45c6e4783f35518d4157cc8bc7d73bea397f1a2a5657d9846d",
+      "sha": "1b036b8aee49fe3ca56486f77a571adb566780b46782cefeeca099cfa7fe2b2e",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ghost"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Samara"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Hair"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Green Glow"
+        }
+      ]
+    },
+    {
+      "index": 10411,
+      "name": "Beetlejuice",
+      "id": "0x36b8f4d7fde9feb73b4be34aa97872c6ae5ab9cb65c8cd2e3b04f6689ed4bb31",
+      "sha": "70483bb8e812f990cdb49a7a7af732076f59719550199ba6aa5330fc5ae471e1",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ghost"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Beetlejuice"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Green Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Purple Eyeshadow"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Striped Suit"
+        }
+      ]
+    },
+    {
       "index": 10414,
       "name": "Scarecrow",
       "id": "0xfe25931b5d591e8be5a018ad76f2c9a82ba27d041125d02d98566db6b880058f",
@@ -590,6 +850,10 @@
         {
           "trait_type": "Teeth",
           "value": "Stitched Grin"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
         }
       ]
     },
@@ -634,6 +898,26 @@
       ]
     },
     {
+      "index": 10418,
+      "name": "Ghost",
+      "id": "0x489a0a6d0fa67d34743a21d52d96ea4ad2fed78a31f612e92f5aaaa4db42799d",
+      "sha": "74cdcc6fb5e06343ab035d53cac7640235bd1527a773c65691a4273409b968f2",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Ghost"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Ghost"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Lavender Glow"
+        }
+      ]
+    },
+    {
       "index": 10420,
       "name": "Frankenstein",
       "id": "0xc9ce31272029788d64808e323717df58c73834d560a3d0b460d84dcf68ebf092",
@@ -670,6 +954,154 @@
         {
           "trait_type": "Aura",
           "value": "Green Glow"
+        }
+      ]
+    },
+    {
+      "index": 10421,
+      "name": "Art the Clown",
+      "id": "0xa69fe315a1de151a1917c4ea6fb1a413b8cfced52f122bb772f6efbad2f7cd2a",
+      "sha": "92b772911bf0bb1a9d43e74b8a07e682bfa899ac26bc23e07ff3fc212e680da1",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Art the Clown"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Top Hat"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Clown Makeup"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Hacksaw"
+        }
+      ]
+    },
+    {
+      "index": 10422,
+      "name": "Sally",
+      "id": "0x64881bb077c8311e4cf9ddb5ed40309125a55f8fc76758bb3f4b06574507eeb9",
+      "sha": "c763b6ba3fcdf18b822a0c6ffcdb6ec9a80cac51d578855278ed9453bde0441e",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Doll"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Sally"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Red Hair"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Stitches"
+        }
+      ]
+    },
+    {
+      "index": 10423,
+      "name": "Annabelle",
+      "id": "0x759d2a1fe784b00e811aa38c153c19eaa6716972c3a821b9224caa8e66e0d43f",
+      "sha": "b160c79960e7d256a2b704cd084e3f6505929e9d77746a6f70bdd0de46453285",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Doll"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Annabelle"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Braids"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Green"
+        },
+        {
+          "trait_type": "Cheeks",
+          "value": "Rosy Cheeks"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "White Dress"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10424,
+      "name": "Pennywise",
+      "id": "0x748f48115a56017406eda5d46fed70f3d76d4a9c46d2c8c26088821a95cf02ad",
+      "sha": "d119a6e18ced244b709bf749c9136d6d083a74b8d418221b988bae786aeb3d55",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Pennywise"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Orange Hair"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Clown Makeup"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "White Ruffle Collar"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Red Balloon"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Yellow Glow"
+        }
+      ]
+    },
+    {
+      "index": 10427,
+      "name": "Skully Pettibones",
+      "id": "0xc637d7fe542fbe3b8e0738d346a496032e2e486eacad11457cbf9039f96a0a02",
+      "sha": "5824d7a36a4235868233013980e48df7b50ef238c7bf7aa361d9d80d7463d8a9",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Skeleton"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Skully Pettibones"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Top Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Hollow"
         }
       ]
     },
@@ -754,6 +1186,62 @@
         {
           "trait_type": "Weapon",
           "value": "Machete"
+        }
+      ]
+    },
+    {
+      "index": 10446,
+      "name": "Bride of Frankenstein",
+      "id": "0x73ecd80b2656af58f95f21085a54ddfa76bcbd7179de623fdf95b5cf22fba04c",
+      "sha": "4107bec28d0d26e3bab10c2ec756f09954d3763ab8b62f7889f92276230111d8",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Bride of Frankenstein"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Hair with White Streak"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Stitches"
+        }
+      ]
+    },
+    {
+      "index": 10447,
+      "name": "Billy the Puppet",
+      "id": "0x53a6bc287c1552cd8fa9bae2d169d15a7222af58a2955008a44d0920fec8c16f",
+      "sha": "4d30ddb9af597b3e1ce9c43de84cc7b547133c1c6cca2c0f1fbda47c3691c167",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Doll"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Billy the Puppet"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Red Spirals"
+        },
+        {
+          "trait_type": "Cheeks",
+          "value": "Red Spirals"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Red Bow Tie"
         }
       ]
     }

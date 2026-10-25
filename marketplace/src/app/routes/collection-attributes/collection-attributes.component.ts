@@ -20,7 +20,7 @@ const ATTR_COUNT_EXCLUDE_EXTRA = ['animal', 'species', 'special'];
 // this table was then built from it and cached. 29 was Phunklloween's third batch (14 -> 23). This cache is cache-first in
 // localStorage and does NOT consult the attributes file's ETag, so a returning visitor keeps
 // the old trait table until the version moves — a deploy alone is not enough.
-const CACHE_VERSION = 30;
+const CACHE_VERSION = 31;
 
 /** Pseudo-tab that stacks every section on one page instead of showing one at a time. */
 const ALL_TAB = 'All';

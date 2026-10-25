@@ -110,7 +110,10 @@ async function main() {
       throw new Error(`${item.index}: attributes_new disagrees (${attr[0].slug} #${attr[0].tokenId})`);
     }
 
-    const block = await rpc('eth_getBlockByNumber', [tx.blockNumber, false]);
+    // An RPC can answer with a block that has no timestamp; ask again (rpc() rotates endpoints).
+    let block = null;
+    for (let i = 0; i < 8 && !block?.timestamp; i++) block = await rpc('eth_getBlockByNumber', [tx.blockNumber, false]);
+    if (!block?.timestamp) throw new Error(`${item.index}: no block timestamp for ${tx.blockNumber}`);
     const createdAt = new Date(parseInt(block.timestamp, 16) * 1000).toISOString();
     const txIndex = parseInt(tx.transactionIndex, 16);
     const from = tx.from.toLowerCase();
