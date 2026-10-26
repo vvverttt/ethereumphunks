@@ -22,7 +22,7 @@ import { EtherPhunksEvolveABI } from '@/abi/EtherPhunksEvolve';
 import { EtherPhunksNftMarketABI } from '@/abi/EtherPhunksNftMarket';
 import { EtherPhunksBridgeL2ABI } from '@/abi/EtherPhunksBridgeL2';
 
-import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType, connect as wagmiConnect, reconnect } from '@wagmi/core';
+import { http, createConfig, createStorage, Config, watchAccount, getPublicClient, getAccount, disconnect, getChainId, getWalletClient, GetWalletClientReturnType, GetAccountReturnType, connect as wagmiConnect, reconnect, switchChain } from '@wagmi/core';
 import { walletConnect, injected } from '@wagmi/connectors';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -641,6 +641,21 @@ export class Web3Service {
       ]);
     }
 
+    if (l === 'l1') {
+      // wagmi's saved chain can lag the wallet's: a wallet switched to Sepolia after connecting
+      // still reads as mainnet here, so nothing switched and the write then failed with "The
+      // current chain of the connector (id: 11155111) does not match the connection's chain
+      // (id: 1)". Ask the connector for the chain it is really on.
+      let current: number | undefined;
+      try { current = await getAccount(this.config).connector?.getChainId(); } catch {}
+      if (current === undefined) {
+        try { await reconnect(this.config); current = await getAccount(this.config).connector?.getChainId(); } catch {}
+      }
+      if (current === environment.chainId) return;
+      await switchChain(this.config, { chainId: environment.chainId });
+      return;
+    }
+
     let chainId: number;
     let walletClient: GetWalletClientReturnType;
     try {
@@ -653,11 +668,7 @@ export class Web3Service {
       walletClient = await getWalletClient(this.config, { chainId });
     }
 
-    if (l === 'l1') {
-      console.log('switching chain', chainId, environment.chainId);
-      if (chainId === environment.chainId) return;
-      return await walletClient?.switchChain({ id: environment.chainId });
-    } else if (l === 'l2') {
+    if (l === 'l2') {
       if (chainId === magma.id) return;
       return await walletClient?.switchChain({ id: magma.id });
     }
