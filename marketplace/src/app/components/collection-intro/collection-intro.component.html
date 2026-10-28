@@ -12,27 +12,27 @@
 
     @switch (slug) {
       @case ('cryptophunksv67') {
-        <p>{{ total() | number }} unique collectible characters, stored fully on-chain as ERC-721 tokens on Ethereum: 24×24 pixel characters born from the punk format and carried over onto animals.</p>
+        <p>{{ total() | number }} unique collectible characters, stored fully on-chain as ERC-721 tokens on Ethereum: 24×24 pixel characters born from the punk format and carried over onto animals. Minted between July 2025 and September 2026, ahead of the public launch.</p>
         <p>Created by <a class="highlight" routerLink="/about">DystoLabz</a>, QuantumPhunks start from original punk trait combinations translated onto animal characters, with new combinations, weaker pairings replaced, and hundreds of one-of-ones built by hand. Every image and trait is stored on Ethereum in the token contract itself. More on who we are in <a class="highlight" routerLink="/about">About Us</a>.</p>
       }
       @case ('missing-phunks') {
-        <p>250 unique collectible characters, numbered #10,000–10,250 and inscribed fully on-chain as Ethscriptions on Ethereum.</p>
+        <p>250 unique collectible characters, numbered #10,000–10,250 and inscribed fully on-chain as Ethscriptions on Ethereum between September 28, 2023 and February 1, 2024. The first sold on January 1, 2024.</p>
         <p>Created by <a class="highlight" routerLink="/about">DystoLabz</a> as the first collection curated by <a class="highlight" href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks Market</a>: a handcrafted extension made one by one with the original CryptoPunks trait system to complete the gaps left in the original 0–9,999 run: new Aliens, new Ape Zombies, and expanded Male and Female Phunks. None of them was randomly generated. It is an ode to Missing Punks, V2 Phunks and CryptoPhunks.</p>
       }
       @case ('dysto-phunks') {
-        <p>69 unique collectible characters, numbered #10,251–10,319 and inscribed fully on-chain as Ethscriptions on Ethereum.</p>
+        <p>69 unique collectible characters, numbered #10,251–10,319 and inscribed fully on-chain as Ethscriptions on Ethereum between November 17 and November 24, 2024. The first sold on December 13, 2024.</p>
         <p>Created by <a class="highlight" routerLink="/about">DystoLabz</a> as the follow-up to Missing Phunks and the second collection curated by <a class="highlight" href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks Market</a>, drawing on DystoPunks and Cyber Ordinals by Avocato: a neon green dystopian world on a dark green base, #0d1b01 where OG Phunks use black. It was featured on the EtherPhunks market as its third curated collection.</p>
       }
       @case ('phikings') {
-        <p>67 unique collectible characters, numbered #10,320–10,386 and inscribed fully on-chain as Ethscriptions on Ethereum.</p>
+        <p>67 unique collectible characters, numbered #10,320–10,386 and inscribed fully on-chain as Ethscriptions on Ethereum on June 5, 2026. The first sold on August 23, 2026.</p>
         <p>(Phunks + Vikings) Created by <a class="highlight" routerLink="/about">DystoLabz</a> as a special edition series, alongside Missing Phunks, DystoPhunkz, QuantumPhunks and EthsRocks, built around Viking history and Norse mythology: the Aesir gods, the primordial giants and the sagas themselves, with every character designed from the ground up as a true 1/1.</p>
       }
       @case ('phunklloween') {
-        <p>67 unique collectible characters, numbered #10,387–10,453 and inscribed fully on-chain as Ethscriptions on Ethereum.</p>
+        <p>67 unique collectible characters, numbered #10,387–10,453 and inscribed fully on-chain as Ethscriptions on Ethereum, in batches since October 9, 2026. The first sold at auction on October 14, 2026.</p>
         <p>Created by <a class="highlight" routerLink="/about">DystoLabz</a> as a special edition series following Phikings: slashers, vampires, witches, ghosts and monsters drawn from film, television, literature and folklore, from Nosferatu (1922) and the Headless Horseman to Michael Myers, Pennywise, Jack Skellington and Sam.</p>
       }
       @case ('ethsrocks') {
-        <p>106 unique collectible characters, inscribed fully on-chain as Ethscriptions on Ethereum: 100 normal rocks and 6 infinity stones.</p>
+        <p>106 unique collectible characters, 100 normal rocks and 6 infinity stones, inscribed fully on-chain as Ethscriptions on Ethereum between September 14, 2024 and September 2, 2025. The first sold on April 28, 2026.</p>
         <p>Created by <a class="highlight" routerLink="/about">DystoLabz</a>, and the first collection brought to the QuantumPhunks auction house and market. Most of the 100 normal EthsRocks were airdropped to 77 wallets that never sold or listed their Missing Phunks or DystoPhunks under 0.67 ETH, and some received two.</p>
       }
       @default {
@@ -115,6 +115,11 @@
       @default {
         <p>They trade on the QuantumPhunks market, with a 5% royalty on each sale.</p>
       }
+    }
+    <!-- Ethscription collections trade on the EtherPhunks Market contract, which this site tracks;
+         bids only exist on ours. -->
+    @if (!isV67) {
+      <p>{{ collection.name }} trade on the <a class="highlight" href="https://etherphunks.eth.limo/" target="_blank" rel="noopener noreferrer">EtherPhunks Market</a> contract, which this site tracks, so you can list and buy here and every listing shows on EtherPhunks Market too. Bids are placed and accepted only here, through our market contract, where the market fee applies.</p>
     }
     <!-- The site's own status colours (the theme variables the market grids use), named as each
          theme shows them. -->
