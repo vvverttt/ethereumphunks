@@ -18,6 +18,8 @@ import { LeaderboardComponent } from '@/components/leaderboard/leaderboard.compo
 import { CollectionsComponent } from '@/components/collections/collections.component';
 import { StatusBarComponent } from '@/components/status-bar/status-bar.component';
 import { MenuAuctionComponent } from '@/components/menu-auction/menu-auction.component';
+import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
+import { ERC721C_CONTRACTS } from '@/constants/erc721c';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -31,7 +33,9 @@ import * as marketStateSelectors from '@/state/selectors/market-state.selectors'
 
 import { FormatCashPipe } from '@/pipes/format-cash.pipe';
 
-import { from, map, switchMap, tap } from 'rxjs';
+import { combineLatest, from, map, of, switchMap, tap } from 'rxjs';
+import { DataService } from '@/services/data.service';
+import { ThemeService } from '@/services/theme.service';
 
 import anime from 'animejs';
 
@@ -41,6 +45,7 @@ import { environment } from '@/../environments/environment';
   selector: 'app-menu',
   standalone: true,
   imports: [
+    PhunkImageComponent,
     CommonModule,
     WaIntersectionObserver,
     RouterModule,
@@ -81,6 +86,59 @@ export class MenuComponent {
 
   activeMenuNav$ = this.store.select(appStateSelectors.selectActiveMenuNav);
   activeCollection$ = this.store.select(dataStateSelectors.selectActiveCollection);
+
+  private dataSvc = inject(DataService);
+  private themeSvc = inject(ThemeService);
+
+  /**
+   * The connected wallet's pieces grouped by collection, in the collections list's order, each
+   * with its theme colours. Loaded once the menu opens (one light query, cached 5 minutes);
+   * listing status comes from the current collection's owned list already in the store.
+   */
+  walletGroups$ = combineLatest([
+    this.store.select(appStateSelectors.selectConnected),
+    this.address$,
+    this.store.select(appStateSelectors.selectMenuActive),
+  ]).pipe(
+    switchMap(([connected, address, open]) => connected && address && open
+      ? combineLatest([
+          from(this.dataSvc.fetchOwnedAllCollections(address)),
+          this.store.select(dataStateSelectors.selectCollections),
+          this.store.select(marketStateSelectors.selectOwned),
+          this.config$,
+        ])
+      : of(null)),
+    map((v) => {
+      if (!v) return null;
+      const [items, collections, ownedHere, config] = v as [Phunk[], any[], Phunk[] | null, any];
+      const listed = new Map((ownedHere || []).map(p => [p.hashId, p.listing]));
+      const hidden: string[] = config?.hiddenSlugs || [];
+      const groups = [];
+      for (const c of collections || []) {
+        if (hidden.includes(c.slug)) continue;
+        const mine = items.filter(p => p.slug === c.slug).map(p => ({ ...p, listing: listed.get(p.hashId) ?? null }));
+        if (!mine.length) continue;
+        const o = this.themeSvc.collectionOverrides[c.slug] || {};
+        groups.push({
+          slug: c.slug, name: c.name, single: c.singleName || c.name, logo: c.image || null, items: mine,
+          tile: o['--phunk-bg'] || '195, 255, 0',
+          accent: o['--pink'] || (c.slug === 'cryptophunksv67' ? '103, 205, 255' : '255, 4, 180'),
+          bg: o['--background'] || '17, 26, 0',
+        });
+      }
+      return groups;
+    }),
+  );
+
+  walletTotal(groups: { items: unknown[] }[]) {
+    return groups.reduce((n, g) => n + g.items.length, 0);
+  }
+
+  /** v67 pieces open by contract + token id, everything else by hashId. */
+  detailsLink(p: Phunk): any[] {
+    const contract = ERC721C_CONTRACTS[p.slug];
+    return contract ? ['/details', contract, p.tokenId] : ['/details', p.hashId];
+  }
 
   listedPhunks$ = this.store.select(marketStateSelectors.selectOwned).pipe(
     tap((owned: Phunk[] | null) => this.createOwnedStats(owned)),

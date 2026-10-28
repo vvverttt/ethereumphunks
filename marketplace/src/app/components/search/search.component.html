@@ -3,7 +3,7 @@
     <input
       #searchInput
       type="text"
-      [placeholder]="phunkBoxError ? t('badInputTryAgain') : t('searchPlaceholder')"
+      [placeholder]="phunkBoxError ? t('badInputTryAgain') : t((marketSlug$ | async) === 'cryptophunksv67' ? 'searchPlaceholderToken' : 'searchPlaceholder')"
       formControlName="addressInput"
       [class.error]="phunkBoxError"
       [class.disabled]="phunkBoxLoading"

@@ -25,6 +25,10 @@
 :host {
   display: block;
   margin-top: var(--billboard-height);
+  // run into main's 8rem bottom padding: that padding showed the plain page colour as a darker
+  // strip under the collection's glow, right above the footer. The last section's own padding
+  // keeps the gap.
+  margin-bottom: -8rem;
 }
 
 app-splash {
@@ -123,11 +127,28 @@ section {
           height: auto;
           image-rendering: pixelated;
         }
+
+        a { display: block; }
+
+        app-phunk-image {
+          background: rgba(var(--phunk-bg), 1);
+        }
       }
 
       p.intro {
         width: calc(100% - 44rem);
         padding: 1rem 0 0 3rem;
+      }
+
+      @media (max-width: $mobile) {
+        flex-direction: column;
+
+        .intro-phunks { width: 100%; }
+
+        p.intro {
+          width: 100%;
+          padding: 2rem 0 0;
+        }
       }
 
       &:after {
@@ -140,6 +161,13 @@ section {
         border-bottom: .2rem solid rgba(var(--text-color), .1);
       }
     }
+  }
+
+  // v67's cryptopunks.app-style opening: narrow text columns between full-width art.
+  // Overall Stats and its two buttons, then Recent Activity: a little more room than a plain
+  // section so the buttons don't crowd the heading below
+  &.collection-stats {
+    padding-bottom: 6.5rem;
   }
 
   &.mosaic-section {
@@ -242,4 +270,3 @@ section {
 :host-context([data-collection='phikings']) .sections-wrapper {
   @include collection-glow(rgb(224, 165, 38), #b08a10, #967000, #5c4400);
 }
-

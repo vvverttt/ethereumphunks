@@ -1,9 +1,10 @@
 <div class="inner">
   <div class="header-wrapper">
-    <a class="back-link" routerLink="/phupreme">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-      Philip Lottery
-    </a>
+    <nav class="crumb-box" aria-label="Breadcrumb">
+      <a routerLink="/phupreme">Phupreme</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <span>All Won Artifacts</span>
+    </nav>
     <h1>All Won Artifacts</h1>
     <h3>Showing <span class="highlight">{{ wins().length }}</span> wins</h3>
   </div>

@@ -1,0 +1,131 @@
+@use 'abstracts/variables' as *;
+
+// Same reading measure as the collection intros: 17px text in a ~760px column.
+:host {
+  display: block;
+  padding-top: calc(var(--header-height) + 4rem);
+  padding-bottom: 8rem;
+  min-height: 100vh;
+}
+
+h1 {
+  margin: 0;
+  padding: 1rem 0 .4rem;
+  font-size: 4.8rem;
+  font-weight: 700;
+}
+
+.updated {
+  font-size: 1.3rem;
+  opacity: .7;
+  padding-bottom: 3rem;
+}
+
+h2 {
+  margin: 0;
+  padding: 2.4rem 0 1rem;
+  font-size: 2.2rem;
+}
+
+p {
+  max-width: 76rem;
+  margin: 0;
+  padding: 0 0 1.6rem;
+  font-size: 1.7rem;
+  line-height: 1.35;
+}
+
+// The Shell Archive: the sources in columns, like a credits list
+.archive {
+  max-width: 96rem;
+  margin: 2rem 0 0;
+  padding: 0 0 0 2rem;
+  list-style: disc;
+  columns: 3 22rem;
+  column-gap: 4rem;
+  font-size: 1.6rem;
+  line-height: 1.9;
+
+  li { break-inside: avoid; }
+  li::marker { color: rgba(var(--highlight), 1); }
+}
+
+// the animated turtle from the original archive, centred over the text column like theirs
+.archive-turtle {
+  max-width: 76rem;
+  margin: 2rem 0 4rem;
+  text-align: center;
+
+  img {
+    display: inline-block;
+    width: 20rem;
+    height: auto;
+    image-rendering: pixelated;
+  }
+}
+
+// The Shell Archive laid out like the original page at dystolabz.com: subtitle at reading size,
+// the turtle centred with room around it, looser lines, one bulleted column, and the total.
+.shell {
+  // centred on the page like About Us; the three bulleted columns fit inside the same width
+  max-width: 76rem;
+  margin: 0 auto;
+
+  .sub {
+    padding: 3rem 0 0;
+  }
+
+  .archive-turtle {
+    margin: 5rem 0;
+  }
+
+  p {
+    line-height: 1.6;
+  }
+
+  .archive {
+    columns: 3 22rem;   // three bulleted columns, top to bottom
+    margin-top: 1rem;
+    line-height: 2.6;
+    font-weight: 700;
+  }
+
+  .total {
+    padding-top: 2.4rem;
+    font-weight: 700;
+  }
+}
+
+// About Us, like dystolabz.com/about.html: "Hi, we're Vert and Arkan," as a 48px bold heading,
+// the story at reading size, and the drawing of the two of them centred at the bottom.
+.about {
+  // the whole column centred on the page, like dystolabz.com/about.html; text stays left-aligned
+  max-width: 76rem;
+  margin: 0 auto;
+
+  .hi {
+    margin: 0;
+    padding: 1rem 0 4rem;   // their h1 sits 40px above the text
+    font-size: 4.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  p {
+    font-size: 1.8rem;
+    line-height: 1.6;
+  }
+
+  .about-art {
+    max-width: 76rem;
+    margin: 8rem 0 0;
+    text-align: center;
+
+    img {
+      display: inline-block;
+      width: 100%;
+      max-width: 36rem;
+      height: auto;
+    }
+  }
+}

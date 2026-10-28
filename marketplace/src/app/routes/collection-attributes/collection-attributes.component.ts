@@ -2,10 +2,11 @@ import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom, of, take, timeout } from 'rxjs';
 
 import { GlobalState } from '@/models/global-state';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
+import * as marketStateSelectors from '@/state/selectors/market-state.selectors';
 import { supabase } from '@/services/supabase';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { DataService } from '@/services/data.service';
@@ -100,6 +101,21 @@ export interface CountRow {
   examples: string[];
   exampleShas: string[];
 }
+
+/** One stacked section of the page, cryptopunks.app style. */
+export interface StackRow {
+  key: string;
+  name: string;
+  /** Trait key to filter the market by; empty for attribute-count rows. */
+  traitType: string;
+  count: number;
+  pct: string;
+  rarity: string;
+  exampleShas: string[];
+}
+export interface StackSection { id: string; name: string; isCount: boolean; rows: StackRow[]; }
+
+const COUNT_SECTION = 'Attribute Counts';
 
 interface CacheEntry {
   v: number;
@@ -205,6 +221,42 @@ export class CollectionAttributesComponent implements OnInit {
     return (this.allUseCount() / total).toFixed(1);
   });
 
+  /** Every section stacked on one page: types, each trait type, then attribute counts. */
+  stacked = computed<StackSection[]>(() => {
+    const out: StackSection[] = this.allSections().map(s => ({
+      id: this.anchor(s.name),
+      name: s.name,
+      isCount: false,
+      rows: s.rows.map(r => ({ key: `${s.name}|${r.name}`, name: r.name, traitType: r.traitType === 'Type' ? this.typeKey() : r.traitType, count: r.count, pct: r.pct, rarity: r.rarity, exampleShas: r.exampleShas })),
+    }));
+    // Character (hundreds of one-off names) reads best after the regular traits: right after Weapon
+    const ci = out.findIndex(s => s.name === 'Character');
+    if (ci >= 0 && out.some(s => s.name === 'Weapon')) {
+      const [character] = out.splice(ci, 1);
+      out.splice(out.findIndex(s => s.name === 'Weapon') + 1, 0, character);
+    }
+    // then Skin Tone right after Character
+    const si = out.findIndex(s => s.name === 'Skin Tone');
+    if (si >= 0 && out.some(s => s.name === 'Character')) {
+      const [skin] = out.splice(si, 1);
+      out.splice(out.findIndex(s => s.name === 'Character') + 1, 0, skin);
+    }
+    const counts = this.activeCountRows();
+    if (counts.length) out.push({
+      id: this.anchor(COUNT_SECTION),
+      name: COUNT_SECTION,
+      isCount: true,
+      rows: counts.map(r => ({ key: `#|${r.numTraits}`, name: `${r.numTraits} ${r.numTraits === 1 ? 'Attribute' : 'Attributes'}`, traitType: '', count: r.count, pct: r.pct, rarity: r.rarity, exampleShas: r.exampleShas })),
+    });
+    return out;
+  });
+
+  /** Listed pieces, so their example tiles take the listed colour like cryptopunks.app's. */
+  listedShas = signal<Set<string>>(new Set());
+
+  /** The collection's own key for its type trait (e.g. "Sex", "Phunk Type"), for the type rows' filter link. */
+  private typeKey = signal('Type');
+
   activeSection = computed<AttrSection | null>(() => {
     const tab = this.activeTab();
     if (!tab || tab === ALL_TAB) return null;
@@ -249,7 +301,10 @@ export class CollectionAttributesComponent implements OnInit {
   async ngOnInit() {
     this.slug = this.route.snapshot.paramMap.get('slug') || 'cryptophunksv67';
 
-    const collections = await firstValueFrom(this.store.select(dataStateSelectors.selectCollections));
+    // wait for the collections list, or the breadcrumb falls back to the bare slug
+    const collections = await firstValueFrom(this.store.select(dataStateSelectors.selectCollections).pipe(
+      filter(c => !!c?.length), take(1), timeout({ first: 8000, with: () => of([]) }),
+    )).catch(() => []);
     const col = collections?.find(c => c.slug === this.slug);
     this.collectionName.set(col?.name || this.slug);
 
@@ -269,6 +324,7 @@ export class CollectionAttributesComponent implements OnInit {
           const initialTab = tabParam && allTabs.includes(tabParam) ? tabParam : ALL_TAB;
           this.activeTab.set(initialTab);
           this.loading.set(false);
+          this.afterLoad(initialTab);
           return;
         }
       }
@@ -392,11 +448,64 @@ export class CollectionAttributesComponent implements OnInit {
     const initialTab = tabParam && allTabs.includes(tabParam) ? tabParam : ALL_TAB;
     this.activeTab.set(initialTab);
     this.loading.set(false);
+    this.afterLoad(initialTab);
 
     try {
       const entry: CacheEntry = { v: CACHE_VERSION, total, typeSection, sections, countRows };
       localStorage.setItem(cacheKey, JSON.stringify(entry));
     } catch {}
+  }
+
+  private anchor(name: string) {
+    return 'attr-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+
+  /** Scroll to an old ?tab= link's section, then fill in the market columns. */
+  private afterLoad(tab: string) {
+    if (tab && tab !== ALL_TAB) {
+      const id = this.anchor(tab === 'Attribute Count' ? COUNT_SECTION : tab);
+      setTimeout(() => document.getElementById(id)?.scrollIntoView(), 300);
+    }
+    this.loadMarket();
+  }
+
+  jump(ev: MouseEvent, id: string) {
+    ev.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  /**
+   * Listed pieces, so their example tiles take the listed colour, and each collection's own key
+   * for its type trait. Listings come from the store (the route's slug already loaded them), so
+   * this adds no request.
+   */
+  private async loadMarket() {
+    const attrs = await this.loadAttrsFromStatic(this.slug);
+    for (const item of attrs) {
+      const k = Object.keys(item.values || {}).find(key => TYPE_TRAIT_KEYS.includes(key.toLowerCase()));
+      if (k) { this.typeKey.set(k); break; }
+    }
+    const listings = await firstValueFrom(this.store.select(marketStateSelectors.selectListings).pipe(
+      filter(l => !!l?.length), take(1),
+      // a collection with nothing listed never emits a non-empty list
+      timeout({ first: 8000, with: () => of([]) }),
+    )).catch(() => []);
+    this.listedShas.set(new Set((listings || []).filter(p => p?.sha && p.listing?.minValue).map(p => p.sha)));
+  }
+
+  /** The whole table as CSV, like their Download CSV link. */
+  downloadCsv() {
+    const q = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+    const lines = [['Section', 'Attribute', 'Count', 'Percent', 'Rarity'].map(q).join(',')];
+    for (const s of this.stacked()) {
+      for (const r of s.rows) lines.push([s.name, r.name, r.count, r.pct, r.rarity].map(q).join(','));
+    }
+    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${this.slug}-attributes.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   setTab(tab: string) {

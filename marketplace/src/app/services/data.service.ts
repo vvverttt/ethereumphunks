@@ -652,6 +652,36 @@ export class DataService {
    * @param type Event type filter
    * @param slug Collection slug filter
    */
+  private ownedAllCache = new Map<string, { at: number; data: Promise<Phunk[]> }>();
+
+  /**
+   * Everything an address holds across every collection, in ONE light query (hashId, tokenId,
+   * slug, sha, owner), for the menu's wallet box. Escrowed pieces (held by the market or auction
+   * house for this address) count too. Cached 5 minutes per address so opening and closing the
+   * menu does not re-ask.
+   */
+  fetchOwnedAllCollections(address: string): Promise<Phunk[]> {
+    if (!address) return Promise.resolve([]);
+    address = address.toLowerCase();
+    const hit = this.ownedAllCache.get(address);
+    if (hit && Date.now() - hit.at < 300_000) return hit.data;
+
+    const escrows = [environment.marketAddress, ...((environment as any).oldMarketAddresses || []), (environment as any).auctionAddress]
+      .filter(Boolean).map((a: string) => a.toLowerCase());
+    const data = (async () => {
+      const { data, error } = await supabase
+        .from('ethscriptions' + this.suffix)
+        .select('hashId,tokenId,slug,sha,owner')
+        .or(`owner.eq.${address},and(owner.in.(${escrows.join(',')}),prevOwner.eq.${address})`)
+        .order('tokenId')
+        .limit(5000);
+      if (error) { this.ownedAllCache.delete(address); return []; }
+      return (data || []).map((p: any) => ({ ...p, isEscrowed: p.owner !== address } as Phunk));
+    })();
+    this.ownedAllCache.set(address, { at: Date.now(), data });
+    return data;
+  }
+
   fetchEvents(
     offset: number,
     limit: number,

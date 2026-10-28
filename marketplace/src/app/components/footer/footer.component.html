@@ -1,49 +1,99 @@
+<!-- Laid out like cryptopunks.app's footer: a band in the collection's accent with link columns,
+     a divider, then language and the small print. Our own footer lives inside it: the contract
+     addresses and version, X and GitHub, the risk note and "Be Phree". -->
 <div class="inner">
-  <div class="social-links">
-    <a href="https://x.com/CryptoPhunksV67" target="_blank">
-      <ng-template [ngTemplateOutlet]="twitterIcon" />
-    </a>
-    <a href="https://github.com/vvverttt" target="_blank">
-      <ng-template [ngTemplateOutlet]="githubIcon" />
-    </a>
+  <div class="top">
+    @if (slug$ | async; as slug) {
+      <nav aria-label="Explore">
+        <h4>Explore</h4>
+        <a [routerLink]="['/', slug, 'market', 'all']">All {{ (collection$ | async)?.name }}</a>
+        <a [routerLink]="['/', slug, 'owners']">Owners</a>
+        <a routerLink="/phupreme">Phupreme</a>
+        @if ((config$ | async)?.showAuction !== false) {
+          <a routerLink="/auction">Auction House</a>
+        }
+      </nav>
+
+      <nav aria-label="Types and Attributes">
+        <h4>Types and Attributes</h4>
+        <a [routerLink]="['/', slug, 'attributes']">All Types and Attributes</a>
+        @if (slug === 'cryptophunksv67') {
+          <a [routerLink]="['/', slug, 'market', 'all']" [queryParams]="{ Animal: 'Turtle' }">Turtles</a>
+        }
+      </nav>
+
+      <nav aria-label="Activity">
+        <h4>Activity</h4>
+        <a [routerLink]="['/', slug, 'market', 'listings']">For Sale</a>
+        <a [routerLink]="['/', slug, 'market', 'bids']">Bids</a>
+        <a [routerLink]="['/', slug, 'sales']">Sales</a>
+      </nav>
+    }
+
+    <div class="contracts">
+      <h4>Contracts</h4>
+      @if (contracts$ | async; as c) {
+        @if (c.nft) {
+          <span>Collection <a [href]="explorerUrl + '/address/' + c.nft" target="_blank" rel="noopener noreferrer"><app-address [address]="c.nft" /></a></span>
+        }
+        <span>{{ t('marketplace') }} <a [href]="explorerUrl + '/address/' + c.marketplace" target="_blank" rel="noopener noreferrer"><app-address [address]="c.marketplace" /></a></span>
+        <span>{{ t('points') }} <a [href]="explorerUrl + '/address/' + c.points" target="_blank" rel="noopener noreferrer"><app-address [address]="c.points" /></a></span>
+        <!-- Lottery contract line hidden until Phupreme launches; restore it from git history. -->
+        @if ((config$ | async)?.showAuction !== false) {
+          <span>{{ t('auction') }} <a [href]="explorerUrl + '/address/' + c.auction" target="_blank" rel="noopener noreferrer"><app-address [address]="c.auction" /></a></span>
+        }
+      }
+      <span class="version">{{ t('version') }} {{ version }} ({{ buildDate }})</span>
+    </div>
+
+    <!-- Where cryptopunks.app has its ETH / USD toggle: language and font (moved here from the
+         menu), then X and GitHub. -->
+    <div class="brand">
+      <div class="toggle" [attr.aria-label]="t('languageAndFontControls')" role="group">
+        @for (o of preferences.languageOptions; track o.value) {
+          <button type="button" [class.active]="preferences.currentLanguage() === o.value"
+            [attr.aria-label]="t(o.labelKey)" (click)="preferences.setLanguage(o.value)">{{ o.nativeLabel }}</button>
+        }
+      </div>
+      <div class="toggle fonts" role="group">
+        @for (o of preferences.fontOptions; track o.value) {
+          <button type="button" [class]="o.className" [class.active]="preferences.currentFont() === o.value"
+            [attr.aria-label]="t(o.labelKey)" (click)="preferences.setFont(o.value)">{{ o.sample }}</button>
+        }
+      </div>
+      <div class="social-links">
+        <!-- DystoLabz: Vert and Arkan, the devs and creators -->
+        <a class="handle" href="https://x.com/vvverttt" target="_blank" rel="noopener noreferrer" aria-label="Vert on X">
+          <ng-template [ngTemplateOutlet]="twitterIcon" /><span>Vvverttt</span>
+        </a>
+        <a class="handle" href="https://x.com/arkanaruzain" target="_blank" rel="noopener noreferrer" aria-label="Arkan on X">
+          <ng-template [ngTemplateOutlet]="twitterIcon" /><span>Arkanaruzain</span>
+        </a>
+        <a href="https://github.com/vvverttt" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <ng-template [ngTemplateOutlet]="githubIcon" />
+        </a>
+      </div>
+    </div>
   </div>
 
-  <div class="phupreme-logo">
-    <!-- Orange while a Phunklloween item or page is on screen, like its other pink accents. -->
-    @if (themeSvc.themeSlug() === 'phunklloween') {
-      <img src="assets/images/phupreme-orange.png" alt="Phupreme" />
-    } @else if ((theme$ | async) === 'dark') {
-      <img src="assets/images/phupreme-dark.png" alt="Phupreme" />
-    } @else {
-      <img src="assets/images/phupreme.png" alt="Phupreme" />
-    }
+  <div class="bottom">
+    <p class="risk">{{ t('riskDisclaimer') }}</p>
+
+    <nav class="legal" aria-label="Legal">
+      <!-- Terms / License Terms / Privacy Policy held back for now (pages kept in legal.component). -->
+      <a routerLink="/about">About Us</a>
+      <a routerLink="/shell-archive">The Shell Archive</a>
+    </nav>
+
+    <p class="sign">{{ t('bePhunky') }} <span>© {{ year }} DystoLabz</span></p>
   </div>
-
-  <p class="links">
-    {{ t('version') }}: {{ version }} ({{ buildDate }})<br />
-    @if (contracts$ | async; as c) {
-      @if (c.nft) {
-        <span i18n>Collection</span>: <a [href]="explorerUrl + '/address/' + c.nft" target="_blank"><app-address [address]="c.nft" /></a><br />
-      }
-      {{ t('marketplace') }}: <a [href]="explorerUrl + '/address/' + c.marketplace" target="_blank"><app-address [address]="c.marketplace" /></a><br />
-      {{ t('points') }}: <a [href]="explorerUrl + '/address/' + c.points" target="_blank"><app-address [address]="c.points" /></a><br />
-      <!-- Lottery contract line hidden until Phupreme launches; restore it from git history. -->
-      @if ((config$ | async)?.showAuction !== false) {
-        {{ t('auction') }}: <a [href]="explorerUrl + '/address/' + c.auction" target="_blank"><app-address [address]="c.auction" /></a><br />
-      }
-    }
-  </p>
-
-  <p>{{ t('riskDisclaimer') }}</p>
-
-  <p>{{ t('bePhunky') }}</p>
 </div>
 
 <ng-template #twitterIcon>
   <svg width="1200" height="1227" viewBox="0 0 1200 1227" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" fill="rgba(var(--text-color), 1)"/></svg>
+    <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"/></svg>
 </ng-template>
 
 <ng-template #githubIcon>
-  <svg height="32" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="32" data-view-component="true" class="octicon octicon-mark-github v-align-middle color-fg-default"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
+  <svg height="32" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="32"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
 </ng-template>

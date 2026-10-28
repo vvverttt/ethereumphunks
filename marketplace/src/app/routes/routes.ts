@@ -26,6 +26,13 @@ export const routes: Routes = [
     redirectTo: ':slug/market/:marketType',
     pathMatch: 'full'
   },
+  // Terms, License and Privacy, linked from the footer. Above the :slug catch-all.
+  // Terms, License and Privacy are held back for now: the pages stay in legal.component, unrouted.
+  // { path: 'terms', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'terms' } },
+  // { path: 'license', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'license' } },
+  // { path: 'privacy', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'privacy' } },
+  { path: 'about', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'about' } },
+  { path: 'shell-archive', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'shell-archive' } },
   // Phupreme (the QuantumPhunks mint lottery). Its old /lottery links redirect here.
   { path: 'lottery', redirectTo: 'phupreme', pathMatch: 'full' },
   { path: 'lottery/wins', redirectTo: 'phupreme/wins', pathMatch: 'full' },

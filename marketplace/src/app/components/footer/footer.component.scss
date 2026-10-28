@@ -1,74 +1,165 @@
 @use 'abstracts/variables' as *;
 
+// cryptopunks.app's footer: a full-width band in the collection's accent (--pink is each theme's
+// accent: pink, Phunklloween orange, Phikings gold...), white text, link columns, a divider, then
+// language and the small print. Our own footer (contracts, social, Phupreme) is folded into it.
 :host {
   display: block;
+  // above the fixed billboard (app-splash, z-index 1), which otherwise covers the band
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  background: rgba(var(--pink), 1);
 
-  .inner {
+  a {
+    color: #fff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.inner {
+  // Top and bottom only: the sides keep .inner's own padding, so the footer lines up with the
+  // page's content column the way cryptopunks.app's does.
+  padding-top: 4rem;
+  padding-bottom: 2.4rem;
+
+  @media (max-width: $mobile) {
+    padding-top: 3.2rem;
+    padding-bottom: 2.4rem;
+  }
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.8rem 3.2rem;
+  padding-bottom: 3rem;
+  border-bottom: .1rem solid rgba(255, 255, 255, .5);
+
+  // even columns, like theirs
+  nav,
+  .contracts {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    gap: .9rem;
+    min-width: 17rem;
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
 
-    font-size: 1.2rem;
-    text-align: center;
-    padding: 2rem 0 4rem;
+  h4 {
+    margin: 0 0 .5rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  .contracts {
+    font-size: 1.3rem;
+    opacity: .95;
+
+    .version {
+      opacity: .8;
+    }
+  }
+
+  .brand {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1.6rem;
+
+    @media (max-width: $mobile) {
+      margin-left: 0;
+      align-items: flex-start;
+    }
+
+    // outlined toggle groups; the active option is filled white, like their ETH / USD
+    .toggle {
+      display: flex;
+      border: .1rem solid #fff;
+
+      button {
+        padding: .55rem 1rem;
+        font: inherit;
+        font-size: 1.3rem;
+        color: #fff;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+
+        & + button { border-left: .1rem solid #fff; }
+
+        &.active {
+          color: rgba(var(--pink), 1);
+          background: #fff;
+          font-weight: 700;
+        }
+
+        &.sample-default { font-family: var(--primary-font-stack); }
+        &.sample-blockscript { font-family: 'Low Blockscript', 'Retro Computer', sans-serif; }
+        &.sample-high-blockscript { font-family: 'High Blockscript', 'Retro Computer', sans-serif; }
+      }
+
+      &.fonts button { min-width: 4.4rem; }
+    }
 
     .social-links {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding-bottom: 1rem;
+      gap: 1.6rem;
 
-      a {
-        padding: 0 1rem;
+      .handle {
+        display: inline-flex;
+        align-items: center;
+        gap: .6rem;
+        font-size: 1.4rem;
 
-        svg {
-          width: 2.4rem;
-          height: auto;
-
-          path {
-            fill: rgba(var(--text-color), .65);
-          }
-        }
-
-        &:active {
-          svg {
-            path {
-              fill: rgba(var(--text-color), 1);
-            }
-          }
-        }
+        svg { width: 1.6rem; }
       }
-    }
 
-    .phupreme-logo {
-      display: flex;
-      justify-content: center;
-      padding: 1.4rem 0 1rem;
+      svg {
+        width: 2.2rem;
+        height: auto;
+        fill: #fff;
 
-      img {
-        height: 3.2rem;
-        width: auto;
-      }
-    }
-
-    p {
-      max-width: 50rem;
-
-      &.links {
-        line-height: 1.5;
-        font-size: 1rem;
-
-        a {
-          text-decoration: none;
-        }
+        path { fill: #fff; }
       }
     }
   }
+}
 
-  @media (max-width: $mobile) {
-    .inner {
-      padding: 2rem;
-    }
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2rem 3.2rem;
+  padding-top: 2rem;
+  font-size: 1.4rem;
+
+  p {
+    margin: 0;
+    padding: 0;
+  }
+
+  .risk {
+    flex: 1;
+    min-width: 24rem;
+    font-size: 1.2rem;
+    opacity: .85;
+  }
+
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8rem 2.8rem;
+  }
+
+  .sign span {
+    margin-left: 1.6rem;
   }
 }

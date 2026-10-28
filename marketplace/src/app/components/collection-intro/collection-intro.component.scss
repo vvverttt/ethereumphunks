@@ -1,0 +1,86 @@
+@use 'abstracts/variables' as *;
+
+// Spacing after cryptopunks.app, tightened: ~64px from the wordmark to the text, ~60px between the
+// text and the art, ~20px between paragraphs, 17px text in a ~760px column.
+:host {
+  display: block;
+  width: 100%;
+}
+
+.cp-copy {
+  width: 100%;
+
+  .cp-wordmark {
+    margin: 2rem 0 6.4rem;
+    padding: 0;
+
+    // The wordmark is a mask filled with the collection's accent (--pink is each theme's
+    // accent), so one set of SVGs serves every theme.
+    .mark {
+      display: block;
+      max-width: 100%;
+      background: rgba(var(--pink), 1);
+      mask-repeat: no-repeat;
+      mask-size: contain;
+      mask-position: left center;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-size: contain;
+      -webkit-mask-position: left center;
+    }
+
+    @media (max-width: $mobile) {
+      margin-bottom: 4rem;
+    }
+  }
+
+  // the status legend: each colour word on its own colour, like cryptopunks.app
+  .swatch {
+    padding: 0 .3rem;
+    color: #000;
+    &.base { background: rgba(var(--phunk-bg), 1); }
+    &.listed { background: rgba(var(--listed-color), 1); }
+    &.bid { background: rgba(var(--bid-color), 1); color: #fff; }
+    &.escrow { background: rgba(var(--escrow-color), 1); }
+  }
+
+  p {
+    max-width: 76rem;
+    margin: 0;
+    padding: 0 0 2.2rem;
+    font-size: 1.7rem;
+    line-height: 1.3;
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+  }
+}
+
+// Full-width art, edge to edge: a two-row band of random pieces between the two text blocks,
+// and the map of the whole collection after them.
+.cp-band {
+  width: 100%;
+
+  a { display: block; }
+  overflow: hidden;
+  background: rgba(var(--phunk-bg), 1);
+  display: grid;
+  grid-template-rows: repeat(2, 10.4rem);
+  grid-auto-flow: column;
+  grid-auto-columns: 10.4rem;
+  margin: 6rem 0;
+
+  @media (max-width: $mobile) {
+    grid-template-rows: repeat(2, 6.4rem);
+    grid-auto-columns: 6.4rem;
+    margin: 4rem 0;
+  }
+}
+
+.cp-map {
+  margin: 6rem 0;
+
+  @media (max-width: $mobile) {
+    margin: 4rem 0;
+  }
+}

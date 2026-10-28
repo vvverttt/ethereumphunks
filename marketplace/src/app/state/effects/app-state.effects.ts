@@ -12,7 +12,7 @@ import { SocketService } from '@/services/socket.service';
 
 import { GlobalState, LinkedAccount } from '@/models/global-state';
 
-import { catchError, EMPTY, filter, from, map, merge, mergeMap, of, switchMap, tap, withLatestFrom } from 'rxjs';
+import { catchError, EMPTY, filter, from, map, merge, mergeMap, of, switchMap, take, tap, withLatestFrom } from 'rxjs';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -36,6 +36,10 @@ const FIXED_THEME_PAGES: Record<string, string> = {
   owners: 'cryptophunksv67',
   admin: 'cryptophunksv67',
 };
+
+// Footer pages carry no collection of their own: they keep the colours of the collection the
+// visitor came from (or, on a reload, the last one this browser showed).
+const FOOTER_PAGES = ['about', 'shell-archive', 'terms', 'license', 'privacy'];
 
 @Injectable()
 export class AppStateEffects {
@@ -181,6 +185,23 @@ export class AppStateEffects {
     tap(([slug, collections]) => {
       this.themeSvc.setActiveCollection(slug);
       // The header's collection switcher follows the colours too.
+      const collection = collections?.find((c) => c.slug === slug);
+      if (collection) this.store.dispatch(dataStateActions.setActiveCollection({ activeCollection: { ...collection } }));
+    }),
+  ), { dispatch: false });
+
+  onFooterPage$ = createEffect(() => this.actions$.pipe(
+    ofType(ROUTER_NAVIGATION),
+    filter((action: any) => FOOTER_PAGES.includes(String(action.payload.event.urlAfterRedirects).split(/[?#]/)[0].split('/')[1] || '')),
+    // the colours already on (from the collection the visitor came from, or restored on a reload)
+    map(() => { try { return this.themeSvc.themeSlug() || localStorage.getItem('EtherPhunks_collection') || ''; } catch { return this.themeSvc.themeSlug(); } }),
+    filter((slug) => !!slug),
+    tap((slug) => this.themeSvc.setActiveCollection(slug)),
+    // on a reload the collections list arrives a moment later; wait for it for the header switcher
+    switchMap((slug) => this.store.select(dataStateSelectors.selectCollections).pipe(
+      filter((c) => !!c?.length), take(1), map((collections) => [slug, collections] as const),
+    )),
+    tap(([slug, collections]) => {
       const collection = collections?.find((c) => c.slug === slug);
       if (collection) this.store.dispatch(dataStateActions.setActiveCollection({ activeCollection: { ...collection } }));
     }),

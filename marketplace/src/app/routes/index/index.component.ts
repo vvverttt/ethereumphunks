@@ -17,6 +17,8 @@ import { CalcPipe } from '@/pipes/calculate.pipe';
 import { MosaicComponent } from '@/components/mosaic/mosaic.component';
 import { CollectionStatsComponent } from '@/components/collection-stats/collection-stats.component';
 import { CollectionSalesComponent } from '@/components/collection-sales/collection-sales.component';
+import { CollectionIntroComponent } from '@/components/collection-intro/collection-intro.component';
+import { CollectionSearchComponent } from '@/components/collection-search/collection-search.component';
 
 import { DataService } from '@/services/data.service';
 import { ThemeService } from '@/services/theme.service';
@@ -57,6 +59,8 @@ const LINKED_SLUG_MAP: Record<string, string> = {
     MosaicComponent,
     CollectionStatsComponent,
     CollectionSalesComponent,
+    CollectionIntroComponent,
+    CollectionSearchComponent,
     CalcPipe,
   ],
   selector: 'app-index',
@@ -95,6 +99,7 @@ export class IndexComponent {
   );
 
   mintImage = signal<string | null>(null);
+
   openFaq = signal<string | null>(null);
 
   defaultFaq = [
@@ -184,5 +189,6 @@ export class IndexComponent {
   t(key: string): string {
     return this.preferences.t(key);
   }
+
 
 }

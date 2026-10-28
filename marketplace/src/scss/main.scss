@@ -182,11 +182,12 @@
   --highlight: 255, 255, 255;           // white — matches the override the service applies
   // market / event colors retuned to blues that sit with #648595
   --transferred-color: 100, 133, 149;   // #648595 — transfers match the base
-  --bid-color: 0, 171, 255;             // #00abff
   --sale-color: 102, 205, 255;          // #66cdff
-  --listed-color: 84, 199, 255;         // #54c7ff
   --claimed-color: 121, 250, 230;       // #79fae6
-  --escrow-color: 121, 250, 230;        // #79fae6
+  // No --listed-color, --bid-color or --escrow-color here: v67 uses the same status colours as
+  // every other collection (aqua listed, violet bid, yellow escrow, from _variables.scss). Its
+  // own blues for these sat too close to the #67cdff tiles to tell apart, and lime is kept for
+  // the Ethscription collections.
 
   // The collections dropdown button defaults to --transferred-color, which here is the same
   // #648595 as the header — it disappeared into it. Pin it to the palette's cyan instead so the
@@ -211,4 +212,30 @@
   }
   .prismatic-bid, .prismatic-marketbid { color: #00abff !important; -webkit-text-fill-color: #00abff !important; background: none !important; }
   .prismatic-transfer { color: #79fae6 !important; -webkit-text-fill-color: #79fae6 !important; background: none !important; }
+}
+
+// Breadcrumb box, cryptopunks.app style: "Collection / Page" in a light grey bar across the
+// column. Used by every sub-page (Types and Attributes, Owners, the Phupreme pool and wins).
+// Not `.crumbs`: the item page's breadcrumb band already uses that name.
+.crumb-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: 2rem;
+  padding: 1.4rem 1.6rem;
+  font-family: var(--primary-font-stack);
+  font-size: 1.6rem;
+  text-transform: none;
+  color: rgba(var(--text-color), .75);
+  background: rgba(var(--text-color), .06);
+
+  .sep { opacity: .5; }
+
+  a {
+    color: rgba(var(--highlight), 1);
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
 }

@@ -6,6 +6,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { GlobalState } from '@/models/global-state';
 
 import { DataService } from '@/services/data.service';
+import { ThemeService } from '@/services/theme.service';
 import { isAdminWallet } from '@/constants/admin-wallets';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -62,7 +63,11 @@ export class DataStateEffects {
     ),
     map(([action, collections, slug]) => {
       if (!collections || collections.length === 0) return null;
-      const targetSlug = slug || environment.defaultCollection;
+      // Footer pages (About, The Shell Archive) have no slug of their own and the market slug may
+      // still be the default, so they keep the collection whose colours are on.
+      const page = window.location.pathname.split('/')[1] || '';
+      const footerPage = ['about', 'shell-archive', 'terms', 'license', 'privacy'].includes(page);
+      const targetSlug = (footerPage && this.themeSvc.themeSlug()) || slug || environment.defaultCollection;
       return collections.find((c) => c.slug === targetSlug)
         || collections.find((c) => c.slug === environment.defaultCollection)
         || collections[0]
@@ -82,6 +87,7 @@ export class DataStateEffects {
   constructor(
     private store: Store<GlobalState>,
     private actions$: Actions,
-    private dataSvc: DataService
+    private dataSvc: DataService,
+    private themeSvc: ThemeService,
   ) {}
 }

@@ -3,6 +3,8 @@ import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { selectMarketSlug } from '@/state/selectors/market-state.selectors';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
@@ -13,7 +15,7 @@ import { ERC721C_CONTRACT_SETS } from '@/constants/erc721c';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, WalletAddressDirective],
+  imports: [CommonModule, RouterModule, WalletAddressDirective],
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss']
@@ -23,6 +25,10 @@ export class FooterComponent {
 
   theme$ = this.store.select(appStateSelectors.selectTheme);
   config$ = this.store.select(appStateSelectors.selectConfig);
+  slug$ = this.store.select(selectMarketSlug);
+  collection$ = this.store.select(dataStateSelectors.selectActiveCollection);
+  // from the first Missing Phunk (Sep 2023), the earliest work now under DystoLabz
+  year = `2023–${new Date().getFullYear()}`;
 
   explorerUrl = environment.explorerUrl;
 

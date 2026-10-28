@@ -39,6 +39,8 @@ export class SearchComponent {
   phunkBoxError: boolean = false;
 
   theme$ = this.store.select(appStateSelectors.selectTheme);
+  // v67 is an ERC-721C collection, not Ethscriptions: its placeholder offers a token ID instead.
+  marketSlug$ = this.store.select(selectMarketSlug);
   phunkBox: FormGroup = new FormGroup({
     addressInput: new FormControl()
   });

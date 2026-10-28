@@ -32,6 +32,15 @@
 
     <div class="sections-wrapper">
 
+      <!-- Every collection opens like cryptopunks.app: its wordmark, a few paragraphs about it, a
+           band of random pieces, its breakdown by type, the map of the whole collection, then
+           Overall Stats. -->
+      <app-collection-intro [collection]="activeCollection" [listings]="listings$ | async" [bids]="bids$ | async" />
+
+      <section class="collection-stats">
+        <app-collection-stats [collection]="activeCollection" />
+      </section>
+
       <section class="overview">
         <div class="inner">
           <app-recent-activity
@@ -136,6 +145,32 @@
           }
         }
 
+        <!-- cryptopunks.app's order: Sales before All. -->
+        @if (activeCollection) {
+          <section class="sales">
+            <div class="inner">
+              <h3>Sales</h3>
+
+              <div class="section-stats-wrapper">
+                <p>
+                  <a
+                    class="highlight"
+                    [routerLink]="['sales']"
+                    [relativeTo]="route">
+
+                    View all {{ activeCollection.name }} sales.
+                  </a>
+                </p>
+              </div>
+
+              <app-collection-sales
+                [slug]="activeCollection.slug"
+                [limit]="(isMobile$ | async) ? 56 : 110"
+              />
+            </div>
+          </section>
+        }
+
         <section>
           <div class="inner">
             <h3>{{ t('all') }}</h3>
@@ -166,32 +201,9 @@
           </div>
         </section>
 
-        <section class="sales">
-          <div class="inner">
-            <h3>Sales</h3>
 
-            <div class="section-stats-wrapper">
-              <p>
-                <a
-                  class="highlight"
-                  [routerLink]="['sales']"
-                  [relativeTo]="route">
 
-                  View all {{ activeCollection.name }} sales.
-                </a>
-              </p>
-            </div>
 
-            <app-collection-sales
-              [slug]="activeCollection.slug"
-              [limit]="(isMobile$ | async) ? 56 : 110"
-            />
-          </div>
-        </section>
-
-        <section class="collection-stats">
-          <app-collection-stats [collection]="activeCollection" />
-        </section>
 
         <!-- <section class="mosaic-section">
           <app-mosaic [slug]="activeCollection.slug" />
@@ -220,6 +232,14 @@
             </div>
           </section>
         }
+
+        <!-- Under the Q&A, like cryptopunks.app's "Search Punks": words become trait filters, a
+             number opens that piece. -->
+        <section class="collection-search">
+          <div class="inner">
+            <app-collection-search [collection]="activeCollection" />
+          </div>
+        </section>
       }
 
     </div>

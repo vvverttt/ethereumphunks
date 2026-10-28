@@ -94,32 +94,7 @@
       }
     }
 
-    <div class="preference-switcher" [attr.aria-label]="t('languageAndFontControls')">
-      <div class="language-options">
-        @for (option of languageOptions; track option.value) {
-          <button
-            type="button"
-            [attr.aria-label]="t(option.labelKey)"
-            [class.active]="currentLanguage() === option.value"
-            (click)="setLanguage(option.value)">
-            <span>{{ option.nativeLabel }}</span>
-          </button>
-        }
-      </div>
-
-      <div class="font-options">
-        @for (option of fontOptions; track option.value) {
-          <button
-            type="button"
-            [attr.aria-label]="t(option.labelKey)"
-            [class]="option.className"
-            [class.active]="currentFont() === option.value"
-            (click)="setFont(option.value)">
-            {{ option.sample }}
-          </button>
-        }
-      </div>
-    </div>
+    <!-- Language and font now live in the footer, like cryptopunks.app's ETH / USD toggle. -->
 
     @if (isOwner()) {
       <a
@@ -137,6 +112,35 @@
   </div>
 
   @if ((connected$ | async) && (address$ | async); as address) {
+    <!-- The connected wallet's pieces, one card per collection in that collection's own colours.
+         Inside the connected block, so it only exists while a wallet is connected. -->
+    @if (walletGroups$ | async; as groups) {
+      @if (groups.length) {
+        <div class="my-phunks">
+          <h3 class="my-title">Your Phunks <span>{{ walletTotal(groups) | number }}</span></h3>
+          @for (g of groups; track g.slug) {
+            <div class="my-card"
+              [style.--g-tile]="g.tile" [style.--g-accent]="g.accent" [style.--g-bg]="g.bg">
+              <a class="my-head" [routerLink]="['/', g.slug, 'market', 'owned']" [queryParams]="{ address }" (click)="goToAuction()">
+                @if (g.logo) { <img class="logo" [src]="g.logo" alt="" /> }
+                <span class="name">{{ g.name }}</span>
+                <span class="count">{{ g.items.length | number }}</span>
+                <span class="arrow"><ng-template [ngTemplateOutlet]="arrowIcon" /></span>
+              </a>
+              <div class="my-grid" [class.scroll]="g.items.length > 18">
+                @for (p of g.items; track p.hashId) {
+                  <a [routerLink]="detailsLink(p)" (click)="goToAuction()" [title]="g.single + ' #' + p.tokenId"
+                    [class.listed]="!!p.listing" [class.escrow]="p.isEscrowed">
+                    <app-phunk-image [sha]="p.sha" [alt]="'#' + p.tokenId" />
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
     @if (activeCollection$ | async; as activeCollection) {
       <div class="stats-wrapper" waIntersectionObserver waIntersectionThreshold="0.5">
         <!-- @if ((userOpenBids$ | async); as bids) {

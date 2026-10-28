@@ -3,7 +3,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 
 import { Store } from '@ngrx/store';
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom, of, take, timeout } from 'rxjs';
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
@@ -80,7 +80,10 @@ export class CollectionOwnersComponent implements OnInit {
     this.slug = slug;
 
     this.ownerLabel.set(OWNER_LABEL_BY_SLUG[this.slug] || 'Phunk');
-    const collections = await firstValueFrom(this.store.select(dataStateSelectors.selectCollections));
+    // wait for the collections list, or the breadcrumb falls back to the bare slug
+    const collections = await firstValueFrom(this.store.select(dataStateSelectors.selectCollections).pipe(
+      filter(c => !!c?.length), take(1), timeout({ first: 8000, with: () => of([]) }),
+    )).catch(() => []);
     const col = collections?.find(c => c.slug === this.slug);
     this.collectionName.set(col?.name || this.slug);
 
