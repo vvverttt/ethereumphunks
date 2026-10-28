@@ -5,36 +5,36 @@
   <div class="top">
     @if (slug$ | async; as slug) {
       <nav aria-label="Explore">
-        <h4>Explore</h4>
-        <a [routerLink]="['/', slug, 'market', 'all']">All {{ (collection$ | async)?.name }}</a>
-        <a [routerLink]="['/', slug, 'owners']">Owners</a>
+        <h4>{{ t('explore') }}</h4>
+        <a [routerLink]="['/', slug, 'market', 'all']">{{ preferences.t('allCollection', { name: (collection$ | async)?.name || '' }) }}</a>
+        <a [routerLink]="['/', slug, 'owners']">{{ t('owners') }}</a>
         <a routerLink="/phupreme">Phupreme</a>
         @if ((config$ | async)?.showAuction !== false) {
-          <a routerLink="/auction">Auction House</a>
+          <a routerLink="/auction">{{ t('auctionHouse') }}</a>
         }
       </nav>
 
       <nav aria-label="Types and Attributes">
-        <h4>Types and Attributes</h4>
-        <a [routerLink]="['/', slug, 'attributes']">All Types and Attributes</a>
+        <h4>{{ t('typesAndAttributes') }}</h4>
+        <a [routerLink]="['/', slug, 'attributes']">{{ t('allTypesFooter') }}</a>
         @if (slug === 'cryptophunksv67') {
-          <a [routerLink]="['/', slug, 'market', 'all']" [queryParams]="{ Animal: 'Turtle' }">Turtles</a>
+          <a [routerLink]="['/', slug, 'market', 'all']" [queryParams]="{ Animal: 'Turtle' }">{{ t('turtles') }}</a>
         }
       </nav>
 
       <nav aria-label="Activity">
-        <h4>Activity</h4>
-        <a [routerLink]="['/', slug, 'market', 'listings']">For Sale</a>
-        <a [routerLink]="['/', slug, 'market', 'bids']">Bids</a>
-        <a [routerLink]="['/', slug, 'sales']">Sales</a>
+        <h4>{{ t('activity') }}</h4>
+        <a [routerLink]="['/', slug, 'market', 'listings']">{{ t('forSale') }}</a>
+        <a [routerLink]="['/', slug, 'market', 'bids']">{{ t('bids') }}</a>
+        <a [routerLink]="['/', slug, 'sales']">{{ t('sales') }}</a>
       </nav>
     }
 
     <div class="contracts">
-      <h4>Contracts</h4>
+      <h4>{{ t('contracts') }}</h4>
       @if (contracts$ | async; as c) {
         @if (c.nft) {
-          <span>Collection <a [href]="explorerUrl + '/address/' + c.nft" target="_blank" rel="noopener noreferrer"><app-address [address]="c.nft" /></a></span>
+          <span>{{ t('collection') }} <a [href]="explorerUrl + '/address/' + c.nft" target="_blank" rel="noopener noreferrer"><app-address [address]="c.nft" /></a></span>
         }
         <span>{{ t('marketplace') }} <a [href]="explorerUrl + '/address/' + c.marketplace" target="_blank" rel="noopener noreferrer"><app-address [address]="c.marketplace" /></a></span>
         <span>{{ t('points') }} <a [href]="explorerUrl + '/address/' + c.points" target="_blank" rel="noopener noreferrer"><app-address [address]="c.points" /></a></span>
@@ -81,8 +81,8 @@
 
     <nav class="legal" aria-label="Legal">
       <!-- Terms / License Terms / Privacy Policy held back for now (pages kept in legal.component). -->
-      <a routerLink="/about">About Us</a>
-      <a routerLink="/shell-archive">The Shell Archive</a>
+      <a routerLink="/about">{{ t('aboutUs') }}</a>
+      <a routerLink="/shell-archive">{{ t('shellArchive') }}</a>
     </nav>
 
     <p class="sign">{{ t('bePhunky') }} <span>© {{ year }} DystoLabz</span></p>

@@ -12,7 +12,7 @@
       @if (!loading()) {
         <button type="button" class="csv" (click)="downloadCsv()">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1h5l4 4v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1Zm5 1.5V5h2.5L9 2.5ZM5 8v1h6V8H5Zm0 2.5v1h6v-1H5Z"/></svg>
-          Download CSV
+          {{ t('downloadCsv') }}
         </button>
       }
     </div>
@@ -24,19 +24,19 @@
     <!-- where their sidebar has Punk Types / Attributes / Attribute Counts -->
     <nav class="jump" aria-label="Sections">
       @for (s of stacked(); track s.id) {
-        <a [href]="'#' + s.id" (click)="jump($event, s.id)">{{ s.name }}</a>
+        <a [href]="'#' + s.id" (click)="jump($event, s.id)">{{ sectionLabel(s.name) }}</a>
       }
     </nav>
 
     @for (s of stacked(); track s.id) {
-      <h3 class="section-heading" [id]="s.id">{{ s.name }}</h3>
+      <h3 class="section-heading" [id]="s.id">{{ sectionLabel(s.name) }}</h3>
       <div class="attr-table">
         <div class="attr-table-head">
-          <span>{{ s.isCount ? 'Attributes' : t('attribute') }}</span>
+          <span>{{ s.isCount ? t('attributes') : t('attribute') }}</span>
           <span class="num">#</span>
           <span class="num">%</span>
           <span>{{ t('rarity') }}</span>
-          <span class="col-examples">More Examples</span>
+          <span class="col-examples">{{ t('moreExamples') }}</span>
         </div>
         @for (row of s.rows; track row.key) {
           <div class="attr-row">

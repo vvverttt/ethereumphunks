@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { LotteryService } from '@/services/lottery.service';
 import { DataService } from '@/services/data.service';
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 const PAGE_SIZE = 200;
 
@@ -18,6 +19,13 @@ const PAGE_SIZE = 200;
   styleUrls: ['./lottery-pool.component.scss']
 })
 export class LotteryPoolComponent implements OnInit {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   items = signal<any[]>([]);
   totalSize = signal(0);

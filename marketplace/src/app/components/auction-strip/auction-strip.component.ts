@@ -15,6 +15,7 @@ import { auctionPoll } from '@/utils/visible-interval';
 
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 /**
  * The live auction, inline in a collection page's splash band.
@@ -42,6 +43,13 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
   styleUrls: ['./auction-strip.component.scss'],
 })
 export class AuctionStripComponent implements OnInit, OnDestroy {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   /** Only show while the live item belongs to this collection. */
   slug = input.required<string>();
@@ -186,9 +194,9 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
     if (!connected) { this.web3Svc.connect(); return; }
 
     const value = this.bid().trim();
-    if (!value || Number(value) <= 0) { this.error.set('Enter a bid amount'); return; }
+    if (!value || Number(value) <= 0) { this.error.set(this.t('auctionEnterBid')); return; }
     if (Number(value) < Number(this.minNextEth())) {
-      this.error.set(`Minimum bid is ${this.minNextEth()} ETH`);
+      this.error.set(this.t('stripMinBidIs', { min: this.minNextEth() }));
       return;
     }
 
@@ -205,7 +213,7 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
         await this.load();
       }
     } catch (err: any) {
-      this.error.set(err?.shortMessage || err?.message || 'Bid failed');
+      this.error.set(err?.shortMessage || err?.message || this.t('auctionBidFailed'));
     } finally {
       this.pending.set(false);
     }

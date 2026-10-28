@@ -50,9 +50,9 @@ export class BreadcrumbsComponent {
   sizeControl = new FormControl(480);
 
   readonly shapes: { value: 'square' | 'round' | 'hex'; label: string }[] = [
-    { value: 'square', label: 'Square' },
-    { value: 'round', label: 'Round' },
-    { value: 'hex', label: 'Hexagon' },
+    { value: 'square', label: 'pfpSquare' },
+    { value: 'round', label: 'pfpRound' },
+    { value: 'hex', label: 'pfpHexagon' },
   ];
 
   readonly sizes = [480, 1200];
@@ -142,8 +142,8 @@ export class BreadcrumbsComponent {
     return theme === 'light' ? '#FFDF00' : '#C3FF00';
   }
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   /**

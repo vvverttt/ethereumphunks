@@ -14,14 +14,14 @@
 
   <div class="mint-info-wrapper">
     <div>
-      <span class="minted">{{ state().mintProgress | number }}</span>/{{ collection()?.supply | number }} inscribed
+      <span class="minted">{{ state().mintProgress | number }}</span>/{{ collection()?.supply | number }} {{ t('mintInscribed') }}
     </div>
 
     <div>
       <button
         tippy
         data-tippy-placement="top"
-        data-tippy-content="Inscriptions are available on a first come first serve basis. Each one is unique and cannot be duplicated based on <a href='https://docs.ethscriptions.com/overview/protocol-specification#creating-ethscriptions' target='_blank'>these protocol rules</a>.">
+        [attr.data-tippy-content]="t('mintTooltip')">
 
         ?
       </button>
@@ -32,14 +32,14 @@
 
     @if (!collection()?.mintEnabled) {
       <div class="coming-soon">
-        <button>Coming Soon</button>
+        <button>{{ t('lotteryComingSoon') }}</button>
       </div>
     }
 
     @if (state().penaltyTimeout) {
       <div class="penalty-timeout">
-        <img src="/assets/idiot.gif" alt="you're an idiot" />
-        <p>You've been placed in a penalty timeout for clicking too hard. Try again in <span>{{ state().retryAfter }}</span> seconds.</p>
+        <img src="/assets/idiot.gif" [alt]="t('mintIdiotAlt')" />
+        <p>{{ t('mintPenalty') }} <span>{{ state().retryAfter }}</span> {{ t('mintSeconds') }}</p>
       </div>
     }
 
@@ -55,7 +55,7 @@
       @if (state().loadingMint) {
         <ng-container *ngTemplateOutlet="loading" />
       } @else {
-        Random
+        {{ t('mintRandom') }}
       }
     </button>
 
@@ -76,7 +76,7 @@
         @if (state().inscribing) {
           <ng-container *ngTemplateOutlet="loading" />
         } @else {
-          {{ state().activeMint?.exists ? 'Already inscribed' : 'Inscribe' }}
+          {{ state().activeMint?.exists ? t('mintAlreadyInscribed') : t('mintInscribe') }}
         }
       </button>
     } @else {
@@ -85,7 +85,7 @@
         class="connect"
         [class.disabled]="!collection()?.mintEnabled">
 
-        Connect
+        {{ t('connect') }}
       </button>
     }
   </div>
@@ -95,8 +95,8 @@
   } -->
 
   <div class="legal" [class.disabled]="!collection()?.mintEnabled">
-    <p>By clicking the "inscribe" button, you agree to our <a href="https://bafybeie75bq3qinz2t2rqkoew5ypxu5zgoecqsnhfq45kwsubcrwpi7heu.ipfs.dweb.link/" target="_blank">terms</a>.</p>
-    <p>Network fees apply</p>
+    <p>{{ t('mintAgree') }} <a href="https://bafybeie75bq3qinz2t2rqkoew5ypxu5zgoecqsnhfq45kwsubcrwpi7heu.ipfs.dweb.link/" target="_blank">{{ t('mintTerms') }}</a>.</p>
+    <p>{{ t('mintNetworkFees') }}</p>
   </div>
 </div>
 
@@ -106,7 +106,7 @@
     class="loader"
     width="19"
     height="19"
-    alt="loading"
+    [alt]="t('loading')"
   />
 </ng-template>
 

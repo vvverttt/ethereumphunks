@@ -58,8 +58,12 @@
           // auction page remembers the last item's collection under this key.
           slug = localStorage.getItem('EtherPhunks_auction_collection') === 'phunklloween' ? 'phunklloween' : '';
         } else {
+          // Footer pages (About Us, The Shell Archive, ...) have no collection of their own:
+          // they keep the last one, like app-state.effects.ts FOOTER_PAGES.
+          var footer = { about: 1, 'shell-archive': 1, terms: 1, license: 1, privacy: 1 };
+          if (footer[last]) last = '';   // an older build saved the page name itself
           slug = owned[seg]
-            || (/^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' ? seg : last);
+            || (/^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' && !footer[seg] ? seg : last);
         }
         if (slug) document.documentElement.setAttribute('data-collection', slug);
       } catch (e) { /* private mode: the flash is cosmetic, never block boot */ }

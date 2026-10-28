@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -10,6 +10,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as appStateActions from '@/state/actions/app-state.actions';
 
 import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   standalone: true,
@@ -23,6 +24,13 @@ import { combineLatest, filter, firstValueFrom, map } from 'rxjs';
   styleUrl: './collections-dropdown.component.scss'
 })
 export class CollectionsDropdownComponent {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
   // The QuantumPhunks re-issues are hidden in favour of the OG collections they came
   // from — the dropdown used to do the opposite and hide `environment.ogSlugs`.
   private readonly hiddenDropdownSlugs = new Set([

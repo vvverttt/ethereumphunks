@@ -33,6 +33,7 @@ import { AuctionSliderComponent } from '@/components/auction/auction-slider/auct
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as dataStateActions from '@/state/actions/data-state.actions';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 const AUCTION_SLUG_KEY = 'EtherPhunks_auction_collection';
 
@@ -63,6 +64,13 @@ const BUYNOW_TIER2_ETH = '0.167';
   styleUrls: ['./auction-page.component.scss'],
 })
 export class AuctionPageComponent implements OnInit, OnDestroy {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   private readonly spriteSvc = inject(SpriteService);
 
@@ -153,7 +161,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   pickedSwapItem = signal<any>(null);
   swapTxPending = signal(false);
   swapCooldownReady = signal(false);
-  swapCooldownMessage = signal('Waiting for confirmation...');
+  swapCooldownMessage = signal(this.t('auctionWaitingConfirmation'));
   private merkleTree: string[][] = [];
   private get rpcClient() { return this.web3Svc.l1Client; }
 
@@ -248,7 +256,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
           args: [address as `0x${string}`, item.hashId as `0x${string}`],
         });
         if (!stored) {
-          this.swapCooldownMessage.set('Deposit not yet confirmed...');
+          this.swapCooldownMessage.set(this.t('auctionDepositNotConfirmed'));
           return;
         }
         const blocks = await this.rpcClient.readContract({
@@ -258,10 +266,10 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         });
         if (Number(blocks) === 0) {
           this.swapCooldownReady.set(true);
-          this.swapCooldownMessage.set('Ready to swap!');
+          this.swapCooldownMessage.set(this.t('auctionReadyToSwap'));
           clearInterval(poll);
         } else {
-          this.swapCooldownMessage.set(`${Number(blocks)} blocks remaining...`);
+          this.swapCooldownMessage.set(this.t('auctionBlocksRemaining', { n: Number(blocks) }));
         }
       } catch {}
     }, 12000);
@@ -730,7 +738,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     }
 
     if (!bidVal || Number(bidVal) <= 0) {
-      this.errorMessage.set('Enter a bid amount');
+      this.errorMessage.set(this.t('auctionEnterBid'));
       return;
     }
 
@@ -747,7 +755,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         await this.loadAuction();
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Bid failed');
+      this.errorMessage.set(err?.shortMessage || err?.message || this.t('auctionBidFailed'));
     } finally {
       this.txPending.set(false);
     }
@@ -801,7 +809,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     const proof = tier === 1 ? this.buyNow1Proof() : this.buyNow2Proof();
     const live = tier === 1 ? this.buyNow1Live() : this.buyNow2Live();
     if (!live || !proof) {
-      this.errorMessage.set('Buy Now is not available for this wallet');
+      this.errorMessage.set(this.t('auctionBuyNowUnavailable'));
       return;
     }
 
@@ -822,7 +830,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         await this.refreshBuyNow();
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Buy Now failed');
+      this.errorMessage.set(err?.shortMessage || err?.message || this.t('auctionBuyNowFailed'));
     } finally {
       this.txPending.set(false);
     }
@@ -879,7 +887,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         this.loadSettledAuctions();
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Settle failed');
+      this.errorMessage.set(err?.shortMessage || err?.message || this.t('auctionSettleFailed'));
     } finally {
       this.txPending.set(false);
     }
@@ -911,7 +919,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
         await this.loadAuction2Pool();
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
+      this.errorMessage.set(err?.shortMessage || err?.message || this.t('withdrawFailed'));
     } finally {
       this.swapTxPending.set(false);
     }

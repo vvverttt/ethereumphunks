@@ -1,7 +1,10 @@
 import { Inject, Injectable, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { BASE_ID } from '@/i18n/base.id';
+import { UI } from '@/i18n/ui';
+import { CONTENT, Content } from '@/i18n/content';
 
-export type MenuLanguage = 'en' | 'es' | 'ja' | 'zh';
+export type MenuLanguage = 'en' | 'es' | 'ja' | 'zh' | 'id';
 export type MenuFont = 'default' | 'blockscript' | 'high-blockscript';
 
 @Injectable({
@@ -16,6 +19,7 @@ export class PhunkPreferencesService {
     { value: 'es', flag: 'assets/flags/mx.svg', labelKey: 'spanish', nativeLabel: 'Español' },
     { value: 'ja', flag: 'assets/flags/jp.svg', labelKey: 'japanese', nativeLabel: '日本語' },
     { value: 'zh', flag: 'assets/flags/cn.svg', labelKey: 'chinese', nativeLabel: '中文' },
+    { value: 'id', flag: 'assets/flags/id.svg', labelKey: 'indonesian', nativeLabel: 'Indonesia' },
   ];
 
   fontOptions: { value: MenuFont; labelKey: string; className: string; sample: string }[] = [
@@ -838,6 +842,7 @@ export class PhunkPreferencesService {
       unlock: '解除',
       auctionStart: 'オークション開始',
     },
+    id: BASE_ID,
     zh: {
       withdrawFunds: '提取资金',
       disconnect: '断开连接',
@@ -1115,8 +1120,22 @@ export class PhunkPreferencesService {
     this.applyFont();
   }
 
-  t(key: string): string {
-    return this.translations[this.currentLanguage()][key] || this.translations.en[key] || key;
+  /**
+   * A string in the current language, falling back to English. `params` fills {name}
+   * placeholders. Keys come from the menu table below, then the site-wide UI table
+   * (i18n/ui.*.ts).
+   */
+  t(key: string, params?: Record<string, string | number>): string {
+    const lang = this.currentLanguage();
+    let out = this.translations[lang]?.[key] || UI[lang]?.[key]
+      || this.translations.en[key] || UI.en[key] || key;
+    if (params) for (const [k, v] of Object.entries(params)) out = out.split(`{${k}}`).join(String(v));
+    return out;
+  }
+
+  /** Long-form copy (collection intros, FAQ, About Us, The Shell Archive) in the current language. */
+  content(): Content {
+    return CONTENT[this.currentLanguage()] || CONTENT.en;
   }
 
   setLanguage(language: MenuLanguage): void {
@@ -1137,6 +1156,7 @@ export class PhunkPreferencesService {
       es: 'es-MX',
       ja: 'ja',
       zh: 'zh-CN',
+      id: 'id',
     };
 
     this.document.documentElement.lang = htmlLang[this.currentLanguage()];
@@ -1153,7 +1173,7 @@ export class PhunkPreferencesService {
 
   private loadLanguage(): MenuLanguage {
     const value = this.loadPreference('qp-language');
-    return value === 'es' || value === 'ja' || value === 'zh' ? value : 'en';
+    return value === 'es' || value === 'ja' || value === 'zh' || value === 'id' ? value : 'en';
   }
 
   private loadFont(): MenuFont {

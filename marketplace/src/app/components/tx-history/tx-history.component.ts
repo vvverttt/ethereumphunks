@@ -95,8 +95,8 @@ export class TxHistoryComponent implements OnChanges {
     public preferences: PhunkPreferencesService,
   ) {}
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   eventLabel(type: EventType): string {

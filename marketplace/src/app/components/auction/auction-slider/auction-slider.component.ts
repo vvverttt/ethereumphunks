@@ -27,8 +27,8 @@ export class AuctionSliderComponent implements OnChanges {
   canScrollLeft = signal(false);
   canScrollRight = signal(false);
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   ngOnChanges(changes: SimpleChanges) {

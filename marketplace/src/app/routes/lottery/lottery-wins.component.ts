@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -9,6 +9,7 @@ import { environment } from 'src/environments/environment';
 import { LotteryService } from '@/services/lottery.service';
 import { LotteryWin } from '@/models/lottery';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   selector: 'app-lottery-wins',
@@ -18,6 +19,13 @@ import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.compon
   styleUrls: ['./lottery-wins.component.scss']
 })
 export class LotteryWinsComponent implements OnInit, OnDestroy {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   wins = signal<LotteryWin[]>([]);
   loaded = signal(false);

@@ -68,8 +68,8 @@ export class CommentsComponent {
     public preferences: PhunkPreferencesService,
   ) {}
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   /**
@@ -110,7 +110,7 @@ export class CommentsComponent {
 
     try {
       const hash = await this.web3Svc.inscribe(commentUrl);
-      if (!hash) throw new Error('Failed to inscribe comment');
+      if (!hash) throw new Error(this.t('commentsFailed'));
 
       notification = {
         ...notification,

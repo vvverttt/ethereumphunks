@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   standalone: true,
@@ -12,6 +13,13 @@ import { CommonModule } from '@angular/common';
 })
 
 export class TimerComponent implements OnInit, OnChanges, OnDestroy {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   @Input() endTime: number = 0;
   @Output() event: EventEmitter<any> = new EventEmitter();

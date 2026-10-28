@@ -1,0 +1,335 @@
+// Simplified Chinese (zh-CN) site-wide interface strings. Same keys as ui.en.ts;
+// a missing key falls back to English. {placeholders} are filled by PhunkPreferencesService.t(key, params).
+export const UI_ZH: Record<string, string> = {
+  indonesian: '印度尼西亚语',
+
+  // footer
+  explore: '探索',
+  allCollection: '全部 {name}',
+  turtles: '海龟',
+  activity: '活动',
+  sales: '销售',
+  contracts: '合约',
+  collection: '收藏系列',
+  aboutUs: '关于我们',
+  shellArchive: 'The Shell Archive',
+
+  // collection intro
+  colourBlue: '蓝色',
+  colourLime: '青柠色',
+  colourAqua: '水绿色',
+  colourViolet: '紫罗兰色',
+  colourYellow: '黄色',
+
+  // collection map
+  zoomIn: '放大',
+  zoomOut: '缩小',
+  resetView: '重置视图',
+  fullscreen: '全屏',
+
+  // collection search
+  searchCollection: '搜索 {name}',
+  searchButton: '搜索',
+  searchPlaceholderV67: '试试“turtle”或“turtle and hoodie”，或输入编号',
+  searchPlaceholderOther: '试试“zombie”或“zombie and beard”，或输入编号',
+  searchNoPiece: '这里没有 {name} #{n}。',
+  searchNoTrait: '没有与“{q}”匹配的属性。',
+
+  // types and attributes
+  downloadCsv: '下载 CSV',
+  moreExamples: '更多示例',
+  phunkTypes: 'Phunk 类型',
+  attributeCounts: '属性数量',
+  nAttributes: '{n} 个属性',
+  oneAttribute: '1 个属性',
+
+  // index sections
+  bidsHeading: '出价',
+  salesHeading: '销售',
+  averageOpenBid: '当前平均出价为',
+  totalOpenBids: '所有当前出价的总价值为',
+  showingTopBids: '显示最高出价，',
+
+  // menu wallet box
+  yourPhunks: '你的 Phunks',
+  open: '未托管',
+  escrowed: '已托管',
+
+  // app intro popup
+  introTitle: 'QuantumPhunks 拍卖行',
+  introForked: '基于 Chopperdad 的项目分叉并升级。',
+  introPhunklloween: 'Phunklloween 现已上线。手工制作的 Phunk 万圣节 1/1 作品在此拍卖，每天一件，每件 24 小时，起拍价 0.001 ETH。67 件中的 19 件每天在拍卖行拍卖，最后一件在万圣节结算；其余作品将在市场上架。',
+  introBidRules: '每次出价必须比上一次高出至少 10%，在最后 10 分钟内出价会让倒计时延长 10 分钟，因此不会有人在最后一刻抢拍。被超过出价时，你的 ETH 会退回到可提取余额。倒计时结束后任何人都可以结算：物品归赢家所有，下一场拍卖随即开始。',
+  introMadeBy: '由 DystoLabz 制作，也就是',
+  introAndMe: '和我。',
+  introQuestions: '有问题？请在 X 上联系',
+  introOnX: '。',
+  introEnter: '进入',
+
+  // lottery (Phupreme)
+  lotteryPrize: '奖品',
+  lotteryNotWhitelisted: '当前为白名单专属阶段，你的钱包尚未在名单中。',
+  lotteryRefundNotice: '你有 {amount} ETH 可从之前的抽奖中取回。',
+  lotteryWithdrawAmount: '提取 {amount} ETH',
+  lotteryQuantity: '数量',
+  lotterySurrender: '交出以获得折扣',
+  lotterySurrenderHint: '交出一个 Phunk V2 / Philip 即可少付。中奖后它将转入金库。',
+  lotteryLoadingEligible: '正在加载你的可用物品…',
+  lotteryNoEligible: '你的钱包中没有可用物品。',
+  lotteryDiscount: '折扣',
+  lotteryVrfFee: 'Chainlink VRF 费用（估算）',
+  lotteryTotal: '总计',
+  lotteryComingSoonTag: '即将推出',
+  lotteryComingSoon: '即将推出',
+  lotteryConfirmInWallet: '请在钱包中确认...',
+  lotterySubmittingMint: '正在提交铸造... {s} 秒',
+  lotteryDrawingPrize: '正在抽取你的奖品... {s} 秒',
+  lotterySpinning: '旋转中...',
+  lotterySlowingDown: '正在减速...',
+  lotteryMintAgain: '再次铸造',
+  lotteryMint: '铸造',
+  lotteryDemo: '演示',
+  lotteryMintPrice: '铸造：{price} ETH',
+  lotteryLeft: '剩余 {n} 个 QuantumPhunks',
+  lotteryYouWon: '你赢了！',
+  lotteryYouWonN: '你赢得了 {n} 个！',
+  lotteryHowItWorks: '玩法说明',
+  lotteryStep1Title: '选择数量',
+  lotteryStep1Text: '可选择交出一个 Phunk V2 或 Philip 以获得 ETH 折扣。价格实时更新。',
+  lotteryStep2Text: '一笔交易即可支付铸造价格和少量 Chainlink VRF 费用。多付的部分会自动退还。',
+  lotteryStep3Title: '随机揭晓',
+  lotteryStep3Text: 'Chainlink VRF 会随机选出你的 QuantumPhunk，并直接铸造到你的钱包——无需揭晓步骤。',
+  lotteryViewPool: '查看奖池中的所有 QuantumPhunks。',
+  lotteryViewPoolN: '查看奖池中的全部 {n} 个 QuantumPhunks。',
+  lotteryRecentWins: '最近中奖',
+  lotteryViewWins: '查看所有已赢得的 QuantumPhunks。',
+  lotteryCreditExceeds: '交出物品的价值超过了订单金额——请取消选择部分物品或增加数量。',
+  lotteryCouldNotPrice: '无法为此选择计算价格。',
+  lotteryInactive: '彩票当前未开放',
+  lotteryNoPrizes: '没有可用奖品',
+  lotteryWhitelistOnlyNotListed: '此阶段仅限白名单。你的钱包尚未在名单中。',
+  lotteryNothingToMint: '没有可铸造的物品',
+  lotteryInsufficientEth: 'ETH 不足以支付铸造费用和 gas',
+  lotteryStillSettling: '你的铸造已确认，但结果仍在结算中。稍后将显示在“最近中奖”中。',
+  lotteryNoContractWallets: '不支持智能合约钱包。请使用普通钱包。',
+  lotteryWhitelistOnly: '此阶段仅限白名单。',
+  lotteryWalletLimit: '你已达到每个钱包的铸造上限。',
+  lotteryNotEnoughPrizes: '剩余奖品不足该数量。',
+  lotteryMintTxFailed: '铸造交易失败',
+
+  // shared errors
+  txFailed: '交易失败',
+  withdrawFailed: '提取失败',
+
+  // lottery pool / wins pages
+  lotteryPool: '彩票奖池',
+  lotteryInPool: '奖池中的 QuantumPhunks',
+  lotteryLoadingPool: '正在加载奖池...',
+  lotteryPoolEmpty: '奖池为空。',
+  loadMore: '加载更多',
+  lotteryAllWon: '所有已赢得的藏品',
+  lotteryWinsWord: '次中奖',
+  lotteryNoWins: '暂无中奖记录。',
+
+  // auction page
+  auctionLoading: '正在加载拍卖...',
+  auctionNotice: '以 0 底价拍卖 EthsRocks 的测试已圆满成功。拍卖现将转向 V67 收藏系列中最稀有的物品，并设置底价；同时也会拍卖我们的小型收藏系列，并可能包括这里任何收藏系列中的物品。',
+  auctionEthscriptionsTag: '此处拍卖的物品是 Ethscriptions，而不是 CryptoPhunksV67 ERC-721 收藏系列',
+  auctionNewBidUpdating: '检测到新出价，正在更新...',
+  auctionPoolItems: '拍卖池中的物品（{n}）',
+  auctionSwapHint: '用你的 CryptoPhunksV67 交换池中的一个。免费，1:1。',
+  auctionWithdrawAll: '全部取回（{n}）',
+  auctionSwapStep2: '第 2 步：从池中选择',
+  auctionSwapFor: '交换 #{id}',
+  auctionYourV67: '你的 CryptoPhunksV67',
+  auctionSendToSwap: '发送以交换',
+  auctionConnectToSeeV67: '连接钱包以查看你的 CryptoPhunksV67。',
+  auctionWaitingConfirmation: '等待确认...',
+  auctionDepositNotConfirmed: '存入尚未确认...',
+  auctionReadyToSwap: '可以交换了！',
+  auctionBlocksRemaining: '剩余 {n} 个区块...',
+  auctionEnterBid: '请输入出价金额',
+  auctionBidFailed: '出价失败',
+  auctionBuyNowUnavailable: '此钱包无法使用立即购买',
+  auctionBuyNowFailed: '立即购买失败',
+  auctionSettleFailed: '结算失败',
+
+  // shared status words
+  processing: '处理中...',
+  waiting: '等待中...',
+  sending: '发送中...',
+
+  // item view
+  itemAvailableNow: '现已可购买',
+  itemBuyNowFor: '以 {price} ETH 立即购买',
+  itemDiamondHandsPrice: 'Diamond Hands 价格',
+  itemDiamondHands: 'Diamond Hands',
+  itemAddressPlaceholder: '0x 或 .ens',
+  itemQpListingNote: '上架只会授权 QuantumPhunks 市场在售出时转移此 NFT——在此之前它一直留在你的钱包中（不托管）。可随时取消上架。',
+  itemQpBidNote: '出价为非托管：你的 ETH 会锁定在 QuantumPhunks 市场中，直到所有者接受（只需一笔交易——无需确认步骤或冷却期）。如果物品售出给他人，将自动退款；在出价被接受之前，你可随时撤回出价。',
+  itemBiddingRestricted: '此收藏系列目前限制出价。',
+  itemNotForSale: '非卖品',
+  itemNoConsensus: '未达成共识。请联系客服 @etherphunks',
+
+  // shared errors 2
+  couldNotProcessTx: '无法处理交易',
+  invalidAddress: '无效地址',
+
+  // market (bulk actions)
+  marketShowFilters: '显示筛选',
+  marketHideFilters: '隐藏筛选',
+  marketBulkList: '批量上架',
+  marketItems: '件物品',
+  marketPhunks: 'Phunks',
+  marketIneligibleList: '{n} 件所选物品无法上架',
+  marketNoValueNotListed: '未设置价格的物品将不会上架。',
+  marketListPrice: '上架价格',
+  marketCopy: '复制',
+  marketListAll: '全部上架',
+  marketBulkTransfer: '批量转移',
+  marketIneligibleTransfer: '{n} 件所选物品无法转移',
+  marketTransferAll: '全部转移',
+  marketBulkEscrow: '批量托管',
+  marketIneligibleEscrow: '{n} 件所选物品无法托管',
+  marketEscrowAll: '全部托管',
+  marketBulkWithdraw: '批量取回',
+  marketIneligibleWithdraw: '{n} 件所选物品无法取回',
+  marketWithdrawAll: '全部取回',
+  marketIneligibleBuy: '{n} 件所选物品无法购买',
+  marketBuyAll: '全部购买',
+  marketClose: '关闭',
+  marketSweepSoon: '此收藏系列的扫货功能即将推出。',
+  marketNoneForSale: '所选物品均未出售。',
+  marketNoLongerForSale: '一件或多件物品已不再出售。',
+  marketInvalidSelection: '无效选择',
+
+  // ordex withdrawal banner
+  ordexYouHave: '你有',
+  ordexEscrowedOne: '个 ethscription 托管在 Ordex 上。如果现在不取回，它可能会永远消失！',
+  ordexEscrowedMany: '个 ethscriptions 托管在 Ordex 上。如果现在不取回，它们可能会永远消失！',
+  ordexWithdrawing: '正在取回...',
+  ordexWithdrawComplete: '取回完成',
+  ordexWithdrawNow: '立即取回',
+  ordexTxHash: '交易哈希：',
+  ordexSignNotice: '取回时你需要签署一条消息并提交一笔交易。',
+
+  // mint
+  mintInscribed: '已铭刻',
+  mintTooltip: "铭文按先到先得的原则提供。根据<a href='https://docs.ethscriptions.com/overview/protocol-specification#creating-ethscriptions' target='_blank'>这些协议规则</a>，每个铭文都是独一无二的，无法复制。",
+  mintIdiotAlt: '你是个笨蛋',
+  mintPenalty: '你点击得太用力，已被罚暂停。请在以下时间后重试：',
+  mintSeconds: '秒。',
+  mintRandom: '随机',
+  mintAlreadyInscribed: '已被铭刻',
+  mintInscribe: '铭刻',
+  mintAgree: '点击“铭刻”按钮，即表示你同意我们的',
+  mintTerms: '条款',
+  mintNetworkFees: '需支付网络费用',
+  mintFailed: '铭刻失败',
+
+  // auction strip
+  stripPhunkAlt: 'Phunk #{id}',
+  stripCurrentBid: '当前出价',
+  stripOpeningBid: '起拍价',
+  stripEndsIn: '剩余',
+  stripEnded: '已结束',
+  stripBidding: '出价中…',
+  stripSettleAtHouse: '前往拍卖行结算',
+  stripBidsLower: '次出价',
+  stripOpenHouse: '打开拍卖行',
+  stripAuctionHouse: '拍卖行',
+  stripBidSent: '出价已发送——等待确认…',
+  stripNoBidsMin: '暂无出价。最低 {min} ETH。',
+  stripNextBidMin: '下一次出价至少为 {min} ETH。',
+  stripMinBidIs: '最低出价为 {min} ETH',
+
+  // auction widgets (auction, phunk-info, timer, easter egg)
+  viewCurrentAuction: '查看当前拍卖',
+  infoTrait: '{n} 个属性',
+  infoTraits: '{n} 个属性',
+  infoPoolItem: '池中 {n} 件物品',
+  infoPoolItems: '池中 {n} 件物品',
+  timerDay: '天',
+  timerHr: '时',
+  timerMin: '分',
+  timerSec: '秒',
+  eggYouBid: '你出价',
+
+  // activity tables (user activity, recent activity, tx history)
+  bidCap: '出价',
+  uaEvent: '事件',
+  uaTokenId: '代币 ID',
+  uaFrom: '来自',
+  uaValue: '价值',
+  uaBoughtFor: '买入价',
+  uaCreatedBy: '创建者',
+  uaBridgedBy: '桥接者',
+  actAcceptedFrom: '接受自',
+  actConfirmedBy: '确认者',
+  actWithdrawnBy: '撤回者',
+  txBidAccepted: '出价已接受',
+  txBidConfirmed: '出价已确认',
+  txBidRefunded: '出价已退款',
+
+  // activity tables 2
+  actErc721Title: 'ERC-721 代币——存在于 Ethereum 的合约状态中。不是 Ethscription。查看合约。',
+  actEthscriptionTitle: 'Ethscription——直接铭刻在 Ethereum calldata 中。阅读文档。',
+
+  // phunk grid
+  gridLoad: '加载',
+  gridMore: '更多',
+  gridDeadBid: '失效出价',
+
+  // collection stat bar
+  statFloor: '地板价',
+  statArtifacts: '藏品',
+  statListed: '已上架',
+  statVolume: '交易量',
+
+  // PFP download options (breadcrumbs)
+  pfpShape: '形状',
+  pfpSquare: '方形',
+  pfpRound: '圆形',
+  pfpHexagon: '六边形',
+  pfpBackground: '背景',
+  pfpCollectionDefault: '收藏系列默认',
+  pfpCustomColour: '自定义颜色',
+  pfpBorder: '边框',
+  pfpOn: '开启',
+  pfpBorderColour: '边框颜色',
+  pfpSize: '尺寸',
+  pfpExtras: '附加',
+
+  // collection sales / billboard / comments / filters
+  salesNone: '暂无销售。',
+  billboardUnsupported: '不支持的内容类型：{type}',
+  commentsTicTooltip: "TIC（Transaction Inscribed Comments，交易铭刻评论）通过 Ethereum 交易 calldata 实现链上评论功能。它提供了一种标准化方式，将评论与地址、交易哈希或其他链上标识符等区块链实体关联起来。<a href='https://github.com/chopperdaddy/ethereumphunks.com/blob/sepolia/tic-protocol.md' target='_blank'>了解更多</a>。",
+  commentsFailed: '评论铭刻失败',
+  filtersNoMatch: '无匹配',
+
+  // sales page / owners page
+  salesAllTitle: '全部 {name} 销售',
+  salesShowing: '显示 {n} 笔销售。',
+  salesLoading: '正在加载销售...',
+  salesNoneForCollection: '此收藏系列暂无销售。',
+  ownersAllTitle: '所有 QuantumPhunk 持有者',
+  ownersCount: '（{n} 位持有者）',
+  ownersNumberOwned: '持有数量',
+
+  // shared aria labels
+  breadcrumb: '面包屑导航',
+
+  // market filters
+  filters: '筛选',
+
+  // menu table keys missing from the service's zh table
+  sweep: '扫货',
+  bidOrphanedOwner: '过期出价：此出价是在前一位所有者持有此物品时发出的，因此在链上它被锁定到该地址，无法在此接受。只有出价者可以撤回它。',
+  bidOrphanedBidder: '你的出价已失效——在你出价后此物品已易手，因此无法再被接受。请在下方提取你的 ETH。',
+
+  // late additions: index sales link, pixel stats, footer link
+  viewAllSales: "查看 {name} 的全部成交。",
+  uniqueColors: "独特颜色",
+  coloredPixels: "着色像素",
+  allTypesFooter: "全部类型与属性",
+};

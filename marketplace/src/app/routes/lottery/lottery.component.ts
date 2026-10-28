@@ -20,6 +20,7 @@ import { LotteryService, OwnedNft } from '@/services/lottery.service';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 
 // Build spin path based on grid size
@@ -85,6 +86,13 @@ const MAX_STEP_DELAY = 400;
   styleUrls: ['./lottery.component.scss']
 })
 export class LotteryComponent implements OnInit, OnDestroy {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   private readonly spriteSvc = inject(SpriteService);
   private readonly themeSvc = inject(ThemeService);
@@ -466,8 +474,8 @@ export class LotteryComponent implements OnInit, OnDestroy {
       // quote() reverts CreditExceedsOrder if the surrender is worth more than the order.
       const msg = err?.shortMessage || err?.message || '';
       this.quoteError.set(msg.includes('CreditExceedsOrder')
-        ? 'Surrendered items are worth more than the order â€” deselect some or raise the quantity.'
-        : 'Could not price this selection.');
+        ? this.t('lotteryCreditExceeds')
+        : this.t('lotteryCouldNotPrice'));
       this.quoteMint.set(this.mintPrice() * BigInt(quantity));
       this.quoteVrf.set(0n);
       this.quoteDiscount.set(0n);
@@ -485,19 +493,19 @@ export class LotteryComponent implements OnInit, OnDestroy {
     if (!connected) { this.web3Svc.connect(); return; }
     if (this.spinPhase() !== 'idle' && this.spinPhase() !== 'won') return;
 
-    if (!this.isActive()) { this.errorMessage.set('Lottery is currently inactive'); return; }
-    if (this.poolSize() === 0) { this.errorMessage.set('No prizes available'); return; }
+    if (!this.isActive()) { this.errorMessage.set(this.t('lotteryInactive')); return; }
+    if (this.poolSize() === 0) { this.errorMessage.set(this.t('lotteryNoPrizes')); return; }
 
     const address = await firstValueFrom(this.address$);
     if (!address) { this.web3Svc.connect(); return; }
 
     if (this.whitelistEnabled() && !this.isWhitelisted()) {
-      this.errorMessage.set('This phase is whitelist-only. Your wallet is not on the list yet.');
+      this.errorMessage.set(this.t('lotteryWhitelistOnlyNotListed'));
       return;
     }
 
     const quantity = Math.max(1, Math.min(this.quantity(), this.effectiveMaxQty()));
-    if (quantity < 1) { this.errorMessage.set('Nothing available to mint'); return; }
+    if (quantity < 1) { this.errorMessage.set(this.t('lotteryNothingToMint')); return; }
     if (this.quoteError()) { this.errorMessage.set(this.quoteError()); return; }
 
     const selected = this.selectedSurrenders();
@@ -513,7 +521,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       ]);
       const baseFee = block.baseFeePerGas ?? 1000000000n;
       const gasBuffer = 400000n * baseFee * 2n;
-      if (balance < cost.total + gasBuffer) { this.errorMessage.set('Insufficient ETH for mint + gas'); return; }
+      if (balance < cost.total + gasBuffer) { this.errorMessage.set(this.t('lotteryInsufficientEth')); return; }
     } catch {}
 
     this.errorMessage.set('');
@@ -535,7 +543,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
       // 2) Single tx: requestMint â†’ Chainlink VRF request
       const playHash = await this.lotterySvc.requestMint(quantity, collections, tokenIds);
-      if (!playHash) throw new Error('Mint transaction failed');
+      if (!playHash) throw new Error(this.t('lotteryMintTxFailed'));
 
       // 3) Wait for the request tx to mine
       this.spinPhase.set('committing');
@@ -556,7 +564,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
         // VRF/indexer hasn't landed within the window â€” leave a clear message; the win will
         // still show in Recent Wins once the indexer catches up. Offer stuck-spin recovery.
         this.spinPhase.set('idle');
-        this.errorMessage.set('Your mint is confirmed but the result is still settling. It will appear in Recent Wins shortly.');
+        this.errorMessage.set(this.t('lotteryStillSettling'));
         await this.refreshAfterPlay(address);
         return;
       }
@@ -587,11 +595,11 @@ export class LotteryComponent implements OnInit, OnDestroy {
       clearInterval(this.confirmTimer);
       this.stopSpin();
       this.spinPhase.set('idle');
-      let msg = err?.shortMessage || err?.message || 'Transaction failed';
-      if (msg.includes('OnlyEOA') || msg.includes('No contracts')) msg = 'Smart-contract wallets are not supported. Please use a regular wallet.';
-      else if (msg.includes('NotWhitelisted')) msg = 'This phase is whitelist-only.';
-      else if (msg.includes('WalletLimitReached')) msg = 'You have reached the per-wallet mint limit.';
-      else if (msg.includes('NoTokensAvailable')) msg = 'Not enough prizes left for that quantity.';
+      let msg = err?.shortMessage || err?.message || this.t('txFailed');
+      if (msg.includes('OnlyEOA') || msg.includes('No contracts')) msg = this.t('lotteryNoContractWallets');
+      else if (msg.includes('NotWhitelisted')) msg = this.t('lotteryWhitelistOnly');
+      else if (msg.includes('WalletLimitReached')) msg = this.t('lotteryWalletLimit');
+      else if (msg.includes('NoTokensAvailable')) msg = this.t('lotteryNotEnoughPrizes');
       this.errorMessage.set(msg);
     } finally {
       this.playInProgress = false;
@@ -617,7 +625,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
       const hash = await this.lotterySvc.withdrawRefund();
       if (hash) { await this.web3Svc.pollReceipt(hash); this.pendingRefund.set(0n); }
     } catch (err: any) {
-      this.errorMessage.set(err?.shortMessage || err?.message || 'Withdraw failed');
+      this.errorMessage.set(err?.shortMessage || err?.message || this.t('withdrawFailed'));
     }
   }
 

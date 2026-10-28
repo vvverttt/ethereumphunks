@@ -14,18 +14,13 @@
     margin: 2rem 0 6.4rem;
     padding: 0;
 
-    // The wordmark is a mask filled with the collection's accent (--pink is each theme's
-    // accent), so one set of SVGs serves every theme.
+    // Inline SVG filled with the collection's accent (--pink is each theme's accent), so one
+    // set of outlines serves every theme.
     .mark {
       display: block;
       max-width: 100%;
-      background: rgba(var(--pink), 1);
-      mask-repeat: no-repeat;
-      mask-size: contain;
-      mask-position: left center;
-      -webkit-mask-repeat: no-repeat;
-      -webkit-mask-size: contain;
-      -webkit-mask-position: left center;
+      height: auto;
+      fill: rgba(var(--pink), 1);
     }
 
     @media (max-width: $mobile) {
@@ -34,7 +29,7 @@
   }
 
   // the status legend: each colour word on its own colour, like cryptopunks.app
-  .swatch {
+  ::ng-deep .swatch {
     padding: 0 .3rem;
     color: #000;
     &.base { background: rgba(var(--phunk-bg), 1); }

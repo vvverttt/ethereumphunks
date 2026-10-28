@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -12,6 +12,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
 import { combineLatest, startWith, switchMap, map } from 'rxjs';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 /**
  * Every sale of a collection, rendered exactly like the for-sale view.
@@ -35,6 +36,13 @@ import { combineLatest, startWith, switchMap, map } from 'rxjs';
   styleUrls: ['./sales-page.component.scss'],
 })
 export class SalesPageComponent {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   private static readonly SALE_TYPES = ['PhunkBought', 'BidAccepted', 'AuctionSettled'] as const;
   private static readonly ZERO = '0x0000000000000000000000000000000000000000';

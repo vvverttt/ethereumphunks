@@ -1,6 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { InternalLinksDirective } from '@/directives/internal-links.directive';
 
 /**
  * Terms, License, Privacy and The Shell Archive (our credits), linked from the footer like
@@ -12,12 +14,13 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, InternalLinksDirective],
   selector: 'app-legal',
   templateUrl: './legal.component.html',
   styleUrls: ['./legal.component.scss'],
 })
 export class LegalComponent {
+  readonly prefs = inject(PhunkPreferencesService);
   readonly page: 'terms' | 'license' | 'privacy' | 'shell-archive' | 'about' = inject(ActivatedRoute).snapshot.data['page'];
 
   /** The Shell Archive: the sources that shaped QuantumPhunks (our credits), with the links

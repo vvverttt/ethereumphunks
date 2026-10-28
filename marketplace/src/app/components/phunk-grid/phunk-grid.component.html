@@ -23,7 +23,7 @@
           @if ((viewType === 'market' || viewType === 'owned')) {
             <div class="labels-wrapper">
               <div class="label">#0000</div>
-              <div class="label">Loading...<br />&nbsp;</div>
+              <div class="label">{{ t('loading') }}<br />&nbsp;</div>
             </div>
           }
         </div>
@@ -35,7 +35,7 @@
     <div class="item more">
       <!-- <button>Load More</button> -->
       <div class="image-wrapper">
-        <button class="load-more" (click)="loadMore()">Load <br />More</button>
+        <button class="load-more" (click)="loadMore()">{{ t('gridLoad') }} <br />{{ t('gridMore') }}</button>
       </div>
     </div>
   }
@@ -119,7 +119,7 @@
                   {{ (bid.value | weiToEth) }}Ξ@if (usd$ | async; as usd) {<br />${{ ((bid.value | weiToEth) * usd) | formatCash }}}
                 </p>
                 @if (isDeadBid(phunk)) {
-                  <p class="dead-bid-label">Dead bid</p>
+                  <p class="dead-bid-label">{{ t('gridDeadBid') }}</p>
                 }
               }
             }

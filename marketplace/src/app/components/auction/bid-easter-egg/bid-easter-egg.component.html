@@ -19,10 +19,10 @@
           </div>
         }
 
-        <p class="line">You bid <strong>{{ e.word }}</strong>.</p>
+        <p class="line">{{ t('eggYouBid') }} <strong>{{ e.word }}</strong>.</p>
         <p class="caption">{{ line() }}</p>
 
-        <button type="button" class="close" (click)="close()">Close</button>
+        <button type="button" class="close" (click)="close()">{{ t('marketClose') }}</button>
       </div>
     </div>
   }

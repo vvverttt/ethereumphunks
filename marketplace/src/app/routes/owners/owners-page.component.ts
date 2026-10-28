@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -10,6 +10,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { environment } from 'src/environments/environment';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { supabase } from '@/services/supabase';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 interface OwnerRow {
   address: string;
@@ -31,6 +32,13 @@ interface CollectionOwners {
   styleUrls: ['./owners-page.component.scss'],
 })
 export class OwnersPageComponent implements OnInit {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
   collections = signal<CollectionOwners[]>([]);
   loading = signal(true);
   explorerUrl = environment.explorerUrl;

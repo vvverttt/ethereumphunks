@@ -20,7 +20,7 @@
             @if (auction.imageUrl) {
               <img
                 [src]="auction.imageUrl"
-                [alt]="'Phunk #' + auction.tokenId"
+                [alt]="t('stripPhunkAlt', { id: auction.tokenId })"
                 [style.background-color]="bgColors()[auction.auctionId]"
                 crossorigin="anonymous"
                 (load)="onImageLoad($event, auction.auctionId)" />

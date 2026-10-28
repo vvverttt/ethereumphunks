@@ -3,7 +3,8 @@ import { RouteReuseStrategy, provideRouter, withInMemoryScrolling } from '@angul
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideHttpClient } from '@angular/common/http';
 
-import { TimeagoClock, TimeagoDefaultClock, TimeagoDefaultFormatter, TimeagoFormatter } from 'ngx-timeago';
+import { TimeagoClock, TimeagoDefaultClock, TimeagoFormatter } from 'ngx-timeago';
+import { LangTimeagoFormatter } from '@/services/timeago-lang.formatter';
 
 import { environment } from 'src/environments/environment';
 
@@ -39,7 +40,7 @@ function isWalletBrowser(): boolean {
 
 export const config = {
   providers: [
-    { provide: TimeagoFormatter, useClass: TimeagoDefaultFormatter },
+    { provide: TimeagoFormatter, useClass: LangTimeagoFormatter },   // follows the language switch
     { provide: TimeagoClock, useClass: TimeagoDefaultClock },
     { provide: WeiToEthPipe, useClass: WeiToEthPipe },
     { provide: MinMaxPipe, useClass: MinMaxPipe },

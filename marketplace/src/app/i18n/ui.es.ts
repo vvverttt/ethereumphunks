@@ -1,0 +1,335 @@
+// Mexican Spanish (es-MX) interface strings. Same keys as ui.en.ts; a missing key falls back
+// to English. {placeholders} are filled by PhunkPreferencesService.t(key, params).
+export const UI_ES: Record<string, string> = {
+  indonesian: 'Indonesio',
+
+  // pie de página
+  explore: 'Explorar',
+  allCollection: 'Todos los {name}',
+  turtles: 'Tortugas',
+  activity: 'Actividad',
+  sales: 'Ventas',
+  contracts: 'Contratos',
+  collection: 'Colección',
+  aboutUs: 'Nosotros',
+  shellArchive: 'The Shell Archive',
+
+  // intro de colección
+  colourBlue: 'azul',
+  colourLime: 'lima',
+  colourAqua: 'aqua',
+  colourViolet: 'violeta',
+  colourYellow: 'amarillo',
+
+  // mapa de colección
+  zoomIn: 'Acercar',
+  zoomOut: 'Alejar',
+  resetView: 'Restablecer vista',
+  fullscreen: 'Pantalla completa',
+
+  // búsqueda en colección
+  searchCollection: 'Buscar {name}',
+  searchButton: 'Buscar',
+  searchPlaceholderV67: "Prueba con 'turtle' o 'turtle and hoodie', o un número",
+  searchPlaceholderOther: "Prueba con 'zombie' o 'zombie and beard', o un número",
+  searchNoPiece: 'No hay {name} #{n} aquí.',
+  searchNoTrait: 'Ningún rasgo coincide con "{q}".',
+
+  // tipos y atributos
+  downloadCsv: 'Descargar CSV',
+  moreExamples: 'Más Ejemplos',
+  phunkTypes: 'Tipos de Phunk',
+  attributeCounts: 'Conteo de Atributos',
+  nAttributes: '{n} Atributos',
+  oneAttribute: '1 Atributo',
+
+  // secciones del índice
+  bidsHeading: 'Ofertas',
+  salesHeading: 'Ventas',
+  averageOpenBid: 'La oferta abierta promedio es',
+  totalOpenBids: 'El valor total de todas las ofertas abiertas es',
+  showingTopBids: 'Mostrando las mejores ofertas,',
+
+  // caja de wallet del menú
+  yourPhunks: 'Tus Phunks',
+  open: 'Abiertos',
+  escrowed: 'En escrow',
+
+  // popup de introducción
+  introTitle: 'Casa de Subastas QuantumPhunks',
+  introForked: 'Un fork de Chopperdad, mejorado.',
+  introPhunklloween: 'Phunklloween ya está en vivo. Piezas 1/1 de Halloween hechas a mano salen a subasta aquí, una al día, 24 horas cada una, desde 0.001 ETH. 19 de las 67 pasan a diario por la casa de subastas, y la última se liquida en Halloween; el resto se lista en el mercado.',
+  introBidRules: 'Cada puja debe superar a la anterior por al menos 10%, y una puja en los últimos 10 minutos extiende el reloj 10 minutos, así que nadie te gana en el último segundo. Si te superan, tu ETH regresa a tu saldo retirable. Cuando el temporizador termina, cualquiera puede liquidarla: el item va al ganador y empieza el siguiente.',
+  introMadeBy: 'Hecho por DystoLabz, alias',
+  introAndMe: 'y yo.',
+  introQuestions: '¿Preguntas? Escríbele a',
+  introOnX: 'en X.',
+  introEnter: 'Entrar',
+
+  // lotería (Phupreme)
+  lotteryPrize: 'Premio',
+  lotteryNotWhitelisted: 'Esta es una fase solo para whitelist y tu wallet aún no está en la lista.',
+  lotteryRefundNotice: 'Tienes {amount} ETH por recuperar de un giro anterior.',
+  lotteryWithdrawAmount: 'Retirar {amount} ETH',
+  lotteryQuantity: 'Cantidad',
+  lotterySurrender: 'Entrega para un descuento',
+  lotterySurrenderHint: 'Entrega un Phunk V2 / Philip y paga menos. Pasa a la tesorería si ganas.',
+  lotteryLoadingEligible: 'Cargando tus items elegibles…',
+  lotteryNoEligible: 'No se encontraron items elegibles en tu wallet.',
+  lotteryDiscount: 'Descuento',
+  lotteryVrfFee: 'Comisión Chainlink VRF (est.)',
+  lotteryTotal: 'Total',
+  lotteryComingSoonTag: 'próximamente',
+  lotteryComingSoon: 'Próximamente',
+  lotteryConfirmInWallet: 'Confirma en tu wallet...',
+  lotterySubmittingMint: 'Enviando mint... {s}s',
+  lotteryDrawingPrize: 'Sorteando tu premio... {s}s',
+  lotterySpinning: 'Girando...',
+  lotterySlowingDown: 'Frenando...',
+  lotteryMintAgain: 'Mintear de Nuevo',
+  lotteryMint: 'Mintear',
+  lotteryDemo: 'Demo',
+  lotteryMintPrice: 'Mint: {price} ETH',
+  lotteryLeft: 'Quedan {n} QuantumPhunks',
+  lotteryYouWon: '¡Ganaste!',
+  lotteryYouWonN: '¡Ganaste {n}!',
+  lotteryHowItWorks: 'Cómo Funciona',
+  lotteryStep1Title: 'Elige tu cantidad',
+  lotteryStep1Text: 'Opcionalmente entrega un Phunk V2 o Philip para un descuento en ETH. El precio se actualiza en vivo.',
+  lotteryStep2Text: 'Una sola transacción paga el precio del mint más una pequeña comisión de Chainlink VRF. Lo que pagues de más se reembolsa automáticamente.',
+  lotteryStep3Title: 'Revelación aleatoria',
+  lotteryStep3Text: 'Chainlink VRF elige tu QuantumPhunk al azar y se mintea directo a tu wallet — sin paso de revelación.',
+  lotteryViewPool: 'Ver todos los QuantumPhunks del pool.',
+  lotteryViewPoolN: 'Ver los {n} QuantumPhunks del pool.',
+  lotteryRecentWins: 'Premios Recientes',
+  lotteryViewWins: 'Ver todos los QuantumPhunks ganados.',
+  lotteryCreditExceeds: 'Los items entregados valen más que la orden — quita algunos o sube la cantidad.',
+  lotteryCouldNotPrice: 'No se pudo calcular el precio de esta selección.',
+  lotteryInactive: 'La lotería está inactiva por ahora',
+  lotteryNoPrizes: 'No hay premios disponibles',
+  lotteryWhitelistOnlyNotListed: 'Esta fase es solo para whitelist. Tu wallet aún no está en la lista.',
+  lotteryNothingToMint: 'No hay nada disponible para mintear',
+  lotteryInsufficientEth: 'ETH insuficiente para mint + gas',
+  lotteryStillSettling: 'Tu mint está confirmado pero el resultado aún se está procesando. Aparecerá en Premios Recientes en breve.',
+  lotteryNoContractWallets: 'Las wallets de smart contract no son compatibles. Usa una wallet normal.',
+  lotteryWhitelistOnly: 'Esta fase es solo para whitelist.',
+  lotteryWalletLimit: 'Alcanzaste el límite de mint por wallet.',
+  lotteryNotEnoughPrizes: 'No quedan suficientes premios para esa cantidad.',
+  lotteryMintTxFailed: 'Falló la transacción de mint',
+
+  // errores compartidos
+  txFailed: 'Falló la transacción',
+  withdrawFailed: 'Falló el retiro',
+
+  // páginas de pool / premios de lotería
+  lotteryPool: 'Pool de Lotería',
+  lotteryInPool: 'QuantumPhunks en el pool',
+  lotteryLoadingPool: 'Cargando pool...',
+  lotteryPoolEmpty: 'El pool está vacío.',
+  loadMore: 'Cargar Más',
+  lotteryAllWon: 'Todos los Artefactos Ganados',
+  lotteryWinsWord: 'premios',
+  lotteryNoWins: 'Aún no hay premios.',
+
+  // página de subasta
+  auctionLoading: 'Cargando subasta...',
+  auctionNotice: 'La prueba de subastas con EthsRocks sin precio de reserva fue un éxito. Las subastas ahora pasan a los items más raros de las colecciones V67, con precios de reserva, y también incluirán nuestras colecciones más pequeñas y posiblemente cualquier item de cualquier colección de aquí.',
+  auctionEthscriptionsTag: 'Los items subastados aquí son Ethscriptions, no la colección ERC-721 CryptoPhunksV67',
+  auctionNewBidUpdating: 'Nueva puja detectada, actualizando...',
+  auctionPoolItems: 'Items en el Pool de Subasta ({n})',
+  auctionSwapHint: 'Cambia tu CryptoPhunksV67 por uno del pool. Gratis, 1:1.',
+  auctionWithdrawAll: 'Retirar Todo ({n})',
+  auctionSwapStep2: 'Paso 2: Elige del Pool',
+  auctionSwapFor: 'Cambiar por #{id}',
+  auctionYourV67: 'Tus CryptoPhunksV67',
+  auctionSendToSwap: 'Enviar a Cambio',
+  auctionConnectToSeeV67: 'Conecta tu wallet para ver tus CryptoPhunksV67.',
+  auctionWaitingConfirmation: 'Esperando confirmación...',
+  auctionDepositNotConfirmed: 'Depósito aún sin confirmar...',
+  auctionReadyToSwap: '¡Listo para cambiar!',
+  auctionBlocksRemaining: 'Faltan {n} bloques...',
+  auctionEnterBid: 'Ingresa un monto de puja',
+  auctionBidFailed: 'Falló la puja',
+  auctionBuyNowUnavailable: 'Comprar ya no está disponible para esta wallet',
+  auctionBuyNowFailed: 'Falló Comprar ya',
+  auctionSettleFailed: 'Falló la liquidación',
+
+  // palabras de estado compartidas
+  processing: 'Procesando...',
+  waiting: 'Esperando...',
+  sending: 'Enviando...',
+
+  // vista de item
+  itemAvailableNow: 'está disponible ahora',
+  itemBuyNowFor: 'Comprar ya por {price} ETH',
+  itemDiamondHandsPrice: 'Precio Diamond Hands',
+  itemDiamondHands: 'Diamond Hands',
+  itemAddressPlaceholder: '0x o .ens',
+  itemQpListingNote: 'Listar aprueba al mercado de QuantumPhunks para transferir este NFT solo si se vende — se queda en tu wallet hasta entonces (sin escrow). Quita la venta cuando quieras.',
+  itemQpBidNote: 'Las ofertas son sin custodia: tu ETH permanece bloqueado en el mercado de QuantumPhunks hasta que el propietario acepte (una sola transacción — sin paso de confirmación ni espera). Si se vende a otro, se te reembolsa automáticamente; puedes retirar tu oferta en cualquier momento antes de que se acepte.',
+  itemBiddingRestricted: 'Las ofertas en esta colección están restringidas por ahora.',
+  itemNotForSale: 'No está en venta',
+  itemNoConsensus: 'No se alcanzó consenso. Contacta a soporte @etherphunks',
+
+  // errores compartidos 2
+  couldNotProcessTx: 'No se pudo procesar la transacción',
+  invalidAddress: 'Dirección inválida',
+
+  // mercado (acciones en lote)
+  marketShowFilters: 'Mostrar Filtros',
+  marketHideFilters: 'Ocultar Filtros',
+  marketBulkList: 'Listar en Lote',
+  marketItems: 'items',
+  marketPhunks: 'Phunks',
+  marketIneligibleList: '{n} items seleccionados no se pueden listar',
+  marketNoValueNotListed: 'Los items sin valor no se listarán.',
+  marketListPrice: 'Precio',
+  marketCopy: 'Copiar',
+  marketListAll: 'Listar Todo',
+  marketBulkTransfer: 'Transferir en lote',
+  marketIneligibleTransfer: '{n} items seleccionados no se pueden transferir',
+  marketTransferAll: 'Transferir Todo',
+  marketBulkEscrow: 'Escrow en Lote',
+  marketIneligibleEscrow: '{n} items seleccionados no se pueden poner en escrow',
+  marketEscrowAll: 'Todo a Escrow',
+  marketBulkWithdraw: 'Retirar en Lote',
+  marketIneligibleWithdraw: '{n} items seleccionados no se pueden retirar',
+  marketWithdrawAll: 'Retirar Todo',
+  marketIneligibleBuy: '{n} items seleccionados no se pueden comprar',
+  marketBuyAll: 'Comprar Todo',
+  marketClose: 'Cerrar',
+  marketSweepSoon: 'El barrido para esta colección llega pronto.',
+  marketNoneForSale: 'Ninguno de los items seleccionados está en venta.',
+  marketNoLongerForSale: 'Uno o más items ya no están en venta.',
+  marketInvalidSelection: 'Selección inválida',
+
+  // banner de retiro de Ordex
+  ordexYouHave: 'Tienes',
+  ordexEscrowedOne: 'ethscription en escrow en Ordex. Si no la retiras ahora, ¡podrías perderla para siempre!',
+  ordexEscrowedMany: 'ethscriptions en escrow en Ordex. Si no las retiras ahora, ¡podrías perderlas para siempre!',
+  ordexWithdrawing: 'Retirando...',
+  ordexWithdrawComplete: 'Retiro Completo',
+  ordexWithdrawNow: 'Retirar YA',
+  ordexTxHash: 'Hash de Transacción:',
+  ordexSignNotice: 'Tendrás que firmar un mensaje y enviar una transacción para retirar.',
+
+  // mint
+  mintInscribed: 'inscritos',
+  mintTooltip: "Las inscripciones se asignan por orden de llegada. Cada una es única y no se puede duplicar según <a href='https://docs.ethscriptions.com/overview/protocol-specification#creating-ethscriptions' target='_blank'>estas reglas del protocolo</a>.",
+  mintIdiotAlt: 'eres un idiota',
+  mintPenalty: 'Te pusimos en castigo por hacer clic demasiado fuerte. Intenta de nuevo en',
+  mintSeconds: 'segundos.',
+  mintRandom: 'Aleatorio',
+  mintAlreadyInscribed: 'Ya inscrito',
+  mintInscribe: 'Inscribir',
+  mintAgree: 'Al hacer clic en el botón "inscribir", aceptas nuestros',
+  mintTerms: 'términos',
+  mintNetworkFees: 'Aplican comisiones de red',
+  mintFailed: 'No se pudo inscribir',
+
+  // franja de subasta
+  stripPhunkAlt: 'Phunk #{id}',
+  stripCurrentBid: 'Puja actual',
+  stripOpeningBid: 'Puja inicial',
+  stripEndsIn: 'Termina en',
+  stripEnded: 'Terminó',
+  stripBidding: 'Pujando…',
+  stripSettleAtHouse: 'Liquidar en la casa de subastas',
+  stripBidsLower: 'pujas',
+  stripOpenHouse: 'Abrir la casa de subastas',
+  stripAuctionHouse: 'Casa de subastas',
+  stripBidSent: 'Puja enviada — esperando confirmación…',
+  stripNoBidsMin: 'Aún no hay pujas. Mínimo {min} ETH.',
+  stripNextBidMin: 'La siguiente puja debe ser de al menos {min} ETH.',
+  stripMinBidIs: 'La puja mínima es {min} ETH',
+
+  // widgets de subasta (auction, phunk-info, timer, easter egg)
+  viewCurrentAuction: 'Ver subasta actual',
+  infoTrait: '{n} rasgo',
+  infoTraits: '{n} rasgos',
+  infoPoolItem: '{n} item en el pool',
+  infoPoolItems: '{n} items en el pool',
+  timerDay: 'día',
+  timerHr: 'h',
+  timerMin: 'min',
+  timerSec: 'seg',
+  eggYouBid: 'Pujaste',
+
+  // tablas de actividad (user activity, recent activity, tx history)
+  bidCap: 'Oferta',
+  uaEvent: 'Evento',
+  uaTokenId: 'ID de Token',
+  uaFrom: 'De',
+  uaValue: 'Valor',
+  uaBoughtFor: 'Comprado por',
+  uaCreatedBy: 'Creado por',
+  uaBridgedBy: 'Bridge por',
+  actAcceptedFrom: 'aceptada de',
+  actConfirmedBy: 'confirmada por',
+  actWithdrawnBy: 'retirada por',
+  txBidAccepted: 'Oferta Aceptada',
+  txBidConfirmed: 'Oferta Confirmada',
+  txBidRefunded: 'Oferta Reembolsada',
+
+  // tablas de actividad 2
+  actErc721Title: 'Token ERC-721 — vive en el estado del contrato en Ethereum. No es una Ethscription. Ver el contrato.',
+  actEthscriptionTitle: 'Ethscription — inscrita directamente en el calldata de Ethereum. Lee la documentación.',
+
+  // cuadrícula de phunks
+  gridLoad: 'Cargar',
+  gridMore: 'Más',
+  gridDeadBid: 'Oferta muerta',
+
+  // barra de estadísticas de colección
+  statFloor: 'Piso',
+  statArtifacts: 'Artefactos',
+  statListed: 'Listados',
+  statVolume: 'Volumen',
+
+  // opciones de descarga de PFP (breadcrumbs)
+  pfpShape: 'Forma',
+  pfpSquare: 'Cuadrado',
+  pfpRound: 'Redondo',
+  pfpHexagon: 'Hexágono',
+  pfpBackground: 'Fondo',
+  pfpCollectionDefault: 'Predeterminado de la colección',
+  pfpCustomColour: 'Color personalizado',
+  pfpBorder: 'Borde',
+  pfpOn: 'Sí',
+  pfpBorderColour: 'Color del borde',
+  pfpSize: 'Tamaño',
+  pfpExtras: 'Extras',
+
+  // ventas / billboard / comentarios / filtros de colección
+  salesNone: 'Aún no hay ventas.',
+  billboardUnsupported: 'Tipo de contenido no compatible: {type}',
+  commentsTicTooltip: "TIC (Transaction Inscribed Comments) permite comentar on-chain a través del calldata de transacciones de Ethereum. Ofrece una forma estandarizada de asociar comentarios con entidades de la blockchain como direcciones, hashes de transacción u otros identificadores on-chain. <a href='https://github.com/chopperdaddy/ethereumphunks.com/blob/sepolia/tic-protocol.md' target='_blank'>Más información</a>.",
+  commentsFailed: 'No se pudo inscribir el comentario',
+  filtersNoMatch: 'Sin coincidencias',
+
+  // página de ventas / página de dueños
+  salesAllTitle: 'Todas las Ventas de {name}',
+  salesShowing: 'Mostrando {n} ventas.',
+  salesLoading: 'Cargando ventas...',
+  salesNoneForCollection: 'Aún no hay ventas para esta colección.',
+  ownersAllTitle: 'Todos los Dueños de QuantumPhunks',
+  ownersCount: '({n} dueños)',
+  ownersNumberOwned: 'Cantidad',
+
+  // etiquetas aria compartidas
+  breadcrumb: 'Ruta de navegación',
+
+  // filtros del mercado
+  filters: 'Filtros',
+
+  // menu table keys missing from the service's es table
+  sweep: 'Barrer',
+  bidOrphanedOwner: 'Oferta obsoleta: se hizo cuando otro propietario tenía este item, así que on-chain está ligada a esa dirección y no se puede aceptar desde aquí. Solo el ofertante puede retirarla.',
+  bidOrphanedBidder: 'Tu oferta quedó huérfana — este item cambió de dueño después de que ofertaste, así que ya no se puede aceptar. Retira tu ETH abajo.',
+
+  // late additions: index sales link, pixel stats, footer link
+  viewAllSales: "Ver todas las ventas de {name}.",
+  uniqueColors: "Colores únicos",
+  coloredPixels: "Píxeles de color",
+  allTypesFooter: "Todos los tipos y atributos",
+};

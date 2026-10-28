@@ -1,6 +1,7 @@
 import { Component, ElementRef, HostListener, Input, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 /**
  * A pan-and-zoom map of a whole collection, like cryptopunks.app's: one pre-built image of every
@@ -35,16 +36,16 @@ import { Router } from '@angular/router';
         [style.transform]="'translate(' + x() + 'px,' + y() + 'px)'" />
       <div class="controls" (pointerdown)="$event.stopPropagation()">
         <!-- Drawn icons, centred on a 16-unit grid (text glyphs sit off-centre in a button). -->
-        <button type="button" (click)="zoomBy(2)" aria-label="Zoom in">
+        <button type="button" (click)="zoomBy(2)" [attr.aria-label]="prefs.t('zoomIn')">
           <svg viewBox="0 0 16 16"><path d="M7 3h2v4h4v2H9v4H7V9H3V7h4z"/></svg>
         </button>
-        <button type="button" (click)="zoomBy(1 / 2)" aria-label="Zoom out">
+        <button type="button" (click)="zoomBy(1 / 2)" [attr.aria-label]="prefs.t('zoomOut')">
           <svg viewBox="0 0 16 16"><path d="M3 7h10v2H3z"/></svg>
         </button>
-        <button type="button" (click)="home()" aria-label="Back to the start">
+        <button type="button" (click)="home()" [attr.aria-label]="prefs.t('resetView')">
           <svg viewBox="0 0 16 16"><path d="M8 2l6 6h-2v6H9v-4H7v4H4V8H2z"/></svg>
         </button>
-        <button type="button" (click)="fullscreen()" aria-label="Fullscreen">
+        <button type="button" (click)="fullscreen()" [attr.aria-label]="prefs.t('fullscreen')">
           <svg viewBox="0 0 16 16"><path d="M2 2h5v2H4v3H2zm7 0h5v5h-2V4H9zM2 9h2v3h3v2H2zm10 0h2v5H9v-2h3z"/></svg>
         </button>
       </div>
@@ -131,7 +132,7 @@ export class CollectionMapComponent {
 
   private drag: { id: number; sx: number; sy: number; ox: number; oy: number; moved: boolean } | null = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, public prefs: PhunkPreferencesService) {}
 
   private get box() { return this.mapRef.nativeElement.getBoundingClientRect(); }
 

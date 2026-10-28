@@ -365,13 +365,13 @@ export class ItemViewComponent {
       const config = await this.poolBuySvc.getConfig();
       const address = await firstValueFrom(this.walletAddress$);
       const resolved = await this.poolBuySvc.resolveTier(address, config);
-      if (!resolved) throw new Error('Buy Now is not available for this wallet');
+      if (!resolved) throw new Error(this.t('auctionBuyNowUnavailable'));
 
       notification = { ...notification, value: Number(formatEther(resolved.priceWei)) };
       this.store.dispatch(upsertNotification({ notification }));
 
       const hash = await this.poolBuySvc.buyItem(hashId, resolved.tier, resolved.proof, resolved.priceWei);
-      if (!hash) throw new Error('Could not process transaction');
+      if (!hash) throw new Error(this.t('couldNotProcessTx'));
 
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
@@ -388,8 +388,8 @@ export class ItemViewComponent {
     }
   }
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   private weiToEthPipe = new WeiToEthPipe();
@@ -508,7 +508,7 @@ export class ItemViewComponent {
           address = ensOwner;
         }
         const validAddress = this.web3Svc.verifyAddress(address);
-        if (!validAddress) throw new Error('Invalid address');
+        if (!validAddress) throw new Error(this.t('invalidAddress'));
       }
 
       const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner, slug: phunk.slug });
@@ -580,7 +580,7 @@ export class ItemViewComponent {
     // Temporary gate: only quantumphunks.eth may bid on ERC-721C collections right now.
     if (isErc721c(phunk.slug)) {
       const addr = (await firstValueFrom(this.walletAddress$))?.toLowerCase();
-      if (addr !== this.qpBidderAllowed) throw new Error('Bidding on this collection is restricted right now.');
+      if (addr !== this.qpBidderAllowed) throw new Error(this.t('itemBiddingRestricted'));
     }
     const hashId = phunk.hashId;
     if (!hashId) throw new Error('Invalid hashId');
@@ -942,7 +942,7 @@ export class ItemViewComponent {
       const hash = set
         ? await this.web3Svc.qpNoLongerForSale(set.marketplace, set.nft, this.posTokenId(phunk))
         : await this.web3Svc.phunkNoLongerForSale(hashId, this.web3Svc.resolveMarketAddress({ owner: phunk.owner }));
-      if (!hash) throw new Error('Could not process transaction');
+      if (!hash) throw new Error(this.t('couldNotProcessTx'));
 
       notification = {
         ...notification,
@@ -1001,14 +1001,14 @@ export class ItemViewComponent {
       if (set) {
         // ERC-721C: read the exact on-chain price (avoid JS number precision loss) and buy on the QP market.
         const offer = await this.web3Svc.qpGetOffer(set.marketplace, set.nft, this.posTokenId(phunk));
-        if (!offer || !offer.isForSale) throw new Error('Not for sale');
+        if (!offer || !offer.isForSale) throw new Error(this.t('itemNotForSale'));
         hash = await this.web3Svc.qpBuy(set.marketplace, set.nft, this.posTokenId(phunk), offer.minValue.toString());
       } else {
         const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
         hash = await this.web3Svc.batchBuyPhunks([phunk], targetMarket);
       }
 
-      if (!hash) throw new Error('Could not process transaction');
+      if (!hash) throw new Error(this.t('couldNotProcessTx'));
 
       notification = {
         ...notification,
@@ -1055,7 +1055,7 @@ export class ItemViewComponent {
     try {
       let toAddress: string | null = address || this.transferAddress.value;
       toAddress = await this.web3Svc.verifyAddressOrEns(toAddress);
-      if (!toAddress) throw new Error('Invalid address');
+      if (!toAddress) throw new Error(this.t('invalidAddress'));
 
       this.closeTransfer();
       this.store.dispatch(upsertNotification({ notification }));
@@ -1118,7 +1118,7 @@ export class ItemViewComponent {
 
       const targetMarket = this.web3Svc.resolveMarketAddress({ owner: phunk.owner });
       const hash = await this.web3Svc.withdrawPhunk(hashId, targetMarket);
-      if (!hash) throw new Error('Could not process transaction');
+      if (!hash) throw new Error(this.t('couldNotProcessTx'));
       notification = {
         ...notification,
         type: 'pending',
@@ -1181,7 +1181,7 @@ export class ItemViewComponent {
       await this.checkConsenus(phunk);
 
       const hash = await this.web3Svc.evolvePhunk(hashId);
-      if (!hash) throw new Error('Could not process transaction');
+      if (!hash) throw new Error(this.t('couldNotProcessTx'));
 
       notification = {
         ...notification,
@@ -1230,7 +1230,7 @@ export class ItemViewComponent {
       await this.checkConsenus(phunk);
 
       const hash = await this.web3Svc.devolvePhunk(hashId);
-      if (!hash) throw new Error('Could not process transaction');
+      if (!hash) throw new Error(this.t('couldNotProcessTx'));
 
       notification = {
         ...notification,
@@ -1261,7 +1261,7 @@ export class ItemViewComponent {
 
   async checkConsenus(phunk: Phunk): Promise<void> {
     const res = await this.dataSvc.checkConsensus([phunk]);
-    if (!res[0]?.consensus) throw new Error('Consensus not reached. Contact Support @etherphunks');
+    if (!res[0]?.consensus) throw new Error(this.t('itemNoConsensus'));
   }
 
   expand(): void {

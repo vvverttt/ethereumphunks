@@ -246,7 +246,7 @@ export class CollectionAttributesComponent implements OnInit {
       id: this.anchor(COUNT_SECTION),
       name: COUNT_SECTION,
       isCount: true,
-      rows: counts.map(r => ({ key: `#|${r.numTraits}`, name: `${r.numTraits} ${r.numTraits === 1 ? 'Attribute' : 'Attributes'}`, traitType: '', count: r.count, pct: r.pct, rarity: r.rarity, exampleShas: r.exampleShas })),
+      rows: counts.map(r => ({ key: `#|${r.numTraits}`, name: r.numTraits === 1 ? this.preferences.t('oneAttribute') : this.preferences.t('nAttributes', { n: r.numTraits }), traitType: '', count: r.count, pct: r.pct, rarity: r.rarity, exampleShas: r.exampleShas })),
     });
     return out;
   });
@@ -271,6 +271,13 @@ export class CollectionAttributesComponent implements OnInit {
     private dataSvc: DataService,
     public preferences: PhunkPreferencesService,
   ) {}
+
+  /** Section headings: the two fixed sections translate; trait types are data and stay as named. */
+  sectionLabel(name: string): string {
+    if (name === 'Phunk Types') return this.t('phunkTypes');
+    if (name === COUNT_SECTION) return this.t('attributeCounts');
+    return name;
+  }
 
   t(key: string): string {
     return this.preferences.t(key);

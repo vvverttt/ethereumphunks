@@ -673,6 +673,8 @@ export class DataService {
         .from('ethscriptions' + this.suffix)
         .select('hashId,tokenId,slug,sha,owner')
         .or(`owner.eq.${address},and(owner.in.(${escrows.join(',')}),prevOwner.eq.${address})`)
+        // the unlaunched Quantum Missing / Quantum Dysto copies are not collections on this site
+        .not('slug', 'in', '(quantummissingphunksv67,quantumdystophunkzv67)')
         .order('tokenId')
         .limit(5000);
       if (error) { this.ownedAllCache.delete(address); return []; }

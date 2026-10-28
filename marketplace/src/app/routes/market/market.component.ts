@@ -194,8 +194,8 @@ export class MarketComponent {
     public preferences: PhunkPreferencesService,
   ) {}
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   marketTitle(marketType: string, collectionName: string): string {
@@ -275,7 +275,7 @@ export class MarketComponent {
     try {
       // buyPhunkBatch only exists on the upgraded impl; until then, don't hand the user a reverting tx.
       if (!(await this.web3Svc.qpSupportsBatchBuy(set.marketplace))) {
-        throw new Error('Sweep for this collection is coming soon.');
+        throw new Error(this.t('marketSweepSoon'));
       }
 
       // Read the live price for each selected item; keep only the ones still listed. The price we
@@ -296,12 +296,12 @@ export class MarketComponent {
           total += offer.minValue;
         }
       }
-      if (!tokenIds.length) throw new Error('None of the selected items are for sale.');
+      if (!tokenIds.length) throw new Error(this.t('marketNoneForSale'));
 
       this.store.dispatch(upsertNotification({ notification }));
 
       const hash = await this.web3Svc.qpBatchBuy(set.marketplace, collections, tokenIds, maxPrices, total.toString());
-      if (!hash) throw new Error('Transaction failed');
+      if (!hash) throw new Error(this.t('txFailed'));
 
       notification = { ...notification, type: 'pending', hash };
       this.store.dispatch(upsertNotification({ notification }));
@@ -429,10 +429,10 @@ export class MarketComponent {
     try {
       let toAddress: string | null = this.transferAddress.value;
       toAddress = await this.web3Svc.verifyAddressOrEns(toAddress);
-      if (!toAddress) throw new Error('Invalid address');
+      if (!toAddress) throw new Error(this.t('invalidAddress'));
 
       const hash = await this.web3Svc.batchTransferPhunks(hashIds, toAddress);
-      if (!hash) throw new Error('Transaction failed');
+      if (!hash) throw new Error(this.t('txFailed'));
 
       notification = {
         ...notification,
@@ -538,7 +538,7 @@ export class MarketComponent {
         listings.map(phunk => phunk.listPrice),
         targetMarket
       );
-      if (!hash) throw new Error('Transaction failed');
+      if (!hash) throw new Error(this.t('txFailed'));
 
       notification = {
         ...notification,
@@ -595,14 +595,14 @@ export class MarketComponent {
     this.closeModal();
 
     try {
-      if (!hashIds?.length || hex === '0x') throw new Error('Invalid selection');
+      if (!hashIds?.length || hex === '0x') throw new Error(this.t('marketInvalidSelection'));
 
       const phunks = Object.values(selected);
       const targetMarket = phunks.length > 0
         ? this.web3Svc.resolveMarketAddress({ slug: phunks[0].slug })
         : this.escrowAddress;
       const hash = await this.web3Svc.transferPhunk(hex, targetMarket);
-      if (!hash) throw new Error('Transaction failed');
+      if (!hash) throw new Error(this.t('txFailed'));
 
       notification = {
         ...notification,
@@ -655,14 +655,14 @@ export class MarketComponent {
     this.closeModal();
 
     try {
-      if (!hashIds?.length) throw new Error('Invalid selection');
+      if (!hashIds?.length) throw new Error(this.t('marketInvalidSelection'));
 
       const phunks = Object.values(selected);
       const targetMarket = phunks.length > 0
         ? this.web3Svc.resolveMarketAddress({ owner: phunks[0].owner })
         : undefined;
       const hash = await this.web3Svc.withdrawBatch(Object.keys(selected), targetMarket);
-      if (!hash) throw new Error('Transaction failed');
+      if (!hash) throw new Error(this.t('txFailed'));
 
       notification = {
         ...notification,
@@ -715,14 +715,14 @@ export class MarketComponent {
     this.closeModal();
 
     try {
-      if (!hashIds?.length) throw new Error('One or more items are no longer for sale.');
+      if (!hashIds?.length) throw new Error(this.t('marketNoLongerForSale'));
 
       const phunks = Object.values(selected);
       const targetMarket = phunks.length > 0
         ? this.web3Svc.resolveMarketAddress({ owner: phunks[0].owner })
         : undefined;
       const hash = await this.web3Svc.batchBuyPhunks(phunks, targetMarket);
-      if (!hash) throw new Error('Transaction failed');
+      if (!hash) throw new Error(this.t('txFailed'));
 
       notification = {
         ...notification,

@@ -1,17 +1,17 @@
 <div class="inner">
   <div class="header-wrapper">
-    <nav class="crumb-box" aria-label="Breadcrumb">
+    <nav class="crumb-box" [attr.aria-label]="t('breadcrumb')">
       <a routerLink="/phupreme">Phupreme</a>
       <span class="sep" aria-hidden="true">/</span>
-      <span>All Won Artifacts</span>
+      <span>{{ t('lotteryAllWon') }}</span>
     </nav>
-    <h1>All Won Artifacts</h1>
-    <h3>Showing <span class="highlight">{{ wins().length }}</span> wins</h3>
+    <h1>{{ t('lotteryAllWon') }}</h1>
+    <h3>{{ t('showing') }} <span class="highlight">{{ wins().length }}</span> {{ t('lotteryWinsWord') }}</h3>
   </div>
 
   @if (!loaded()) {
   } @else if (wins().length === 0) {
-    <p class="empty-message">No wins yet.</p>
+    <p class="empty-message">{{ t('lotteryNoWins') }}</p>
   } @else {
     <div class="wins-grid">
       @for (win of wins(); track win.play_id) {

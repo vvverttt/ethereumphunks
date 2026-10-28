@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -13,6 +13,7 @@ import { BidHistoryComponent } from '@/components/auction/bid-history/bid-histor
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 
 import { Auction } from '@/models/db';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   standalone: true,
@@ -32,6 +33,13 @@ import { Auction } from '@/models/db';
 })
 
 export class AuctionComponent {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   @Input() auction!: Auction;
 

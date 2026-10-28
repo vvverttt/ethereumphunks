@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Web3Service } from '@/services/web3.service';
@@ -12,6 +12,7 @@ import { OrdexMarketABI } from '@/abi/OrdexMarket';
 
 import { selectWalletAddress } from '@/state/selectors/app-state.selectors';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 interface EthscriptionResponse {
   continuation?: string;
@@ -30,6 +31,13 @@ interface EthscriptionResponse {
   styleUrl: './ordex-withdrawal.component.scss'
 })
 export class OrdexWithdrawalComponent {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   stillEscrowedIds = signal<string[] | null>(null);
   dismiss = signal(localStorage.getItem('ordex-withdrawal-dismiss') === 'true');

@@ -1,11 +1,11 @@
 <div class="auction-page" [ngStyle]="{'--auction-accent': (spooky() ? '255, 140, 26' : accentColor()) || null}">
   @if (false) {
-    <div class="loading-state">Loading auction...</div>
+    <div class="loading-state">{{ t('auctionLoading') }}</div>
   } @else {
 
     <!-- ========== AUCTION NOTICE ========== -->
     <div class="auction-notice">
-      <p>Auction testing with EthsRocks at 0 reserve was a success. Auctions now move to the rarest items in the V67 collections, with reserve prices set, and will also hold our smaller collections, and possibly anything from any collection here.</p>
+      <p>{{ t('auctionNotice') }}</p>
     </div>
 
     <!-- ========== HERO SECTION ========== -->
@@ -19,8 +19,8 @@
             <img src="assets/images/beam.png" alt="QuantumPhunks" class="auction-house-logo" />
             <div class="auction-house-title">
               <span class="auction-house-name">QuantumPhunks</span>
-              <span class="auction-house-sub">Auction House</span>
-              <span class="auction-house-tag" title="Items auctioned here are Ethscriptions, not the CryptoPhunksV67 ERC-721 collection">Ethscriptions</span>
+              <span class="auction-house-sub">{{ t('auctionHouse') }}</span>
+              <span class="auction-house-tag" [title]="t('auctionEthscriptionsTag')">Ethscriptions</span>
             </div>
           </div>
         </div>
@@ -48,7 +48,7 @@
         />
 
         @if (updating()) {
-          <div class="updating-indicator">New bid detected, updating...</div>
+          <div class="updating-indicator">{{ t('auctionNewBidUpdating') }}</div>
         }
 
       </div>
@@ -102,11 +102,11 @@
     @if (isAuction2 && poolItems().length) {
       <section class="pool-section">
         <div class="inner">
-          <h3>Items in Auction Pool ({{ poolItems().length }})</h3>
-          <p class="hint">Swap your CryptoPhunksV67 for one in the pool. Free, 1:1.</p>
+          <h3>{{ t('auctionPoolItems', { n: poolItems().length }) }}</h3>
+          <p class="hint">{{ t('auctionSwapHint') }}</p>
           @if (isAdmin()) {
             <button class="btn admin-withdraw-btn" (click)="onWithdrawAllFromPool()" [disabled]="swapTxPending()">
-              @if (swapTxPending()) { Processing... } @else { Withdraw All ({{ poolItems().length }}) }
+              @if (swapTxPending()) { {{ t('processing') }} } @else { {{ t('auctionWithdrawAll', { n: poolItems().length }) }} }
             </button>
           }
 
@@ -125,18 +125,18 @@
 
           @if (pendingSwapDeposit()) {
             <div class="swap-pending">
-              <h4>Step 2: Pick from Pool</h4>
+              <h4>{{ t('auctionSwapStep2') }}</h4>
               <p>{{ swapCooldownMessage() }}</p>
               @if (pickedSwapItem()) {
                 <button class="btn" (click)="onCompleteAuctionSwap()" [disabled]="swapTxPending() || !swapCooldownReady()">
-                  @if (swapTxPending()) { Processing... } @else if (!swapCooldownReady()) { Waiting... } @else { Swap for #{{ pickedSwapItem()!.tokenId }} }
+                  @if (swapTxPending()) { {{ t('processing') }} } @else if (!swapCooldownReady()) { {{ t('waiting') }} } @else { {{ t('auctionSwapFor', { id: pickedSwapItem()!.tokenId }) }} }
                 </button>
               }
-              <button class="btn cancel-btn" (click)="onCancelSwap()" [disabled]="swapTxPending()">Cancel</button>
+              <button class="btn cancel-btn" (click)="onCancelSwap()" [disabled]="swapTxPending()">{{ t('cancel') }}</button>
             </div>
           } @else {
             <div class="swap-step1">
-              <h4>Your CryptoPhunksV67</h4>
+              <h4>{{ t('auctionYourV67') }}</h4>
               @if (ownedV67Items().length) {
                 <div class="owned-grid">
                   @for (item of ownedV67Items(); track item.hashId) {
@@ -151,11 +151,11 @@
                 </div>
                 @if (selectedV67) {
                   <button class="btn" (click)="onDepositForSwap()" [disabled]="swapTxPending()">
-                    @if (swapTxPending()) { Sending... } @else { Send to Swap }
+                    @if (swapTxPending()) { {{ t('sending') }} } @else { {{ t('auctionSendToSwap') }} }
                   </button>
                 }
               } @else {
-                <p class="hint">Connect wallet to see your CryptoPhunksV67.</p>
+                <p class="hint">{{ t('auctionConnectToSeeV67') }}</p>
               }
             </div>
           }

@@ -27,7 +27,7 @@
 
             <div class="hash-id">
               @if (phunk.slug && erc721cContracts[phunk.slug]) {
-                <span i18n>Contract: </span>
+                <span i18n>{{ t('contract') }}: </span>
                 <a [href]="explorerUrl + '/nft/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)" target="_blank">
                   <app-address [address]="erc721cContracts[phunk.slug]" /> #{{ phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId }}
                 </a>
@@ -79,7 +79,7 @@
                 } @else if (isPoolItem(phunk)) {
                   <!-- Auction House pool item: fixed-price buy-now only (auctions disabled). -->
                   @if (poolBuy(); as pb) {
-                    <p>{{ phunk.collection?.singleName }} is available now — <span class="highlight">Buy Now for {{ pb.priceEth }} ETH</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ (+pb.priceEth * usd) | formatCash }})</span>}@if (pb.tier === 2) {<span class="bold"> — Diamond Hands price</span>}.</p>
+                    <p>{{ phunk.collection?.singleName }} {{ t('itemAvailableNow') }} — <span class="highlight">{{ t('itemBuyNowFor', { price: pb.priceEth }) }}</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ (+pb.priceEth * usd) | formatCash }})</span>}@if (pb.tier === 2) {<span class="bold"> — {{ t('itemDiamondHandsPrice') }}</span>}.</p>
                   }
                 } @else {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotForSale') }}</p>
@@ -143,7 +143,7 @@
                           <!-- tier 2 = Diamond Hands (EthsRocks whitelist) @ 0.167; else public @ 0.267 -->
                           @if (isPoolItem(phunk) && poolBuy(); as pb) {
                             <button class="buy" (click)="submitPoolBuy(phunk)">
-                              <span>@if (pb.tier === 2) {Diamond Hands }Buy Now — {{ pb.priceEth }} ETH</span>
+                              <span>@if (pb.tier === 2) { {{ t('itemDiamondHands') }} }{{ t('buyNow') }} — {{ pb.priceEth }} ETH</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
                             </button>
                           }
@@ -420,7 +420,7 @@
             <h1>{{ phunk.collection?.singleName }} {{ t('doesNotExist') }} 👎</h1>
             <div class="hash-id">
               @if (phunk.slug && erc721cContracts[phunk.slug]) {
-                <span i18n>Contract: </span>
+                <span i18n>{{ t('contract') }}: </span>
                 <a [href]="explorerUrl + '/nft/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)" target="_blank">
                   <app-address [address]="erc721cContracts[phunk.slug]" /> #{{ phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId }}
                 </a>
@@ -484,7 +484,7 @@
     <div class="form-group">
       <label for="transfer-address">{{ t('transferToAddress') }}</label>
       <input #transferAddressInput type="text" id="transfer-address" [formControl]="transferAddress"
-        placeholder="0x or .ens" role="presentation" autocomplete="off" />
+        [placeholder]="t('itemAddressPlaceholder')" role="presentation" autocomplete="off" />
     </div>
 
     <div class="form-actions">
@@ -555,7 +555,7 @@
 
     @if (!phunk.isEscrowed && !phunk.nft) {
       @if (phunk.slug && erc721cContracts[phunk.slug]) {
-        <p class="small">Listing approves the QuantumPhunks market to transfer this NFT only if it sells — it stays in your wallet until then (no escrow). Delist anytime.</p>
+        <p class="small">{{ t('itemQpListingNote') }}</p>
       } @else {
         <p class="small">{{ t('escrowSaleNotice') }}</p>
       }
@@ -590,7 +590,7 @@
     </div>
 
     @if (phunk.slug && erc721cContracts[phunk.slug]) {
-      <p class="small">Bids are non-custodial: your ETH stays locked in the QuantumPhunks market until the owner accepts (a single transaction — no confirmation step or cooldown). If it sells you're auto-refunded; you can withdraw your bid anytime before it's accepted.</p>
+      <p class="small">{{ t('itemQpBidNote') }}</p>
     } @else {
       <p class="small">{{ t('bidNonCustodialNote') }}</p>
     }

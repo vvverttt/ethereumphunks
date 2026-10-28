@@ -21,6 +21,9 @@ import { MenuAuctionComponent } from '@/components/menu-auction/menu-auction.com
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { ERC721C_CONTRACTS } from '@/constants/erc721c';
 
+/** Unlaunched Quantum Missing / Quantum Dysto copies: never shown as collections. */
+const NOT_LIVE = ['quantummissingphunksv67', 'quantumdystophunkzv67'];
+
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -115,7 +118,7 @@ export class MenuComponent {
       const hidden: string[] = config?.hiddenSlugs || [];
       const groups = [];
       for (const c of collections || []) {
-        if (hidden.includes(c.slug)) continue;
+        if (hidden.includes(c.slug) || NOT_LIVE.includes(c.slug)) continue;
         const mine = items.filter(p => p.slug === c.slug).map(p => ({ ...p, listing: listed.get(p.hashId) ?? null }));
         if (!mine.length) continue;
         const o = this.themeSvc.collectionOverrides[c.slug] || {};
@@ -295,8 +298,8 @@ export class MenuComponent {
     this.store.dispatch(appStateActions.setActiveMenuNav({ activeMenuNav }));
   }
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   setLanguage(language: MenuLanguage): void {

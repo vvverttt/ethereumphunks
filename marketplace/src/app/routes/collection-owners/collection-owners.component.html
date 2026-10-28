@@ -1,6 +1,6 @@
 <div class="inner">
   <div class="header-wrapper">
-    <nav class="crumb-box" aria-label="Breadcrumb">
+    <nav class="crumb-box" [attr.aria-label]="t('breadcrumb')">
       <a [routerLink]="['/' + slug]">{{ collectionName() }}</a>
       <span class="sep" aria-hidden="true">/</span>
       <span>{{ t('owners') }}</span>

@@ -114,8 +114,8 @@ export class CollectionSalesComponent {
     return e.blockTimestamp ? new Date(e.blockTimestamp).getTime() : 0;
   }
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   displayId(e: Event): string {

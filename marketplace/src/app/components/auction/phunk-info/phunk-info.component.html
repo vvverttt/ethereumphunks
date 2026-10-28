@@ -17,13 +17,13 @@
 
 @if (attributes().length) {
   <div class="one-of-label">
-    One of {{ attributes()[0] | traitCount : slug }}
+    {{ t('oneOf') }} {{ attributes()[0] | traitCount : slug }}
     <span
       class="type-name"
       [ngClass]="'rarity-' + ((attributes()[0] | traitCount : slug) | rarityTier : 0 : attributes()[0].v)">{{ attributes()[0].v }}</span>
   </div>
   <div class="trait-count-label">
-    {{ attributes().length - 1 }} trait{{ attributes().length - 1 !== 1 ? 's' : '' }}
+    {{ t(attributes().length - 1 !== 1 ? 'infoTraits' : 'infoTrait', { n: attributes().length - 1 }) }}
   </div>
   <div class="trait-wrapper">
     @for (attr of attributes(); track attr.k; let i = $index) {
@@ -38,4 +38,4 @@
   </div>
 }
 
-<div class="pool-label">{{ poolSize }} item{{ poolSize !== 1 ? 's' : '' }} in pool</div>
+<div class="pool-label">{{ t(poolSize !== 1 ? 'infoPoolItems' : 'infoPoolItem', { n: poolSize }) }}</div>

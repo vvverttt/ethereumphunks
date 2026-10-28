@@ -86,8 +86,8 @@ export class StatusBarComponent implements OnDestroy {
     });
   }
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   getIndexerClass(diff: number, indexerBlock: number): string {

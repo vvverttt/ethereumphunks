@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -30,6 +30,7 @@ import { environment } from 'src/environments/environment';
 
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as marketStateActions from '@/state/actions/market-state.actions';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   selector: 'app-phunk-grid',
@@ -59,6 +60,13 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
 })
 
 export class PhunkGridComponent implements OnChanges {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   escrowAddress = environment.marketAddress;
   // Any marketplace contract that holds escrowed items (real owner = prevOwner):

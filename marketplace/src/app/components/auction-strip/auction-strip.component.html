@@ -3,14 +3,14 @@
 
     <a class="item" [routerLink]="['/auction']">
       @if (image()) {
-        <img [src]="image()" [alt]="'Phunk #' + tokenId()" width="48" height="48" />
+        <img [src]="image()" [alt]="t('stripPhunkAlt', { id: tokenId() })" width="48" height="48" />
       }
       <span class="id">#{{ tokenId() }}</span>
     </a>
 
     <div class="figures">
       <div class="figure">
-        <span class="label">{{ hasBids() ? 'Current bid' : 'Opening bid' }}</span>
+        <span class="label">{{ hasBids() ? t('stripCurrentBid') : t('stripOpeningBid') }}</span>
         <!-- A bid that spells something gets the word right under those digits. -->
         @if (hasBids() && (currentEth() | bidEggParts); as p) {
           <span class="value has-egg">{{ p.before }}<span class="egg-num">{{ p.match }}<span class="egg-word">{{ p.word }}</span></span>{{ p.after }} <i>ETH</i></span>
@@ -21,9 +21,9 @@
       </div>
 
       <div class="figure">
-        <span class="label">{{ ended() ? 'Auction' : 'Ends in' }}</span>
+        <span class="label">{{ ended() ? t('auction') : t('stripEndsIn') }}</span>
         @if (ended()) {
-          <span class="value ended-label">Ended</span>
+          <span class="value ended-label">{{ t('stripEnded') }}</span>
         } @else {
           <span class="value timer">
             <app-timer [endTime]="endTimeMs()" (event)="onTimer($event)" />
@@ -34,7 +34,7 @@
 
     @if (!ended()) {
       <form class="bid" (ngSubmit)="placeBid()">
-        <label class="sr-only" for="stripBid">Bid amount in ETH</label>
+        <label class="sr-only" for="stripBid">{{ t('bidAmountPlaceholder') }}</label>
         <input
           id="stripBid"
           type="number"
@@ -49,11 +49,11 @@
           name="stripBid" />
 
         <button type="submit" [disabled]="pending()">
-          {{ pending() ? 'Bidding…' : 'Bid' }}
+          {{ pending() ? t('stripBidding') : t('bidCap') }}
         </button>
       </form>
     } @else {
-      <a class="settle-link" [routerLink]="['/auction']">Settle at the auction house</a>
+      <a class="settle-link" [routerLink]="['/auction']">{{ t('stripSettleAtHouse') }}</a>
     }
 
     @if (bids().length) {
@@ -62,21 +62,21 @@
         class="bids-toggle"
         (click)="toggleBids()"
         [attr.aria-expanded]="bidsOpen()">
-        {{ bids().length }} {{ bids().length === 1 ? 'bid' : 'bids' }}
+        {{ bids().length }} {{ bids().length === 1 ? t('bid') : t('stripBidsLower') }}
         <span class="caret" [class.open]="bidsOpen()">&rsaquo;</span>
       </button>
     }
 
-    <a class="more" [routerLink]="['/auction']" aria-label="Open the auction house">Auction house &rsaquo;</a>
+    <a class="more" [routerLink]="['/auction']" [attr.aria-label]="t('stripOpenHouse')">{{ t('stripAuctionHouse') }} &rsaquo;</a>
 
     @if (error()) {
       <p class="msg error">{{ error() }}</p>
     } @else if (txHash()) {
-      <p class="msg">Bid sent — waiting for confirmation…</p>
+      <p class="msg">{{ t('stripBidSent') }}</p>
     } @else if (!hasBids()) {
-      <p class="msg hint">No bids yet. Minimum {{ minNextEth() }} ETH.</p>
+      <p class="msg hint">{{ t('stripNoBidsMin', { min: minNextEth() }) }}</p>
     } @else {
-      <p class="msg hint">Next bid must be at least {{ minNextEth() }} ETH.</p>
+      <p class="msg hint">{{ t('stripNextBidMin', { min: minNextEth() }) }}</p>
     }
 
     <!-- Height-capped and scrolled: the auction can take any number of bids without the

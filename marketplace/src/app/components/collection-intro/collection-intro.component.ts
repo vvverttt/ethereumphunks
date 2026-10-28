@@ -7,9 +7,12 @@ import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.compon
 import { CollectionMapComponent } from '@/components/collection-map/collection-map.component';
 
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { InternalLinksDirective } from '@/directives/internal-links.directive';
 import { ERC721C_CONTRACTS } from '@/constants/erc721c';
 
 import { Collection } from '@/models/data.state';
+import { WORDMARK_PATHS } from './wordmarks';
 import { Phunk } from '@/models/db';
 
 /** Wordmark sizes (px at the design size) from scripts/make-wordmark-svg.py, for a shared scale. */
@@ -49,7 +52,7 @@ interface BandItem { sha: string; link: any[] | string | null; label: string }
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, PhunkImageComponent, CollectionMapComponent],
+  imports: [CommonModule, RouterModule, PhunkImageComponent, CollectionMapComponent, InternalLinksDirective],
   selector: 'app-collection-intro',
   templateUrl: './collection-intro.component.html',
   styleUrls: ['./collection-intro.component.scss'],
@@ -86,20 +89,76 @@ export class CollectionIntroComponent implements OnChanges {
   readonly total = signal(0);
   readonly map = signal<MapInfo | null>(null);
 
-  constructor(private dataSvc: DataService) {}
+  constructor(private dataSvc: DataService, public prefs: PhunkPreferencesService) {}
 
   get slug() { return this.collection.slug; }
 
   /** Names for the status colours (scss/abstracts/_variables.scss): the same for every
    *  collection, only the not-for-sale tile differs (v67 blue, the Ethscriptions lime). */
   get colours() {
-    return { base: this.isV67 ? 'blue' : 'lime', listed: 'aqua', bid: 'violet', escrow: 'yellow' };
+    const t = (k: string) => this.prefs.t(k);
+    return { base: t(this.isV67 ? 'colourBlue' : 'colourLime'), listed: t('colourAqua'), bid: t('colourViolet'), escrow: t('colourYellow') };
+  }
+
+  // ---- translated copy (i18n/content.<lang>.ts), rendered with [innerHTML] + appInternalLinks ----
+
+  private fill(html: string) {
+    return html.split('{total}').join(this.num(this.total())).split('{name}').join(this.collection?.name ?? '');
+  }
+  private num(n: number) { return n.toLocaleString(this.prefs.currentLanguage()); }
+  private link(path: string, query: Record<string, string>, label: string) {
+    const q = new URLSearchParams(query).toString();
+    return `<a class="highlight" href="${path}${q ? '?' + q : ''}">${label}</a>`;
+  }
+  private list(items: string[]) {
+    try { return new Intl.ListFormat(this.prefs.currentLanguage(), { type: 'conjunction' }).format(items); }
+    catch { return items.join(', '); }
+  }
+
+  /** Paragraphs before the band; null when this collection has no written intro. */
+  lead(): string[] | null {
+    const c = this.prefs.content().intro[this.slug];
+    return c ? c.lead.map((p) => this.fill(p)) : null;
+  }
+
+  /** Paragraphs after the type breakdown. */
+  more(): string[] {
+    const c = this.prefs.content();
+    const own = c.intro[this.slug];
+    return own ? own.more.map((p) => this.fill(p)) : [c.introCommon.tradeDefault];
+  }
+
+  /** "At the centre of the collection are the N Turtles…" (v67) or "Across the collection: …". */
+  countsHtml(): string {
+    const common = this.prefs.content().introCommon;
+    const market = `/${this.slug}/market/all`;
+    if (this.isV67) {
+      const others = this.others.map((a) => this.link(market, { Animal: a.name }, `${this.num(a.count)} ${a.label}`));
+      return common.turtles
+        .replace('{turtles}', this.link(market, { Animal: 'Turtle' }, `${this.num(this.turtles)} ${this.prefs.t('turtles')}`))
+        .replace('{others}', this.list(others));
+    }
+    const all = this.counts().map((a) => this.link(market, { [this.countKeyName()]: a.name }, `${this.num(a.count)} ${a.label}`));
+    return common.across.replace('{list}', this.list(all));
+  }
+
+  etherphunksNote(): string {
+    return this.fill(this.prefs.content().introCommon.etherphunksNote);
+  }
+
+  legend(): string {
+    const c = this.colours;
+    const sw = (cls: string, label: string) => `<span class="swatch ${cls}">${label}</span>`;
+    return this.prefs.content().introCommon.legend
+      .replace('{base}', sw('base', c.base)).replace('{listed}', sw('listed', c.listed))
+      .replace('{bid}', sw('bid', c.bid)).replace('{escrow}', sw('escrow', c.escrow));
   }
   get isV67() { return this.slug === 'cryptophunksv67'; }
 
-  wordmark(): { src: string; w: number; ratio: string } | null {
-    const s = WORDMARKS[this.slug];
-    return s ? { src: `assets/wordmarks/${this.slug}.svg`, w: Math.round(s[0] * WORDMARK_SCALE), ratio: `${s[0]} / ${s[1]}` } : null;
+  /** The wordmark as inline SVG (wordmarks.ts), so it is there on the first frame with the text. */
+  wordmark(): { vb: string; d: string; w: number; ratio: string } | null {
+    const s = WORDMARKS[this.slug], p = WORDMARK_PATHS[this.slug];
+    return s && p ? { vb: p.vb, d: p.d, w: Math.round(s[0] * WORDMARK_SCALE), ratio: `${s[0]} / ${s[1]}` } : null;
   }
 
   /** v67 counts by Animal (turtles first); everything else by its type trait. Collections name

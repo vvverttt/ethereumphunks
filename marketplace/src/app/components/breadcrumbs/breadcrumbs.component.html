@@ -36,7 +36,7 @@
             <div class="pfp-options phunk-box">
 
               <div class="box-row">
-                <span class="box-label">Shape</span>
+                <span class="box-label">{{ t('pfpShape') }}</span>
                 <div class="box-choices">
                   @for (s of shapes; track s.value) {
                     <button
@@ -44,14 +44,14 @@
                       class="choice"
                       [class.active]="shapeControl.value === s.value"
                       (click)="shapeControl.setValue(s.value)">
-                      {{ s.label }}
+                      {{ t(s.label) }}
                     </button>
                   }
                 </div>
               </div>
 
               <div class="box-row" [class.disabled]="!customizeEnabled()">
-                <span class="box-label">Background</span>
+                <span class="box-label">{{ t('pfpBackground') }}</span>
                 <div class="box-choices swatches">
                   @for (c of bgPalette; track $index) {
                     <button
@@ -59,7 +59,7 @@
                       class="swatch"
                       [class.active]="bgColorControl.value === c"
                       [style.background-color]="swatchColor(c)"
-                      [title]="c === null ? 'Collection default' : c"
+                      [title]="c === null ? t('pfpCollectionDefault') : c"
                       (click)="bgColorControl.setValue(c)">
                       @if (c === null) { <span class="swatch-default">A</span> }
                     </button>
@@ -69,29 +69,29 @@
                     class="swatch custom"
                     [value]="bgColorControl.value || swatchColor(null)"
                     (input)="bgColorControl.setValue($any($event.target).value)"
-                    title="Custom colour"
+                    [title]="t('pfpCustomColour')"
                   />
                 </div>
               </div>
 
               <div class="box-row">
-                <span class="box-label">Border</span>
+                <span class="box-label">{{ t('pfpBorder') }}</span>
                 <div class="box-choices">
                   <input type="checkbox" id="border" [formControl]="borderCheck" />
-                  <label for="border">On</label>
+                  <label for="border">{{ t('pfpOn') }}</label>
                   @if (borderCheck.value) {
                     <input
                       type="color"
                       class="swatch"
                       [formControl]="borderColorControl"
-                      title="Border colour"
+                      [title]="t('pfpBorderColour')"
                     />
                   }
                 </div>
               </div>
 
               <div class="box-row">
-                <span class="box-label">Size</span>
+                <span class="box-label">{{ t('pfpSize') }}</span>
                 <div class="box-choices">
                   @for (s of sizes; track s) {
                     <button
@@ -106,7 +106,7 @@
               </div>
 
               <div class="box-row" [class.disabled]="!customizeEnabled()">
-                <span class="box-label">Extras</span>
+                <span class="box-label">{{ t('pfpExtras') }}</span>
                 <div class="box-choices">
                   <input
                     type="checkbox"

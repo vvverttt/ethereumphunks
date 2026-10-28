@@ -12,7 +12,7 @@
       @if ((activeCollection$ | async); as collection) {
         @if ((globalConfig$ | async)?.hiddenSlugs?.includes(collection.slug)) {
           <div class="hidden-collection">
-            <img src="/assets/loader-phunk.gif" alt="Coming soon" />
+            <img src="/assets/loader-phunk.gif" [alt]="t('lotteryComingSoon')" />
           </div>
         } @else {
         <div class="header-wrapper">
@@ -160,7 +160,7 @@
             type="button"
             class="mobile-filters-toggle"
             (click)="mobileFiltersOpen = !mobileFiltersOpen">
-            {{ mobileFiltersOpen ? 'Hide' : 'Show' }} Filters
+            {{ mobileFiltersOpen ? t('marketHideFilters') : t('marketShowFilters') }}
           </button>
 
           <aside class="filter-wrapper" [class.mobile-hidden]="!mobileFiltersOpen">
@@ -224,12 +224,12 @@
   @if (isListingBulk) {
     <form [formGroup]="bulkActionsForm" class="list">
       <div class="top-bar">
-        <h2 i18n>Bulk List <span class="highlight">{{ bulkActionsForm.value.listingPhunks?.length }}</span> items</h2>
+        <h2 i18n>{{ t('marketBulkList') }} <span class="highlight">{{ bulkActionsForm.value.listingPhunks?.length }}</span> {{ t('marketItems') }}</h2>
         @if (deselected.length) {
-          <div class="ineligible">{{ deselected.length }} Selected items are not eligible to be listed</div>
+          <div class="ineligible">{{ t('marketIneligibleList', { n: deselected.length }) }}</div>
         }
 
-        <p class="description">Items with no value will not be listed.</p>
+        <p class="description">{{ t('marketNoValueNotListed') }}</p>
       </div>
 
       <div class="selected-wrapper">
@@ -243,7 +243,7 @@
                   [sha]="item.value.sha" />
 
                 <div class="form-group">
-                  <label [for]="item.value.phunkId">List Price</label>
+                  <label [for]="item.value.phunkId">{{ t('marketListPrice') }}</label>
                   <input
                     type="number"
                     [id]="item.value.phunkId"
@@ -251,7 +251,7 @@
                     formControlName="listPrice"
                   />
                   @if (selectedPhunksFormArray.controls[i].get('listPrice')?.value) {
-                    <button tabindex="-1" class="copy" (click)="copyToNext(i)">Copy</button>
+                    <button tabindex="-1" class="copy" (click)="copyToNext(i)">{{ t('marketCopy') }}</button>
                   }
                 </div>
               </div>
@@ -261,16 +261,16 @@
       </div>
 
       <div class="form-actions">
-        <button type="reset" (click)="closeModal()">Cancel</button>
-        <button type="submit" (click)="submitBatchListing()">List All</button>
+        <button type="reset" (click)="closeModal()">{{ t('cancel') }}</button>
+        <button type="submit" (click)="submitBatchListing()">{{ t('marketListAll') }}</button>
       </div>
     </form>
   } @else if (isTransferingBulk) {
     <form [formGroup]="bulkActionsForm" class="transfer">
       <div class="top-bar">
-        <h2 i18n>Bulk transfer <span class="highlight">{{ bulkActionsForm.value.transferPhunks?.length }}</span> Phunks</h2>
+        <h2 i18n>{{ t('marketBulkTransfer') }} <span class="highlight">{{ bulkActionsForm.value.transferPhunks?.length }}</span> {{ t('marketPhunks') }}</h2>
         @if (deselected.length) {
-          <div class="ineligible">{{ deselected.length }} Selected items are not eligible to be transferred</div>
+          <div class="ineligible">{{ t('marketIneligibleTransfer', { n: deselected.length }) }}</div>
         }
       </div>
 
@@ -284,23 +284,23 @@
 
       @if (bulkActionsForm.value.transferPhunks?.length) {
         <div class="form-group">
-          <label i18n for="transfer-address">Transfer to address</label>
+          <label i18n for="transfer-address">{{ t('transferToAddress') }}</label>
           <input #transferAddressInput type="text" id="transfer-address" [formControl]="transferAddress"
-            placeholder="0x or .ens" role="presentation" autocomplete="off" />
+            [placeholder]="t('itemAddressPlaceholder')" role="presentation" autocomplete="off" />
         </div>
 
         <div class="form-actions">
-          <button type="reset" (click)="closeModal()">Cancel</button>
-          <button type="submit" (click)="submitBatchTransfer()">Transfer All</button>
+          <button type="reset" (click)="closeModal()">{{ t('cancel') }}</button>
+          <button type="submit" (click)="submitBatchTransfer()">{{ t('marketTransferAll') }}</button>
         </div>
       }
     </form>
   } @else if (isEscrowingBulk) {
     <form [formGroup]="bulkActionsForm" class="escrow">
       <div class="top-bar">
-        <h2 i18n>Bulk Escrow <span class="highlight">{{ bulkActionsForm.value.escrowPhunks?.length }}</span> items</h2>
+        <h2 i18n>{{ t('marketBulkEscrow') }} <span class="highlight">{{ bulkActionsForm.value.escrowPhunks?.length }}</span> {{ t('marketItems') }}</h2>
         @if (deselected.length) {
-          <div class="ineligible">{{ deselected.length }} Selected items are not eligible to be escrowed</div>
+          <div class="ineligible">{{ t('marketIneligibleEscrow', { n: deselected.length }) }}</div>
         }
       </div>
 
@@ -314,17 +314,17 @@
 
       @if (bulkActionsForm.value.escrowPhunks?.length) {
         <div class="form-actions">
-          <button type="reset" (click)="closeModal()">Cancel</button>
-          <button type="submit" (click)="submitBatchEscrow()">Escrow All</button>
+          <button type="reset" (click)="closeModal()">{{ t('cancel') }}</button>
+          <button type="submit" (click)="submitBatchEscrow()">{{ t('marketEscrowAll') }}</button>
         </div>
       }
     </form>
   } @else if (isWithdrawingBulk) {
     <form [formGroup]="bulkActionsForm" class="withdraw">
       <div class="top-bar">
-        <h2 i18n>Bulk Withdraw <span class="highlight">{{ bulkActionsForm.value.withdrawPhunks?.length }}</span> items</h2>
+        <h2 i18n>{{ t('marketBulkWithdraw') }} <span class="highlight">{{ bulkActionsForm.value.withdrawPhunks?.length }}</span> {{ t('marketItems') }}</h2>
         @if (deselected.length) {
-          <div class="ineligible">{{ deselected.length }} Selected items are not eligible to be withdrawn</div>
+          <div class="ineligible">{{ t('marketIneligibleWithdraw', { n: deselected.length }) }}</div>
         }
       </div>
 
@@ -338,17 +338,17 @@
 
       @if (bulkActionsForm.value.withdrawPhunks?.length) {
         <div class="form-actions">
-          <button type="reset" (click)="closeModal()">Cancel</button>
-          <button type="submit" (click)="submitBatchWithdraw()">Withdraw All</button>
+          <button type="reset" (click)="closeModal()">{{ t('cancel') }}</button>
+          <button type="submit" (click)="submitBatchWithdraw()">{{ t('marketWithdrawAll') }}</button>
         </div>
       }
     </form>
   } @else if (isBuyingBulk) {
     <form [formGroup]="bulkActionsForm" class="buy">
       <div class="top-bar">
-        <h2 i18n>Buy <span class="highlight">{{ bulkActionsForm.value.buyPhunks?.length }}</span> items</h2>
+        <h2 i18n>{{ t('buy') }} <span class="highlight">{{ bulkActionsForm.value.buyPhunks?.length }}</span> {{ t('marketItems') }}</h2>
         @if (deselected.length) {
-          <div class="ineligible">{{ deselected.length }} Selected items are not eligible to be purchased</div>
+          <div class="ineligible">{{ t('marketIneligibleBuy', { n: deselected.length }) }}</div>
         }
       </div>
 
@@ -373,7 +373,7 @@
         }
       </div>
       <div class="total-wrapper">
-        <div class="label">Total</div>
+        <div class="label">{{ t('lotteryTotal') }}</div>
         <div class="value-wrapper">
           @if ((bulkActionsForm.value.buyPhunks || []) | calc : 'totalListingsValue'; as totalValue) {
             <span class="eth">
@@ -395,12 +395,12 @@
 
       @if (bulkActionsForm.value.buyPhunks?.length) {
         <div class="form-actions">
-          <button type="reset" (click)="closeModal()">Cancel</button>
-          <button type="submit" (click)="submitBatchBuy()">Buy All</button>
+          <button type="reset" (click)="closeModal()">{{ t('cancel') }}</button>
+          <button type="submit" (click)="submitBatchBuy()">{{ t('marketBuyAll') }}</button>
         </div>
       } @else {
         <div class="form-actions">
-          <button type="reset" (click)="closeModal()">Close</button>
+          <button type="reset" (click)="closeModal()">{{ t('marketClose') }}</button>
         </div>
       }
     </form>

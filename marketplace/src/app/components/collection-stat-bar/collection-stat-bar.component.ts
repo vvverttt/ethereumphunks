@@ -1,7 +1,8 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 /**
  * Compact one-line collection stats: floor, items, listed, sales, volume.
@@ -18,6 +19,13 @@ import { DataService } from '@/services/data.service';
   styleUrls: ['./collection-stat-bar.component.scss'],
 })
 export class CollectionStatBarComponent {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   slug = input.required<string | undefined>();
 

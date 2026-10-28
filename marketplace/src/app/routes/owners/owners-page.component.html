@@ -1,23 +1,23 @@
 <div class="inner">
   <div class="header-wrapper">
-    <h1>All QuantumPhunk Owners</h1>
+    <h1>{{ t('ownersAllTitle') }}</h1>
   </div>
 
   @if (loading()) {
-    <p class="status">Loading...</p>
+    <p class="status">{{ t('loading') }}</p>
   } @else {
     @for (collection of collections(); track collection.slug) {
       <div class="collection-section">
-        <h2>{{ collection.name }} <span class="owner-count">({{ collection.owners.length }} owners)</span></h2>
+        <h2>{{ collection.name }} <span class="owner-count">{{ t('ownersCount', { n: collection.owners.length }) }}</span></h2>
 
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
                 <th class="rank">#</th>
-                <th class="account">Account</th>
-                <th class="contract">Contract</th>
-                <th class="count">Number Owned</th>
+                <th class="account">{{ t('account') }}</th>
+                <th class="contract">{{ t('contract') }}</th>
+                <th class="count">{{ t('ownersNumberOwned') }}</th>
               </tr>
             </thead>
             <tbody>

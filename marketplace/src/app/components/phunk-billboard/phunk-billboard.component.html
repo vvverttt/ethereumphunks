@@ -24,7 +24,7 @@
       </div>
     } @else {
       <div class="text-wrapper" [title]="data.mimeType">
-        <p>Unsupported content type: {{ data.mimeType }}</p>
+        <p>{{ t('billboardUnsupported', { type: data.mimeType }) }}</p>
       </div>
     }
   } @else {

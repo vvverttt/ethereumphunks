@@ -4,11 +4,11 @@
   <table>
     <thead>
       <tr>
-        <th>Event</th>
-        <th>Token ID</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Value</th>
+        <th>{{ t('uaEvent') }}</th>
+        <th>{{ t('uaTokenId') }}</th>
+        <th>{{ t('uaFrom') }}</th>
+        <th>{{ t('to') }}</th>
+        <th>{{ t('uaValue') }}</th>
         <th>&nbsp;</th>
       </tr>
     </thead>
@@ -21,15 +21,15 @@
           <td>
             <div class="cell-inner">
               @if (event.type === 'PhunkBought') {
-                <span class="prismatic-bought">Bought</span> for
+                <span class="prismatic-bought">{{ t('bought') }}</span> {{ t('for') }}
               } @else if (event.type === 'created') {
-                <span class="prismatic-created">Created</span> by
+                <span class="prismatic-created">{{ t('created') }}</span> {{ t('by') }}
               } @else if (event.type === 'PrizeAwarded') {
-                <span class="prismatic-won">Won</span> in lottery by
+                <span class="prismatic-won">{{ t('won') }}</span> {{ t('inLotteryBy') }}
               } @else if (event.type === 'AuctionSettled') {
-                Auction <span class="prismatic-won">won</span> by
+                {{ t('auction') }} <span class="prismatic-won">{{ t('won') | lowercase }}</span> {{ t('by') }}
               } @else {
-                {{ labels[event.type] }}
+                {{ t(labels[event.type]) }}
               }
             </div>
           </td>
@@ -78,7 +78,7 @@
 
           <div class="label">
             @if (event.type) {
-              <div>{{ labels[event.type] }}</div>
+              <div>{{ t(labels[event.type]) }}</div>
             }
 
             @if (

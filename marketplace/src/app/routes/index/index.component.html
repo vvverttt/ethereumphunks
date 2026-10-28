@@ -121,16 +121,16 @@
           @if (bids.length) {
             <section>
               <div class="inner">
-                <h3>Bids</h3>
+                <h3>{{ t('bidsHeading') }}</h3>
 
                 <div class="section-stats-wrapper">
                   @if ((bids | calc : 'averageBidPrice'); as ethPrice) {
-                    <p>The average open bid is <span class="bold">Ξ{{ ethPrice | number }}@if (usd$ | async; as usd) { ({{ (ethPrice * usd) | currency }} USD)}</span>.</p>
+                    <p>{{ t('averageOpenBid') }} <span class="bold">Ξ{{ ethPrice | number }}@if (usd$ | async; as usd) { ({{ (ethPrice * usd) | currency }} USD)}</span>.</p>
                   }
                   @if ((bids | calc : 'totalBidsValue'); as ethPrice) {
-                    <p>Total value of all open bids is <span class="bold">Ξ{{ ethPrice | number }}@if (usd$ | async; as usd) { ({{ (ethPrice * usd) | currency }} USD)}</span>.</p>
+                    <p>{{ t('totalOpenBids') }} <span class="bold">Ξ{{ ethPrice | number }}@if (usd$ | async; as usd) { ({{ (ethPrice * usd) | currency }} USD)}</span>.</p>
                   }
-                  <p>Showing top bids, <a class="highlight" [routerLink]="['market', 'bids']" [relativeTo]="route">({{ bids.length | number }}) {{ t('viewAllLower') }}.</a></p>
+                  <p>{{ t('showingTopBids') }} <a class="highlight" [routerLink]="['market', 'bids']" [relativeTo]="route">({{ bids.length | number }}) {{ t('viewAllLower') }}.</a></p>
                 </div>
 
                 <app-phunk-grid
@@ -149,7 +149,7 @@
         @if (activeCollection) {
           <section class="sales">
             <div class="inner">
-              <h3>Sales</h3>
+              <h3>{{ t('salesHeading') }}</h3>
 
               <div class="section-stats-wrapper">
                 <p>
@@ -158,7 +158,7 @@
                     [routerLink]="['sales']"
                     [relativeTo]="route">
 
-                    View all {{ activeCollection.name }} sales.
+                    {{ preferences.t('viewAllSales', { name: activeCollection.name }) }}
                   </a>
                 </p>
               </div>
@@ -224,7 +224,7 @@
                       <!-- innerHTML so answers can carry links (e.g. the EtherPhunks market).
                            Content is authored in this component, never user input, and Angular
                            sanitizes it regardless — href/target/rel all survive the allowlist. -->
-                      <div class="faq-answer" [innerHTML]="item.a"></div>
+                      <div class="faq-answer" appInternalLinks [innerHTML]="item.a"></div>
                     }
                   </div>
                 }

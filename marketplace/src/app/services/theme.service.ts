@@ -138,7 +138,9 @@ export class ThemeService {
     // Start from whatever the pre-boot script in index.html already painted, so the first
     // setActiveCollection() is never skipped as "no change" while the page shows another
     // collection (e.g. the auction house opening over a remembered QuantumPhunks blue).
-    this.activeSlug = this.document.documentElement.dataset['collection'] || '';
+    const painted = this.document.documentElement.dataset['collection'] || '';
+    // footer page names are not collections (an older pre-boot script stored them)
+    this.activeSlug = ['about', 'shell-archive', 'terms', 'license', 'privacy'].includes(painted) ? '' : painted;
     this.themeSlug.set(this.activeSlug);
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {

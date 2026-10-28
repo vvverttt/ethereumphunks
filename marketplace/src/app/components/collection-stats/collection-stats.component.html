@@ -21,7 +21,7 @@
     @for (stat of extraStats(); track stat.label) {
       <div class="stat-item">
         <span class="stat-value">{{ stat.display }}</span>
-        <span class="stat-label">{{ stat.label }}</span>
+        <span class="stat-label">{{ t(stat.label === 'Unique Colors' ? 'uniqueColors' : stat.label === 'Colored Pixels' ? 'coloredPixels' : stat.label) }}</span>
       </div>
     }
   </div>

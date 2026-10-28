@@ -7,6 +7,7 @@ import { GlobalState } from '@/models/global-state';
 import { AuctionBidEvent } from '@/services/auction.service';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { BID_EGGS, BidEgg, EGG_LINES, bidEgg } from '@/utils/bid-eggs';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 const SEEN_KEY = 'EtherPhunks_bid_eggs_seen';
 
@@ -21,6 +22,13 @@ const SEEN_KEY = 'EtherPhunks_bid_eggs_seen';
   styleUrls: ['./bid-easter-egg.component.scss'],
 })
 export class BidEasterEggComponent implements OnInit, OnChanges, OnDestroy {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   @Input() bids: AuctionBidEvent[] = [];
 

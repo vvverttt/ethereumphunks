@@ -5,12 +5,12 @@
       &lt; {{ collectionName() }}
     </a>
 
-    <h1>All {{ collectionName() }} Sales</h1>
+    <h1>{{ t('salesAllTitle', { name: collectionName() }) }}</h1>
 
     @if (!loading()) {
-      <p class="count">Showing {{ sales().length | number }} sales.</p>
+      <p class="count">{{ t('salesShowing', { n: (sales().length | number) || '0' }) }}</p>
     } @else {
-      <p class="count">Loading sales...</p>
+      <p class="count">{{ t('salesLoading') }}</p>
     }
   </div>
 
@@ -25,7 +25,7 @@
       [showDate]="true"
     />
   } @else if (!loading()) {
-    <p class="no-sales">No sales yet for this collection.</p>
+    <p class="no-sales">{{ t('salesNoneForCollection') }}</p>
   }
 
 </div>

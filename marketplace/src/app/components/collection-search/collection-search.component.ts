@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { DataService } from '@/services/data.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { ERC721C_CONTRACTS } from '@/constants/erc721c';
 
 import { Collection } from '@/models/data.state';
@@ -20,11 +21,11 @@ import { Collection } from '@/models/data.state';
   imports: [CommonModule, FormsModule],
   selector: 'app-collection-search',
   template: `
-    <h3>Search {{ collection.name }}</h3>
+    <h3>{{ prefs.t('searchCollection', { name: collection.name }) }}</h3>
     <form class="search" (ngSubmit)="search()">
       <input type="text" name="q" [(ngModel)]="q" [placeholder]="placeholder"
         autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" />
-      <button type="submit">Search</button>
+      <button type="submit">{{ prefs.t('searchButton') }}</button>
     </form>
     @if (error()) { <p class="error">{{ error() }}</p> }
   `,
@@ -72,12 +73,10 @@ export class CollectionSearchComponent implements OnChanges {
   /** how many pieces carry each "key\0value" */
   private counts = new Map<string, number>();
 
-  constructor(private dataSvc: DataService, private router: Router) {}
+  constructor(private dataSvc: DataService, private router: Router, public prefs: PhunkPreferencesService) {}
 
   get placeholder() {
-    return this.collection.slug === 'cryptophunksv67'
-      ? `Try things like 'turtle' or 'turtle and hoodie', or a number`
-      : `Try things like 'zombie' or 'zombie and beard', or a number`;
+    return this.prefs.t(this.collection.slug === 'cryptophunksv67' ? 'searchPlaceholderV67' : 'searchPlaceholderOther');
   }
 
   async ngOnChanges(changes: SimpleChanges) {
@@ -114,7 +113,7 @@ export class CollectionSearchComponent implements OnChanges {
         const i = (j.ids || []).indexOf(Number(num));
         if (i >= 0) { this.router.navigateByUrl(j.links[i]); return; }
       } catch {}
-      this.error.set(`No ${this.collection.singleName || this.collection.name} #${num} here.`);
+      this.error.set(this.prefs.t('searchNoPiece', { name: this.collection.singleName || this.collection.name, n: num }));
       return;
     }
 
@@ -122,20 +121,31 @@ export class CollectionSearchComponent implements OnChanges {
     const params: Record<string, string[]> = {};
     for (const term of q.split(/\s+and\s+|\s*[,+]\s*/).map((t) => t.trim()).filter(Boolean)) {
       const hit = this.match(term);
-      if (!hit) { this.error.set(`No trait matches "${term}".`); return; }
+      if (!hit) { this.error.set(this.prefs.t('searchNoTrait', { q: term })); return; }
       params[hit.key] = [...new Set([...(params[hit.key] || []), ...hit.values])];
     }
     this.router.navigate(['/', slug, 'market', 'all'], { queryParams: params });
   }
 
-  /** The values a term means, all under the one trait key most pieces carry them in: an exact
-   *  value first ("zombie"), else every value containing the term as a word ("beard"). */
+  /** The values a term means, all under the one trait key most pieces carry them in. Tried in
+   *  order, stopping at the first tier that finds anything: the exact value ("zombie"), the term
+   *  as a whole word ("beard" → "Big Beard"), its singular ("zombies" → "Zombie"), then any value
+   *  containing it ("hood" → "Hoodie"). */
   private match(term: string): { key: string; values: string[] } | null {
-    const word = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    for (const exact of [true, false]) {
+    const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const singular = term.replace(/(?:es|s)$/i, '');
+    const word = new RegExp(`\\b${esc(term)}\\b`, 'i');
+    const wordSingular = singular.length > 2 ? new RegExp(`\\b${esc(singular)}\\b`, 'i') : null;
+    const tiers: ((v: string) => boolean)[] = [
+      (v) => v.toLowerCase() === term,
+      (v) => word.test(v),
+      (v) => !!wordSingular && wordSingular.test(v),
+      (v) => term.length > 2 && v.toLowerCase().includes(term),
+    ];
+    for (const test of tiers) {
       let best: { key: string; values: string[]; n: number } | null = null;
       for (const [key, vals] of this.traits) {
-        const values = [...vals].filter((v) => exact ? v.toLowerCase() === term : word.test(v));
+        const values = [...vals].filter(test);
         if (!values.length) continue;
         const n = values.reduce((s, v) => s + (this.counts.get(key + '\u0000' + v) || 0), 0);
         if (!best || n > best.n) best = { key, values, n };

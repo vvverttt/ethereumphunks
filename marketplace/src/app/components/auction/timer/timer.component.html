@@ -2,21 +2,21 @@
   class="days"
   *ngIf="days !== '00'">
 
-  <span class="label">day</span>
+  <span class="label">{{ t('timerDay') }}</span>
   <span class="value">{{ days }}:</span>
 </div>
 
 <div>
-  <span class="label">hr</span>
+  <span class="label">{{ t('timerHr') }}</span>
   <span class="value">{{ hours }}:</span>
 </div>
 
 <div>
-  <span class="label">min</span>
+  <span class="label">{{ t('timerMin') }}</span>
   <span class="value">{{ minutes }}:</span>
 </div>
 
 <div>
-  <span class="label">sec</span>
+  <span class="label">{{ t('timerSec') }}</span>
   <span class="value">{{ seconds }}</span>
 </div>

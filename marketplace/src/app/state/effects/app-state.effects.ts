@@ -195,7 +195,8 @@ export class AppStateEffects {
     filter((action: any) => FOOTER_PAGES.includes(String(action.payload.event.urlAfterRedirects).split(/[?#]/)[0].split('/')[1] || '')),
     // the colours already on (from the collection the visitor came from, or restored on a reload)
     map(() => { try { return this.themeSvc.themeSlug() || localStorage.getItem('EtherPhunks_collection') || ''; } catch { return this.themeSvc.themeSlug(); } }),
-    filter((slug) => !!slug),
+    // only a real collection: an older build stored the page name itself (e.g. "shell-archive")
+    filter((slug) => !!slug && !FOOTER_PAGES.includes(slug)),
     tap((slug) => this.themeSvc.setActiveCollection(slug)),
     // on a reload the collections list arrives a moment later; wait for it for the header switcher
     switchMap((slug) => this.store.select(dataStateSelectors.selectCollections).pipe(

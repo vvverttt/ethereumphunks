@@ -87,6 +87,14 @@
       </div>
     </a>
 
+    <!-- The Shell Archive: our credits, under DystoLabz, in the archive turtle's green. -->
+    <a class="shell-button" routerLink="/shell-archive" (click)="goToAuction()">
+      <span>{{ t('shellArchive') }}</span>
+      <div class="arrow">
+        <ng-template [ngTemplateOutlet]="arrowIcon" />
+      </div>
+    </a>
+
     @if ((config$ | async)?.showAuction !== false) {
       <!-- Live auction card; mounted only while the menu is open, so it loads only then. -->
       @if (menuOpen$ | async) {
@@ -117,7 +125,7 @@
     @if (walletGroups$ | async; as groups) {
       @if (groups.length) {
         <div class="my-phunks">
-          <h3 class="my-title">Your Phunks <span>{{ walletTotal(groups) | number }}</span></h3>
+          <h3 class="my-title">{{ t('yourPhunks') }} <span>{{ walletTotal(groups) | number }}</span></h3>
           @for (g of groups; track g.slug) {
             <div class="my-card"
               [style.--g-tile]="g.tile" [style.--g-accent]="g.accent" [style.--g-bg]="g.bg">

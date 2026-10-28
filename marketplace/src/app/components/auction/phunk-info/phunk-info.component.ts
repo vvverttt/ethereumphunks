@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { DataService } from '@/services/data.service';
@@ -6,6 +6,7 @@ import { TraitCountPipe } from '@/pipes/trait-count.pipe';
 import { RarityTierPipe } from '@/pipes/rarity-tier.pipe';
 import { Attribute } from '@/models/attributes';
 import { tokenNumber } from '@/pipes/token-number.pipe';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   selector: 'app-phunk-info',
@@ -15,6 +16,13 @@ import { tokenNumber } from '@/pipes/token-number.pipe';
   styleUrls: ['./phunk-info.component.scss'],
 })
 export class PhunkInfoComponent implements OnChanges {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   @Input() collectionName = '';
   @Input() tokenId = 0;

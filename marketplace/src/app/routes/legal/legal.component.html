@@ -42,33 +42,29 @@
     }
 
     @case ('about') {
-      <div class="about">
-
+      @let ab = prefs.content().about;
+      <div class="about" appInternalLinks>
         <!-- laid out like dystolabz.com/about.html: the greeting is the page's heading -->
-        <h1 class="hi">Hi, we're Vert and Arkan,</h1>
-        <p>the creative technologists and artists behind Missing Phunks and DystoPhunkz. DystoLabz is the home for our professional and experimental projects, operating across art, blockchain, and on-chain formats, where visual culture and technical process intersect.</p>
-        <p>We met through OBJKT in late 2022, initially collecting each other's work and developing a shared language around glitch, experimentation, and process. In mid-2024, we began collaborating directly on DystoPhunkz, leading to the formation of DystoLabz as a long-term framework for our work together, focused on rethinking and extending the punk format.</p>
-        <p>With a focus on reimagining Punks, we work directly with punk and alt-punk history, extending the format where necessary through new combinations, expanded traits, and alternative character foundations. Our approach is analytical and intentional, prioritizing structural clarity and continuity rather than repetition or surface remixing.</p>
-        <p>DystoLabz encompasses multiple bodies of work, including Missing Phunks, DystoPhunkz, and CryptoPhunksV67. Each collection explores a different extension of the punk format, allowing us to study variation, deviation, and expansion while maintaining a shared structural and cultural foundation.</p>
-        <p>Across all our work, we approach Punks through the Phunk lens, treating the format as a living cultural system shaped by its history as well as our own interventions. Guided by the anti-corporate, decentralized, and open-source spirit of Phunk culture, our aim is to push the format as far as it can go as a symbol of its era, reflect the creative practices that have grown around it, and help inspire the next generation of punk derivatives through thoughtful evolution.</p>
-        <p>All DystoLabz work is produced fully on-chain, with permanence and durability treated as core design constraints rather than afterthoughts. The system is built to persist structurally, technically, and culturally over time.</p>
+        <h1 class="hi">{{ ab.hi }}</h1>
+        @for (p of ab.paras; track $index) { <p [innerHTML]="p"></p> }
 
         <div class="about-art">
-          <img src="assets/images/about-vert-arkan.webp" alt="Vert and Arkan drawn as two Android figures" width="1341" height="1021" />
+          <img src="assets/images/about-vert-arkan.webp" [alt]="ab.imgAlt" width="1341" height="1021" />
         </div>
       </div>
     }
 
     @case ('shell-archive') {
-      <div class="shell">
-      <h1>The Shell Archive</h1>
-      <p class="sub">Documenting the sources that shaped CryptoPhunksV67.</p>
+      @let sh = prefs.content().shell;
+      <div class="shell" appInternalLinks>
+      <h1>{{ sh.title }}</h1>
+      <p class="sub" [innerHTML]="sh.sub"></p>
 
       <div class="archive-turtle">
-        <img src="assets/images/shell-archive-turtle.gif" alt="A turtle with a rainbow trail" width="200" height="200" />
+        <img src="assets/images/shell-archive-turtle.gif" [alt]="sh.imgAlt" width="200" height="200" />
       </div>
 
-      <p>The collections listed below represent the references and resources consulted during the creation of CryptoPhunksV67. Drawing primarily from a wide spectrum of punk derivatives, ranging from iconic to overlooked, we carefully studied themes, characters, and design elements, reinterpreting them into a cohesive and original collection preserved here in The Shell Archive. While most of our inspiration comes from punk culture, we also included select non-punk references, such as resources from GitHub. We might have missed a few references. If we catch any later, they'll get added.</p>
+      <p [innerHTML]="sh.intro"></p>
 
       <ul class="archive">
         @for (s of sources; track s.name) {
@@ -81,7 +77,7 @@
           </li>
         }
       </ul>
-      <p class="total">{{ sources.length }} collections in the archive.</p>
+      <p class="total">{{ sh.total.replace('{n}', '' + sources.length) }}</p>
       </div>
     }
 

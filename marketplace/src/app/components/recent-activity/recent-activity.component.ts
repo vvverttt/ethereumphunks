@@ -76,7 +76,7 @@ export class RecentActivityComponent {
       { label: this.t('transferred'), value: 'transfer' },
       { label: this.t('created'), value: 'created' },
       { label: this.t('won'), value: 'Won' },
-      { label: 'Bids', value: 'Bids' },
+      { label: this.t('bids'), value: 'Bids' },
       { label: this.t('auction'), value: 'AuctionBid' },
     ];
 
@@ -122,8 +122,8 @@ export class RecentActivityComponent {
     this.store.dispatch(appStateActions.setEventTypeFilter({ eventTypeFilter: this._activeTxFilter }));
   }
 
-  t(key: string): string {
-    return this.preferences.t(key);
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.preferences.t(key, params);
   }
 
   eventLabel(type: string): string {

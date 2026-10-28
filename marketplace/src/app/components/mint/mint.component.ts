@@ -1,4 +1,4 @@
-import { Component, input, OnDestroy, output, signal } from '@angular/core';
+import { Component, input, OnDestroy, output, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -26,6 +26,7 @@ import { upsertNotification } from '@/state/actions/notification.actions';
 import { environment } from 'src/environments/environment';
 
 import { MintRequestResponse } from './models/metadata';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 interface MintState {
   activeMint: MintRequestResponse | null;
@@ -56,6 +57,13 @@ interface MintState {
   styleUrl: './mint.component.scss'
 })
 export class MintComponent implements OnDestroy {
+  private readonly prefs = inject(PhunkPreferencesService);
+
+  /** Interface strings in the current language (see i18n/ui.en.ts). */
+  t(key: string, params?: Record<string, string | number>): string {
+    return this.prefs.t(key, params);
+  }
+
 
   baseUrl = environment.staticUrl;
 
@@ -168,7 +176,7 @@ export class MintComponent implements OnDestroy {
       // }
 
       const hash = await this.web3Svc.inscribe(activeMint.metadata.image);
-      if (!hash) throw new Error('Failed to inscribe');
+      if (!hash) throw new Error(this.t('mintFailed'));
 
       this.updateState({ transaction: { hash, status: 'pending' } });
       this.store.dispatch(upsertNotification({ notification }));
