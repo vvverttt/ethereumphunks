@@ -73,13 +73,13 @@
 
                 <!-- Value (Listing) -->
                 @if (phunk.listing?.listed && phunk.listing?.minValue; as value) {
-                  <p>{{ phunk.collection?.singleName }} {{ t('isForSaleFor') }} <span class="highlight">{{ (value | weiToEth) }} ETH</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ ((value | weiToEth) * usd) | formatCash }})</span>}.</p>
+                  <p>{{ phunk.collection?.singleName }} {{ t('isForSaleFor') }} <span class="highlight">{{ (value | weiToEth) }} ETH</span>@if (usd$ | async; as usd) {<span class="bold"> ({{ ((value | weiToEth) * usd) | fiat }})</span>}.</p>
                 } @else if (!phunk.isSupported) {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotSupported') }}</p>
                 } @else if (isPoolItem(phunk)) {
                   <!-- Auction House pool item: fixed-price buy-now only (auctions disabled). -->
                   @if (poolBuy(); as pb) {
-                    <p>{{ phunk.collection?.singleName }} {{ t('itemAvailableNow') }} — <span class="highlight">{{ t('itemBuyNowFor', { price: pb.priceEth }) }}</span>@if (usd$ | async; as usd) {<span class="bold"> (${{ (+pb.priceEth * usd) | formatCash }})</span>}@if (pb.tier === 2) {<span class="bold"> — {{ t('itemDiamondHandsPrice') }}</span>}.</p>
+                    <p>{{ phunk.collection?.singleName }} {{ t('itemAvailableNow') }} — <span class="highlight">{{ t('itemBuyNowFor', { price: pb.priceEth }) }}</span>@if (usd$ | async; as usd) {<span class="bold"> ({{ (+pb.priceEth * usd) | fiat }})</span>}@if (pb.tier === 2) {<span class="bold"> — {{ t('itemDiamondHandsPrice') }}</span>}.</p>
                   }
                 } @else {
                   <p>{{ phunk.collection?.singleName }} {{ t('isNotForSale') }}</p>
@@ -90,7 +90,7 @@
                   <p class="bid-status">
                     <span>{{ t('currentBidColon') }}</span>
                     <span class="highlight">{{ (bid.value | weiToEth) }} ETH</span>
-                    @if (usd$ | async; as usd) {<span class="bold"> (${{ ((bid.value | weiToEth) * usd) | formatCash }})</span>}
+                    @if (usd$ | async; as usd) {<span class="bold"> ({{ ((bid.value | weiToEth) * usd) | fiat }})</span>}
                     {{ t('by') }} <a [routerLink]="['/', 'curated', phunk.slug, 'market', 'owned']" [queryParams]="{ address: bid.bidder }"><app-address [address]="bid.bidder" /></a>.
                     @if (bid.accepted) {
                       <span class="bid-accepted"> {{ t('bidAcceptedWaitingShort') }}</span>

@@ -1,3 +1,4 @@
+import { FiatPipe } from '@/pipes/fiat.pipe';
 import { Component, signal } from '@angular/core';
 import { InternalLinksDirective } from '@/directives/internal-links.directive';
 import { CommonModule } from '@angular/common';
@@ -45,6 +46,7 @@ const LINKED_SLUG_MAP: Record<string, string> = {
 @Component({
   standalone: true,
   imports: [
+    FiatPipe,
     InternalLinksDirective,
     CommonModule,
     TimeagoModule,

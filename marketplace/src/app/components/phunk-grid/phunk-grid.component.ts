@@ -1,3 +1,4 @@
+import { FiatPipe } from '@/pipes/fiat.pipe';
 import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -36,6 +37,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
   selector: 'app-phunk-grid',
   standalone: true,
   imports: [
+    FiatPipe,
     CommonModule,
     RouterModule,
     NgxPaginationModule,

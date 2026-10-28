@@ -1,3 +1,4 @@
+import { FiatPipe } from '@/pipes/fiat.pipe';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -54,6 +55,7 @@ const defaultActionState = {
 @Component({
   standalone: true,
   imports: [
+    FiatPipe,
     CommonModule,
     RouterModule,
     LazyLoadImageModule,

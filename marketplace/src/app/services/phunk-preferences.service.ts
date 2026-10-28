@@ -1133,6 +1133,11 @@ export class PhunkPreferencesService {
     return out;
   }
 
+  /** The fiat currency prices are shown in for the current language. */
+  currency(): string {
+    return ({ en: 'USD', es: 'MXN', ja: 'JPY', zh: 'CNY', id: 'IDR' } as Record<MenuLanguage, string>)[this.currentLanguage()] || 'USD';
+  }
+
   /** Long-form copy (collection intros, FAQ, About Us, The Shell Archive) in the current language. */
   content(): Content {
     return CONTENT[this.currentLanguage()] || CONTENT.en;

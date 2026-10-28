@@ -102,7 +102,7 @@
             ) {
               @if (displayListing(phunk); as listing) {
                 <p i18n>
-                  {{ (listing.minValue | weiToEth) | number : '1.0-5' }}Ξ@if (usd$ | async; as usd) {<br />${{ ((listing.minValue | weiToEth) * usd) | formatCash }}}
+                  {{ (listing.minValue | weiToEth) | number : '1.0-5' }}Ξ@if (usd$ | async; as usd) {<br />{{ ((listing.minValue | weiToEth) * usd) | fiat }}}
                 </p>
                 @if (showDate && listing.createdAt) {
                   <p class="tile-date">{{ listing.createdAt | timeago : true }}</p>
@@ -116,7 +116,7 @@
             ) {
               @if (phunk.bid; as bid) {
                 <p i18n>
-                  {{ (bid.value | weiToEth) }}Ξ@if (usd$ | async; as usd) {<br />${{ ((bid.value | weiToEth) * usd) | formatCash }}}
+                  {{ (bid.value | weiToEth) }}Ξ@if (usd$ | async; as usd) {<br />{{ ((bid.value | weiToEth) * usd) | fiat }}}
                 </p>
                 @if (isDeadBid(phunk)) {
                   <p class="dead-bid-label">{{ t('gridDeadBid') }}</p>

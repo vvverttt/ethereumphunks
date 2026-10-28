@@ -1,3 +1,4 @@
+import { FiatPipe } from '@/pipes/fiat.pipe';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -67,6 +68,7 @@ interface ActionsState {
 @Component({
   standalone: true,
   imports: [
+    FiatPipe,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

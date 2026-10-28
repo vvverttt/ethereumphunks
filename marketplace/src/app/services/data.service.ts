@@ -1,10 +1,11 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, effect, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
 
 import { Web3Service } from '@/services/web3.service';
 import { StorageService } from '@/services/storage.service';
+import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 import { EventType, GlobalConfig, GlobalState } from '@/models/global-state';
 import { Event, Listing, Phunk } from '@/models/db';
@@ -49,6 +50,7 @@ export class DataService {
     private store: Store<GlobalState>,
     private http: HttpClient,
     private storageSvc: StorageService,
+    private prefs: PhunkPreferencesService,
   ) {
 
     // Listen for blocks and set indexer block
@@ -63,10 +65,13 @@ export class DataService {
       }),
     ).subscribe();
 
-    // Fetch current ETH/USD price and store it
-    this.fetchUSDPrice().pipe(
-      tap((res) => this.store.dispatch(dataStateActions.setUsd({ usd: res }))),
-    ).subscribe();
+    // ETH's price in every display currency, fetched once; the store's `usd` holds the price in
+    // the current language's currency (USD, MXN, JPY, CNY, IDR) and follows a language switch.
+    this.fetchEthRates().subscribe((rates) => this.ethRates.set(rates));
+    effect(() => {
+      const rate = this.ethRates()[this.prefs.currency()] ?? this.ethRates()['USD'] ?? 0;
+      this.store.dispatch(dataStateActions.setUsd({ usd: rate }));
+    });
   }
 
   /**
@@ -1610,21 +1615,21 @@ export class DataService {
   ////////////////////////////////////////////////////////
 
   /**
-   * Fetches current USD price of ETH
+   * ETH's current price in the display currencies
    */
-  fetchUSDPrice(): Observable<number> {
-    // CryptoCompare's free min-api now requires a key (401), zeroing out USD.
-    // Use Coinbase (no key, CORS-enabled), falling back to CoinGecko, then 0.
-    return this.http.get<any>('https://api.coinbase.com/v2/prices/ETH-USD/spot').pipe(
-      map((res) => Number(res?.data?.amount) || 0),
-      catchError(() =>
-        this.http
-          .get<any>('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd')
-          .pipe(
-            map((res) => Number(res?.ethereum?.usd) || 0),
-            catchError(() => of(0)),
-          ),
-      ),
+  private readonly ethRates = signal<Record<string, number>>({});
+  private static readonly FIATS = ['USD', 'MXN', 'JPY', 'CNY', 'IDR'];
+
+  /** 1 ETH in each display currency: Coinbase's exchange rates (one call), else CoinGecko. */
+  fetchEthRates(): Observable<Record<string, number>> {
+    const pick = (src: Record<string, any>, upper: boolean) => Object.fromEntries(
+      DataService.FIATS.map((c) => [c, Number(src?.[upper ? c : c.toLowerCase()]) || 0]).filter(([, v]) => v),
+    );
+    return this.http.get<any>('https://api.coinbase.com/v2/exchange-rates?currency=ETH').pipe(
+      map((res) => pick(res?.data?.rates, true)),
+      catchError(() => this.http
+        .get<any>(`https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=${DataService.FIATS.join(',').toLowerCase()}`)
+        .pipe(map((res) => pick(res?.ethereum, false)), catchError(() => of({})))),
     );
   }
 

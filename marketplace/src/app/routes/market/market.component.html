@@ -366,7 +366,7 @@
             </span>
             @if (usd$ | async; as usd) {
               <span class="usd">
-                ${{ ((item.value.listing?.minValue | weiToEth) * usd) | formatCash }}
+                {{ ((item.value.listing?.minValue | weiToEth) * usd) | fiat }}
               </span>
             }
           </div>
@@ -381,13 +381,13 @@
             </span>
             @if (usd$ | async; as usd) {
               <span class="usd">
-                ${{ (totalValue * usd) | formatCash }}
+                {{ (totalValue * usd) | fiat }}
               </span>
             }
           } @else {
             <span class="eth">0Ξ</span>
             @if (usd$ | async) {
-              <span class="usd">$0</span>
+              <span class="usd">{{ 0 | fiat }}</span>
             }
           }
         </div>

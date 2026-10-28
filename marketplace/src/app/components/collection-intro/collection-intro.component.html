@@ -36,9 +36,9 @@
       <p [innerHTML]="countsHtml()"></p>
     }
     @for (p of more(); track $index) { <p [innerHTML]="p"></p> }
-    <!-- Ethscription collections trade on the EtherPhunks Market contract, which this site tracks;
-         bids only exist on ours. -->
-    @if (!isV67) {
+    <!-- Missing Phunks, DystoPhunkz and Phikings trade on the EtherPhunks Market contract, which
+         this site tracks; bids only exist on ours. Phunklloween and EthsRocks trade on our own. -->
+    @if (onEtherPhunksMarket) {
       <p [innerHTML]="etherphunksNote()"></p>
     }
     <!-- The site's own status colours (the theme variables the market grids use), named as each

@@ -154,6 +154,8 @@ export class CollectionIntroComponent implements OnChanges {
       .replace('{bid}', sw('bid', c.bid)).replace('{escrow}', sw('escrow', c.escrow));
   }
   get isV67() { return this.slug === 'cryptophunksv67'; }
+  /** Listed on the EtherPhunks Market contract (the rest trade on our own market contract). */
+  get onEtherPhunksMarket() { return ['missing-phunks', 'dysto-phunks', 'phikings'].includes(this.slug); }
 
   /** The wordmark as inline SVG (wordmarks.ts), so it is there on the first frame with the text. */
   wordmark(): { vb: string; d: string; w: number; ratio: string } | null {
