@@ -101,8 +101,8 @@
               marketType === 'all'
             ) {
               @if (displayListing(phunk); as listing) {
-                <p i18n>
-                  {{ (listing.minValue | weiToEth) | number : '1.0-5' }}Ξ@if (usd$ | async; as usd) {<br />{{ ((listing.minValue | weiToEth) * usd) | fiat }}}
+                <p class="price" i18n>
+                  <span>{{ (listing.minValue | weiToEth) | number : '1.0-5' }}Ξ</span>@if (usd$ | async; as usd) {<span class="fiat">{{ ((listing.minValue | weiToEth) * usd) | fiat: 'short' }}</span>}
                 </p>
                 @if (showDate && listing.createdAt) {
                   <p class="tile-date">{{ listing.createdAt | timeago : true }}</p>
@@ -115,8 +115,8 @@
               marketType === 'all'
             ) {
               @if (phunk.bid; as bid) {
-                <p i18n>
-                  {{ (bid.value | weiToEth) }}Ξ@if (usd$ | async; as usd) {<br />{{ ((bid.value | weiToEth) * usd) | fiat }}}
+                <p class="price" i18n>
+                  <span>{{ (bid.value | weiToEth) }}Ξ</span>@if (usd$ | async; as usd) {<span class="fiat">{{ ((bid.value | weiToEth) * usd) | fiat: 'short' }}</span>}
                 </p>
                 @if (isDeadBid(phunk)) {
                   <p class="dead-bid-label">{{ t('gridDeadBid') }}</p>

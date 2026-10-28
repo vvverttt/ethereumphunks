@@ -17,10 +17,11 @@
         } @else {
         <div class="header-wrapper">
 
-          <a class="button" [routerLink]="['/', 'curated', collection.slug]">
-            <ng-template [ngTemplateOutlet]="prevIcon" />
-            {{ collection.name }}
-          </a>
+          <nav class="crumb-box" aria-label="Breadcrumb">
+            <a [routerLink]="['/', 'curated', collection.slug]">{{ collection.name }}</a>
+            <span class="sep" aria-hidden="true">/</span>
+            <span>{{ marketTitle(marketType, collection.name) }}</span>
+          </nav>
           <h1>{{ marketTitle(marketType, collection.name) }}</h1>
 
           @if ((route.queryParams | async)?.address; as address) {
@@ -58,8 +59,10 @@
                       [items]="sorts"
                       (change)="setSort($event)"
                       [searchable]="false"
-                      [clearable]="false"
-                    />
+                      [clearable]="false">
+                      <ng-template ng-label-tmp let-item="item">{{ sortLabel(item.value) }}</ng-template>
+                      <ng-template ng-option-tmp let-item="item">{{ sortLabel(item.value) }}</ng-template>
+                    </ng-select>
                   </div>
                 }
               </div>

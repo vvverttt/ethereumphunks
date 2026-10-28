@@ -332,4 +332,10 @@ export const UI_ZH: Record<string, string> = {
   uniqueColors: "独特颜色",
   coloredPixels: "着色像素",
   allTypesFooter: "全部类型与属性",
+
+  // market sort options
+  sortPriceLow: "价格从低到高",
+  sortPriceHigh: "价格从高到低",
+  sortTokenId: "代币 ID",
+  sortRecent: "最新",
 };

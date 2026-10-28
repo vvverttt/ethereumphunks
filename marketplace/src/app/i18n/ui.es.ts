@@ -332,4 +332,10 @@ export const UI_ES: Record<string, string> = {
   uniqueColors: "Colores únicos",
   coloredPixels: "Píxeles de color",
   allTypesFooter: "Todos los tipos y atributos",
+
+  // market sort options
+  sortPriceLow: "Precio más bajo",
+  sortPriceHigh: "Precio más alto",
+  sortTokenId: "ID del token",
+  sortRecent: "Recientes",
 };

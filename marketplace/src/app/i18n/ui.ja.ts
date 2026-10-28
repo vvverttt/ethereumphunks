@@ -333,4 +333,10 @@ export const UI_JA: Record<string, string> = {
   uniqueColors: "ユニークカラー",
   coloredPixels: "着色ピクセル",
   allTypesFooter: "すべてのタイプと属性",
+
+  // market sort options
+  sortPriceLow: "価格の安い順",
+  sortPriceHigh: "価格の高い順",
+  sortTokenId: "トークンID",
+  sortRecent: "新着順",
 };

@@ -326,4 +326,10 @@ export const UI_ID: Record<string, string> = {
   uniqueColors: "Warna Unik",
   coloredPixels: "Piksel Berwarna",
   allTypesFooter: "Semua Tipe dan Atribut",
+
+  // market sort options
+  sortPriceLow: "Harga Terendah",
+  sortPriceHigh: "Harga Tertinggi",
+  sortTokenId: "ID Token",
+  sortRecent: "Terbaru",
 };

@@ -196,6 +196,11 @@ export class MarketComponent {
     public preferences: PhunkPreferencesService,
   ) {}
 
+  /** The sort options' visible names, in the current language. */
+  sortLabel(value: string): string {
+    return this.t(({ 'price-low': 'sortPriceLow', 'price-high': 'sortPriceHigh', id: 'sortTokenId', recent: 'sortRecent' } as Record<string, string>)[value] || value);
+  }
+
   t(key: string, params?: Record<string, string | number>): string {
     return this.preferences.t(key, params);
   }

@@ -98,6 +98,8 @@
       }
 
       padding: 1rem 0 2rem;
+      min-width: 0;     // let the price lines shrink and ellipsis inside a narrow tile
+      overflow: hidden;
 
       .label {
         font-size: 1.4rem;
@@ -112,6 +114,24 @@
         font-size: 1.4rem;
         color: rgba(var(--text-color), 1);
         text-align: center;
+      }
+
+      // Price lines never spill into the next tile, on any screen or currency: one line each,
+      // cut with an ellipsis when a tile is narrower than the number.
+      p.price {
+        min-width: 0;
+
+        span {
+          display: block;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .fiat {
+          font-size: 1.2rem;
+          opacity: .8;
+        }
       }
     }
 
