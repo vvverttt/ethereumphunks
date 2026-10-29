@@ -143,9 +143,6 @@ export class ThemeService {
     this.activeSlug = ['about', 'shell-archive', 'my-phunks', 'terms', 'license', 'privacy'].includes(painted) ? '' : painted;
     this.themeSlug.set(this.activeSlug);
 
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      this.setThemeStyles(e.matches ? 'dark' : 'light');
-    });
   }
 
   /**
@@ -153,6 +150,8 @@ export class ThemeService {
    * @param theme Theme to apply ('dark' or 'light')
    */
   setThemeStyles(theme: Theme) {
+    // Light mode is retired: the site is always dark, whatever was stored or asked for.
+    theme = 'dark';
     this.currentTheme = theme;
     const previousTheme = localStorage.getItem('EtherPhunks_theme');
     const themeStyles = this.getEffectiveStyles(theme);
@@ -249,9 +248,7 @@ export class ThemeService {
    * @returns Theme to use initially ('dark' or 'light')
    */
   getInitialTheme(): Theme {
-    let mode = localStorage.getItem('EtherPhunks_theme') as Theme | undefined;
-    if (mode) return mode;
-
+    // Light mode is retired; anyone who had it saved comes back dark.
     return 'dark';
   }
 }

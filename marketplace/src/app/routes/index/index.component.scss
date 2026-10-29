@@ -38,6 +38,14 @@ app-splash {
   left: 0;
 }
 
+// The auction strip scrolls over the fixed billboard like the rest of the page. Without its own
+// layer it sat BELOW the billboard, so scrolling up (as phones do when the keyboard opens for a
+// bid) slid the bid box underneath it, out of sight.
+app-auction-strip {
+  position: relative;
+  z-index: 2;
+}
+
 main {
   position: relative;
   z-index: 1;

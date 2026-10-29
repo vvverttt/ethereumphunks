@@ -23,7 +23,8 @@
   <div class="user-tools">
 
     <div class="theme-switcher">
-      <button [class]="theme$ | async" (click)="toggleTheme$.next()">
+      <!-- Light mode is retired; the PHALACE triangle stays here as a mark, not a switch. -->
+      <button type="button" class="theme-mark" tabindex="-1" aria-hidden="true">
         <ng-template [ngTemplateOutlet]="themSwitcher" />
       </button>
     </div>
@@ -97,8 +98,8 @@
   <img src="assets/phunk-animated.png" alt="Dystolabz" class="phunk-icon" (click)="openDystolabz($event)" style="cursor: pointer;" />
 </ng-template>
 
-<!-- Light/dark switch: the PHALACE triangle, drawn through a mask so it takes each collection's
-     header accent on the header's own colour, like the half-circle it replaced. -->
+<!-- The PHALACE triangle, drawn through a mask so it takes each collection's header accent on
+     the header's own colour. -->
 <ng-template #themSwitcher>
   <span class="phalace-icon" aria-hidden="true"></span>
 </ng-template>

@@ -300,7 +300,9 @@
           width: 2.4rem;
           height: 2.4rem;
 
-          // the PHALACE triangle in the header accent, upright as drawn, in both light and dark
+          &.theme-mark { cursor: default; }
+
+          // the PHALACE triangle in the header accent, upright as drawn
           .phalace-icon {
             display: block;
             width: 100%;
