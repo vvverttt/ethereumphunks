@@ -3,11 +3,12 @@ import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { selectMarketSlug } from '@/state/selectors/market-state.selectors';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { map } from 'rxjs';
+import { filter, map, startWith } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { ThemeService } from '@/services/theme.service';
@@ -24,6 +25,20 @@ import { ERC721C_CONTRACT_SETS } from '@/constants/erc721c';
 export class FooterComponent {
 
   theme$ = this.store.select(appStateSelectors.selectTheme);
+
+  private router = inject(Router);
+
+  /** Pages painted with their collection's glow (collection pages and item pages): the logo
+   *  strip takes the same glow so it continues the page instead of showing as a flat band. */
+  glowPage = toSignal(this.router.events.pipe(
+    filter((e) => e instanceof NavigationEnd),
+    startWith(null),
+    map(() => {
+      let r = this.router.routerState.snapshot.root;
+      while (r.firstChild) r = r.firstChild;
+      return [':slug', 'details/:hashId', 'details/:contract/:tokenId'].includes(r.routeConfig?.path || '');
+    }),
+  ), { initialValue: false });
   config$ = this.store.select(appStateSelectors.selectConfig);
   slug$ = this.store.select(selectMarketSlug);
   collection$ = this.store.select(dataStateSelectors.selectActiveCollection);

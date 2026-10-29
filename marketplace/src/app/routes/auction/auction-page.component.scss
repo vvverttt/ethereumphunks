@@ -314,7 +314,8 @@ $spooky-frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 
 .auction-history {
   position: relative;
-  padding-bottom: 10rem;
+  // the page's own bottom space is main's padding (see app.component.scss)
+  padding-bottom: 0;
 
   .history-inner {
     position: relative;

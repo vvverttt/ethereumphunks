@@ -1,6 +1,15 @@
 <!-- Laid out like cryptopunks.app's footer: a band in the collection's accent with link columns,
      a divider, then language and the small print. Our own footer lives inside it: the contract
      addresses and version, X and GitHub, the risk note and "Be Phree". -->
+<!-- The Phupreme logo closes every page, on the page's own background just above the band. The
+     box is the page's accent colour (--pink: coral on EthsRocks, orange on Phunklloween...) with
+     the white lettering laid over it, so it always matches the collection on screen. -->
+<!-- Only the badge links to /phupreme; the strip around it is plain, so a stray tap near it
+     doesn't leave the page. -->
+<div class="phupreme-logo" [class.glow]="glowPage()">
+  <a class="mark" routerLink="/phupreme" aria-label="Phupreme"><img src="assets/images/phupreme-text.png" alt="Phupreme" /></a>
+</div>
+
 <div class="inner">
   <div class="top">
     @if (slug$ | async; as slug) {
@@ -79,13 +88,16 @@
   <div class="bottom">
     <p class="risk">{{ t('riskDisclaimer') }}</p>
 
-    <nav class="legal" aria-label="Legal">
-      <!-- Terms / License Terms / Privacy Policy held back for now (pages kept in legal.component). -->
-      <a routerLink="/about">{{ t('aboutUs') }}</a>
-      <a routerLink="/shell-archive">{{ t('shellArchive') }}</a>
-    </nav>
+    <!-- links and sign-off, anchored right so a longer translation never moves them -->
+    <div class="end">
+      <nav class="legal" aria-label="Legal">
+        <!-- Terms / License Terms / Privacy Policy held back for now (pages kept in legal.component). -->
+        <a routerLink="/about">{{ t('aboutUs') }}</a>
+        <a routerLink="/shell-archive">{{ t('shellArchive') }}</a>
+      </nav>
 
-    <p class="sign">{{ t('bePhunky') }} <span>© {{ year }} DystoLabz</span></p>
+      <p class="sign">{{ t('bePhunky') }} <span>© {{ year }} DystoLabz</span></p>
+    </div>
   </div>
 </div>
 

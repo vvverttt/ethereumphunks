@@ -1,0 +1,98 @@
+// Tribute to Piv's Punkism gallery (punkism.art): centred pink wordmark, small chip row for the
+// orderings, then a borderless gallery where some pieces take a double cell. Colours come from the
+// collection theme: the wordmark and active chip use the accent (--pink).
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.phunkism-head {
+  text-align: center;
+  margin-bottom: 3rem;
+
+  .wordmark {
+    margin: 0;
+    font-family: var(--secondary-font-stack);
+    font-size: clamp(2.8rem, 4.2vw, 3.8rem);
+    line-height: 1;
+    font-weight: normal;
+    color: rgba(var(--pink), 1);
+  }
+
+  .tribute {
+    margin: 1.2rem auto 0;
+    max-width: 64rem;
+    font-size: 1.4rem;
+    opacity: .85;
+  }
+
+  .orders {
+    display: inline-flex;
+    gap: .4rem;
+    margin-top: 1.8rem;
+
+    button {
+      padding: .3rem .8rem;
+      font-family: var(--primary-font-stack);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: rgba(var(--text-color), .75);
+      background: rgba(var(--text-color), .1);
+      border: 0;
+      cursor: pointer;
+
+      &:hover { color: rgba(var(--text-color), 1); }
+      &.active {
+        color: #fff;
+        background: rgba(var(--pink), 1);
+      }
+    }
+  }
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 1.4rem;
+
+  @media (max-width: 1000px) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 600px) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+}
+
+.piece {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  // the collection's tile colour behind the art, as on the market grid
+  background-color: rgba(var(--phunk-bg), 1);
+
+  &.big {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  app-phunk-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .num {
+    position: absolute;
+    left: .6rem;
+    bottom: .6rem;
+    padding: .2rem .6rem;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.2rem;
+    color: #fff;
+    background: rgba(0, 0, 0, .7);
+    opacity: 0;
+    transition: opacity .15s ease;
+  }
+
+  &:hover .num,
+  &:focus-visible .num { opacity: 1; }
+}

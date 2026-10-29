@@ -1,4 +1,5 @@
 @use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
 
 // cryptopunks.app's footer: a full-width band in the collection's accent (--pink is each theme's
 // accent: pink, Phunklloween orange, Phikings gold...), white text, link columns, a divider, then
@@ -20,6 +21,37 @@
     }
   }
 }
+
+// the logo strip above the band, on the page background. The page's last section already leaves
+// ~5rem under its content (the collection search box), so 2.4rem above + 7.4rem below puts the
+// logo midway between that content and the band.
+.phupreme-logo {
+  display: flex;
+  justify-content: center;
+  padding: 2.4rem 0 7.4rem;
+  background: rgba(var(--background), 1);
+
+  .mark {
+    display: block;
+    background: rgba(var(--pink), 1);
+    &:hover { text-decoration: none; }
+  }
+
+  img {
+    display: block;
+    height: 3.2rem;
+    width: auto;
+  }
+
+}
+
+// On a glowing page the strip carries the same glow as the page above it. The glows are fixed to
+// the viewport, so the two join without a seam. Same values as index / item-view.
+:host-context([data-collection='phunklloween']) .phupreme-logo.glow { @include phunklloween-glow; }
+:host-context([data-collection='ethsrocks']) .phupreme-logo.glow { @include collection-glow(rgb(255, 92, 120), #62121d, #4a0d14, #2a060b); }
+:host-context([data-collection='missing-phunks']) .phupreme-logo.glow { @include collection-glow(rgb(99, 133, 150), #24363f, #1c2a33, #121c22); }
+:host-context([data-collection='dysto-phunks']) .phupreme-logo.glow { @include collection-glow(rgb(16, 154, 62), #132a1c, #0d1a12, #08120c); }
+:host-context([data-collection='phikings']) .phupreme-logo.glow { @include collection-glow(rgb(224, 165, 38), #b08a10, #967000, #5c4400); }
 
 .inner {
   // Top and bottom only: the sides keep .inner's own padding, so the footer lines up with the
@@ -63,6 +95,7 @@
 
     .version {
       opacity: .8;
+      white-space: nowrap;
     }
   }
 
@@ -153,6 +186,13 @@
     opacity: .85;
   }
 
+  .end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.2rem 3.2rem;
+  }
+
   .legal {
     display: flex;
     flex-wrap: wrap;
@@ -161,5 +201,32 @@
 
   .sign span {
     margin-left: 1.6rem;
+  }
+}
+
+// Desktop: a fixed grid, so switching language never reflows the footer. The four link/contract
+// columns keep their width (a longer translation wraps inside its column instead of widening it),
+// the language/social block always sits at the end of the first row, and the bottom row keeps the
+// risk note on the left and the links + sign-off anchored right.
+@media (min-width: 1001px) {
+  .top {
+    display: grid;
+    // equal shares of the width (never sized by their text) + a fixed slot for language/social
+    grid-template-columns: repeat(4, minmax(0, 1fr)) 34rem;
+    column-gap: 2.4rem;
+    align-items: start;
+
+    nav, .contracts { min-width: 0; overflow-wrap: anywhere; }
+    .brand { grid-column: -2 / -1; grid-row: 1; margin-left: 0; justify-self: end; }
+  }
+
+  .bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 46rem) 1fr;
+    column-gap: 3.2rem;
+
+    .risk { min-width: 0; }
+    .end { justify-self: end; justify-content: flex-end; flex-wrap: nowrap; }
+    .legal, .sign { white-space: nowrap; }
   }
 }

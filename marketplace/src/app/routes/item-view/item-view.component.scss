@@ -3,6 +3,9 @@
 
 :host {
   display: block;
+  // run into main's 5rem bottom padding (the wrapper adds it back below), so the item's glow
+  // reaches the footer's logo strip instead of leaving a flat band of page colour between them
+  margin-bottom: -5rem;
 }
 
 app-phunk-billboard {
@@ -55,6 +58,7 @@ app-phunk-billboard {
 
 .view-item-wrapper {
   margin-top: var(--billboard-height);
+  padding-bottom: 5rem;
   position: relative;
   z-index: 1;
   background-color: rgba(var(--background), 1);

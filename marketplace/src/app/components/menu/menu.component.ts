@@ -19,10 +19,7 @@ import { CollectionsComponent } from '@/components/collections/collections.compo
 import { StatusBarComponent } from '@/components/status-bar/status-bar.component';
 import { MenuAuctionComponent } from '@/components/menu-auction/menu-auction.component';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
-import { ERC721C_CONTRACTS } from '@/constants/erc721c';
-
-/** Unlaunched Quantum Missing / Quantum Dysto copies: never shown as collections. */
-const NOT_LIVE = ['quantummissingphunksv67', 'quantumdystophunkzv67'];
+import { detailsLink, groupWalletItems } from '@/utils/wallet-groups';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -115,21 +112,7 @@ export class MenuComponent {
       if (!v) return null;
       const [items, collections, ownedHere, config] = v as [Phunk[], any[], Phunk[] | null, any];
       const listed = new Map((ownedHere || []).map(p => [p.hashId, p.listing]));
-      const hidden: string[] = config?.hiddenSlugs || [];
-      const groups = [];
-      for (const c of collections || []) {
-        if (hidden.includes(c.slug) || NOT_LIVE.includes(c.slug)) continue;
-        const mine = items.filter(p => p.slug === c.slug).map(p => ({ ...p, listing: listed.get(p.hashId) ?? null }));
-        if (!mine.length) continue;
-        const o = this.themeSvc.collectionOverrides[c.slug] || {};
-        groups.push({
-          slug: c.slug, name: c.name, single: c.singleName || c.name, logo: c.image || null, items: mine,
-          tile: o['--phunk-bg'] || '195, 255, 0',
-          accent: o['--pink'] || (c.slug === 'cryptophunksv67' ? '103, 205, 255' : '255, 4, 180'),
-          bg: o['--background'] || '17, 26, 0',
-        });
-      }
-      return groups;
+      return groupWalletItems(items, collections, config?.hiddenSlugs || [], this.themeSvc.collectionOverrides, listed);
     }),
   );
 
@@ -137,11 +120,7 @@ export class MenuComponent {
     return groups.reduce((n, g) => n + g.items.length, 0);
   }
 
-  /** v67 pieces open by contract + token id, everything else by hashId. */
-  detailsLink(p: Phunk): any[] {
-    const contract = ERC721C_CONTRACTS[p.slug];
-    return contract ? ['/details', contract, p.tokenId] : ['/details', p.hashId];
-  }
+  detailsLink = detailsLink;
 
   listedPhunks$ = this.store.select(marketStateSelectors.selectOwned).pipe(
     tap((owned: Phunk[] | null) => this.createOwnedStats(owned)),

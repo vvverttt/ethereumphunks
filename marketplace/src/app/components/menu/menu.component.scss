@@ -148,6 +148,23 @@ $menu-status-height: 4.5rem;
 
 // Gas + blocks, in a strip of its own along the bottom of the panel. The sections stop where
 // it starts (see `section` below), so nothing ever scrolls underneath it, on any screen.
+// the main panel stacks its blocks so the PHUNKEM emblem can sit at the very bottom, right above
+// the indexer status, however short the content is
+section.main {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1.2rem;
+}
+
+.menu-phunkem {
+  display: block;
+  flex: none;
+  width: 9.8rem;   // keeps the emblem the same height as before (about 3.9rem)
+  height: auto;
+  margin: auto auto 0;
+  padding-top: 3rem;
+}
+
 .menu-status {
   position: absolute;
   z-index: 2;
@@ -1040,30 +1057,77 @@ section {
   }
 }
 
-// "Your Phunks": the connected wallet's pieces, one card per collection in that collection's
-// own colours (its page background, accent and tile colour), listed pieces in the listed colour
-// and escrowed ones in yellow. A card scrolls once it passes three rows.
+// "Your Phunks": the connected wallet's pieces, one card per collection, dressed like the
+// curated collections list (collections.component.scss): the collection's colour band with the
+// holographic foil, a deep shade of it for the text, and the pieces straight on the band with no
+// tiles. Listed pieces get a listed-colour underline, escrowed ones yellow. A card scrolls once it
+// passes three rows.
 .my-phunks {
   margin: 0 0 3rem;
 
+  // the heading opens /my-phunks, the full page of every piece
   .my-title {
     display: flex;
-    justify-content: space-between;
     align-items: baseline;
+    gap: 1rem;
     margin: 0 0 1rem;
     font-family: var(--secondary-font-stack);
     font-size: 1.4rem;
     text-transform: uppercase;
     color: rgba(var(--highlight), 1);
+    text-decoration: none;
 
-    span { font-size: 2rem; }
+    h3 { margin: 0; font-size: inherit; }
+    .all {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: 1.1rem;
+      opacity: .7;
+      svg { width: .6rem; height: 1.1rem; fill: currentColor; }
+    }
+    .total { margin-left: auto; font-size: 2rem; }
+
+    &:hover .all { opacity: 1; text-decoration: underline; }
   }
 
   .my-card {
     margin-bottom: 1rem;
-    background: rgba(var(--g-bg), 1);
-    border-left: .4rem solid rgba(var(--g-accent), 1);
-    box-shadow: 0 0 0 .1rem rgba(var(--g-accent), .35) inset;
+
+    // same row colours as the curated collections list
+    --row-bg: 255, 4, 180;
+    --row-fg: 110, 0, 72;
+    &[data-row='cryptophunksv67'] { --row-bg: 0, 171, 255; --row-fg: 0, 62, 112; }
+    &[data-row='ethsrocks'] { --row-bg: 255, 51, 85; --row-fg: 112, 12, 32; }
+    &[data-row='missing-phunks'] { --row-bg: 99, 133, 150; --row-fg: 30, 48, 58; }
+    &[data-row='dysto-phunks'] { --row-bg: 16, 154, 62; --row-fg: 4, 62, 22; }
+    &[data-row='phikings'] { --row-bg: 224, 165, 38; --row-fg: 92, 68, 0; }
+    &[data-row='phunklloween'] { --row-bg: 255, 140, 26; --row-fg: 112, 52, 0; }
+
+    background-color: rgba(var(--row-bg), 1);
+    position: relative;
+    isolation: isolate;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(115deg, rgba(255, 255, 255, 0) 0 5px, rgba(255, 255, 255, .2) 5px 6px),
+        linear-gradient(90deg, #ff7ad9, #ffe36e, #7dffb0, #6fd3ff, #b48cff, #ff7ad9);
+      background-size: 100% 100%, 300% 100%;
+      mix-blend-mode: overlay;
+      opacity: .6;
+      animation: my-holo-foil 9s linear infinite;
+    }
+
+    > * { position: relative; z-index: 1; }
+
+    @media (prefers-reduced-motion: reduce) {
+      &::after { animation: none; }
+    }
   }
 
   .my-head {
@@ -1073,45 +1137,71 @@ section {
     gap: 1rem;
     padding: 1.2rem 1.4rem;
     font-family: var(--secondary-font-stack);
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     text-transform: uppercase;
-    color: rgba(var(--g-accent), 1);
+    color: rgba(var(--row-fg), 1);
     text-decoration: none;
 
-    .logo { width: 2.8rem; height: 2.8rem; object-fit: contain; image-rendering: pixelated; }
+    // the logo square, lime (v67 blue) behind it, with a shadow in the row's text colour
+    .logo {
+      display: block;
+      width: 3.2rem;
+      height: 3.2rem;
+
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        image-rendering: pixelated;
+        background-color: #c3ff00;
+        box-shadow: -.3rem -.3rem 0 0 rgba(var(--row-fg), 1);
+      }
+    }
     .count {
-      padding: .3rem .8rem;
-      font-size: 1.4rem;
-      color: rgba(var(--g-bg), 1);
-      background: rgba(var(--g-accent), 1);
+      padding: .2rem .7rem;
+      font-size: 1.3rem;
+      color: rgba(var(--row-bg), 1);
+      background: rgba(var(--row-fg), 1);
     }
     .arrow {
       display: flex;
       justify-content: flex-end;
-      svg { width: 1rem; height: 2rem; fill: rgba(var(--g-accent), 1); }
+      svg { width: 1rem; height: 2rem; fill: rgba(var(--row-fg), 1); }
     }
 
+    &:active { transform: translateY(1px); }
     &:hover .name { text-decoration: underline; }
   }
+  .my-card[data-row='cryptophunksv67'] .my-head .logo img { background-color: #67cdff; }
 
   .my-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: .4rem;
-    padding: 0 1.4rem 1.4rem;
+    gap: .2rem .4rem;
+    padding: 0 1.4rem 1.2rem;
 
     &.scroll {
-      max-height: 22rem;
+      max-height: 21rem;
       overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(var(--row-fg), .6) transparent;
     }
 
+    // the pieces sit straight on the band, like the collections list's previews
     a {
       display: block;
-      background: rgba(var(--g-tile), 1);
+      background: transparent;
+      border-bottom: .3rem solid transparent;
       transition: transform .12s ease;
-      &.listed { background: rgba(var(--listed-color), 1); }
-      &.escrow { background: rgba(var(--escrow-color), 1); }
+      &.listed { border-bottom-color: rgba(var(--listed-color), 1); }
+      &.escrow { border-bottom-color: rgba(var(--escrow-color), 1); }
       &:hover { transform: translateY(-.2rem); }
     }
   }
+}
+
+@keyframes my-holo-foil {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 0, 300% 0; }
 }

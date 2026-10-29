@@ -128,7 +128,7 @@ export const UI_EN: Record<string, string> = {
   lotteryLoadingPool: 'Loading pool...',
   lotteryPoolEmpty: 'Pool is empty.',
   loadMore: 'Load More',
-  lotteryAllWon: 'All Won Artifacts',
+  lotteryAllWon: 'All Won Collectibles',
   lotteryWinsWord: 'wins',
   lotteryNoWins: 'No wins yet.',
 
@@ -283,7 +283,7 @@ export const UI_EN: Record<string, string> = {
 
   // collection stat bar
   statFloor: 'Floor',
-  statArtifacts: 'Artifacts',
+  statArtifacts: 'Collectibles',
   statListed: 'Listed',
   statVolume: 'Volume',
 
@@ -334,4 +334,25 @@ export const UI_EN: Record<string, string> = {
   sortPriceHigh: "Price High",
   sortTokenId: "Token ID",
   sortRecent: "Recent",
+  viewAll: "View all",
+  myPhunksConnect: "Connect a wallet to see every piece you hold, collection by collection.",
+  myPhunksOpenMarket: "Open in market",
+  myPhunksAccount: "Account Details",
+  myPhunksPieces: "Collectibles",
+  myPhunksCollections: "Collections",
+  myPhunksFullSet: "Full set: you hold a piece from every collection.",
+  myPhunksToGo: "{n} more to complete the set.",
+  myPhunksEmpty: "No pieces yet. Start your set with one from any collection below.",
+  myPhunksOfSupply: "of {n} · {pct}",
+  myPhunksMissingTitle: "Complete your set",
+  myPhunksMissingOther: "Not collected yet",
+  myPhunksStart: "Find one for sale",
+  myPhunksCopied: "Copied",
+  myPhunksShowMissing: "Show not collected ({n})",
+
+  // Phunkism gallery (tribute to Punkism)
+  phunkismTribute: 'A tribute to <a class="highlight" href="https://punkism.art/" target="_blank" rel="noopener noreferrer">Punkism</a>, the gallery Piv started, collecting Punkism works by Piv and many other artists. Our {n} Phunkism pieces take those works as a base and reference, recreated with our animals. Thank you to Piv and to every artist in it.',
+  phunkismOrder_random: 'Random',
+  phunkismOrder_chronological: 'Chronological',
+  phunkismOrder_newest: 'Newest',
 };

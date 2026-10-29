@@ -12,6 +12,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { PhunkGridComponent } from '@/components/phunk-grid/phunk-grid.component';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { MarketFiltersComponent } from '@/components/market-filters/market-filters.component';
+import { PhunkismGalleryComponent, isPhunkismFilter } from '@/components/phunkism-gallery/phunkism-gallery.component';
 import { SlideoutComponent } from '@/components/slideout/slideout.component';
 import { CommentsComponent } from '@/components/comments/comments.component';
 
@@ -67,6 +68,7 @@ const defaultActionState = {
     PhunkGridComponent,
     PhunkImageComponent,
     MarketFiltersComponent,
+    PhunkismGalleryComponent,
     SlideoutComponent,
     CommentsComponent,
 
@@ -165,6 +167,7 @@ export class MarketComponent {
   mobileFiltersOpen = true;
 
   objectKeys = Object.keys;
+  readonly isPhunkismFilter = isPhunkismFilter;
   readonly isErc721c = isErc721c; // ERC-721C collections (v67) are approval-based — no escrow/withdraw
   objectValues = Object.values;
 

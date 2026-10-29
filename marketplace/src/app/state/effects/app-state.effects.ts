@@ -39,7 +39,7 @@ const FIXED_THEME_PAGES: Record<string, string> = {
 
 // Footer pages carry no collection of their own: they keep the colours of the collection the
 // visitor came from (or, on a reload, the last one this browser showed).
-const FOOTER_PAGES = ['about', 'shell-archive', 'terms', 'license', 'privacy'];
+const FOOTER_PAGES = ['about', 'shell-archive', 'my-phunks', 'terms', 'license', 'privacy'];
 
 @Injectable()
 export class AppStateEffects {

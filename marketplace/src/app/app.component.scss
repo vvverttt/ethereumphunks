@@ -81,7 +81,9 @@
 
 main {
   min-height: calc(100vh - 21rem);
-  padding-bottom: 8rem;
+  // 5rem: the same space a collection page leaves under its last section, so the Phupreme logo
+  // in the footer sits midway between every page's content and the footer band.
+  padding-bottom: 5rem;
 
   @media (max-width: $mobile) {
     // padding-top: calc((var(--header-height) / 2) + 4rem);

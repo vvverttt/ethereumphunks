@@ -97,8 +97,10 @@
   <img src="assets/phunk-animated.png" alt="Dystolabz" class="phunk-icon" (click)="openDystolabz($event)" style="cursor: pointer;" />
 </ng-template>
 
+<!-- Light/dark switch: the PHALACE triangle, drawn through a mask so it takes each collection's
+     header accent on the header's own colour, like the half-circle it replaced. -->
 <ng-template #themSwitcher>
-  <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><g fill="rgba(var(--header-text), 1)" fill-rule="evenodd"><path d="m3 3h9v18h-9z"/><path d="m18 21v3h-12v-3zm-12-3v3h-3v-3zm15 0v3h-3v-3zm-18-12v12h-3v-12zm21 0v12h-3v-12zm-3-3v3h-3v-3zm-15 0v3h-3v-3zm0 0v-3h12v3z"/></g></svg>
+  <span class="phalace-icon" aria-hidden="true"></span>
 </ng-template>
 
 <ng-template #withdrawIcon>

@@ -127,7 +127,7 @@ export const UI_ES: Record<string, string> = {
   lotteryLoadingPool: 'Cargando pool...',
   lotteryPoolEmpty: 'El pool está vacío.',
   loadMore: 'Cargar Más',
-  lotteryAllWon: 'Todos los Artefactos Ganados',
+  lotteryAllWon: 'Todos los Coleccionables Ganados',
   lotteryWinsWord: 'premios',
   lotteryNoWins: 'Aún no hay premios.',
 
@@ -282,7 +282,7 @@ export const UI_ES: Record<string, string> = {
 
   // barra de estadísticas de colección
   statFloor: 'Piso',
-  statArtifacts: 'Artefactos',
+  statArtifacts: 'Coleccionables',
   statListed: 'Listados',
   statVolume: 'Volumen',
 
@@ -338,4 +338,25 @@ export const UI_ES: Record<string, string> = {
   sortPriceHigh: "Precio más alto",
   sortTokenId: "ID del token",
   sortRecent: "Recientes",
+  viewAll: "Ver todo",
+  myPhunksConnect: "Conecta una wallet para ver cada pieza que tienes, colección por colección.",
+  myPhunksOpenMarket: "Abrir en el mercado",
+  myPhunksAccount: "Detalles de la cuenta",
+  myPhunksPieces: "Coleccionables",
+  myPhunksCollections: "Colecciones",
+  myPhunksFullSet: "Set completo: tienes una pieza de cada colección.",
+  myPhunksToGo: "Te faltan {n} para completar el set.",
+  myPhunksEmpty: "Aún no tienes piezas. Empieza tu set con una de cualquier colección.",
+  myPhunksOfSupply: "de {n} · {pct}",
+  myPhunksMissingTitle: "Completa tu set",
+  myPhunksMissingOther: "Aún sin coleccionar",
+  myPhunksStart: "Buscar uno en venta",
+  myPhunksCopied: "Copiado",
+  myPhunksShowMissing: "Mostrar sin coleccionar ({n})",
+
+  // Phunkism gallery (tribute to Punkism)
+  phunkismTribute: 'Un homenaje a <a class="highlight" href="https://punkism.art/" target="_blank" rel="noopener noreferrer">Punkism</a>, la galería que inició Piv y que reúne obras Punkism de Piv y de muchos otros artistas. Nuestras {n} piezas Phunkism toman esas obras como base y referencia, recreadas con nuestros animales. Gracias a Piv y a cada artista que forma parte de ella.',
+  phunkismOrder_random: 'Aleatorio',
+  phunkismOrder_chronological: 'Cronológico',
+  phunkismOrder_newest: 'Más nuevos',
 };

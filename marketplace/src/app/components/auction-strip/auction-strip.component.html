@@ -37,6 +37,7 @@
         <label class="sr-only" for="stripBid">{{ t('bidAmountPlaceholder') }}</label>
         <input
           id="stripBid"
+          appKeepInView
           type="number"
           step="0.001"
           min="0"
@@ -44,7 +45,6 @@
           [placeholder]="minNextEth()"
           [ngModel]="bid()"
           (ngModelChange)="bid.set($event)"
-          (focus)="prefill()"
           [disabled]="pending()"
           name="stripBid" />
 

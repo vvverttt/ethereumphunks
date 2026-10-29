@@ -177,7 +177,7 @@ export const BASE_ID: Record<string, string> = {
   hoursAgo: ' jam lalu',
   daysAgo: ' hari lalu',
   overallStats: 'Statistik Keseluruhan',
-  totalArtifacts: 'Total Artefak',
+  totalArtifacts: 'Total Barang Koleksi',
   uniqueTraitValues: 'Nilai Trait Unik',
   uniqueTraitTypes: 'Jenis Trait Unik',
   totalOneOfOnes: 'Total One of One',

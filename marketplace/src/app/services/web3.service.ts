@@ -652,7 +652,17 @@ export class Web3Service {
         try { await reconnect(this.config); current = await getAccount(this.config).connector?.getChainId(); } catch {}
       }
       if (current === environment.chainId) return;
-      await switchChain(this.config, { chainId: environment.chainId });
+      try {
+        await switchChain(this.config, { chainId: environment.chainId });
+      } catch (err: any) {
+        // Some wallets (MetaMask mobile among them) refuse switch requests outright with
+        // "does not support programmatic chain switching". That must not stop the action: a
+        // wallet that is already on the right chain (or whose chain couldn't be read) signs
+        // fine, and one on the wrong chain gets the wallet's own chain error at signing.
+        const msg = String(err?.shortMessage || err?.message || '');
+        if (err?.name === 'SwitchChainNotSupportedError' || /programmatic chain switching/i.test(msg)) return;
+        throw err;
+      }
       return;
     }
 

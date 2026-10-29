@@ -126,7 +126,7 @@ export const UI_ID: Record<string, string> = {
   lotteryLoadingPool: 'Memuat pool...',
   lotteryPoolEmpty: 'Pool kosong.',
   loadMore: 'Muat Lagi',
-  lotteryAllWon: 'Semua Artefak yang Dimenangkan',
+  lotteryAllWon: 'Semua Barang Koleksi yang Dimenangkan',
   lotteryWinsWord: 'kemenangan',
   lotteryNoWins: 'Belum ada kemenangan.',
 
@@ -281,7 +281,7 @@ export const UI_ID: Record<string, string> = {
 
   // collection stat bar
   statFloor: 'Floor',
-  statArtifacts: 'Artefak',
+  statArtifacts: 'Barang Koleksi',
   statListed: 'Di-listing',
   statVolume: 'Volume',
 
@@ -332,4 +332,25 @@ export const UI_ID: Record<string, string> = {
   sortPriceHigh: "Harga Tertinggi",
   sortTokenId: "ID Token",
   sortRecent: "Terbaru",
+  viewAll: "Lihat semua",
+  myPhunksConnect: "Hubungkan wallet untuk melihat setiap karya yang kamu miliki, per koleksi.",
+  myPhunksOpenMarket: "Buka di market",
+  myPhunksAccount: "Detail Akun",
+  myPhunksPieces: "Barang Koleksi",
+  myPhunksCollections: "Koleksi",
+  myPhunksFullSet: "Set lengkap: kamu punya karya dari setiap koleksi.",
+  myPhunksToGo: "{n} lagi untuk melengkapi set.",
+  myPhunksEmpty: "Belum ada karya. Mulai set kamu dengan satu dari koleksi mana pun di bawah.",
+  myPhunksOfSupply: "dari {n} · {pct}",
+  myPhunksMissingTitle: "Lengkapi set kamu",
+  myPhunksMissingOther: "Belum dikoleksi",
+  myPhunksStart: "Cari yang dijual",
+  myPhunksCopied: "Disalin",
+  myPhunksShowMissing: "Tampilkan yang belum dikoleksi ({n})",
+
+  // Phunkism gallery (tribute to Punkism)
+  phunkismTribute: 'Penghormatan untuk <a class="highlight" href="https://punkism.art/" target="_blank" rel="noopener noreferrer">Punkism</a>, galeri yang dimulai oleh Piv, mengumpulkan karya Punkism dari Piv dan banyak seniman lain. {n} karya Phunkism kami menjadikan karya-karya itu sebagai dasar dan referensi, dibuat ulang dengan hewan-hewan kami. Terima kasih untuk Piv dan setiap seniman di dalamnya.',
+  phunkismOrder_random: 'Acak',
+  phunkismOrder_chronological: 'Kronologis',
+  phunkismOrder_newest: 'Terbaru',
 };

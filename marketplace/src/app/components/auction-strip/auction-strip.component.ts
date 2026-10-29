@@ -16,6 +16,7 @@ import { auctionPoll } from '@/utils/visible-interval';
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { KeepInViewDirective } from '@/directives/keep-in-view.directive';
 
 /**
  * The live auction, inline in a collection page's splash band.
@@ -33,7 +34,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TimerComponent, BidWordPipe, BidEggPartsPipe],
+  imports: [CommonModule, RouterModule, FormsModule, TimerComponent, BidWordPipe, BidEggPartsPipe, KeepInViewDirective],
   // AuctionService is deliberately NOT providedIn:'root' — the auction page supplies its
   // own instance. Without this the injector has nothing to resolve, inject() throws during
   // construction, and the failure takes the whole collection page down with it.
@@ -68,7 +69,7 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
   minIncrement = signal<number>(10);
   reserveEth = signal<string>('0');
 
-  bid = signal<string>('');
+  bid = signal<string | number>('');
   pending = signal<boolean>(false);
   error = signal<string>('');
   txHash = signal<string>('');
@@ -137,10 +138,6 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
     this.load();
   }
 
-  prefill() {
-    this.bid.set(this.minNextEth());
-  }
-
   toggleBids() {
     this.bidsOpen.update((v) => !v);
   }
@@ -193,7 +190,9 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
     const connected = await firstValueFrom(this.connected$);
     if (!connected) { this.web3Svc.connect(); return; }
 
-    const value = this.bid().trim();
+    // A number input hands ngModel a number once the user types, not a string; coerce before
+    // trimming, or the call throws here and the wallet is never asked to sign.
+    const value = String(this.bid() ?? '').trim();
     if (!value || Number(value) <= 0) { this.error.set(this.t('auctionEnterBid')); return; }
     if (Number(value) < Number(this.minNextEth())) {
       this.error.set(this.t('stripMinBidIs', { min: this.minNextEth() }));

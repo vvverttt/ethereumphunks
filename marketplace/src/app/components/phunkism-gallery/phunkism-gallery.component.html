@@ -1,0 +1,21 @@
+<header class="phunkism-head">
+  <h1 class="wordmark">Phunkism</h1>
+  <p class="tribute" [innerHTML]="t('phunkismTribute', { n: items().length })"></p>
+
+  <div class="orders" role="group">
+    @for (o of orders; track o) {
+      <button type="button" [class.active]="order() === o" (click)="setOrder(o)">
+        {{ t('phunkismOrder_' + o) }}
+      </button>
+    }
+  </div>
+</header>
+
+<div class="gallery">
+  @for (p of sorted(); track p.hashId) {
+    <a class="piece" [class.big]="big(p)" [routerLink]="detailsLink(p)" [attr.aria-label]="'#' + (p.tokenId | tokenNumber: p.slug)">
+      <app-phunk-image [sha]="p.sha" />
+      <span class="num">#{{ p.tokenId | tokenNumber: p.slug }}</span>
+    </a>
+  }
+</div>

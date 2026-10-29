@@ -64,6 +64,10 @@ export class NotificationEffects {
         JSON.stringify(notifications.filter((txn: Notification) => txn.type === 'complete' || txn.type === 'event'))
       );
     }),
+    // holdings may have changed: the next menu open / page view refetches them
+    tap(([action, _, address]) => {
+      if (action.notification.type === 'complete' || action.notification.type === 'event') this.dataSvc.invalidateOwned(address);
+    }),
     switchMap(([action]) => {
       // If the notification is a complete or error, remove it after 5 seconds
       if (action.notification.type === 'complete' || action.notification.type === 'error') {

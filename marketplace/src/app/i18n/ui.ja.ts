@@ -128,7 +128,7 @@ export const UI_JA: Record<string, string> = {
   lotteryLoadingPool: 'プールを読み込み中...',
   lotteryPoolEmpty: 'プールは空です。',
   loadMore: 'さらに読み込む',
-  lotteryAllWon: '当選したすべてのアーティファクト',
+  lotteryAllWon: '当選したすべてのコレクティブル',
   lotteryWinsWord: '当選',
   lotteryNoWins: 'まだ当選はありません。',
 
@@ -283,7 +283,7 @@ export const UI_JA: Record<string, string> = {
 
   // collection stat bar
   statFloor: 'フロア',
-  statArtifacts: 'アーティファクト',
+  statArtifacts: 'コレクティブル',
   statListed: '出品中',
   statVolume: '取引量',
 
@@ -339,4 +339,25 @@ export const UI_JA: Record<string, string> = {
   sortPriceHigh: "価格の高い順",
   sortTokenId: "トークンID",
   sortRecent: "新着順",
+  viewAll: "すべて表示",
+  myPhunksConnect: "ウォレットを接続すると、保有するすべての作品をコレクションごとに表示します。",
+  myPhunksOpenMarket: "マーケットで開く",
+  myPhunksAccount: "アカウント詳細",
+  myPhunksPieces: "コレクティブル",
+  myPhunksCollections: "コレクション",
+  myPhunksFullSet: "フルセット：すべてのコレクションの作品を保有しています。",
+  myPhunksToGo: "セット完成まであと {n}。",
+  myPhunksEmpty: "まだ作品がありません。下のどれかのコレクションからセットを始めよう。",
+  myPhunksOfSupply: "{n} 点中 · {pct}",
+  myPhunksMissingTitle: "セットを完成させよう",
+  myPhunksMissingOther: "未収集のコレクション",
+  myPhunksStart: "販売中を探す",
+  myPhunksCopied: "コピーしました",
+  myPhunksShowMissing: "未収集を表示（{n}）",
+
+  // Phunkism gallery (tribute to Punkism)
+  phunkismTribute: 'Piv が始めたギャラリー <a class="highlight" href="https://punkism.art/" target="_blank" rel="noopener noreferrer">Punkism</a> へのトリビュート。Piv をはじめ多くのアーティストによる Punkism 作品が集められています。私たちの Phunkism {n} 体は、それらの作品をベースと参考にし、私たちの動物たちで再構築したものです。Piv と、そこに参加するすべてのアーティストに感謝を。',
+  phunkismOrder_random: 'ランダム',
+  phunkismOrder_chronological: '時系列',
+  phunkismOrder_newest: '新しい順',
 };

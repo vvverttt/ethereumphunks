@@ -657,19 +657,24 @@ export class DataService {
    * @param type Event type filter
    * @param slug Collection slug filter
    */
-  private ownedAllCache = new Map<string, { at: number; data: Promise<Phunk[]> }>();
+  private ownedAllCache = new Map<string, Promise<Phunk[]>>();
+
+  /** Drops a wallet's cached holdings; called when one of its transactions completes or an item of it sells. */
+  invalidateOwned(address: string | null | undefined) {
+    if (address) this.ownedAllCache.delete(address.toLowerCase());
+  }
 
   /**
    * Everything an address holds across every collection, in ONE light query (hashId, tokenId,
    * slug, sha, owner), for the menu's wallet box. Escrowed pieces (held by the market or auction
-   * house for this address) count too. Cached 5 minutes per address so opening and closing the
-   * menu does not re-ask.
+   * house for this address) count too. Kept for the whole visit (no timer); it is refetched only
+   * after invalidateOwned(), i.e. when this wallet's transaction completes or one of its items sells.
    */
   fetchOwnedAllCollections(address: string): Promise<Phunk[]> {
     if (!address) return Promise.resolve([]);
     address = address.toLowerCase();
     const hit = this.ownedAllCache.get(address);
-    if (hit && Date.now() - hit.at < 300_000) return hit.data;
+    if (hit) return hit;
 
     const escrows = [environment.marketAddress, ...((environment as any).oldMarketAddresses || []), (environment as any).auctionAddress]
       .filter(Boolean).map((a: string) => a.toLowerCase());
@@ -685,7 +690,7 @@ export class DataService {
       if (error) { this.ownedAllCache.delete(address); return []; }
       return (data || []).map((p: any) => ({ ...p, isEscrowed: p.owner !== address } as Phunk));
     })();
-    this.ownedAllCache.set(address, { at: Date.now(), data });
+    this.ownedAllCache.set(address, data);
     return data;
   }
 

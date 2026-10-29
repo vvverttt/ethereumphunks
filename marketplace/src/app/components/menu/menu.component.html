@@ -125,12 +125,15 @@
     @if (walletGroups$ | async; as groups) {
       @if (groups.length) {
         <div class="my-phunks">
-          <h3 class="my-title">{{ t('yourPhunks') }} <span>{{ walletTotal(groups) | number }}</span></h3>
+          <a class="my-title" routerLink="/my-phunks" (click)="goToAuction()">
+            <h3>{{ t('yourPhunks') }}</h3>
+            <span class="all">{{ t('viewAll') }} <ng-template [ngTemplateOutlet]="arrowIcon" /></span>
+            <span class="total">{{ walletTotal(groups) | number }}</span>
+          </a>
           @for (g of groups; track g.slug) {
-            <div class="my-card"
-              [style.--g-tile]="g.tile" [style.--g-accent]="g.accent" [style.--g-bg]="g.bg">
+            <div class="my-card" [attr.data-row]="g.slug">
               <a class="my-head" [routerLink]="['/', g.slug, 'market', 'owned']" [queryParams]="{ address }" (click)="goToAuction()">
-                @if (g.logo) { <img class="logo" [src]="g.logo" alt="" /> }
+                @if (g.logo) { <span class="logo"><img [src]="g.logo" alt="" /></span> }
                 <span class="name">{{ g.name }}</span>
                 <span class="count">{{ g.items.length | number }}</span>
                 <span class="arrow"><ng-template [ngTemplateOutlet]="arrowIcon" /></span>
@@ -233,6 +236,10 @@
       }
     }
   }
+
+  <!-- PHUNKEM, the turtle emblem, at the foot of the panel right above the indexer status (it
+       follows the content down when the panel scrolls). Not a link. -->
+  <img class="menu-phunkem" src="assets/images/phunkem.png" alt="PHUNKEM" />
 </section>
 
 <section #menuLeaderboard class="leaderboard" [style]="{ 'opacity': '0' }">

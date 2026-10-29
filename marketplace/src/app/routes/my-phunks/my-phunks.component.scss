@@ -1,0 +1,329 @@
+@use 'abstracts/variables' as *;
+
+// Clean and compact: the wallet and its totals, a row of collection chips, then small tiles
+// grouped by collection. Each collection keeps its own colours (accent for its heading, tile
+// colour behind its pieces); listed tiles in the listed colour, escrowed ones in yellow.
+:host {
+  display: block;
+  padding-top: calc(var(--header-height) + 4rem);
+  min-height: 100vh;
+}
+
+h1 {
+  margin: 0 0 1.6rem;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.note {
+  margin: 1rem 0 2rem;
+  font-size: 1.6rem;
+  opacity: .8;
+}
+
+.btn {
+  padding: .8rem 1.6rem;
+  font-family: var(--secondary-font-stack);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  color: rgba(var(--background), 1);
+  background: rgba(var(--highlight), 1);
+  border: 0;
+  cursor: pointer;
+}
+
+// WALLET CARD ================================================= //
+
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.6rem 2rem;
+  background: rgba(var(--text-color), .04);
+  box-shadow: 0 0 0 .1rem rgba(var(--text-color), .1) inset;
+
+  .who { min-width: 0; }
+
+  .name {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .addr, .addr-h {
+    padding: 0;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .addr-h { font: inherit; }
+  .addr {
+    display: block;
+    margin-top: .4rem;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.1rem;
+    color: rgba(var(--text-color), .55);
+    &:hover { color: rgba(var(--text-color), 1); }
+  }
+
+  .nums {
+    display: flex;
+    gap: 3rem;
+
+    div { display: flex; flex-direction: column; align-items: flex-end; }
+    .v {
+      font-family: var(--secondary-font-stack);
+      font-size: 2.2rem;
+      line-height: 1;
+      small { font-size: 1.3rem; opacity: .55; }
+    }
+    .l {
+      margin-top: .5rem;
+      font-family: var(--secondary-font-stack);
+      font-size: 1rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .6;
+    }
+  }
+}
+
+// SET METER =================================================== //
+
+.meter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 2.4rem 0 0;
+
+  .seg {
+    display: inline-flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .7rem 1.1rem;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(var(--g-accent), .45);
+    box-shadow: 0 0 0 .1rem rgba(var(--g-accent), .25) inset;
+    outline: .1rem dashed rgba(var(--g-accent), .3);
+    outline-offset: -.1rem;
+    transition: transform .12s ease;
+
+    img { width: 1.8rem; height: 1.8rem; object-fit: contain; image-rendering: pixelated; filter: grayscale(1); opacity: .45; }
+    .c { opacity: .8; }
+
+    // held: a solid fill in the collection's own colours, like the Phunklloween chip
+    &.held {
+      color: rgba(var(--g-accent), 1);
+      background: color-mix(in srgb, rgb(var(--g-accent)) 22%, rgb(var(--g-bg)));
+      box-shadow: 0 0 0 .2rem rgba(var(--g-accent), 1) inset;
+      outline: 0;
+      img { filter: none; opacity: 1; }
+      .c {
+        padding: .1rem .5rem;
+        color: rgb(var(--g-bg));
+        background: rgba(var(--g-accent), 1);
+        opacity: 1;
+      }
+    }
+    &:hover { transform: translateY(-.15rem); }
+  }
+}
+
+.goal-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-top: 1rem;
+
+  // the switch stays on the right even when the line beside it is hidden
+  .switch { margin-left: auto; }
+}
+
+// the "not collected" switch
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: .8rem;
+  padding: 0;
+  font-family: var(--secondary-font-stack);
+  font-size: 1rem;
+  text-transform: uppercase;
+  color: rgba(var(--text-color), .7);
+  background: none;
+  border: 0;
+  cursor: pointer;
+
+  .track {
+    position: relative;
+    width: 3.2rem;
+    height: 1.8rem;
+    border-radius: .9rem;
+    background: rgba(var(--text-color), .2);
+    transition: background .15s ease;
+  }
+  .knob {
+    position: absolute;
+    top: .2rem;
+    left: .2rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background: rgba(var(--text-color), .85);
+    transition: transform .15s ease;
+  }
+
+  &.on {
+    color: rgba(var(--text-color), 1);
+    .track { background: rgba(var(--highlight), 1); }
+    .knob { transform: translateX(1.4rem); background: rgba(var(--background), 1); }
+  }
+  &:hover { color: rgba(var(--text-color), 1); }
+}
+
+.goal {
+  margin: 0;
+  font-size: 1.3rem;
+  opacity: .7;
+  &.complete { font-family: var(--secondary-font-stack); font-size: 1.2rem; text-transform: uppercase; color: rgba(var(--highlight), 1); opacity: 1; }
+}
+
+// HELD PIECES ================================================= //
+
+.group {
+  margin-top: 3.2rem;
+  scroll-margin-top: calc(var(--header-height) + 2rem);
+
+  header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .8rem;
+    padding: 0 0 .8rem;
+    margin-bottom: .8rem;
+    border-bottom: .1rem solid rgba(var(--g-accent), .4);
+
+    .logo { width: 2rem; height: 2rem; object-fit: contain; image-rendering: pixelated; }
+    h2 {
+      margin: 0;
+      font-family: var(--secondary-font-stack);
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      color: rgba(var(--g-accent), 1);
+    }
+    .count { font-family: var(--secondary-font-stack); font-size: 1.2rem; }
+    .share { font-size: 1.2rem; opacity: .55; }
+    .market {
+      margin-left: auto;
+      font-family: var(--secondary-font-stack);
+      font-size: 1rem;
+      text-transform: uppercase;
+      color: rgba(var(--g-accent), 1);
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 4.8rem);
+    gap: .6rem .4rem;
+
+    a {
+      display: block;
+      text-decoration: none;
+      transition: transform .12s ease;
+      &:hover { transform: translateY(-.15rem); }
+
+      .img { display: block; background: rgba(var(--g-tile), 1); }
+      &.listed .img { background: rgba(var(--listed-color), 1); }
+      &.escrow .img { background: rgba(var(--escrow-color), 1); }
+
+      // the token number under each tile
+      .id {
+        display: block;
+        margin-top: .3rem;
+        font-family: var(--secondary-font-stack);
+        font-size: .85rem;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: rgba(var(--text-color), .65);
+      }
+      &:hover .id { color: rgba(var(--g-accent), 1); }
+    }
+  }
+}
+
+// NOT HELD YET ================================================ //
+
+.missing {
+  display: grid;
+  grid-template-columns: 18rem 1fr auto;
+  align-items: center;
+  gap: 1.6rem;
+  margin-top: 3.2rem;
+  padding: .8rem 0;
+  border-top: .1rem dashed rgba(var(--g-accent), .45);
+  border-bottom: .1rem dashed rgba(var(--g-accent), .45);
+  scroll-margin-top: calc(var(--header-height) + 2rem);
+
+  .m-name {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--secondary-font-stack);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    color: rgba(var(--g-accent), 1);
+    flex-wrap: wrap;
+    .logo { width: 2rem; height: 2rem; object-fit: contain; image-rendering: pixelated; }
+    small { flex-basis: 100%; margin-left: 2.8rem; font-size: .9rem; opacity: .6; }
+  }
+
+  .strip {
+    display: flex;
+    gap: .3rem;
+    overflow: hidden;
+
+    a {
+      flex: 0 0 4.4rem;
+      background: rgba(var(--g-tile), 1);
+      filter: saturate(.5) brightness(.85);
+      transition: filter .15s ease;
+      &:hover { filter: none; }
+    }
+  }
+
+  .go {
+    font-family: var(--secondary-font-stack);
+    font-size: 1rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgba(var(--g-accent), 1);
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+@media (max-width: $mobile) {
+  h1 { font-size: 2.4rem; }
+  .card .name { font-size: 1.6rem; }
+  .card .nums div { align-items: flex-start; }
+  .group .grid { grid-template-columns: repeat(auto-fill, 4.2rem); gap: .5rem .3rem; }
+  .missing {
+    grid-template-columns: 1fr auto;
+    .strip { grid-column: 1 / -1; grid-row: 2; a { flex-basis: 3.8rem; } }
+  }
+}

@@ -9,12 +9,14 @@
 
     @if ((activeMarketRouteData$ | async); as phunkData) {
 
+      @let phunkism = marketType === 'all' && (activeCollection$ | async)?.slug === 'cryptophunksv67' && isPhunkismFilter(activeTraitFilters$ | async);
+
       @if ((activeCollection$ | async); as collection) {
         @if ((globalConfig$ | async)?.hiddenSlugs?.includes(collection.slug)) {
           <div class="hidden-collection">
             <img src="/assets/loader-phunk.gif" [alt]="t('lotteryComingSoon')" />
           </div>
-        } @else {
+        } @else if (!phunkism) {
         <div class="header-wrapper">
 
           <nav class="crumb-box" aria-label="Breadcrumb">
@@ -172,7 +174,10 @@
 
           <div class="results-area">
 
-          @if (phunkData.data.length) {
+          @if (phunkism) {
+            <!-- Tribute to Piv's Punkism gallery (punkism.art). -->
+            <app-phunkism-gallery [items]="phunkData.data" />
+          } @else if (phunkData.data.length) {
             <app-phunk-grid
               [observe]="true"
               [marketType]="marketType"

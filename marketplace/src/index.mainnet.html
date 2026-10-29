@@ -60,7 +60,7 @@
         } else {
           // Footer pages (About Us, The Shell Archive, ...) have no collection of their own:
           // they keep the last one, like app-state.effects.ts FOOTER_PAGES.
-          var footer = { about: 1, 'shell-archive': 1, terms: 1, license: 1, privacy: 1 };
+          var footer = { about: 1, 'shell-archive': 1, 'my-phunks': 1, terms: 1, license: 1, privacy: 1 };
           if (footer[last]) last = '';   // an older build saved the page name itself
           slug = owned[seg]
             || (/^[a-z0-9-]+$/.test(seg) && seg !== 'details' && seg !== 'curated' && !footer[seg] ? seg : last);

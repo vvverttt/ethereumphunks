@@ -25,6 +25,9 @@
 .collection-section {
   margin-bottom: 4rem;
 
+  // the page's own bottom space is main's padding (see app.component.scss)
+  &:last-of-type { margin-bottom: 0; }
+
   h2 {
     font-size: 2.4rem;
     font-weight: 700;

@@ -9,6 +9,7 @@ import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
 import { BidEggPartsPipe, BidWordPipe } from '@/pipes/bid-word.pipe';
 import { AuctionData, AuctionBidEvent } from '@/services/auction.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { KeepInViewDirective } from '@/directives/keep-in-view.directive';
 
 @Component({
   selector: 'app-bid-panel',
@@ -21,6 +22,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
     WeiToEthPipe,
     BidWordPipe,
     BidEggPartsPipe,
+    KeepInViewDirective,
   ],
   templateUrl: './bid-panel.component.html',
   styleUrls: ['./bid-panel.component.scss'],

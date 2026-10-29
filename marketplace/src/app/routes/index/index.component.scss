@@ -25,10 +25,10 @@
 :host {
   display: block;
   margin-top: var(--billboard-height);
-  // run into main's 8rem bottom padding: that padding showed the plain page colour as a darker
+  // run into main's 5rem bottom padding: that padding showed the plain page colour as a darker
   // strip under the collection's glow, right above the footer. The last section's own padding
   // keeps the gap.
-  margin-bottom: -8rem;
+  margin-bottom: -5rem;
 }
 
 app-splash {
