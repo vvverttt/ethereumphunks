@@ -87,7 +87,6 @@ export const CONTENT_ES: Content = {
     "title": "The Shell Archive",
     "sub": "Documentando las fuentes que dieron forma a CryptoPhunksV67.",
     "intro": "Las colecciones de abajo son las referencias y recursos que consultamos durante la creación de CryptoPhunksV67. Partiendo sobre todo de un amplio espectro de derivados punk, desde los icónicos hasta los olvidados, estudiamos con cuidado temas, personajes y elementos de diseño, y los reinterpretamos en una colección coherente y original que se conserva aquí, en The Shell Archive. Aunque la mayor parte de nuestra inspiración viene de la cultura punk, también incluimos algunas referencias fuera del punk, como recursos de GitHub. Puede que se nos hayan pasado algunas referencias. Si encontramos alguna después, la agregamos.",
-    "total": "{n} colecciones en el archivo.",
     "imgAlt": "Una tortuga con una estela de arcoíris"
   },
   faq: {

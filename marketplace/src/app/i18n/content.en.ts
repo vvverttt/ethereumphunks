@@ -90,7 +90,6 @@ export const CONTENT_EN: Content = {
     "title": "The Shell Archive",
     "sub": "Documenting the sources that shaped CryptoPhunksV67.",
     "intro": "The collections listed below represent the references and resources consulted during the creation of CryptoPhunksV67. Drawing primarily from a wide spectrum of punk derivatives, ranging from iconic to overlooked, we carefully studied themes, characters, and design elements, reinterpreting them into a cohesive and original collection preserved here in The Shell Archive. While most of our inspiration comes from punk culture, we also included select non-punk references, such as resources from GitHub. We might have missed a few references. If we catch any later, they'll get added.",
-    "total": "{n} collections in the archive.",
     "imgAlt": "A turtle with a rainbow trail"
   },
   faq: {

@@ -87,7 +87,6 @@ export const CONTENT_ID: Content = {
     "title": "The Shell Archive",
     "sub": "Mendokumentasikan sumber-sumber yang membentuk CryptoPhunksV67.",
     "intro": "Koleksi-koleksi di bawah ini adalah referensi dan sumber yang kami pelajari selama pembuatan CryptoPhunksV67. Terutama mengambil dari beragam derivatif punk, dari yang ikonik sampai yang terlupakan, kami mempelajari tema, karakter, dan elemen desain dengan cermat, lalu menafsirkannya ulang menjadi koleksi orisinal yang utuh, yang diabadikan di sini dalam The Shell Archive. Meski sebagian besar inspirasi kami datang dari budaya punk, kami juga menyertakan beberapa referensi non-punk, seperti sumber dari GitHub. Mungkin ada beberapa referensi yang terlewat. Kalau nanti ketemu, akan kami tambahkan.",
-    "total": "{n} koleksi di arsip.",
     "imgAlt": "Seekor kura-kura dengan jejak pelangi"
   },
   faq: {

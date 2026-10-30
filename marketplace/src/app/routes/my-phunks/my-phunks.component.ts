@@ -1,9 +1,10 @@
-import { Component, inject, isDevMode, signal } from '@angular/core';
+import { Component, DestroyRef, inject, isDevMode, signal } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, combineLatest, from, map, of, shareReplay, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, from, map, of, shareReplay, switchMap } from 'rxjs';
 
 import { GlobalState } from '@/models/global-state';
 import { Phunk } from '@/models/db';
@@ -44,6 +45,12 @@ export class MyPhunksComponent {
 
   detailsLink = detailsLink;
 
+  // the tab reads "Phleeca Bank" while the bank is open, and goes back to the site's own title after
+  private title = inject(Title);
+  private siteTitle = this.title.getTitle();
+  private setTitle = (this.title.setTitle('Phleeca Bank · ' + this.siteTitle),
+    inject(DestroyRef).onDestroy(() => this.title.setTitle(this.siteTitle)));
+
   /** Local dev only: `?preview=1` with `?address=` shows that wallet as if it were yours, so the
    *  terminal can be looked at without connecting. Ignored in production builds. */
   preview = isDevMode() && new URLSearchParams(location.search).get('preview') === '1';
@@ -77,7 +84,11 @@ export class MyPhunksComponent {
           this.store.select(dataStateSelectors.selectCollections),
           this.store.select(marketStateSelectors.selectOwned),
           this.store.select(appStateSelectors.selectConfig),
-        ]).pipe(map(([items, collections, ownedHere, config]: [Phunk[], any[], Phunk[] | null, any]) => {
+        ]).pipe(
+          // not before the site's collections are in: without them every wallet looks empty, and the
+          // old holdings layout flashed up for a moment on reload before the bank appeared
+          filter(([, collections]) => !!(collections as any[])?.length),
+          map(([items, collections, ownedHere, config]: [Phunk[], any[], Phunk[] | null, any]) => {
           const hidden = config?.hiddenSlugs || [];
           const overrides = this.themeSvc.collectionOverrides;
           const listed = new Map((ownedHere || []).map(p => [p.hashId, p.listing]));
@@ -98,6 +109,13 @@ export class MyPhunksComponent {
         }))
       : of(null)),
   );
+
+  /** every live collection, for The Phederal Reserve when no wallet is connected */
+  reserve$ = combineLatest([
+    this.store.select(dataStateSelectors.selectCollections),
+    this.store.select(appStateSelectors.selectConfig),
+  ]).pipe(map(([collections, config]: [any[], any]) =>
+    liveCollections(collections || [], config?.hiddenSlugs || [], this.themeSvc.collectionOverrides)));
 
   /** After a move: drop the cached holdings and read them again once the indexer has caught up. */
   refresh(address: string) {

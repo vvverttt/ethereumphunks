@@ -1,5 +1,6 @@
 import { FiatPipe } from '@/pipes/fiat.pipe';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormArray, FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -15,6 +16,7 @@ import { MarketFiltersComponent } from '@/components/market-filters/market-filte
 import { PhunkismGalleryComponent, isPhunkismFilter } from '@/components/phunkism-gallery/phunkism-gallery.component';
 import { SlideoutComponent } from '@/components/slideout/slideout.component';
 import { CommentsComponent } from '@/components/comments/comments.component';
+import { PhleecaStripComponent } from '@/components/phleeca-strip/phleeca-strip.component';
 
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 
@@ -70,9 +72,10 @@ const defaultActionState = {
     MarketFiltersComponent,
     PhunkismGalleryComponent,
     SlideoutComponent,
-    CommentsComponent,
 
     WalletAddressDirective,
+    PhleecaStripComponent,
+    CommentsComponent,
     WeiToEthPipe,
     CalcPipe,
     FormatCashPipe,
@@ -80,7 +83,8 @@ const defaultActionState = {
   ],
   selector: 'app-phunk-grid-view',
   templateUrl: './market.component.html',
-  styleUrls: ['./market.component.scss']
+  styleUrls: ['./market.component.scss'],
+  host: { '[class.owned-bank]': '!!ownedAddress()' },
 })
 
 export class MarketComponent {
@@ -142,6 +146,16 @@ export class MarketComponent {
 
   marketType$ = this.store.select(marketStateSelectors.selectMarketType);
   activeMarketRouteData$ = this.store.select(marketStateSelectors.selectActiveMarketRouteData);
+
+  // An owned page wears Phleeca Bank's look from the first frame: it's read straight off the URL
+  // (/<slug>/market/owned?address=…), not from the store, so a reload never flashes the plain page
+  private routeNow = inject(ActivatedRoute);
+  ownedAddress = toSignal(combineLatest([this.routeNow.paramMap, this.routeNow.queryParamMap]).pipe(
+    map(([p, q]) => (p.get('marketType') === 'owned' ? q.get('address') : null)),
+  ), { initialValue: null });
+  ownedSlug = toSignal(this.routeNow.paramMap.pipe(map(p => p.get('slug') || '')), { initialValue: '' });
+  /** how many pieces the owned page holds, once its data is in (the banner shows "…" until then) */
+  ownedCount = toSignal(this.activeMarketRouteData$.pipe(map((d: any) => d?.data ? d.data.length : null)), { initialValue: null });
 
   activeTraitFilters$ = this.store.select(marketStateSelectors.selectActiveTraitFilters).pipe(
     map((traitFilters: any) => {

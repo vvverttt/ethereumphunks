@@ -7,16 +7,36 @@
 
 // Phaze Bank fills the page down to the footer: drop the space every other page leaves under
 // its content (app.component.scss's main) while the full-page bank machine is showing.
-main:has(.atm-wrap.full) { padding-bottom: 0; }
+main:has(.atm-wrap.full), main:has(app-phunk-grid-view.owned-bank) {
+  padding-bottom: 0;
+  // and on a tall window the bank stretches to main's minimum height, so the screen and the ₱
+  // panels run straight into the footer strip with no band of page colour between
+  display: flex;
+  flex-direction: column;
+  > app-my-phunks, > app-phunk-grid-view { flex: 1 0 auto; }
+}
 
 // ...and the strip around the footer's Phupreme badge takes the bank's own background (the ₱
 // maze panels with the light screen between them, same proportions as phunk-atm's full mode),
 // so the bank runs on under the badge to the footer band.
-body:has(.atm-wrap.full) app-footer .phupreme-logo {
+body:has(.atm-wrap.full) app-footer .phupreme-logo,
+body:has(app-phunk-grid-view.owned-bank) app-footer .phupreme-logo {
   background:
     linear-gradient(90deg, transparent 15%, #e9e9ea 15%, #e9e9ea 85%, transparent 85%),
-    #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M19.38 3Q28.9 3 30.62 10.48H33.33V13.76H31.05Q31.1 14.1 31.1 14.48Q31.1 14.86 31.1 15.19Q31.1 15.62 31.07 16.07Q31.05 16.52 31.05 16.9H33.33V20.24H30.33Q29.57 22.52 28.14 24.26Q26.71 26 24.31 26.95Q21.9 27.9 18.24 27.9H16.52V37H9.57V20.24H6.67V16.9H9.57V13.76H6.67V10.48H9.57V3ZM18.71 8.19H16.52V10.48H23.38Q22.24 8.19 18.71 8.19ZM24.1 13.76H16.52V16.9H24.1Q24.1 16.62 24.14 16.17Q24.19 15.71 24.19 15.19Q24.19 14.76 24.17 14.4Q24.14 14.05 24.1 13.76ZM23.33 20.24H16.52V22.71H18.1Q19.9 22.71 21.29 22.17Q22.67 21.62 23.33 20.24Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
+    #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M23.33 5Q28.9 5 31.76 6.74Q34.63 8.49 34.73 11.97H37.18L36.45 15.29H34.48Q34.44 15.5 34.36 15.84Q34.29 16.18 34.24 16.39Q34.17 16.68 34.11 16.97Q34.04 17.27 34 17.48H35.96L35.23 20.8H32.44Q31.12 23.07 29.11 24.71Q27.11 26.34 24.1 27.23Q21.09 28.11 16.67 28.11H15.36L13.83 35H3.62L6.77 20.8H4.42L5.16 17.48H7.51L7.99 15.29H5.64L6.38 11.97H8.73L10.28 5ZM22.5 20.8H16.98L16.58 22.61H17.73Q19.15 22.61 20.43 22.23Q21.72 21.85 22.5 20.8ZM24.49 15.29H18.2L17.72 17.48H24Q24.04 17.31 24.14 17Q24.23 16.68 24.32 16.3Q24.39 15.97 24.42 15.71Q24.45 15.46 24.49 15.29ZM20.95 10.55H19.26L18.94 11.97H24.46Q24.22 11.34 23.35 10.95Q22.48 10.55 20.95 10.55Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
   background-size: auto, 4rem 4rem;
 
+  @media (max-width: 700px) { background: #e9e9ea; }
+
+  // the badge takes the bank's colour: the open collection's while inside one (set by phunk-atm)
+  .mark { background: rgba(var(--bank-accent, var(--pink)), 1); }
+}
+
+// the owned pages' light screen is wider (84%), so their footer strip's screen is too
+body:has(app-phunk-grid-view.owned-bank) app-footer .phupreme-logo {
+  background:
+    linear-gradient(90deg, transparent 8%, #e9e9ea 8%, #e9e9ea 92%, transparent 92%),
+    #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M23.33 5Q28.9 5 31.76 6.74Q34.63 8.49 34.73 11.97H37.18L36.45 15.29H34.48Q34.44 15.5 34.36 15.84Q34.29 16.18 34.24 16.39Q34.17 16.68 34.11 16.97Q34.04 17.27 34 17.48H35.96L35.23 20.8H32.44Q31.12 23.07 29.11 24.71Q27.11 26.34 24.1 27.23Q21.09 28.11 16.67 28.11H15.36L13.83 35H3.62L6.77 20.8H4.42L5.16 17.48H7.51L7.99 15.29H5.64L6.38 11.97H8.73L10.28 5ZM22.5 20.8H16.98L16.58 22.61H17.73Q19.15 22.61 20.43 22.23Q21.72 21.85 22.5 20.8ZM24.49 15.29H18.2L17.72 17.48H24Q24.04 17.31 24.14 17Q24.23 16.68 24.32 16.3Q24.39 15.97 24.42 15.71Q24.45 15.46 24.49 15.29ZM20.95 10.55H19.26L18.94 11.97H24.46Q24.22 11.34 23.35 10.95Q22.48 10.55 20.95 10.55Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
+  background-size: auto, 4rem 4rem;
   @media (max-width: 700px) { background: #e9e9ea; }
 }

@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { NavigationEnd, NavigationStart, Router, RouterModule } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router, RouterModule, Scroll } from '@angular/router';
 
 import { Store } from '@ngrx/store';
 import { WaIntersectionObserver } from '@ng-web-apis/intersection-observer';
@@ -76,6 +76,7 @@ export class AppComponent implements OnInit {
   ) {
     this.store.dispatch(appStateActions.setTheme({ theme: 'initial' }));
     this.store.dispatch(appStateActions.initGlobalConfig());
+    this.keepBackPosition();
     this.store.dispatch(dataStateActions.fetchCollections());
     this.store.dispatch(appStateActions.fetchActiveMultiplier());
   }
@@ -158,6 +159,34 @@ export class AppComponent implements OnInit {
         // Left the auction house — make sure its notice doesn't linger.
         this.showIntro.set(false);
       }
+    });
+  }
+
+  /**
+   * Back lands exactly where you were. The router's own restore scrolls once, straight away, and
+   * a page still filling in (phunks, rows loading) is too short then, so you landed higher up. On a
+   * Back/Forward this keeps trying for a few seconds until the page is tall enough, and lets go the
+   * moment you scroll, tap or press a key yourself. Browser-only: no data is read for it.
+   */
+  private keepBackPosition(): void {
+    this.router.events.pipe(filter((e): e is Scroll => e instanceof Scroll && !!e.position)).subscribe(e => {
+      const [x, y] = e.position!;
+      const until = Date.now() + 4000;
+      let stopped = false;
+      const stop = () => { stopped = true; };
+      const opts = { once: true, passive: true } as AddEventListenerOptions;
+      ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => window.addEventListener(ev, stop, opts));
+      const tryScroll = () => {
+        if (stopped) return;
+        const room = this.document.documentElement.scrollHeight - window.innerHeight;
+        window.scrollTo({ left: x, top: Math.min(y, room), behavior: 'instant' as ScrollBehavior });
+        if (room >= y || Date.now() > until) {
+          ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => window.removeEventListener(ev, stop));
+          return;
+        }
+        requestAnimationFrame(tryScroll);
+      };
+      requestAnimationFrame(tryScroll);
     });
   }
 

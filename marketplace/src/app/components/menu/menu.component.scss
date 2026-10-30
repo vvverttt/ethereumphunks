@@ -40,7 +40,8 @@ $menu-status-height: 4.5rem;
   --m-dys-bg: 0, 255, 200;     --m-dys-fg: 19, 19, 19;
   --m-lot-bg: 237, 28, 36;    --m-lot-fg: 255, 255, 255;  // Phupreme: Supreme red (#ed1c24); the themed collections use their accent
   --m-auc-bg: 0, 0, 0;         --m-auc-alpha: .55;        --m-auc-title: 195, 255, 0;
-  --m-bank-bg: 138, 43, 226;   --m-bank-fg: 255, 255, 255; // Phaze Bank: violet, a colour no other link uses
+  --m-bank-bg: 255, 255, 255;  --m-bank-fg: 0, 0, 0;       // Phleeca Bank: Fleeca's own sign, white with black letters
+  --m-bank-ee: 38, 143, 58;    // its EE: Fleeca green, or the collection's colour below
 
   @media (max-width: $mobile) {
     height: 100%;
@@ -58,6 +59,7 @@ $menu-status-height: 4.5rem;
 // QuantumPhunks (cryptophunksv67): deep navy glass like its #0c141a page, a white leaderboard in
 // the logo's pink, the brand blue, aqua, and Phupreme in its own pink box.
 :host-context([data-collection='cryptophunksv67']) {
+  --m-bank-ee: 255, 4, 180;    // QuantumPhunks pink
   --m-panel: 10, 27, 38;           // #0a1b26
   --m-panel-alpha: .95;
   --m-accent: 103, 205, 255;       // #67cdff
@@ -88,6 +90,7 @@ $menu-status-height: 4.5rem;
 // Phunklloween: midnight-purple glass over the purple page, then pumpkin, candy corn, royal
 // purple, toxic green and bone: a distinct Halloween colour per link, on dark ink shadows.
 :host-context([data-collection='phunklloween']) {
+  --m-bank-ee: 255, 140, 26;
   --m-panel: 24, 5, 54;            // #180536
   --m-panel-alpha: .93;
   --m-accent: 255, 140, 26;        // #ff8c1a
@@ -100,11 +103,11 @@ $menu-status-height: 4.5rem;
   --m-dys-bg: 157, 255, 60;    --m-dys-fg: 24, 5, 54;      // #9dff3c
   --m-lot-bg: 237, 28, 36;     --m-lot-fg: 255, 255, 255;  // Phupreme red: the leaderboard already takes the orange
   --m-auc-bg: 69, 0, 176;      --m-auc-alpha: .92;         --m-auc-title: 255, 140, 26; // #4500b0
-  --m-bank-bg: 236, 226, 204;  --m-bank-fg: 24, 5, 54;     // bone: the auction box already takes the purple
 }
 
 // The other themed collections: the panel takes the page colour, toggles the accent.
 :host-context([data-collection='ethsrocks']) {
+  --m-bank-ee: 255, 51, 85;
   --m-shadow: 255, 51, 85;  --m-ext-shadow: 255, 51, 85;   // button shadows in this page's accent
   --m-lot-bg: 255, 51, 85;  --m-lot-fg: 255, 255, 255;   // Phupreme in this page's accent
   --m-panel: 74, 13, 20;
@@ -116,6 +119,7 @@ $menu-status-height: 4.5rem;
 }
 
 :host-context([data-collection='missing-phunks']) {
+  --m-bank-ee: 99, 133, 150;
   --m-shadow: 99, 133, 150;  --m-ext-shadow: 99, 133, 150;   // button shadows in this page's accent
   --m-lot-bg: 99, 133, 150;  --m-lot-fg: 255, 255, 255;   // Phupreme in this page's accent
   --m-panel: 28, 42, 51;
@@ -127,6 +131,7 @@ $menu-status-height: 4.5rem;
 }
 
 :host-context([data-collection='dysto-phunks']) {
+  --m-bank-ee: 16, 154, 62;
   --m-shadow: 16, 154, 62;  --m-ext-shadow: 16, 154, 62;   // button shadows in this page's accent
   --m-lot-bg: 237, 28, 36;  --m-lot-fg: 255, 255, 255;   // Phupreme red: The Shell Archive already takes the green
   --m-panel: 13, 26, 18;
@@ -138,6 +143,7 @@ $menu-status-height: 4.5rem;
 }
 
 :host-context([data-collection='phikings']) {
+  --m-bank-ee: 224, 165, 38;
   --m-shadow: 224, 165, 38;  --m-ext-shadow: 224, 165, 38;   // button shadows in this page's accent
   --m-lot-bg: 224, 165, 38;  --m-lot-fg: 92, 68, 0;   // Phupreme in this page's accent
   --m-panel: 150, 112, 0;
@@ -1067,14 +1073,14 @@ section {
   }
 }
 
-// The Phaze Bank button: a plain list button like the ones above it, in its own colour (never
-// one another link in the menu already has), opening the account machine on /phaze-bank.
+// The Phleeca Bank button: a plain list button like the ones above it, in its own colour (never
+// one another link in the menu already has), opening the account machine on /phleeca-bank.
 .bank-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 0 1.5rem;
-  padding: 1.1rem 1.5rem .9rem;
+  margin: 0 0 3rem;     // the same gap before the auction box as QuantumPhunks leaves before Phupreme
+  padding: .6rem 1.5rem .5rem;
   font-family: var(--secondary-font-stack);
   font-size: 1.4rem;
   color: rgba(var(--m-bank-fg), 1);
@@ -1085,6 +1091,8 @@ section {
   cursor: pointer;
 
   .arrow svg { width: 1rem; height: 2rem; path { fill: rgba(var(--m-bank-fg), 1); } }
+  // the PHLEECA BANK logo: black letters, the EE and BANK green (Fleeca's) or the collection's colour
+  .bank-logo { display: block; height: 3.3rem; width: auto; .ink { fill: #000; } .acc { fill: rgba(var(--m-bank-ee), 1); } }
 
   &:active { transform: translate(-.2rem, .2rem); box-shadow: -.1rem .1rem 0 0 rgba(var(--m-shadow), 1); }
 }

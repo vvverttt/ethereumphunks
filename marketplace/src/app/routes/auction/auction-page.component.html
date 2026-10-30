@@ -35,7 +35,9 @@
         </div>
 
         <!-- Phunk Info (right, within hero) -->
+        <!-- hidden until the first load is in, so a reload never shows "0 in pool" placeholders first -->
         <app-phunk-info
+          [style.opacity]="loading() ? 0 : null" [style.pointer-events]="loading() ? 'none' : null"
           [collectionName]="collectionName()"
           [tokenId]="phunkTokenId()"
           [slug]="phunkSlug()"
@@ -59,6 +61,7 @@
       <div class="history-inner" [style.--bid-count]="bids().length">
         <app-auction-slider
           [settledAuctions]="allAuctions()"
+          [loaded]="settledLoaded()"
           (selectAuction)="navigateToAuction($event)"
         />
 
@@ -67,6 +70,7 @@
         <app-bid-easter-egg [bids]="bids()" />
 
         <app-bid-panel
+          [style.opacity]="loading() ? 0 : null" [style.pointer-events]="loading() ? 'none' : null"
           [auction]="auction()"
           [bids]="bids()"
           [connected]="!!(connected$ | async)"

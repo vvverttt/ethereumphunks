@@ -727,3 +727,50 @@ form {
     height: auto;
   }
 }
+
+// An owned page is dressed as Phleeca Bank: the logo strip and account bar across the top (the
+// banner), the ₱ maze panels down both sides and the page's own content (title, sort, filters, the
+// grid, comments) on the bank's light screen between them. Only the theme's colours are swapped
+// inside, so every part of the page keeps working exactly as before.
+:host(.owned-bank) {
+  padding-top: var(--header-height);
+  background: #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M23.33 5Q28.9 5 31.76 6.74Q34.63 8.49 34.73 11.97H37.18L36.45 15.29H34.48Q34.44 15.5 34.36 15.84Q34.29 16.18 34.24 16.39Q34.17 16.68 34.11 16.97Q34.04 17.27 34 17.48H35.96L35.23 20.8H32.44Q31.12 23.07 29.11 24.71Q27.11 26.34 24.1 27.23Q21.09 28.11 16.67 28.11H15.36L13.83 35H3.62L6.77 20.8H4.42L5.16 17.48H7.51L7.99 15.29H5.64L6.38 11.97H8.73L10.28 5ZM22.5 20.8H16.98L16.58 22.61H17.73Q19.15 22.61 20.43 22.23Q21.72 21.85 22.5 20.8ZM24.49 15.29H18.2L17.72 17.48H24Q24.04 17.31 24.14 17Q24.23 16.68 24.32 16.3Q24.39 15.97 24.42 15.71Q24.45 15.46 24.49 15.29ZM20.95 10.55H19.26L18.94 11.97H24.46Q24.22 11.34 23.35 10.95Q22.48 10.55 20.95 10.55Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
+  background-size: 4rem 4rem;
+
+  // dark ink on the light screen; links and highlights in the collection's colour
+  --text-color: 24, 26, 30;
+  --highlight: var(--pink);
+  --background: 233, 233, 234;
+  --header-highlight: 24, 26, 30;
+
+  > .inner {
+    width: 84%;   // wider than the bank's 70%: filters and grid side by side need the room
+    max-width: none;
+    margin: 0 auto;
+    // the light screen starts right under the bank's bar, with room above the breadcrumb
+    padding: 3.2rem 3.2rem 4rem;
+    background: #e9e9ea;
+    color: rgba(24, 26, 30, 1);
+    @media (max-width: 1100px) { width: 88%; }
+    @media (max-width: 700px) { width: 100%; padding: 2rem 1.6rem 3rem; }
+  }
+  .header-wrapper { margin-bottom: 3rem; }
+
+  // the phunks at a size you can see: as many per row as fit at about 8.6rem each
+  ::ng-deep app-phunk-grid {
+    grid-template-columns: repeat(auto-fill, minmax(8.6rem, 1fr)) !important;
+    gap: .8rem;
+    .label { color: rgba(24, 26, 30, 1) !important; }
+  }
+  // the sort box reads in dark ink on the light screen
+  ::ng-deep .ng-select .ng-select-container,
+  ::ng-deep .ng-select .ng-value-label,
+  ::ng-deep .ng-select .ng-placeholder { color: rgba(24, 26, 30, 1) !important; }
+  ::ng-deep .ng-select .ng-arrow-wrapper .ng-arrow { border-top-color: rgba(24, 26, 30, 1) !important; }
+}
+
+// the owned page's comments, under the phunks
+.owned-comments {
+  margin-top: 4rem;
+  max-width: 64rem;
+}

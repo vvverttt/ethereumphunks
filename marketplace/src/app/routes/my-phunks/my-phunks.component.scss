@@ -349,6 +349,11 @@ h1 {
 // header down to the footer instead of sitting as a box in the middle.
 :host:has(> .inner > .atm-wrap.full) {
   padding-top: var(--header-height);
+  min-height: 0;     // the bank sets its own height; the footer follows right under it
+  display: flex;
+  flex-direction: column;
+  > .inner { flex: 1 0 auto; display: flex; flex-direction: column; }
+  > .inner > .atm-wrap.full { flex: 1 0 auto; display: flex; flex-direction: column; }
   > .inner { max-width: none; width: 100%; margin: 0; padding: 0; }
 }
 .atm-wrap.full { max-width: none; margin: 0; }

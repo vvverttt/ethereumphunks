@@ -66,7 +66,7 @@ export class DataStateEffects {
       // Footer pages (About, The Shell Archive) have no slug of their own and the market slug may
       // still be the default, so they keep the collection whose colours are on.
       const page = window.location.pathname.split('/')[1] || '';
-      const footerPage = ['about', 'shell-archive', 'my-phunks', 'phaze-bank', 'terms', 'license', 'privacy'].includes(page);
+      const footerPage = ['about', 'shell-archive', 'my-phunks', 'phaze-bank', 'phleeca-bank', 'terms', 'license', 'privacy'].includes(page);
       const targetSlug = (footerPage && this.themeSvc.themeSlug()) || slug || environment.defaultCollection;
       return collections.find((c) => c.slug === targetSlug)
         || collections.find((c) => c.slug === environment.defaultCollection)

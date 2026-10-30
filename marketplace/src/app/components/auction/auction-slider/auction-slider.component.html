@@ -14,7 +14,10 @@
         </svg>
       </button>
 
-      <div class="slider-track" #sliderTrack (scroll)="onScroll()">
+      <!-- hidden until it sits on the newest end; images arriving keep it pinned there (until the
+           visitor scrolls it), so nothing old slides by on a reload -->
+      <div class="slider-track" #sliderTrack [class.ready]="ready()" (scroll)="onScroll()"
+        (wheel)="userMoved = true" (touchstart)="userMoved = true">
         @for (auction of settledAuctions; track auction.auctionId) {
           <div class="slide-item" (click)="selectAuction.emit(auction.auctionId)">
             @if (auction.imageUrl) {
@@ -23,7 +26,7 @@
                 [alt]="t('stripPhunkAlt', { id: auction.tokenId })"
                 [style.background-color]="bgColors()[auction.auctionId]"
                 crossorigin="anonymous"
-                (load)="onImageLoad($event, auction.auctionId)" />
+                (load)="onImageLoad($event, auction.auctionId); toNewest()" />
             } @else {
               <div class="img-placeholder"></div>
             }
@@ -43,7 +46,7 @@
           <path d="M2 2L12 12L2 22" stroke="currentColor" stroke-width="3" fill="none"/>
         </svg>
       </button>
-    } @else {
+    } @else if (loaded) {
       <p class="empty-state">{{ t('noSettledAuctions') }}</p>
     }
   </div>

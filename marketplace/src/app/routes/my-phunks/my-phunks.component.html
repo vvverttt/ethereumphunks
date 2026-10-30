@@ -5,7 +5,7 @@
 <div class="inner">
   @if (!address) {
     <!-- signed out: the bank machine, asking for a card (Connect) -->
-    <app-phunk-atm class="atm-wrap full" [wallet]="null" (connectWallet)="connect()" />
+    <app-phunk-atm class="atm-wrap full" [wallet]="null" [reserve]="(reserve$ | async) || []" (connectWallet)="connect()" />
   } @else {
     @if (shelf$ | async; as shelf) {
       @let done = shelf.owned.length;
@@ -41,7 +41,7 @@
       <!-- Your own wallet: everything happens in the bank machine (collections, pieces, their market
            moves, the balance and withdrawals), menu by menu like a real ATM -->
       @if (own && done) {
-        <app-phunk-atm class="atm-wrap full" [groups]="shelf.held" [missing]="shelf.missing" [wallet]="shelf.address" [ens]="ens"
+        <app-phunk-atm class="atm-wrap full" [groups]="shelf.held" [missing]="shelf.missing" [reserve]="shelf.all" [wallet]="shelf.address" [ens]="ens"
           [preview]="preview" (changed)="refresh(shelf.address)" />
       } @else {
       <!-- set meter: a chip per held collection; the not-collected ones join when the switch is on -->

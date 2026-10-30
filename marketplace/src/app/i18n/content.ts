@@ -27,8 +27,7 @@ export interface Content {
     across: string;
   };
   about: { hi: string; paras: string[]; imgAlt: string };
-  /** total: {n} = number of collections */
-  shell: { title: string; sub: string; intro: string; total: string; imgAlt: string };
+  shell: { title: string; sub: string; intro: string; imgAlt: string };
   /** `default` plus one list per collection slug */
   faq: Record<string, FaqItem[]>;
 }

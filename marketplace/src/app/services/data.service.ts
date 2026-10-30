@@ -1478,22 +1478,109 @@ export class DataService {
    * A collection with nothing listed has no floor and is left out.
    */
   async fetchFloors(): Promise<Record<string, number>> {
+    return (await this.fetchFloorStats()).floors;
+  }
+
+  /**
+   * Every sale the indexer has recorded (marketplace buys, accepted bids, settled auctions; the
+   * same three that count as a sale in the stat bar), with its collection, price and date, for the
+   * Phederal Reserve's chart. Read once per visit (a few hundred small rows) and kept.
+   */
+  /**
+   * Unique holders per collection, and across all of them ('*'), from the holders_per_collection
+   * database function (escrowed/auctioned pieces count for their owner). A few hundred bytes; read
+   * once per visit. Hidden collections are left out of every count.
+   */
+  private holdersOnce: Promise<Record<string, number>> | null = null;
+  fetchHolders(exclude: string[] = []): Promise<Record<string, number>> {
+    if (!this.holdersOnce) {
+      this.holdersOnce = (async () => {
+        const { data, error } = await supabase.rpc('holders_per_collection' + this.suffix, { exclude });
+        if (error) throw error;
+        return Object.fromEntries((data ?? []).map((r: any) => [r.slug, Number(r.holders)]));
+      })().catch(e => { this.holdersOnce = null; throw e; });
+    }
+    return this.holdersOnce;
+  }
+
+  private salesOnce: Promise<{ slug: string; eth: number; at: number }[]> | null = null;
+  fetchAllSales(): Promise<{ slug: string; eth: number; at: number }[]> {
+    if (!this.salesOnce) {
+      this.salesOnce = this.readAllSales().catch(e => { this.salesOnce = null; throw e; });
+    }
+    return this.salesOnce;
+  }
+
+  private async readAllSales(): Promise<{ slug: string; eth: number; at: number }[]> {
+    const { data: rows, error } = await supabase
+      .from('events' + this.suffix)
+      .select('hashId,value,blockTimestamp,txHash')
+      .in('type', ['PhunkBought', 'BidAccepted', 'AuctionSettled'])
+      .gt('value', 0)
+      .order('blockTimestamp', { ascending: true })
+      .limit(5000);
+    if (error) throw error;
+    // one sale can log more than one event: count each (tx, item) once
+    const seen = new Set<string>();
+    const sales = (rows ?? []).filter((r: any) => {
+      const k = r.txHash + r.hashId;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    // their collections, in batches so the request stays short
+    const ids = [...new Set(sales.map((r: any) => r.hashId))];
+    const slugOf = new Map<string, string>();
+    for (let i = 0; i < ids.length; i += 100) {
+      const { data, error: e2 } = await supabase
+        .from('ethscriptions' + this.suffix).select('hashId,slug').in('hashId', ids.slice(i, i + 100));
+      if (e2) throw e2;
+      for (const e of data ?? []) slugOf.set((e as any).hashId, (e as any).slug);
+    }
+    return sales
+      .map((r: any) => ({ slug: slugOf.get(r.hashId) || '', eth: Number(r.value) / 1e18, at: Date.parse(r.blockTimestamp) }))
+      .filter(s => s.slug && s.eth > 0 && !isNaN(s.at));
+  }
+
+  /** Every collection's floor and how many of its pieces are listed, from the same one read. */
+  // one floor read shared for a minute (the bank and the owned page's Phleeca banner both ask)
+  private floorStatsOnce: { at: number; p: Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number> }> } | null = null;
+  fetchFloorStats(): Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number> }> {
+    if (!this.floorStatsOnce || Date.now() - this.floorStatsOnce.at > 60_000) {
+      const p = this.readFloorStats();
+      this.floorStatsOnce = { at: Date.now(), p };
+      p.catch(() => { this.floorStatsOnce = null; });
+    }
+    return this.floorStatsOnce.p;
+  }
+
+  private async readFloorStats(): Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number> }> {
     const { data: rows, error } = await supabase
       .from('listings' + this.suffix).select('hashId,minValue').eq('listed', true);
     if (error) throw error;
-    if (!rows?.length) return {};
+    if (!rows?.length) return { floors: {}, listed: {}, avgListed: {} };
     const { data: eths, error: e2 } = await supabase
       .from('ethscriptions' + this.suffix).select('hashId,slug')
       .in('hashId', rows.map((r: any) => r.hashId));
     if (e2) throw e2;
     const slugOf = new Map((eths ?? []).map((e: any) => [e.hashId, e.slug]));
     const floors: Record<string, number> = {};
+    const listed: Record<string, number> = {};
+    const asks: Record<string, number[]> = {};
     for (const r of rows as any[]) {
       const slug = slugOf.get(r.hashId);
       const v = Number(r.minValue) / 1e18;
+      if (slug && v > 0) { listed[slug] = (listed[slug] || 0) + 1; (asks[slug] ||= []).push(v); }
       if (slug && v > 0 && !(floors[slug] <= v)) floors[slug] = v;
     }
-    return floors;
+    // the typical asking price in each collection: the median, so one joke listing (a Ξ8,008,135
+    // rock) can't drag it into the millions the way a plain average does
+    const median = (xs: number[]) => {
+      const s = [...xs].sort((a, b) => a - b), m = s.length >> 1;
+      return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+    };
+    const avgListed = Object.fromEntries(Object.entries(asks).map(([k, xs]) => [k, median(xs)]));
+    return { floors, listed, avgListed };
   }
 
   /**

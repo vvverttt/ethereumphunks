@@ -1,3 +1,8 @@
+<!-- an owned page gets Phleeca Bank's banner from the first frame: the account at a glance -->
+@if (ownedAddress(); as address) {
+  <app-phleeca-strip [address]="address" [slug]="ownedSlug()" [count]="ownedCount()" />
+}
+
 @if ((marketType$ | async); as marketType) {
   <div class="inner">
 
@@ -47,7 +52,7 @@
         </div>
       }
 
-      <div class="content-layout" [class.with-comments]="marketType === 'owned'">
+      <div class="content-layout">
         <div class="grid-area-wrapper">
           <div class="toolbar-wrapper">
             <div class="toolbar">
@@ -201,19 +206,21 @@
 
           </div><!-- /.results-area -->
           </div><!-- /.market-body -->
-        </div>
 
-        @if (marketType === 'owned') {
-          <div class="comments-sidebar">
+          <!-- an owned page's comments (the wallet's chat), under its phunks -->
+          @if (marketType === 'owned') {
             @if ((route.queryParams | async)?.address; as address) {
               @if ((globalConfig$ | async)?.comments) {
-                @defer {
-                  <app-comments [hashId]="address" />
-                }
+                <div class="owned-comments">
+                  @defer {
+                    <app-comments [hashId]="address" />
+                  }
+                </div>
               }
             }
-          </div>
-        }
+          }
+        </div>
+
       </div>
       }
     }

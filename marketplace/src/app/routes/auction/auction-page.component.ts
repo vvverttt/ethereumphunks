@@ -632,9 +632,16 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** the settled auctions have been read once (until then the history doesn't say it's empty) */
+  settledLoaded = signal(false);
+
   async loadSettledAuctions() {
-    const settled = await this.auctionSvc.getSettledAuctions();
-    this.settledAuctions.set(settled);
+    try {
+      const settled = await this.auctionSvc.getSettledAuctions();
+      this.settledAuctions.set(settled);
+    } finally {
+      this.settledLoaded.set(true);
+    }
   }
 
   async loadHistoricalAuction(auctionId: number) {

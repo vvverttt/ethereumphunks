@@ -87,7 +87,6 @@ export const CONTENT_ZH: Content = {
     "title": "Shell 档案馆",
     "sub": "记录塑造 CryptoPhunksV67 的源头。",
     "intro": "下列系列是我们在创作 CryptoPhunksV67 期间参考和查阅过的资料。我们主要取材于广泛的 punk 衍生作品，从标志性作品到被忽视的作品，仔细研究其中的主题、角色和设计元素，并将它们重新诠释为一个统一而原创的系列，收录于 Shell 档案馆中。虽然我们的大部分灵感来自 punk 文化，但我们也收录了少量非 punk 的参考资料，例如来自 GitHub 的资源。我们可能遗漏了一些参考来源，日后发现时会补充进来。",
-    "total": "档案馆共收录 {n} 个系列。",
     "imgAlt": "一只拖着彩虹尾迹的乌龟"
   },
   faq: {

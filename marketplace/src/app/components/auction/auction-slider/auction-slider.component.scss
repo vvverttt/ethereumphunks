@@ -84,6 +84,8 @@
 // ─── Slider Track ───────────────────────────────
 
 .slider-track {
+  visibility: hidden;
+  &.ready { visibility: visible; }
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;

@@ -1,7 +1,7 @@
 // A GTA bank machine after Maze Bank's ATM: the bank's logo on a white header, an accent bar with
 // the account holder and the balance, a light grey service screen framed by maze-patterned side
 // panels, centred stacked buttons in the accent that light up cyan, and Back to the right. The
-// accent is the open collection's (--g-accent, set on .bezel), otherwise the site's.
+// accent is the open collection's while inside it (--g-accent on .bezel), otherwise the site's.
 
 :host {
   display: block;
@@ -41,21 +41,13 @@
     height: 5.4rem;
     path { fill: rgba(var(--g-accent), 1); stroke: none; }
   }
-  .wordmark { display: flex; flex-direction: column; line-height: 1; }
-  .bank {
-    font-size: 3.2rem;
-    font-weight: 500;
-    letter-spacing: -.01em;
-    text-transform: uppercase;
-    color: #2b2d31;
-  }
-  .slogan {
-    margin-top: .3rem;
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: #5a5d63;
+  // the PHLEECA logo: dark letters, EE and BANK in the collection's colour
+  .logo {
+    display: block;
+    height: 7.2rem;
+    width: auto;
+    .ink { fill: #1d1f23; }
+    .acc { fill: rgba(var(--g-accent), 1); }
   }
 }
 
@@ -64,7 +56,10 @@
   display: flex;
   align-items: center;
   gap: 1.6rem;
-  padding: 1.1rem 2.8rem;
+  // one height signed in or out, so everything under the bar sits in the same place
+  min-height: 4.8rem;
+  box-sizing: border-box;
+  padding: .5rem 2.8rem;
   font-size: 1.4rem; // the pixel face runs wide, so its white text sits smaller
   color: #fff;
   background: linear-gradient(180deg, rgba(var(--g-accent), 1), rgba(var(--g-accent), .86));
@@ -81,14 +76,14 @@
   }
   .w-addr { font-size: 1rem; opacity: .75; }
   // the two balances stacked on the right: the wallet's ETH, then the collectibles at floor
-  .bals { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; line-height: 1.25; }
+  .bals { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; line-height: 1.1; }
   .bal { white-space: nowrap; }
-  .bal.sub { margin-top: .3rem; font-size: 1.1rem; opacity: .85; }
+  .bal.sub { margin-top: .1rem; font-size: 1.1rem; opacity: .85; }
 }
 
 // the service screen between maze-patterned side panels
 .body {
-  background: #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M19.38 3Q28.9 3 30.62 10.48H33.33V13.76H31.05Q31.1 14.1 31.1 14.48Q31.1 14.86 31.1 15.19Q31.1 15.62 31.07 16.07Q31.05 16.52 31.05 16.9H33.33V20.24H30.33Q29.57 22.52 28.14 24.26Q26.71 26 24.31 26.95Q21.9 27.9 18.24 27.9H16.52V37H9.57V20.24H6.67V16.9H9.57V13.76H6.67V10.48H9.57V3ZM18.71 8.19H16.52V10.48H23.38Q22.24 8.19 18.71 8.19ZM24.1 13.76H16.52V16.9H24.1Q24.1 16.62 24.14 16.17Q24.19 15.71 24.19 15.19Q24.19 14.76 24.17 14.4Q24.14 14.05 24.1 13.76ZM23.33 20.24H16.52V22.71H18.1Q19.9 22.71 21.29 22.17Q22.67 21.62 23.33 20.24Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
+  background: #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M23.33 5Q28.9 5 31.76 6.74Q34.63 8.49 34.73 11.97H37.18L36.45 15.29H34.48Q34.44 15.5 34.36 15.84Q34.29 16.18 34.24 16.39Q34.17 16.68 34.11 16.97Q34.04 17.27 34 17.48H35.96L35.23 20.8H32.44Q31.12 23.07 29.11 24.71Q27.11 26.34 24.1 27.23Q21.09 28.11 16.67 28.11H15.36L13.83 35H3.62L6.77 20.8H4.42L5.16 17.48H7.51L7.99 15.29H5.64L6.38 11.97H8.73L10.28 5ZM22.5 20.8H16.98L16.58 22.61H17.73Q19.15 22.61 20.43 22.23Q21.72 21.85 22.5 20.8ZM24.49 15.29H18.2L17.72 17.48H24Q24.04 17.31 24.14 17Q24.23 16.68 24.32 16.3Q24.39 15.97 24.42 15.71Q24.45 15.46 24.49 15.29ZM20.95 10.55H19.26L18.94 11.97H24.46Q24.22 11.34 23.35 10.95Q22.48 10.55 20.95 10.55Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
   background-size: 4rem 4rem;
 }
 .col {
@@ -97,7 +92,24 @@
   min-height: 44rem;
   margin: 0 auto;
   background: #e9e9ea;
+  // the screen's content on top, the fine print pinned to the bottom
+  display: flex;
+  flex-direction: column;
 }
+
+// the joke fine print at the foot of the screen: small grey legal type, fading in line by line
+.legal {
+  margin: auto 0 0;
+  padding: 1.6rem 3.2rem 2rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: center;
+  color: #6d7076;
+  animation: legal-in .6s ease-out;
+}
+@keyframes legal-in { from { opacity: 0; } to { opacity: 1; } }
 
 .page {
   padding: 2.4rem 3.2rem 3.2rem;
@@ -202,7 +214,11 @@
   gap: .8rem;
   max-height: 42rem;
   overflow-y: auto;
+  // rows keep their height and the list scrolls; shrinking them to fit squashed their text together
+  > .row { flex-shrink: 0; }
 }
+// the Reserve's list is short (one row per collection) and runs its full length
+.list:has(> .rs-row) { max-height: none; overflow: visible; }
 .row {
   --row: var(--g-accent);
   display: flex;
@@ -226,7 +242,8 @@
   // the value in its own right-hand column, so the Ξ amounts line up down the list
   .r-v { min-width: 9rem; text-align: right; font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .r-n { padding: .2rem .9rem; font-size: 1.4rem; color: #fff; background: rgba(var(--row), 1); }
-  &:hover { background: rgba(var(--hover), .25); }
+  // each collection lights up in its own colour, not the one shared cyan
+  &:hover, &:focus-visible { background: rgba(var(--row), .25); outline: none; }
 }
 
 // the pieces in a collection
@@ -332,6 +349,36 @@
 .fine { margin: 1.2rem 0 0; font-size: 1.3rem; color: #5a5d63; text-align: center; }
 .link { display: inline-block; font-weight: 700; color: rgba(var(--g-accent), 1); }
 .err { margin: 1rem 0 0; font-size: 1.4rem; font-weight: 700; color: #d01f33; text-align: center; }
+// sell shame under a low price: the fine print's italic, in a warning red, with a little shake
+.shame {
+  margin: 1.2rem auto 0;
+  max-width: 44rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.4rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  color: #d01f33;
+  animation: shame-in .35s ease-out;
+  // the lower the price, the louder it gets
+  &[data-level='1'] { color: #b8860b; font-weight: 500; }
+  &[data-level='3'] { font-size: 1.5rem; font-weight: 800; }
+  &[data-level='4'] { font-size: 1.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; animation: shame-in .35s ease-out, shame-buzz 2.4s ease-in-out infinite .4s; }
+}
+@keyframes shame-buzz {
+  0%, 90%, 100% { transform: translateX(0); }
+  92% { transform: translateX(-.3rem); }
+  94% { transform: translateX(.3rem); }
+  96% { transform: translateX(-.2rem); }
+  98% { transform: translateX(.2rem); }
+}
+@keyframes shame-in {
+  0% { opacity: 0; transform: translateX(0); }
+  30% { opacity: 1; transform: translateX(-.4rem); }
+  60% { transform: translateX(.4rem); }
+  100% { transform: translateX(0); }
+}
 .ok-text { color: rgba(var(--ok), 1); }
 .err-text { color: #d01f33; }
 
@@ -351,7 +398,7 @@
 }
 
 @media (max-width: 700px) {
-  .top { padding: 1.4rem 1.6rem; .mark { width: 3.8rem; height: 3.8rem; } .bank { font-size: 2.4rem; } }
+  .top { padding: 1.4rem 1.6rem; .mark { width: 3.8rem; height: 3.8rem; } .logo { height: 5.4rem; } }
   .bar { flex-wrap: wrap; gap: .4rem 1.2rem; padding: 1rem 1.6rem; font-size: 1.2rem; }
   .bar .bal { margin-left: auto; }
   .page { padding: 1.8rem 1.6rem 2.4rem; }
@@ -510,8 +557,12 @@
 // Maze Bank's proportions: the screen about 70% wide, the panels about 15% each, and the sign
 // and bar contents pulled in to line up over the screen.
 :host(.full) {
-  .bezel { padding: 0; background: none; border-radius: 0; box-shadow: none; }
-  .screen { display: flex; flex-direction: column; min-height: calc(100vh - var(--header-height)); }
+  .bezel { flex: 1 0 auto; display: flex; flex-direction: column; padding: 0; background: none; border-radius: 0; box-shadow: none; }
+  // a set height for the service screen (taller when a screen needs it), so the footer comes up
+  // under it instead of after a whole window of empty grey
+  .screen { flex: 1 0 auto; display: flex; flex-direction: column; }
+  .body { min-height: 48rem; }
+  .page { padding-top: 3.8rem; padding-bottom: 4rem; }   // the menu sits a little lower, nearer the middle
   .top, .bar { padding-left: 18.5%; padding-right: 18.5%; }
   .body { flex: 1; display: flex; }
   .col { flex: none; width: 70%; max-width: none; min-height: 0; margin: 0 auto; }
@@ -522,20 +573,109 @@
   }
 }
 
-// signed out: one centred card in the middle of the screen, the mark, one line, one button
+// signed out: the mark, one line, one button, placed like the signed-in menu
 .signin {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  // from the top, at the same height the signed-in menu starts
+  justify-content: flex-start;
   gap: 1.4rem;
-  padding: 4rem 2.4rem;
+  padding: 3.8rem 2.4rem 4rem;
   text-align: center;
 
-  .signin-mark { width: 7.2rem; height: 7.2rem; margin-bottom: .6rem; path { fill: rgba(var(--g-accent), 1); } }
-  .signin-title { margin: 0; font-size: 2.2rem; line-height: 1.3; color: #2b2d31; }
-  .signin-note { margin: 0 0 1.4rem; font-size: 1.2rem; line-height: 1.5; color: #7a7d83; max-width: 48rem; }
-  .opt { width: auto; min-width: 22rem; }
+  .signin-mark { width: auto; height: 6.4rem; margin-bottom: .6rem; path { fill: rgba(var(--g-accent), 1); } }  // the logo's ₱, slanted
+  .signin-title { margin: 0 0 1.4rem; font-size: 2.2rem; line-height: 1.3; color: #2b2d31; }
+  .opt { width: 30rem; max-width: 100%; }   // both keys one width, like a machine's
 }
-.col:has(> .signin) { display: flex; flex-direction: column; }
+
+
+// the language's currency beside an Ξ amount: smaller and quieter, so the Ξ figure leads
+.fiat {
+  margin-left: .5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: .78em;
+  font-weight: 600;
+  opacity: .7;
+  white-space: nowrap;
+  &:empty { display: none; }
+}
+.r-v .fiat { display: block; margin: .2rem 0 0; text-align: right; }
+
+// the Reserve's rows carry the collection's stats under its name
+.rs-row {
+  .r-main { flex: 1; display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+  .r-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem 1.2rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #6d7076;
+  }
+}
+.reserve-sum { margin: 1rem 0 1.2rem; }
+
+// phones: a Reserve row is name, supply and market cap on top, its stats on a line of their own
+// underneath (squeezed beside the name they spilled into the next row)
+@media (max-width: 700px) {
+  .rs-row {
+    flex-wrap: wrap;
+    row-gap: .6rem;
+    height: auto;
+    .r-main { display: contents; }
+    .r-name { flex: 1; min-width: 0; font-size: 1.5rem; }
+    .r-stats { order: 5; flex-basis: 100%; gap: .2rem 1rem; font-size: 1.1rem; }
+    .r-v { min-width: 0; font-size: 1.3rem; }
+    .r-n { font-size: 1.2rem; }
+  }
+}
+
+// the bank statement: the printed receipt, as an image the width of the screen's content
+.statement {
+  display: block;
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto 1.6rem;
+  box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .18);
+}
+
+// the statement's switches: address and balance on or off
+.st-switches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 2.4rem;
+  .switch {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: 0;
+    font: inherit;
+    font-size: 1.2rem;
+    color: rgba(var(--ink), 1);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .track {
+    position: relative;
+    width: 3.6rem;
+    height: 2rem;
+    background: #c4c6ca;
+    transition: background .15s;
+  }
+  .knob {
+    position: absolute;
+    top: .3rem;
+    left: .3rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    background: #fff;
+    transition: transform .15s;
+  }
+  .switch.on .track { background: rgba(var(--g-accent), 1); }
+  .switch.on .knob { transform: translateX(1.6rem); }
+}

@@ -18,7 +18,8 @@ export class AuctionSliderComponent implements OnChanges {
   constructor(public preferences: PhunkPreferencesService) {}
 
   @Input() settledAuctions: SettledAuction[] = [];
-  private hasScrolledOnce = false;
+  /** the history has been read; before that it shows nothing rather than "none yet" */
+  @Input() loaded = true;
 
   @Output() selectAuction = new EventEmitter<number>();
 
@@ -31,25 +32,35 @@ export class AuctionSliderComponent implements OnChanges {
     return this.preferences.t(key, params);
   }
 
+  /** the track is hidden until it sits on the newest auction, so a reload never shows the oldest
+   *  pieces sliding past first */
+  ready = signal(false);
+  /** once someone scrolls the history themselves, it stays where they put it */
+  userMoved = false;
+
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['settledAuctions'] && this.settledAuctions.length > 0 && !this.hasScrolledOnce) {
-      this.hasScrolledOnce = true;
-      // Scroll to rightmost (newest) after DOM renders
-      setTimeout(() => {
-        const el = this.sliderTrack?.nativeElement;
-        if (el) {
-          el.scrollLeft = el.scrollWidth;
-          this.onScroll();
-        }
-      });
+    if (changes['settledAuctions'] && this.settledAuctions.length > 0) {
+      // after the DOM renders: jump (no animation) to the rightmost, newest end
+      setTimeout(() => this.toNewest());
     }
   }
 
+  /** straight to the newest end, unless the visitor has moved the history themselves */
+  toNewest() {
+    const el = this.sliderTrack?.nativeElement;
+    if (!el || this.userMoved) return;
+    el.scrollTo({ left: el.scrollWidth, behavior: 'instant' as ScrollBehavior });
+    this.onScroll();
+    this.ready.set(true);
+  }
+
   scrollLeft() {
+    this.userMoved = true;
     this.sliderTrack?.nativeElement.scrollBy({ left: -300, behavior: 'smooth' });
   }
 
   scrollRight() {
+    this.userMoved = true;
     this.sliderTrack?.nativeElement.scrollBy({ left: 300, behavior: 'smooth' });
   }
 
