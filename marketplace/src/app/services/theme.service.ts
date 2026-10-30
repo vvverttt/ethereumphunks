@@ -140,7 +140,7 @@ export class ThemeService {
     // collection (e.g. the auction house opening over a remembered QuantumPhunks blue).
     const painted = this.document.documentElement.dataset['collection'] || '';
     // footer page names are not collections (an older pre-boot script stored them)
-    this.activeSlug = ['about', 'shell-archive', 'my-phunks', 'terms', 'license', 'privacy'].includes(painted) ? '' : painted;
+    this.activeSlug = ['about', 'shell-archive', 'my-phunks', 'phaze-bank', 'terms', 'license', 'privacy'].includes(painted) ? '' : painted;
     this.themeSlug.set(this.activeSlug);
 
   }

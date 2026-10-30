@@ -4,3 +4,19 @@
 .inner {
   @include max-width();
 }
+
+// Phaze Bank fills the page down to the footer: drop the space every other page leaves under
+// its content (app.component.scss's main) while the full-page bank machine is showing.
+main:has(.atm-wrap.full) { padding-bottom: 0; }
+
+// ...and the strip around the footer's Phupreme badge takes the bank's own background (the ₱
+// maze panels with the light screen between them, same proportions as phunk-atm's full mode),
+// so the bank runs on under the badge to the footer band.
+body:has(.atm-wrap.full) app-footer .phupreme-logo {
+  background:
+    linear-gradient(90deg, transparent 15%, #e9e9ea 15%, #e9e9ea 85%, transparent 85%),
+    #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M19.38 3Q28.9 3 30.62 10.48H33.33V13.76H31.05Q31.1 14.1 31.1 14.48Q31.1 14.86 31.1 15.19Q31.1 15.62 31.07 16.07Q31.05 16.52 31.05 16.9H33.33V20.24H30.33Q29.57 22.52 28.14 24.26Q26.71 26 24.31 26.95Q21.9 27.9 18.24 27.9H16.52V37H9.57V20.24H6.67V16.9H9.57V13.76H6.67V10.48H9.57V3ZM18.71 8.19H16.52V10.48H23.38Q22.24 8.19 18.71 8.19ZM24.1 13.76H16.52V16.9H24.1Q24.1 16.62 24.14 16.17Q24.19 15.71 24.19 15.19Q24.19 14.76 24.17 14.4Q24.14 14.05 24.1 13.76ZM23.33 20.24H16.52V22.71H18.1Q19.9 22.71 21.29 22.17Q22.67 21.62 23.33 20.24Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
+  background-size: auto, 4rem 4rem;
+
+  @media (max-width: 700px) { background: #e9e9ea; }
+}

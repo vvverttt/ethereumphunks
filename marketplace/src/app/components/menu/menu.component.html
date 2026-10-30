@@ -74,25 +74,20 @@
       </div>
     }
 
-    <a
-      class="dystolabz-button"
-      href="https://dystolabz.com"
-      target="_blank"
-      rel="noopener noreferrer">
-
-      <span>{{ t('dystolabz') }}</span>
-
-      <div class="arrow">
-        <ng-template [ngTemplateOutlet]="arrowIcon" />
-      </div>
-    </a>
-
-    <!-- The Shell Archive: our credits, under DystoLabz, in the archive turtle's green. -->
+    <!-- The Shell Archive: our credits, in the archive turtle's green. -->
     <a class="shell-button" routerLink="/shell-archive" (click)="goToAuction()">
       <span>{{ t('shellArchive') }}</span>
       <div class="arrow">
         <ng-template [ngTemplateOutlet]="arrowIcon" />
       </div>
+    </a>
+
+    <!-- The way into Phaze Bank, the account machine on /phaze-bank: your pieces, their market
+         moves, balances and the transaction log all live there. Shown to everyone: signed out, the
+         machine asks for your card (Connect). -->
+    <a class="bank-button" routerLink="/phaze-bank" (click)="goToAuction()">
+      <span>{{ t('atmBank') }}</span>
+      <span class="arrow"><ng-template [ngTemplateOutlet]="arrowIcon" /></span>
     </a>
 
     @if ((config$ | async)?.showAuction !== false) {
@@ -120,38 +115,6 @@
   </div>
 
   @if ((connected$ | async) && (address$ | async); as address) {
-    <!-- The connected wallet's pieces, one card per collection in that collection's own colours.
-         Inside the connected block, so it only exists while a wallet is connected. -->
-    @if (walletGroups$ | async; as groups) {
-      @if (groups.length) {
-        <div class="my-phunks">
-          <a class="my-title" routerLink="/my-phunks" (click)="goToAuction()">
-            <h3>{{ t('yourPhunks') }}</h3>
-            <span class="all">{{ t('viewAll') }} <ng-template [ngTemplateOutlet]="arrowIcon" /></span>
-            <span class="total">{{ walletTotal(groups) | number }}</span>
-          </a>
-          @for (g of groups; track g.slug) {
-            <div class="my-card" [attr.data-row]="g.slug">
-              <a class="my-head" [routerLink]="['/', g.slug, 'market', 'owned']" [queryParams]="{ address }" (click)="goToAuction()">
-                @if (g.logo) { <span class="logo"><img [src]="g.logo" alt="" /></span> }
-                <span class="name">{{ g.name }}</span>
-                <span class="count">{{ g.items.length | number }}</span>
-                <span class="arrow"><ng-template [ngTemplateOutlet]="arrowIcon" /></span>
-              </a>
-              <div class="my-grid" [class.scroll]="g.items.length > 18">
-                @for (p of g.items; track p.hashId) {
-                  <a [routerLink]="detailsLink(p)" (click)="goToAuction()" [title]="g.single + ' #' + p.tokenId"
-                    [class.listed]="!!p.listing" [class.escrow]="p.isEscrowed">
-                    <app-phunk-image [sha]="p.sha" [alt]="'#' + p.tokenId" />
-                  </a>
-                }
-              </div>
-            </div>
-          }
-        </div>
-      }
-    }
-
     @if (activeCollection$ | async; as activeCollection) {
       <div class="stats-wrapper" waIntersectionObserver waIntersectionThreshold="0.5">
         <!-- @if ((userOpenBids$ | async); as bids) {
@@ -218,18 +181,15 @@
       </div>
     }
 
+    <!-- Your Activity shows only when the wallet has some; no empty "No recent activity" box. -->
     @if ((notifications$ | async); as notifs) {
-      @if (menuSeen()) {
+      @if (menuSeen() && notifs.length) {
         <div class="notifications-wrapper">
           <h3>{{ t('yourActivity') }}</h3>
           <div class="notifications" [class.scrollbar]="notifs.length > 4">
-            @if (notifs.length) {
-              @for (txn of notifs; track txn.id) {
-                <!-- {{ txn.id }} -->
-                <app-notification [txn]="txn" [dismissible]="false" [isMenu]="true" />
-              }
-            } @else {
-              <p class="no-activity">{{ t('noRecentActivity') }}</p>
+            @for (txn of notifs; track txn.id) {
+              <!-- {{ txn.id }} -->
+              <app-notification [txn]="txn" [dismissible]="false" [isMenu]="true" />
             }
           </div>
         </div>
@@ -239,7 +199,11 @@
 
   <!-- PHUNKEM, the turtle emblem, at the foot of the panel right above the indexer status (it
        follows the content down when the panel scrolls). Not a link. -->
-  <img class="menu-phunkem" src="assets/images/phunkem.png" alt="PHUNKEM" />
+  <div class="menu-emblems">
+    <img class="side" src="assets/images/interstate-non-phungibles.png" alt="Interstate Non-Phungibles" />
+    <img class="menu-phunkem" src="assets/images/phunkem.png" alt="PHUNKEM" />
+    <img class="side round" src="assets/images/67-fuel.png" alt="67" />
+  </div>
 </section>
 
 <section #menuLeaderboard class="leaderboard" [style]="{ 'opacity': '0' }">

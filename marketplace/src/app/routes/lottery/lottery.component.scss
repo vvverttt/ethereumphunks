@@ -119,13 +119,9 @@ $drop-gap-mobile: 2.5rem;
 
   .phupreme-mark img {
     display: block;
-    // The source is 147x46. It was being drawn at 200 wide, a 36% upscale, which is
-    // what made the wordmark soft — there is no more detail in the file to show. Pinned
-    // to its natural width so it is never enlarged.
-    //
-    // No `image-rendering: pixelated` here either: that is for the 24px phunk art. On a
-    // smooth italic wordmark it jagged the curves instead of sharpening them.
-    width: 147px;
+    // A vector box logo now (Supreme's box proportions), so it stays sharp at any size;
+    // 152 wide keeps it the same 46px height the old 147x46 picture had.
+    width: 152px;
     max-width: 100%;
     height: auto;
   }
@@ -145,7 +141,7 @@ $drop-gap-mobile: 2.5rem;
     margin-top: 2rem;
     margin-bottom: $drop-gap-mobile;
 
-    .phupreme-mark img { width: 120px; }
+    .phupreme-mark img { width: 124px; }
     .drop-clock { font-size: 1.1rem; }
   }
 

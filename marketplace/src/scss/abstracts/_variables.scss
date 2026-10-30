@@ -54,6 +54,11 @@ $tablet: 1040px;
   }
 }
 
+html[data-phunk-font='phupreme'] {
+  --primary-font-stack: 'Phupreme Sans', 'Montserrat', sans-serif;
+  --secondary-font-stack: 'Phupreme Sans', 'Montserrat', sans-serif;
+}
+
 html[data-phunk-font='blockscript'] {
   --primary-font-stack: 'Low Blockscript', 'Retro Computer', sans-serif;
   --secondary-font-stack: 'Low Blockscript', 'Retro Computer', sans-serif;

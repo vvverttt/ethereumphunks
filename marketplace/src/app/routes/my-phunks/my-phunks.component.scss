@@ -239,10 +239,15 @@ h1 {
     grid-template-columns: repeat(auto-fill, 4.8rem);
     gap: .6rem .4rem;
 
-    a {
+    a, .tile {
       display: block;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
       text-decoration: none;
       transition: transform .12s ease;
+      &.picked .img { outline: .2rem solid rgba(var(--g-accent), 1); outline-offset: .15rem; }
       &:hover { transform: translateY(-.15rem); }
 
       .img { display: block; background: rgba(var(--g-tile), 1); }
@@ -327,3 +332,23 @@ h1 {
     .strip { grid-column: 1 / -1; grid-row: 2; a { flex-basis: 3.8rem; } }
   }
 }
+
+
+// The bank machine, at the top of your pieces (picking one scrolls back up to it)
+.atm-wrap {
+  --g-accent: var(--pink);
+  --g-bg: var(--background);
+  --g-tile: var(--phunk-bg);
+  display: block;
+  max-width: 72rem;
+  margin: 2.4rem auto;
+  scroll-margin-top: calc(var(--header-height) + 1.6rem);
+}
+
+// Phaze Bank is the whole page: when the machine is showing, it runs edge to edge from under the
+// header down to the footer instead of sitting as a box in the middle.
+:host:has(> .inner > .atm-wrap.full) {
+  padding-top: var(--header-height);
+  > .inner { max-width: none; width: 100%; margin: 0; padding: 0; }
+}
+.atm-wrap.full { max-width: none; margin: 0; }

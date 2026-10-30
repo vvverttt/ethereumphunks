@@ -296,6 +296,22 @@ export class ItemViewComponent {
       switchMap(() => this.singlePhunk$.pipe(take(1))),
       takeUntilDestroyed(),
     ).subscribe((phunk) => this.refreshPoolBuyNow(phunk));
+
+    // Arriving from the Account Details terminal with ?action=: once the piece is on screen,
+    // open that action's form (never sends anything by itself) and bring the actions into view.
+    combineLatest([this.route.queryParamMap, this.singlePhunk$]).pipe(
+      filter(([q, phunk]) => !!q.get('action') && !!phunk?.hashId),
+      take(1),
+      takeUntilDestroyed(),
+    ).subscribe(([q]) => setTimeout(() => this.openAction(q.get('action') || ''), 600));
+  }
+
+  /** Open one action's form from a deep link; delist / withdraw / bids just show their buttons. */
+  private openAction(action: string): void {
+    if (action === 'sell') this.sellPhunk();
+    else if (action === 'escrow') this.escrowPhunk();
+    else if (action === 'transfer') this.transferPhunkAction();
+    document.querySelector('.actions-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   // ─── Auction-house per-item buy-now (pool items) ─────────────────────────────

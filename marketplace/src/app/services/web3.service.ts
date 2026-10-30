@@ -13,6 +13,7 @@ import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { DystoLabzMarketABI as EtherPhunksMarketABI } from '@/abi/DystoLabzMarket';
 import { EtherPhunksMarketV3ABI } from '@/abi/EtherPhunksMarketV3';
 import { QuantumPhunksMarketABI } from '@/abi/QuantumPhunksMarket';
+import { ERC721C_CONTRACT_SETS } from '@/constants/erc721c';
 import { PointsABI } from '@/abi/Points';
 
 // Evolve
@@ -719,7 +720,46 @@ export class Web3Service {
       const pending = (await this._readMarketContractAt(oldAddr, 'pendingWithdrawals', [address])) || BigInt(0);
       total += pending;
     }
+    // the QuantumPhunks market keeps sale proceeds and refunds the same way
+    try {
+      for (const f of (await this.fundsByMarket(address)).filter(f => f.kind === 'quantumphunks')) total += f.wei;
+    } catch {}
     return total;
+  }
+
+  /**
+   * ETH waiting for `address` in every market contract, one entry per contract that holds any:
+   * the EtherPhunks market, its old versions, and the QuantumPhunks (ERC-721C) market(s), which
+   * keep sale proceeds and refunds the same pull-payment way.
+   */
+  async fundsByMarket(address: string): Promise<{ market: string; kind: 'etherphunks' | 'quantumphunks'; wei: bigint }[]> {
+    const qpMarkets = [...new Set(Object.values(ERC721C_CONTRACT_SETS).map(c => c.marketplace.toLowerCase()))];
+    // all the reads at once: each can be slow while the RPC fails over
+    const reads = await Promise.all([
+      ...[marketAddress, ...oldMarketAddresses].map(async m => {
+        const wei = (await this._readMarketContractAt(m, 'pendingWithdrawals', [address])) as bigint | null;
+        // null means the read failed, which is not the same as owing nothing
+        if (wei === null || wei === undefined) throw new Error('Could not read the market balance');
+        return { market: m, kind: 'etherphunks' as const, wei };
+      }),
+      ...qpMarkets.map(async m => ({
+        market: m, kind: 'quantumphunks' as const,
+        wei: (await this.l1Client.readContract({
+          address: m as `0x${string}`, abi: QuantumPhunksMarketABI as any, functionName: 'pendingWithdrawals', args: [address as `0x${string}`],
+        })) as bigint,
+      })),
+    ]);
+    return reads.filter(r => r.wei > 0n);
+  }
+
+  /** The wallet's own ETH balance. */
+  async getEthBalance(address: string): Promise<bigint> {
+    return this.l1Client.getBalance({ address: address as `0x${string}` });
+  }
+
+  /** Withdraw everything owed to the connected wallet from one market contract. */
+  async withdrawFundsFrom(market: string, kind: 'etherphunks' | 'quantumphunks'): Promise<string | undefined> {
+    return this._writeMarketContractAt(market, 'withdraw', [], undefined, kind === 'quantumphunks' ? QuantumPhunksMarketABI as any : undefined);
   }
 
   /**
@@ -1384,6 +1424,13 @@ export class Web3Service {
         const hash = await this._writeMarketContractAt(oldAddr, 'withdraw', []);
         await this.waitForTransaction(hash!);
       }
+    }
+
+    // and the QuantumPhunks market(s)
+    const qpFunds = await this.fundsByMarket(address).catch(() => []);
+    for (const f of qpFunds.filter(f => f.kind === 'quantumphunks')) {
+      const hash = await this.withdrawFundsFrom(f.market, f.kind);
+      await this.waitForTransaction(hash!);
     }
 
     return await this.checkHasWithdrawal(address);

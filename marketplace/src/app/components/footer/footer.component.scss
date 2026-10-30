@@ -37,9 +37,10 @@
     &:hover { text-decoration: none; }
   }
 
+  // vector badge at Supreme's box proportions (lettering: Futura PT Heavy Oblique, outlined)
   img {
     display: block;
-    height: 3.2rem;
+    height: 3rem;
     width: auto;
   }
 
@@ -127,13 +128,17 @@
 
         & + button { border-left: .1rem solid #fff; }
 
+        // no font-weight change on the active option: bold text is wider, so picking a language
+        // nudged the whole group sideways. A hairline stroke reads as bold without changing width.
         &.active {
           color: rgba(var(--pink), 1);
           background: #fff;
-          font-weight: 700;
+          -webkit-text-stroke: .025em currentColor;
         }
 
         &.sample-default { font-family: var(--primary-font-stack); }
+        // the logo's look: heavy, oblique
+        &.sample-phupreme { font-family: 'Phupreme Sans', sans-serif; font-weight: 800; font-style: italic; }
         &.sample-blockscript { font-family: 'Low Blockscript', 'Retro Computer', sans-serif; }
         &.sample-high-blockscript { font-family: 'High Blockscript', 'Retro Computer', sans-serif; }
       }
@@ -169,7 +174,9 @@
 .bottom {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  // top-aligned, with room reserved for the longest translation of the risk note, so the row
+  // keeps its place and height whatever the language
+  align-items: flex-start;
   gap: 1.2rem 3.2rem;
   padding-top: 2rem;
   font-size: 1.4rem;
@@ -182,8 +189,13 @@
   .risk {
     flex: 1;
     min-width: 24rem;
+    min-height: 6.4rem;     // four lines, the longest any language needs on desktop
     font-size: 1.2rem;
+    line-height: 1.6rem;
     opacity: .85;
+
+    // six lines on phones and narrow desktops, where the note's column is narrowest
+    @media (max-width: 1200px) { min-height: 9.6rem; }
   }
 
   .end {
@@ -208,6 +220,22 @@
 // columns keep their width (a longer translation wraps inside its column instead of widening it),
 // the language/social block always sits at the end of the first row, and the bottom row keeps the
 // risk note on the left and the links + sign-off anchored right.
+// Phones and tablets: the link columns sit on a fixed two-column grid, so a longer translation
+// wraps inside its column instead of pushing the next one sideways.
+@media (max-width: 1000px) {
+  .top {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    nav, .contracts { min-width: 0; overflow-wrap: anywhere; }
+    .brand { grid-column: 1 / -1; margin-left: 0; align-items: flex-start; }
+  }
+
+  // the risk note on its own full-width line, the links below it: neither's width then depends
+  // on the other's text
+  .bottom .risk { flex-basis: 100%; }
+}
+
 @media (min-width: 1001px) {
   .top {
     display: grid;
@@ -216,16 +244,24 @@
     column-gap: 2.4rem;
     align-items: start;
 
-    nav, .contracts { min-width: 0; overflow-wrap: anywhere; }
+    nav, .contracts { min-width: 0; overflow-wrap: anywhere; line-height: 1.8rem; }
     .brand { grid-column: -2 / -1; grid-row: 1; margin-left: 0; justify-self: end; }
+  }
+
+  // narrower desktops: the columns wrap their links, and how many lines that takes depends on
+  // the language; reserve the tallest (Japanese) so the row below never moves
+  @media (max-width: 1300px) {
+    .top { min-height: 24.4rem; }
   }
 
   .bottom {
     display: grid;
-    grid-template-columns: minmax(0, 46rem) 1fr;
+    // a fixed slot for the links + sign-off (wide enough for the longest language), so the risk
+    // note's width never depends on how long those links are in the current language
+    grid-template-columns: minmax(0, 1fr) 64rem;
     column-gap: 3.2rem;
 
-    .risk { min-width: 0; }
+    .risk { min-width: 0; max-width: 46rem; }
     .end { justify-self: end; justify-content: flex-end; flex-wrap: nowrap; }
     .legal, .sign { white-space: nowrap; }
   }

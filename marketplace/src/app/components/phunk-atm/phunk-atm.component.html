@@ -1,0 +1,354 @@
+<div class="bezel" [style.--g-accent]="accent()" [style.--g-tile]="group()?.tile" [style.--g-bg]="group()?.bg">
+  <div class="screen">
+    <!-- Maze Bank's ATM layout: the bank's logo on white, then an accent bar with the account
+         holder and the balance, then the service screen between two maze-patterned side panels.
+         The mark is ₱ (a P with two bars), the glyph outlined from Noto Sans Bold (OFL), filled. No frame. -->
+    <header class="top">
+      <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M19.38 3Q28.9 3 30.62 10.48H33.33V13.76H31.05Q31.1 14.1 31.1 14.48Q31.1 14.86 31.1 15.19Q31.1 15.62 31.07 16.07Q31.05 16.52 31.05 16.9H33.33V20.24H30.33Q29.57 22.52 28.14 24.26Q26.71 26 24.31 26.95Q21.9 27.9 18.24 27.9H16.52V37H9.57V20.24H6.67V16.9H9.57V13.76H6.67V10.48H9.57V3ZM18.71 8.19H16.52V10.48H23.38Q22.24 8.19 18.71 8.19ZM24.1 13.76H16.52V16.9H24.1Q24.1 16.62 24.14 16.17Q24.19 15.71 24.19 15.19Q24.19 14.76 24.17 14.4Q24.14 14.05 24.1 13.76ZM23.33 20.24H16.52V22.71H18.1Q19.9 22.71 21.29 22.17Q22.67 21.62 23.33 20.24Z" />
+      </svg>
+      <span class="wordmark">
+        <span class="bank">{{ t('atmBank') }}</span>
+        <span class="slogan">{{ t('atmSlogan') }}</span>
+      </span>
+    </header>
+
+    <div class="bar">
+      @if (!wallet) {
+        <span class="who">{{ t('atmWelcome') }}</span>
+      } @else {
+      <span class="who">
+        @if (ens) {
+          {{ ens }} <button type="button" class="w-addr" (click)="copyAddress()" [title]="wallet">{{ copied() ? t('myPhunksCopied') : shortAddress() }}</button>
+        } @else {
+          <button type="button" class="w-copy" (click)="copyAddress()" [title]="wallet">{{ copied() ? t('myPhunksCopied') : shortAddress() }}</button>
+        }
+      </span>
+      <span class="bals">
+        <span class="bal">{{ t('atmAccountBalance') }} Ξ{{ walletShown() }}</span>
+        <span class="bal sub">{{ t('atmCollectiblesBalance') }} Ξ{{ valueShown(totalValue()) }}</span>
+      </span>
+      }
+    </div>
+
+    <div class="body">
+    <div class="col">
+    <!-- no wallet yet: the machine asks you to connect one -->
+    @if (!wallet) {
+      <div class="signin">
+        <svg class="signin-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M19.38 3Q28.9 3 30.62 10.48H33.33V13.76H31.05Q31.1 14.1 31.1 14.48Q31.1 14.86 31.1 15.19Q31.1 15.62 31.07 16.07Q31.05 16.52 31.05 16.9H33.33V20.24H30.33Q29.57 22.52 28.14 24.26Q26.71 26 24.31 26.95Q21.9 27.9 18.24 27.9H16.52V37H9.57V20.24H6.67V16.9H9.57V13.76H6.67V10.48H9.57V3ZM18.71 8.19H16.52V10.48H23.38Q22.24 8.19 18.71 8.19ZM24.1 13.76H16.52V16.9H24.1Q24.1 16.62 24.14 16.17Q24.19 15.71 24.19 15.19Q24.19 14.76 24.17 14.4Q24.14 14.05 24.1 13.76ZM23.33 20.24H16.52V22.71H18.1Q19.9 22.71 21.29 22.17Q22.67 21.62 23.33 20.24Z" /></svg>
+        <p class="signin-title">{{ t('atmInsertCard') }}</p>
+        <p class="signin-note">{{ t('atmInsertCardNote') }}</p>
+        <button type="button" class="opt" (click)="connectWallet.emit()">{{ t('connect') }}</button>
+      </div>
+    } @else {
+    @switch (screen()) {
+
+      <!-- HOME: the main menu -->
+      @case ('home') {
+        <div class="page">
+          <p class="prompt big">{{ t('atmChooseService') }}</p>
+          <div class="menu">
+            <button type="button" class="opt main" (click)="go('collections')">{{ t('atmMyCollectibles') }} <span class="n">{{ totalPieces() }}</span></button>
+            <!-- the market money (sales, refunds) waiting to withdraw; Withdraw lives inside it -->
+            <button type="button" class="opt" (click)="go('balance')">{{ t('atmWithdrawable') }} <span class="n">Ξ {{ fundsShown() }}</span></button>
+            <button type="button" class="opt" (click)="openLog()">{{ t('atmTxLog') }}</button>
+          </div>
+        </div>
+      }
+
+      <!-- your collections -->
+      @case ('collections') {
+        <div class="page">
+          <p class="prompt">{{ t('atmChooseCollection') }}</p>
+          <!-- what it's all worth at today's floors, as one summary line like the rows below -->
+          <div class="total"><span>{{ t('atmValueTotal') }}</span><b>Ξ{{ valueShown(totalValue()) }}</b></div>
+          <div class="list">
+            @for (g of groups; track g.slug) {
+              <button type="button" class="row" [style.--row]="g.accent" (click)="openGroup(g)">
+                @if (g.logo) { <img [src]="g.logo" alt="" /> }
+                <span class="r-name">{{ g.name }}</span>
+                <span class="r-n">{{ g.items.length }}</span>
+                <span class="r-v">Ξ{{ valueShown(groupValue(g)) }}</span>
+              </button>
+            }
+          </div>
+          <p class="fine">{{ t('atmValueNote') }}</p>
+          <div class="actions"><button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button></div>
+        </div>
+      }
+
+      <!-- the pieces in one collection -->
+      @case ('pieces') {
+        @if (group(); as g) {
+          <div class="page">
+            <p class="prompt">{{ g.name }} · {{ g.items.length }} — {{ t('atmChoosePiece') }}</p>
+            <p class="worth"><span>{{ t('atmFloor') }} <b>Ξ{{ valueShown(floors()?.[g.slug] ?? null) }}</b></span><span>{{ t('atmValue') }} <b>Ξ{{ valueShown(groupValue(g)) }}</b></span></p>
+            <div class="pieces">
+              @for (p of g.items; track p.hashId) {
+                <button type="button" class="pc" [class.listed]="!!p.listing" [class.escrow]="p.isEscrowed"
+                  [class.picking]="picking()" [class.picked]="picked().has(p.hashId)" (click)="openPiece(p)"
+                  [title]="g.single + ' #' + (p.tokenId | tokenNumber: p.slug)">
+                  <span class="img"><app-phunk-image [sha]="p.sha" [alt]="'#' + p.tokenId" />@if (picking()) { <span class="tick">✓</span> }</span>
+                  <span class="id">#{{ p.tokenId | tokenNumber: p.slug }}</span>
+                </button>
+              }
+            </div>
+            <p class="fine legend"><span class="sw listed"></span>{{ t('atmLegendListed') }} <span class="sw escrow"></span>{{ t('atmInEscrow') }}</p>
+            <!-- one piece opens on a tap; "Select several" ticks pieces instead, then Continue acts on them all -->
+            @if (picking()) {
+              <div class="actions">
+                <button type="button" class="opt exit" (click)="stopPicking()">{{ t('atmCancel') }}</button>
+                <button type="button" class="opt" (click)="pickAll()">{{ picked().size === g.items.length ? t('atmClearAll') : t('atmSelectAll') }}</button>
+                <button type="button" class="opt ok" [class.dim]="!picked().size" [disabled]="!picked().size" (click)="openMany()">{{ t('atmContinueN', { n: picked().size }) }}</button>
+              </div>
+            } @else {
+              <div class="actions">
+                <button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button>
+                @if (g.items.length > 1) { <button type="button" class="opt" (click)="startPicking()">{{ t('atmSelectSeveral') }}</button> }
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- balance -->
+      @case ('balance') {
+        <div class="page">
+          <p class="prompt big">{{ t('atmWithdrawableTitle') }}</p>
+          <p class="fine">{{ t('atmFundsTitle') }}</p>
+          @if ((funds() || []).length) {
+            <ul class="ledger">
+              @for (x of funds() || []; track x.market) {
+                <li><span>{{ x.kind === 'quantumphunks' ? t('atmFundsQp') : t('atmFundsEp') }} <small>{{ x.market.slice(0, 6) }}…{{ x.market.slice(-4) }}</small></span><b>Ξ {{ fundsEth(x.wei) }}</b></li>
+              }
+            </ul>
+          } @else if (funds()) {
+            <p class="prompt big">Ξ 0</p>
+            <p class="fine">{{ t('atmNoFunds') }}</p>
+          } @else {
+            <p class="prompt big">Ξ {{ fundsShown() }}</p>
+            @if (fundsFailed()) { <p class="err">{{ t('atmBalanceUnavailable') }}</p> }
+          }
+          <p class="fine">{{ t('atmFundsNote') }}</p>
+          <div class="actions">
+            <button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button>
+            <!-- withdraw lives here, in Balance; faded while nothing is owed -->
+            <button type="button" class="opt ok" [class.dim]="!(funds() || []).length" [disabled]="!(funds() || []).length" (click)="go('funds')">{{ t('atmWithdrawFunds') }}</button>
+          </div>
+        </div>
+      }
+
+      <!-- transaction log -->
+      @case ('log') {
+        <div class="page">
+          <p class="prompt big">{{ t('atmTxLog') }}</p>
+          @if (log(); as rows) {
+            @if (rows.length) {
+              <ul class="txlog">
+                @for (e of rows; track e.txHash + e.hashId + e.type) {
+                  <li>
+                    <span class="l-date">{{ logDate(e) }}</span>
+                    <span class="l-what">{{ t(logLabel(e)) }}@if (e.tokenId !== null && e.tokenId !== undefined) { <b> #{{ e.tokenId | tokenNumber: e.slug }}</b> }@if (logOther(e); as o) { <small class="l-other">{{ (e.from || '').toLowerCase() === (wallet || '').toLowerCase() ? '→' : '←' }} {{ o }}</small> }</span>
+                    <span class="l-val">@if (logValue(e)) { Ξ{{ logValue(e) }} }</span>
+                    <a class="l-tx" [href]="explorer(e.txHash)" target="_blank" rel="noopener noreferrer" [attr.aria-label]="t('atmViewTx')">↗</a>
+                  </li>
+                }
+              </ul>
+              @if (logHasMore()) {
+                <div class="more"><button type="button" class="opt exit" (click)="loadMoreLog()" [disabled]="logLoading()">{{ logLoading() ? '…' : t('atmLoadMore') }}</button></div>
+              }
+            } @else {
+              <p class="fine">{{ t('atmLogEmpty') }}</p>
+            }
+          } @else {
+            <div class="loader" aria-hidden="true"><span></span><span></span><span></span></div>
+          }
+          <div class="actions"><button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button></div>
+        </div>
+      }
+
+      <!-- withdraw funds: confirm -->
+      @case ('funds') {
+        <div class="page">
+          <p class="prompt big">{{ t('atmFundsConfirm', { v: fundsTotal() }) }}</p>
+          <p class="fine">{{ t('atmFundsNote') }}</p>
+          <div class="actions">
+            <button type="button" class="opt" (click)="back()">{{ t('atmCancel') }}</button>
+            <button type="button" class="opt ok" (click)="withdrawFunds()">{{ t('atmConfirm') }}</button>
+          </div>
+        </div>
+      }
+
+      <!-- one piece: its account summary and moves -->
+      @case ('piece') {
+        @if (piece(); as p) {
+          <ng-container *ngTemplateOutlet="account; context: { $implicit: p }" />
+          <div class="page">
+            <p class="prompt">{{ t('atmPickKey') }}</p>
+            <div class="menu">
+              @for (o of options(p); track o.action) {
+                @if (o.action === 'bids') {
+                  <a class="opt" [routerLink]="detailsLink(p)" [queryParams]="{ action: 'bids' }">{{ t(o.label) }} <span class="ext">↗</span></a>
+                } @else {
+                  <button type="button" class="opt" [class.main]="o.main" (click)="choose($any(o.action))">{{ t(o.label) }}</button>
+                }
+              }
+              <button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- several pieces: what to do with the ticked ones; each move says how many it covers -->
+      @case ('many') {
+        <ng-container *ngTemplateOutlet="manyCard" />
+        <div class="page">
+          <p class="prompt">{{ t('atmPickKey') }}</p>
+          <div class="menu">
+            @for (o of manyOptions(); track o.action) {
+              <button type="button" class="opt" [class.main]="o.main" (click)="choose(o.action)">{{ t(o.label) }} <span class="n">{{ o.n }}</span></button>
+            }
+            <button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button>
+          </div>
+        </div>
+      }
+
+      @case ('sell') {
+        @if (many() || piece(); as p) {
+          @if (many()) { <ng-container *ngTemplateOutlet="manyCard" /> }
+          @else { <ng-container *ngTemplateOutlet="account; context: { $implicit: p }" /> }
+          <div class="page">
+            @if (many()) {
+              <!-- several pieces: a price each, and one box that fills them all -->
+              <p class="prompt">{{ t('atmEnterAmountEach') }}</p>
+              <p class="worth"><span>{{ t('atmCurrentFloor') }} <b>Ξ{{ valueShown(floors()?.[group()?.slug || ''] ?? null) }}</b></span></p>
+              <label class="price-all">
+                <span>{{ t('atmSamePriceAll') }}</span>
+                <span class="pin"><b>Ξ</b><input inputmode="decimal" placeholder="0.00" [ngModel]="allPrice" (ngModelChange)="setAllPrices($event)" autocomplete="off" /></span>
+              </label>
+              <ul class="price-list">
+                @for (q of targets('sell'); track q.hashId) {
+                  <li>
+                    <span class="face"><app-phunk-image [sha]="q.sha" [alt]="'#' + q.tokenId" /></span>
+                    <span class="pl-id">#{{ q.tokenId | tokenNumber: q.slug }}</span>
+                    <span class="pin"><b>Ξ</b><input inputmode="decimal" placeholder="0.00" [ngModel]="prices()[q.hashId] || ''" (ngModelChange)="setPrice(q.hashId, $event)" autocomplete="off" /></span>
+                  </li>
+                }
+              </ul>
+              <p class="worth"><span>{{ t('atmTotal') }} <b>Ξ{{ pricesTotal() }}</b></span></p>
+            } @else {
+              <p class="prompt">{{ t('atmEnterAmount') }}</p>
+              <p class="worth"><span>{{ t('atmCurrentFloor') }} <b>Ξ{{ valueShown(floors()?.[group()?.slug || ''] ?? null) }}</b></span></p>
+              <div class="amount" [class.empty]="!amount()"><span class="eth">Ξ</span>{{ amount() || '0.00' }}</div>
+              <div class="keypad">
+                @for (k of keypad; track k) { <button type="button" (click)="press(k)">{{ k }}</button> }
+              </div>
+            }
+            @if (error()) { <p class="err">{{ error() }}</p> }
+            <p class="fine">{{ t('atmRoyaltyNote') }}</p>
+            @if (many() && manyOneByOne(pending())) { <p class="fine">{{ t('atmOneByOne') }}</p> }
+            <div class="actions">
+              <button type="button" class="opt" (click)="back()">{{ t('atmCancel') }}</button>
+              <button type="button" class="opt ok" (click)="confirm()">{{ t('atmConfirm') }}</button>
+            </div>
+          </div>
+        }
+      }
+
+      @case ('transfer') {
+        @if (many() || piece(); as p) {
+          @if (many()) { <ng-container *ngTemplateOutlet="manyCard" /> }
+          @else { <ng-container *ngTemplateOutlet="account; context: { $implicit: p }" /> }
+          <div class="page">
+            <p class="prompt">{{ t('atmEnterRecipient') }}</p>
+            <input class="field" [(ngModel)]="recipient" placeholder="0x… / name.eth" spellcheck="false" autocomplete="off" />
+            @if (error()) { <p class="err">{{ error() }}</p> }
+            <p class="fine">{{ t('atmTransferNote') }}</p>
+            @if (many() && manyOneByOne(pending())) { <p class="fine">{{ t('atmOneByOne') }}</p> }
+            <div class="actions">
+              <button type="button" class="opt" (click)="back()">{{ t('atmCancel') }}</button>
+              <button type="button" class="opt ok" (click)="confirm()">{{ t('atmConfirm') }}</button>
+            </div>
+          </div>
+        }
+      }
+
+      @case ('confirm') {
+        @if (many() || piece(); as p) {
+          @if (many()) { <ng-container *ngTemplateOutlet="manyCard" /> }
+          @else { <ng-container *ngTemplateOutlet="account; context: { $implicit: p }" /> }
+          <div class="page">
+            <p class="prompt big">{{ confirmText(pending()) }}</p>
+            @if (many() && manyOneByOne(pending())) { <p class="fine">{{ t('atmOneByOne') }}</p> }
+            <div class="actions">
+              <button type="button" class="opt" (click)="back()">{{ t('atmCancel') }}</button>
+              <button type="button" class="opt ok" (click)="confirm()">{{ t('atmConfirm') }}</button>
+            </div>
+          </div>
+        }
+      }
+
+      @case ('working') {
+        <div class="page center">
+          <p class="prompt big">{{ t('atmProcessing') }}</p>
+          <div class="loader" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p class="fine">{{ t('atmConfirmInWallet') }}</p>
+        </div>
+      }
+
+      @case ('done') {
+        <div class="page center">
+          <p class="prompt big ok-text">✓ {{ t('atmDone') }}</p>
+          <a class="fine link" [href]="explorer(txHash())" target="_blank" rel="noopener noreferrer">{{ t('atmViewTx') }} ↗</a>
+          <div class="actions">
+            <button type="button" class="opt" (click)="back()">{{ t('atmBack') }}</button>
+            <button type="button" class="opt exit" (click)="go('home')">{{ t('atmMainMenu') }}</button>
+          </div>
+        </div>
+      }
+
+      @case ('error') {
+        <div class="page center">
+          <p class="prompt big" [class.err-text]="errorTitle() === 'atmFailed'">{{ t(errorTitle()) }}</p>
+          <p class="fine">{{ error() }}</p>
+          <div class="actions"><button type="button" class="opt" (click)="back()">{{ t('atmBack') }}</button></div>
+        </div>
+      }
+    }
+    }
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- a piece shown like an account summary -->
+<ng-template #account let-p>
+  <section class="account">
+    <div class="art"><app-phunk-image [sha]="p.sha" [alt]="'#' + p.tokenId" /></div>
+    <div class="acct">
+      <p class="acct-label">{{ group()?.single }}</p>
+      <p class="acct-num">#{{ p.tokenId | tokenNumber: p.slug }}</p>
+      <p class="acct-status">
+        @if (p.listing) { <span class="dot listed"></span>{{ t('atmListed', { p: listedEth(p) }) }} }
+        @else if (p.isEscrowed) { <span class="dot escrow"></span>{{ t('atmInEscrow') }} }
+        @else { <span class="dot"></span>{{ t('atmInWallet') }} }
+      </p>
+    </div>
+  </section>
+</ng-template>
+
+<!-- several pieces shown as one summary: a strip of their faces and how many -->
+<ng-template #manyCard>
+  @let ps = (pending() ? targets(pending()!) : many()) || [];
+  <section class="account many-card">
+    <div class="faces">
+      @for (p of ps.slice(0, 6); track p.hashId) { <span class="face"><app-phunk-image [sha]="p.sha" [alt]="'#' + p.tokenId" /></span> }
+      @if (ps.length > 6) { <span class="face more-n">+{{ ps.length - 6 }}</span> }
+    </div>
+    <div class="acct">
+      <p class="acct-label">{{ group()?.name }}</p>
+      <p class="acct-num">{{ t('atmSelectedN', { n: ps.length }) }}</p>
+    </div>
+  </section>
+</ng-template>

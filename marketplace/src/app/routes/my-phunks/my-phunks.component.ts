@@ -1,9 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, isDevMode, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 
 import { Store } from '@ngrx/store';
-import { combineLatest, from, map, of, shareReplay, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, map, of, shareReplay, switchMap } from 'rxjs';
 
 import { GlobalState } from '@/models/global-state';
 import { Phunk } from '@/models/db';
@@ -16,6 +16,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { TokenNumberPipe } from '@/pipes/token-number.pipe';
 import { detailsLink, groupWalletItems, liveCollections, WalletGroup } from '@/utils/wallet-groups';
+import { PhunkAtmComponent } from '@/components/phunk-atm/phunk-atm.component';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as marketStateSelectors from '@/state/selectors/market-state.selectors';
@@ -29,7 +30,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, PhunkImageComponent, TokenNumberPipe],
+  imports: [CommonModule, RouterModule, PhunkImageComponent, TokenNumberPipe, PhunkAtmComponent],
   selector: 'app-my-phunks',
   templateUrl: './my-phunks.component.html',
   styleUrls: ['./my-phunks.component.scss'],
@@ -43,7 +44,15 @@ export class MyPhunksComponent {
 
   detailsLink = detailsLink;
 
-  connected$ = this.store.select(appStateSelectors.selectWalletAddress).pipe(map(a => a?.toLowerCase() || null));
+  /** Local dev only: `?preview=1` with `?address=` shows that wallet as if it were yours, so the
+   *  terminal can be looked at without connecting. Ignored in production builds. */
+  preview = isDevMode() && new URLSearchParams(location.search).get('preview') === '1';
+
+  connected$ = this.store.select(appStateSelectors.selectWalletAddress).pipe(map(a => {
+    const param = new URLSearchParams(location.search).get('address');
+    if (this.preview && param) return param.toLowerCase();
+    return a?.toLowerCase() || null;
+  }));
 
   /** the wallet shown: `?address=` when given, otherwise the connected one */
   address$ = combineLatest([
@@ -57,7 +66,11 @@ export class MyPhunksComponent {
   ens$ = this.address$.pipe(switchMap(a => (a ? from(this.web3Svc.getEnsFromAddress(a)) : of(null))));
 
   /** what the wallet holds, plus every live collection it doesn't hold yet */
-  shelf$ = this.address$.pipe(
+  /** bumped after a move at the machine, so the holdings are read again */
+  private reload$ = new BehaviorSubject(0);
+
+  shelf$ = combineLatest([this.address$, this.reload$]).pipe(
+    map(([address]) => address),
     switchMap(address => address
       ? combineLatest([
           from(this.dataSvc.fetchOwnedAllCollections(address)),
@@ -78,10 +91,19 @@ export class MyPhunksComponent {
               previews: held.length ? [] : c.previews.slice(0, 6).map(p => ({ ...p, slug: c.slug })),
             };
           });
-          return { address, owned, all };
+          // for the bank machine: what's held (site order) and what isn't yet
+          const held = all.filter(c => c.items.length) as WalletGroup[];
+          const missing = all.filter(c => !c.items.length).map(c => ({ slug: c.slug, name: c.name, logo: c.logo }));
+          return { address, owned, all, held, missing };
         }))
       : of(null)),
   );
+
+  /** After a move: drop the cached holdings and read them again once the indexer has caught up. */
+  refresh(address: string) {
+    this.dataSvc.invalidateOwned(address);
+    setTimeout(() => { this.dataSvc.invalidateOwned(address); this.reload$.next(this.reload$.value + 1); }, 6000);
+  }
 
   /** collections not held yet stay hidden until the switch is on (unless nothing is held) */
   showMissing = signal(false);

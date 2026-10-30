@@ -5,7 +5,7 @@ import { UI } from '@/i18n/ui';
 import { CONTENT, Content } from '@/i18n/content';
 
 export type MenuLanguage = 'en' | 'es' | 'ja' | 'zh' | 'id';
-export type MenuFont = 'default' | 'blockscript' | 'high-blockscript';
+export type MenuFont = 'default' | 'phupreme' | 'blockscript' | 'high-blockscript';
 
 @Injectable({
   providedIn: 'root',
@@ -24,6 +24,8 @@ export class PhunkPreferencesService {
 
   fontOptions: { value: MenuFont; labelKey: string; className: string; sample: string }[] = [
     { value: 'default', labelKey: 'defaultFont', className: 'sample-default', sample: 'Aa' },
+    // the Phupreme box logo's lettering style (Jost, a free Futura revival)
+    { value: 'phupreme', labelKey: 'phupremeFont', className: 'sample-phupreme', sample: 'Aa' },
     { value: 'blockscript', labelKey: 'blockscriptFont', className: 'sample-blockscript', sample: 'A' },
     { value: 'high-blockscript', labelKey: 'highBlockscriptFont', className: 'sample-high-blockscript', sample: 'A' },
   ];
@@ -62,6 +64,7 @@ export class PhunkPreferencesService {
       defaultFont: 'Default font',
       blockscriptFont: 'Blockscript font',
       highBlockscriptFont: 'High Blockscript font',
+      phupremeFont: 'Phupreme font',
       leaderboardImageAlt: 'QuantumPhunk 9986',
       recentActivity: 'Recent Activity',
       all: 'All',
@@ -335,6 +338,7 @@ export class PhunkPreferencesService {
       defaultFont: 'Fuente normal',
       blockscriptFont: 'Fuente Blockscript',
       highBlockscriptFont: 'Fuente High Blockscript',
+      phupremeFont: 'Fuente Phupreme',
       leaderboardImageAlt: 'QuantumPhunk 9986',
       recentActivity: 'Actividad Reciente',
       all: 'Todo',
@@ -605,6 +609,7 @@ export class PhunkPreferencesService {
       defaultFont: '標準フォント',
       blockscriptFont: 'Blockscript フォント',
       highBlockscriptFont: 'High Blockscript フォント',
+      phupremeFont: 'Phupreme',
       leaderboardImageAlt: 'QuantumPhunk 9986',
       recentActivity: '最近のアクティビティ',
       all: 'すべて',
@@ -876,6 +881,7 @@ export class PhunkPreferencesService {
       defaultFont: '默认字体',
       blockscriptFont: 'Blockscript 字体',
       highBlockscriptFont: 'High Blockscript 字体',
+      phupremeFont: 'Phupreme',
       leaderboardImageAlt: 'QuantumPhunk 9986',
       recentActivity: '最近活动',
       all: '全部',
@@ -1183,7 +1189,7 @@ export class PhunkPreferencesService {
 
   private loadFont(): MenuFont {
     const font = this.loadPreference('qp-font');
-    if (font === 'blockscript' || font === 'high-blockscript') return font;
+    if (font === 'phupreme' || font === 'blockscript' || font === 'high-blockscript') return font;
     return 'default';
   }
 

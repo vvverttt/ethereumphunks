@@ -4,18 +4,21 @@
 
 <div class="inner">
   @if (!address) {
-    <h1>{{ t('myPhunksAccount') }}</h1>
-    <p class="note">{{ t('myPhunksConnect') }}</p>
-    <button class="btn" (click)="connect()">{{ t('connect') }}</button>
+    <!-- signed out: the bank machine, asking for a card (Connect) -->
+    <app-phunk-atm class="atm-wrap full" [wallet]="null" (connectWallet)="connect()" />
   } @else {
     @if (shelf$ | async; as shelf) {
       @let done = shelf.owned.length;
       @let setSize = shelf.all.length;
       @let own = me === shelf.address;
 
-      <h1>{{ t('myPhunksAccount') }}</h1>
+      <!-- your own wallet opens straight onto the bank machine; anyone else's gets the title -->
+      @if (!(own && done)) {
+        <h1>{{ t('myPhunksAccount') }}</h1>
+      }
 
-      <!-- the wallet and its totals -->
+      <!-- the wallet and its totals (inside the bank machine's account strip for your own wallet) -->
+      @if (!(own && done)) {
       <section class="card">
         <div class="who">
           @if (ens) {
@@ -33,7 +36,14 @@
           <div><span class="v">{{ done }}@if (showMissing()) {<small>/{{ setSize }}</small>}</span><span class="l">{{ t('myPhunksCollections') }}</span></div>
         </div>
       </section>
+      }
 
+      <!-- Your own wallet: everything happens in the bank machine (collections, pieces, their market
+           moves, the balance and withdrawals), menu by menu like a real ATM -->
+      @if (own && done) {
+        <app-phunk-atm class="atm-wrap full" [groups]="shelf.held" [missing]="shelf.missing" [wallet]="shelf.address" [ens]="ens"
+          [preview]="preview" (changed)="refresh(shelf.address)" />
+      } @else {
       <!-- set meter: a chip per held collection; the not-collected ones join when the switch is on -->
       <nav class="meter">
         @for (c of shelf.all; track c.slug) {
@@ -109,6 +119,7 @@
             <a class="go" [routerLink]="['/', g.slug, 'market', 'listings']">{{ t('myPhunksStart') }} →</a>
           </section>
         }
+      }
       }
     } @else {
       <p class="note">…</p>

@@ -481,6 +481,24 @@ export class DataService {
    * @param address User address
    * @param fromBlock Starting block number
    */
+  /** The Account Details bank machine's transaction log: the wallet's buys, sales (market sales
+   *  and auction wins) and transfers in and out, newest first, with each piece's number and collection. One small
+   *  read, made only when the log screen is opened. */
+  async fetchWalletLog(address: string, limit = 40, offset = 0): Promise<Event[]> {
+    address = address.toLowerCase();
+    const { data } = await supabase
+      .from('events' + this.suffix)
+      .select(`*, ethscriptions${this.suffix}(tokenId,slug)`)
+      .or(`from.eq.${address},to.eq.${address}`)
+      .in('type', ['PhunkBought', 'AuctionSettled', 'transfer'])
+      .order('blockNumber', { ascending: false })
+      .range(offset, offset + limit - 1);
+    return (data || []).map((e: any) => {
+      const c = e[`ethscriptions${this.suffix}`];
+      return { ...e, tokenId: c?.tokenId ?? e.tokenId ?? null, slug: c?.slug ?? e.slug };
+    });
+  }
+
   fetchMissedEvents(address: string, fromBlock: number): Observable<Event[]> {
     address = address.toLowerCase();
 
@@ -1452,6 +1470,30 @@ export class DataService {
 
     this.statSummaryCache.set(slug, { data: result$, timestamp: Date.now() });
     return result$;
+  }
+
+  /**
+   * Every collection's floor in one go, for the bank's collectibles value: the same two small
+   * queries as the stat summary (all live listings, then their slugs), grouped by slug.
+   * A collection with nothing listed has no floor and is left out.
+   */
+  async fetchFloors(): Promise<Record<string, number>> {
+    const { data: rows, error } = await supabase
+      .from('listings' + this.suffix).select('hashId,minValue').eq('listed', true);
+    if (error) throw error;
+    if (!rows?.length) return {};
+    const { data: eths, error: e2 } = await supabase
+      .from('ethscriptions' + this.suffix).select('hashId,slug')
+      .in('hashId', rows.map((r: any) => r.hashId));
+    if (e2) throw e2;
+    const slugOf = new Map((eths ?? []).map((e: any) => [e.hashId, e.slug]));
+    const floors: Record<string, number> = {};
+    for (const r of rows as any[]) {
+      const slug = slugOf.get(r.hashId);
+      const v = Number(r.minValue) / 1e18;
+      if (slug && v > 0 && !(floors[slug] <= v)) floors[slug] = v;
+    }
+    return floors;
   }
 
   /**

@@ -1,0 +1,541 @@
+// A GTA bank machine after Maze Bank's ATM: the bank's logo on a white header, an accent bar with
+// the account holder and the balance, a light grey service screen framed by maze-patterned side
+// panels, centred stacked buttons in the accent that light up cyan, and Back to the right. The
+// accent is the open collection's (--g-accent, set on .bezel), otherwise the site's.
+
+:host {
+  display: block;
+  --g-accent: var(--pink);
+  --g-tile: var(--phunk-bg);
+  --ink: 24, 26, 30;
+  --ok: 46, 170, 78;
+  --hover: 86, 203, 234;     // Maze Bank's highlighted-button cyan
+  font-family: var(--secondary-font-stack); // the site's pixel face, like the menu
+}
+
+.bezel {
+  padding: 1.2rem;
+  background: linear-gradient(180deg, #4a4f56, #24272b);
+  border-radius: .6rem;
+  box-shadow: 0 .8rem 0 rgba(0, 0, 0, .35);
+}
+
+.screen {
+  overflow: hidden;
+  color: rgba(var(--ink), 1);
+  background: #e8e8e9;
+}
+
+// the white header with the logo
+.top {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 2rem 2.8rem;
+  background: #fff;
+
+  .mark {
+    flex: none;
+    // as tall as the two-line wordmark, like Maze Bank's square
+    width: 5.4rem;
+    height: 5.4rem;
+    path { fill: rgba(var(--g-accent), 1); stroke: none; }
+  }
+  .wordmark { display: flex; flex-direction: column; line-height: 1; }
+  .bank {
+    font-size: 3.2rem;
+    font-weight: 500;
+    letter-spacing: -.01em;
+    text-transform: uppercase;
+    color: #2b2d31;
+  }
+  .slogan {
+    margin-top: .3rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #5a5d63;
+  }
+}
+
+// the accent bar: account holder on the left, balance on the right, a black rule under it
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1.1rem 2.8rem;
+  font-size: 1.4rem; // the pixel face runs wide, so its white text sits smaller
+  color: #fff;
+  background: linear-gradient(180deg, rgba(var(--g-accent), 1), rgba(var(--g-accent), .86));
+  border-bottom: .4rem solid #111;
+
+  .who { display: flex; align-items: baseline; gap: .8rem; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .w-addr, .w-copy {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .w-addr { font-size: 1rem; opacity: .75; }
+  // the two balances stacked on the right: the wallet's ETH, then the collectibles at floor
+  .bals { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; line-height: 1.25; }
+  .bal { white-space: nowrap; }
+  .bal.sub { margin-top: .3rem; font-size: 1.1rem; opacity: .85; }
+}
+
+// the service screen between maze-patterned side panels
+.body {
+  background: #e3e3e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M19.38 3Q28.9 3 30.62 10.48H33.33V13.76H31.05Q31.1 14.1 31.1 14.48Q31.1 14.86 31.1 15.19Q31.1 15.62 31.07 16.07Q31.05 16.52 31.05 16.9H33.33V20.24H30.33Q29.57 22.52 28.14 24.26Q26.71 26 24.31 26.95Q21.9 27.9 18.24 27.9H16.52V37H9.57V20.24H6.67V16.9H9.57V13.76H6.67V10.48H9.57V3ZM18.71 8.19H16.52V10.48H23.38Q22.24 8.19 18.71 8.19ZM24.1 13.76H16.52V16.9H24.1Q24.1 16.62 24.14 16.17Q24.19 15.71 24.19 15.19Q24.19 14.76 24.17 14.4Q24.14 14.05 24.1 13.76ZM23.33 20.24H16.52V22.71H18.1Q19.9 22.71 21.29 22.17Q22.67 21.62 23.33 20.24Z' fill='%23cfd1d4'/%3E%3C/svg%3E") repeat;
+  background-size: 4rem 4rem;
+}
+.col {
+  // narrower than the screen, so the maze panels show down both sides like Maze Bank's
+  max-width: 54rem;
+  min-height: 44rem;
+  margin: 0 auto;
+  background: #e9e9ea;
+}
+
+.page {
+  padding: 2.4rem 3.2rem 3.2rem;
+  &.center { text-align: center; }
+}
+
+.prompt {
+  margin: 0 0 1.6rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  text-align: center;
+  &.big { font-size: 2.4rem; line-height: 1.3; }
+}
+
+// the stacked service buttons
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4rem;
+}
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.4rem;
+  margin-top: 2.4rem;
+}
+
+.opt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 34rem;
+  min-height: 5.4rem;
+  padding: 0 2rem;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: #fff;
+  text-shadow: 0 .1rem .1rem rgba(0, 0, 0, .35);
+  background: linear-gradient(180deg, rgba(var(--g-accent), 1), rgba(var(--g-accent), .82));
+  border: .1rem solid rgba(0, 0, 0, .25);
+  cursor: pointer;
+
+  .n, .ext { font-size: 1.4rem; opacity: .85; }
+  &:hover, &:focus-visible {
+    background: linear-gradient(180deg, rgba(var(--hover), 1), rgba(var(--hover), .85));
+    border-color: rgba(0, 0, 0, .2);
+    outline: none;
+  }
+  &:active { transform: translateY(.1rem); }
+  &.dim { opacity: .5; }
+  &:disabled { cursor: default; pointer-events: none; }
+
+  // the Back / Cancel / Exit keys: smaller, to the right, like Maze Bank's Back
+  &.exit, .actions & { width: auto; min-width: 16rem; max-width: none; }
+  &.ok {
+    background: linear-gradient(180deg, rgba(var(--ok), 1), rgba(var(--ok), .85));
+    &:hover { background: linear-gradient(180deg, rgba(var(--hover), 1), rgba(var(--hover), .85)); }
+  }
+}
+.menu .opt.exit { margin-top: 1rem; }
+
+// a piece shown like an account summary
+.account {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1.8rem 3.2rem;
+  background: #fff;
+  border-bottom: .1rem solid #d4d5d7;
+
+  .art {
+    flex: none;
+    width: 8.8rem;
+    height: 8.8rem;
+    background: rgba(var(--g-tile), 1);
+    app-phunk-image { display: block; width: 100%; height: 100%; }
+  }
+  p { margin: 0; }
+  .acct-label { font-size: 1.2rem; font-weight: 700; text-transform: uppercase; color: #6b6e74; }
+  .acct-num { font-size: 2.8rem; font-weight: 700; line-height: 1.1; }
+  .acct-status {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-top: .4rem;
+    font-size: 1.4rem;
+    .dot { width: .9rem; height: .9rem; border-radius: 50%; background: #9a9da3; }
+    .dot.listed { background: rgba(var(--listed-color), 1); }
+    .dot.escrow { background: rgba(var(--escrow-color), 1); }
+  }
+}
+
+// lists: one row per collection
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  max-height: 42rem;
+  overflow-y: auto;
+}
+.row {
+  --row: var(--g-accent);
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  min-height: 5.4rem;
+  padding: .6rem 1.4rem;
+  font: inherit;
+  font-size: 1.8rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  color: rgba(var(--ink), 1);
+  background: #fff;
+  border: .1rem solid #d0d1d4;
+  border-left: .6rem solid rgba(var(--row), 1);
+  cursor: pointer;
+
+  img { width: 3.6rem; height: 3.6rem; object-fit: contain; image-rendering: pixelated; }
+  .r-name { flex: 1; }
+  // the value in its own right-hand column, so the Ξ amounts line up down the list
+  .r-v { min-width: 9rem; text-align: right; font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .r-n { padding: .2rem .9rem; font-size: 1.4rem; color: #fff; background: rgba(var(--row), 1); }
+  &:hover { background: rgba(var(--hover), .25); }
+}
+
+// the pieces in a collection
+.pieces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.4rem, 1fr));
+  gap: .8rem;
+  max-height: 44rem;
+  padding: .2rem;
+  overflow-y: auto;
+
+  .pc {
+    display: block;
+    padding: 0;
+    font: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    .img { display: block; aspect-ratio: 1; background: rgba(var(--g-tile), 1); border: .2rem solid transparent; }
+    &.listed .img { border-color: rgba(var(--listed-color), 1); }
+    &.escrow .img { border-color: rgba(var(--escrow-color), 1); }
+    app-phunk-image { display: block; width: 100%; height: 100%; }
+    .id { display: block; margin-top: .3rem; font-size: 1.1rem; font-weight: 600; text-align: center; color: #5a5d63; }
+    &:hover .img { outline: .3rem solid rgba(var(--hover), 1); }
+  }
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  .sw { width: 1rem; height: 1rem; }
+  .sw.listed { background: rgba(var(--listed-color), 1); }
+  .sw.escrow { margin-left: 1rem; background: rgba(var(--escrow-color), 1); }
+}
+
+// the amount read-out and keypad
+.amount {
+  padding: 1.2rem 1.6rem;
+  font-size: 3.2rem;
+  font-weight: 700;
+  text-align: right;
+  background: #fff;
+  border: .1rem solid #c9cacd;
+  font-variant-numeric: tabular-nums;
+  .eth { float: left; color: #9a9da3; }
+  &.empty { color: #b3b5b9; }
+}
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .8rem;
+  margin-top: 1.2rem;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.6rem;
+    padding: 0;
+    font: inherit;
+    font-size: 2rem;
+    font-weight: 600;
+    color: rgba(var(--ink), 1);
+    background: linear-gradient(180deg, #fff, #dfe0e2);
+    border: .1rem solid #c4c5c8;
+    box-shadow: 0 .3rem 0 #b9babd;
+    cursor: pointer;
+    &:hover { background: linear-gradient(180deg, rgba(var(--hover), .35), rgba(var(--hover), .2)); }
+    &:active { transform: translateY(.3rem); box-shadow: none; }
+  }
+}
+
+.field {
+  width: 100%;
+  padding: 1.4rem 1.6rem;
+  font: inherit;
+  font-size: 1.7rem;
+  color: rgba(var(--ink), 1);
+  background: #fff;
+  border: .1rem solid #c4c5c8;
+  &:focus { outline: none; border-color: rgba(var(--hover), 1); box-shadow: 0 0 0 .2rem rgba(var(--hover), .4); }
+}
+
+.ledger {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.2rem 1.4rem;
+    font-size: 1.6rem;
+    background: #fff;
+    border: .1rem solid #d0d1d4;
+    border-left: .6rem solid rgba(var(--ok), 1);
+    & + li { margin-top: .6rem; }
+    small { margin-left: .6rem; color: #8a8d93; font-size: 1.2rem; }
+    b { font-variant-numeric: tabular-nums; }
+  }
+}
+
+.fine { margin: 1.2rem 0 0; font-size: 1.3rem; color: #5a5d63; text-align: center; }
+.link { display: inline-block; font-weight: 700; color: rgba(var(--g-accent), 1); }
+.err { margin: 1rem 0 0; font-size: 1.4rem; font-weight: 700; color: #d01f33; text-align: center; }
+.ok-text { color: rgba(var(--ok), 1); }
+.err-text { color: #d01f33; }
+
+.loader {
+  display: flex;
+  justify-content: center;
+  gap: .8rem;
+  margin: 1.6rem 0;
+  span {
+    width: 1.4rem;
+    height: 1.4rem;
+    background: rgba(var(--g-accent), 1);
+    animation: bounce 1s ease-in-out infinite;
+    &:nth-child(2) { animation-delay: .15s; }
+    &:nth-child(3) { animation-delay: .3s; }
+  }
+}
+
+@media (max-width: 700px) {
+  .top { padding: 1.4rem 1.6rem; .mark { width: 3.8rem; height: 3.8rem; } .bank { font-size: 2.4rem; } }
+  .bar { flex-wrap: wrap; gap: .4rem 1.2rem; padding: 1rem 1.6rem; font-size: 1.2rem; }
+  .bar .bal { margin-left: auto; }
+  .page { padding: 1.8rem 1.6rem 2.4rem; }
+  .col { min-height: 0; }
+  .account { padding: 1.4rem 1.6rem; .art { width: 7rem; height: 7rem; } .acct-num { font-size: 2.2rem; } }
+  .opt { font-size: 1.3rem; min-height: 4.8rem; }
+  .opt.exit, .actions .opt { min-width: 12rem; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); opacity: .5; }
+  50% { transform: translateY(-.8rem); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .loader span { animation: none; } }
+
+// "Load more" under the log
+.more { display: flex; justify-content: center; margin-top: 1.2rem; }
+
+// the transaction log: date, what happened, value, a link to the transaction
+.txlog {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 44rem;
+  overflow-y: auto;
+  li {
+    display: grid;
+    grid-template-columns: 10rem 1fr auto 2.4rem;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    font-size: 1.4rem;
+    background: #fff;
+    border: .1rem solid #d8d9db;
+    & + li { margin-top: .4rem; }
+  }
+  .l-date { font-size: 1.2rem; color: #6b6e74; }
+  .l-val { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .l-other { margin-left: .6rem; font-size: 1.2rem; color: #6b6e74; }
+  .l-tx { color: rgba(var(--g-accent), 1); font-weight: 700; text-decoration: none; text-align: center; }
+
+  @media (max-width: 600px) {
+    li { grid-template-columns: 1fr auto 2rem; }
+    .l-date { grid-column: 1 / -1; }
+  }
+}
+
+// the collectibles' worth at today's floors: a summary bar in the accent, laid out like a row
+.total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.4rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(var(--g-accent), 1);
+  b { font-size: 1.8rem; font-variant-numeric: tabular-nums; }
+}
+// a collection's floor and value, one each side
+.worth {
+  display: flex;
+  justify-content: center;
+  gap: 2.4rem;
+  margin: 0;
+  font-size: 1.4rem;
+  opacity: .85;
+  b { font-variant-numeric: tabular-nums; }
+}
+
+// "Select several": a tick on each piece, filled in the accent once picked
+.pieces .pc {
+  .img { position: relative; }
+  .tick {
+    position: absolute;
+    top: .3rem;
+    right: .3rem;
+    display: grid;
+    place-items: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: transparent;
+    background: rgba(255, 255, 255, .85);
+    border: .15rem solid rgba(0, 0, 0, .35);
+  }
+  &.picked .img { outline: .3rem solid rgba(var(--g-accent), 1); outline-offset: -.3rem; }
+  &.picked .tick { color: #fff; background: rgba(var(--g-accent), 1); border-color: rgba(var(--g-accent), 1); }
+  &.picking:not(.picked) .img { opacity: .7; }
+}
+
+// several pieces as one summary: their faces overlapping, then how many
+.many-card .faces {
+  display: flex;
+  flex: none;
+  .face {
+    display: grid;
+    place-items: center;
+    width: 5.6rem;
+    height: 5.6rem;
+    margin-left: -1.6rem;
+    background: rgba(var(--g-tile), 1);
+    border: .2rem solid #fff;
+    &:first-child { margin-left: 0; }
+    app-phunk-image { display: block; width: 100%; height: 100%; }
+  }
+  .more-n { font-size: 1.4rem; font-weight: 800; color: #fff; background: rgba(var(--g-accent), 1); }
+}
+
+// several pieces' prices: one box for all, then a row per piece with its own
+.price-all, .price-list li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .6rem 1rem;
+  background: #fff;
+  border: .1rem solid rgba(0, 0, 0, .08);
+}
+.price-all { justify-content: space-between; font-size: 1.4rem; font-weight: 700; border-left: .5rem solid rgba(var(--g-accent), 1); }
+.price-list {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  max-height: 30rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  li .face { flex: none; width: 4rem; height: 4rem; background: rgba(var(--g-tile), 1); app-phunk-image { display: block; width: 100%; height: 100%; } }
+  .pl-id { flex: 1; font-size: 1.5rem; font-weight: 700; }
+}
+.pin {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  b { font-size: 1.5rem; }
+  input {
+    width: 10rem;
+    padding: .6rem .8rem;
+    font: inherit;
+    font-size: 1.6rem; // 16px or more, so iOS doesn't zoom in on focus
+    text-align: right;
+    color: #111;
+    background: #fff;
+    border: .15rem solid rgba(0, 0, 0, .2);
+    &:focus { outline: none; border-color: rgba(var(--g-accent), 1); }
+  }
+}
+
+// short labels like "Continue (4)" stay on one line
+.actions .opt { white-space: nowrap; }
+
+// Full page (Phaze Bank's own route): no machine casing; the white sign and the accent bar span
+// the width, and the service screen fills the rest of the window between the maze panels, in
+// Maze Bank's proportions: the screen about 70% wide, the panels about 15% each, and the sign
+// and bar contents pulled in to line up over the screen.
+:host(.full) {
+  .bezel { padding: 0; background: none; border-radius: 0; box-shadow: none; }
+  .screen { display: flex; flex-direction: column; min-height: calc(100vh - var(--header-height)); }
+  .top, .bar { padding-left: 18.5%; padding-right: 18.5%; }
+  .body { flex: 1; display: flex; }
+  .col { flex: none; width: 70%; max-width: none; min-height: 0; margin: 0 auto; }
+
+  @media (max-width: 700px) {
+    .top, .bar { padding-left: 1.6rem; padding-right: 1.6rem; }
+    .col { width: 100%; }
+  }
+}
+
+// signed out: one centred card in the middle of the screen, the mark, one line, one button
+.signin {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  padding: 4rem 2.4rem;
+  text-align: center;
+
+  .signin-mark { width: 7.2rem; height: 7.2rem; margin-bottom: .6rem; path { fill: rgba(var(--g-accent), 1); } }
+  .signin-title { margin: 0; font-size: 2.2rem; line-height: 1.3; color: #2b2d31; }
+  .signin-note { margin: 0 0 1.4rem; font-size: 1.2rem; line-height: 1.5; color: #7a7d83; max-width: 48rem; }
+  .opt { width: auto; min-width: 22rem; }
+}
+.col:has(> .signin) { display: flex; flex-direction: column; }

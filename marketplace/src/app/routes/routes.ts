@@ -33,7 +33,9 @@ export const routes: Routes = [
   // { path: 'privacy', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'privacy' } },
   { path: 'about', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'about' } },
   // the connected wallet's pieces (or ?address=) across every collection, from the menu's Your Phunks
-  { path: 'my-phunks', loadComponent: () => import('@/routes/my-phunks/my-phunks.component').then(m => m.MyPhunksComponent) },
+  { path: 'phaze-bank', loadComponent: () => import('@/routes/my-phunks/my-phunks.component').then(m => m.MyPhunksComponent) },
+  // the bank's old address, kept so saved links still land (query params carry over)
+  { path: 'my-phunks', redirectTo: 'phaze-bank' },
   { path: 'shell-archive', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'shell-archive' } },
   // Phupreme (the QuantumPhunks mint lottery). Its old /lottery links redirect here.
   { path: 'lottery', redirectTo: 'phupreme', pathMatch: 'full' },

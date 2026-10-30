@@ -12,6 +12,24 @@
   font-style: normal;
 }
 
+// Phupreme: Jost (SIL Open Font License, see assets/fonts/jost-OFL.txt), a free Futura revival,
+// the lettering style of the Phupreme box logo. Variable weight, Latin + Greek (for Ξ).
+@font-face {
+  font-family: 'Phupreme Sans';
+  src: url('/assets/fonts/jost.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Phupreme Sans';
+  src: url('/assets/fonts/jost-italic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'High Blockscript';
   src: url('/assets/fonts/high-blockscript.woff2') format('woff2');
