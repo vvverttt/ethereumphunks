@@ -1,4 +1,7 @@
 import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Store } from '@ngrx/store';
+import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
@@ -21,6 +24,8 @@ import { InternalLinksDirective } from '@/directives/internal-links.directive';
 })
 export class LegalComponent {
   readonly prefs = inject(PhunkPreferencesService);
+  /** the collection on screen, for the breadcrumb ("DystoPhunks / The Shell Archive") */
+  readonly collection = toSignal(inject(Store).select(dataStateSelectors.selectActiveCollection));
   readonly page: 'terms' | 'license' | 'privacy' | 'shell-archive' | 'about' = inject(ActivatedRoute).snapshot.data['page'];
 
   /** The Shell Archive: the sources that shaped QuantumPhunks (our credits), with the links

@@ -331,6 +331,13 @@ export class PhunkAtmComponent implements OnChanges {
     return w.slice(0, 6) + '…' + w.slice(-4);
   }
 
+  /** the connected wallet, to tell your own account ("My collectibles") from someone else's */
+  private me = toSignal(this.store.select(appStateSelectors.selectWalletAddress));
+  collectiblesLabel(): string {
+    const own = !!this.me() && this.me()!.toLowerCase() === (this.wallet || '').toLowerCase();
+    return this.t(own ? 'atmMyCollectibles' : 'atmCollectibles');
+  }
+
   totalPieces(): number {
     return this.groups.reduce((n, g) => n + g.items.length, 0);
   }
@@ -697,6 +704,7 @@ export class PhunkAtmComponent implements OnChanges {
     const st = this.salesTotal(), h = this.holders();
     const eth2 = (v: number) => 'Ξ' + v.toLocaleString('en-US', { maximumFractionDigits: 2 });
     const sum = st ? [`${this.t('atmVolume')} ${eth2(st.volume)}`, `${this.t('atmSales')} ${st.n.toLocaleString('en-US')}`,
+      ...(st.n ? [`${this.t('atmAvgSale')} Ξ${this.valueShown(st.volume / st.n)}`] : []),
       `${this.t('atmHolders')} ${h?.['*'] != null ? h['*'].toLocaleString('en-US') : '—'}`].join('     ') : '';
     return this.drawScreenView({
       title: this.t('atmReserve'),
@@ -710,7 +718,8 @@ export class PhunkAtmComponent implements OnChanges {
           `${this.t('atmHolders')} ${h?.[c.slug] != null ? h[c.slug].toLocaleString('en-US') : '—'}`,
           `${this.t('atmListedCount')} ${this.listed()[c.slug] || 0}`,
           `${this.t('atmAvgListed')} Ξ${this.valueShown(this.avgListed()[c.slug] ?? null)}`,
-          ...(so ? [`${this.t('atmSales')} ${so.n}`, `${this.t('atmVolume')} ${eth2(so.volume)}`] : []),
+          ...(so ? [`${this.t('atmSales')} ${so.n}`, `${this.t('atmVolume')} ${eth2(so.volume)}`,
+            `${this.t('atmAvgSale')} Ξ${so.n ? this.valueShown(so.volume / so.n) : '—'}`] : []),
         ].join('   ');
         return this.viewRow({ name: c.name, accent: c.accent, logo: c.logo, badge: c.supply.toLocaleString('en-US'), value: this.marketCap(c), stats });
       }),
@@ -886,7 +895,7 @@ export class PhunkAtmComponent implements OnChanges {
       lines.push([this.t('atmAccountBalance'), 'Ξ' + this.walletShown()]);
       lines.push(['', '', 'rule']);
     }
-    lines.push([this.t('atmMyCollectibles') + ' · ' + this.totalPieces(), '', 'b']);
+    lines.push([this.collectiblesLabel() + ' · ' + this.totalPieces(), '', 'b']);
     for (const g of this.groups) lines.push([`${g.name} ×${g.items.length}`, eth(this.groupValue(g))]);
     lines.push(['', '', 'rule']);
     lines.push([this.t('atmCollectiblesBalance'), eth(this.totalValue()), 'b']);

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, isDevMode, signal } from '@angular/core';
+import { Component, DestroyRef, inject, isDevMode } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -14,9 +14,7 @@ import { ThemeService } from '@/services/theme.service';
 import { Web3Service } from '@/services/web3.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
-import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
-import { TokenNumberPipe } from '@/pipes/token-number.pipe';
-import { detailsLink, groupWalletItems, liveCollections, WalletGroup } from '@/utils/wallet-groups';
+import { groupWalletItems, liveCollections, WalletGroup } from '@/utils/wallet-groups';
 import { PhunkAtmComponent } from '@/components/phunk-atm/phunk-atm.component';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -31,7 +29,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, PhunkImageComponent, TokenNumberPipe, PhunkAtmComponent],
+  imports: [CommonModule, RouterModule, PhunkAtmComponent],
   selector: 'app-my-phunks',
   templateUrl: './my-phunks.component.html',
   styleUrls: ['./my-phunks.component.scss'],
@@ -43,7 +41,6 @@ export class MyPhunksComponent {
   private web3Svc = inject(Web3Service);
   private prefs = inject(PhunkPreferencesService);
 
-  detailsLink = detailsLink;
 
   // the tab reads "Phleeca Bank" while the bank is open, and goes back to the site's own title after
   private title = inject(Title);
@@ -121,40 +118,6 @@ export class MyPhunksComponent {
   refresh(address: string) {
     this.dataSvc.invalidateOwned(address);
     setTimeout(() => { this.dataSvc.invalidateOwned(address); this.reload$.next(this.reload$.value + 1); }, 6000);
-  }
-
-  /** collections not held yet stay hidden until the switch is on (unless nothing is held) */
-  showMissing = signal(false);
-
-  copied = signal(false);
-
-  async copy(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 1200);
-    } catch {}
-  }
-
-  total(groups: WalletGroup[]) {
-    return groups.reduce((n, g) => n + g.items.length, 0);
-  }
-
-  short(address: string) {
-    return address.slice(0, 6) + '…' + address.slice(-4);
-  }
-
-  /** share of a collection's supply, one decimal under 10% */
-  share(held: number, supply: number) {
-    if (!supply) return '';
-    const pct = held / supply * 100;
-    if (pct < .1) return '<0.1%';
-    return (pct < 10 ? pct.toFixed(1) : Math.round(pct)) + '%';
-  }
-
-  jumpTo(slug: string) {
-    // after a render, so a row the switch just revealed exists
-    setTimeout(() => document.getElementById(slug)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   connect() {

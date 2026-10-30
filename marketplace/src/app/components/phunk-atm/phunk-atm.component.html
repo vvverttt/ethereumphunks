@@ -49,7 +49,7 @@
         <div class="page">
           <p class="prompt big">{{ t('atmChooseService') }}</p>
           <div class="menu">
-            <button type="button" class="opt main" (click)="go('collections')">{{ t('atmMyCollectibles') }} <span class="n">{{ totalPieces() }}</span></button>
+            <button type="button" class="opt main" (click)="go('collections')">{{ collectiblesLabel() }} <span class="n">{{ totalPieces() }}</span></button>
             <!-- the market money (sales, refunds) waiting to withdraw; Withdraw lives inside it -->
             <button type="button" class="opt" (click)="go('balance')">{{ t('atmWithdrawable') }} <span class="n">Ξ {{ fundsShown() }} <small class="fiat">{{ fiat(funds() ? fundsTotal() : null) }}</small></span></button>
             <button type="button" class="opt" (click)="openLog()">{{ t('atmTxLog') }}</button>
@@ -67,7 +67,7 @@
           <div class="total"><span>{{ t('atmReserveTotal') }}</span><b>Ξ{{ valueShown(reserveTotal()) }} <small class="fiat">{{ fiat(reserveTotal()) }}</small></b></div>
           <!-- all collections together: volume and sales on record -->
           @if (salesTotal(); as st) {
-            <p class="worth reserve-sum"><span>{{ t('atmVolume') }} <b>Ξ{{ st.volume.toLocaleString('en-US', { maximumFractionDigits: 2 }) }}</b> <small class="fiat">{{ fiat(st.volume) }}</small></span><span>{{ t('atmSales') }} <b>{{ st.n | number }}</b></span><span>{{ t('atmHolders') }} <b>{{ holders()?.['*'] != null ? (holders()!['*'] | number) : '—' }}</b></span></p>
+            <p class="worth reserve-sum"><span>{{ t('atmVolume') }} <b>Ξ{{ st.volume.toLocaleString('en-US', { maximumFractionDigits: 2 }) }}</b> <small class="fiat">{{ fiat(st.volume) }}</small></span><span>{{ t('atmSales') }} <b>{{ st.n | number }}</b></span>@if (st.n) {<span>{{ t('atmAvgSale') }} <b>Ξ{{ valueShown(st.volume / st.n) }}</b></span>}<span>{{ t('atmHolders') }} <b>{{ holders()?.['*'] != null ? (holders()!['*'] | number) : '—' }}</b></span></p>
           }
           <div class="list">
             @for (c of reserveRows(); track c.slug) {
@@ -85,6 +85,7 @@
                     @if (so) {
                       <span>{{ t('atmSales') }} {{ so.n | number }}</span>
                       <span>{{ t('atmVolume') }} Ξ{{ so.volume.toLocaleString('en-US', { maximumFractionDigits: 2 }) }}</span>
+                      <span>{{ t('atmAvgSale') }} Ξ{{ so.n ? valueShown(so.volume / so.n) : '—' }}</span>
                     }
                   </span>
                 </span>

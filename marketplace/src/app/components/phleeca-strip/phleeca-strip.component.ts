@@ -8,6 +8,7 @@ import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { FiatPipe } from '@/pipes/fiat.pipe';
+import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
 /**
@@ -36,9 +37,15 @@ export class PhleecaStripComponent implements OnChanges {
 
   floor = signal<number | null>(null);
   usd = toSignal(this.store.select(dataStateSelectors.selectDisplayUsd));
+  me = toSignal(this.store.select(appStateSelectors.selectWalletAddress));
 
   async ngOnChanges() {
     try { this.floor.set((await this.dataSvc.fetchFloorStats()).floors[this.slug] ?? null); } catch { this.floor.set(null); }
+  }
+
+  /** the connected wallet's own page ("My collectibles"); anyone else's just says "Collectibles" */
+  own(): boolean {
+    return !!this.me() && this.me()!.toLowerCase() === this.address.toLowerCase();
   }
 
   value(): number | null {

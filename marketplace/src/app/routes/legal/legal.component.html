@@ -44,6 +44,14 @@
     @case ('about') {
       @let ab = prefs.content().about;
       <div class="about" appInternalLinks>
+        <!-- the breadcrumb bar every collection page has: the collection on screen / About Us -->
+        @if (collection(); as c) {
+          <nav class="crumb-box" aria-label="Breadcrumb">
+            <a [routerLink]="['/' + c.slug]">{{ c.name }}</a>
+            <span class="sep" aria-hidden="true">/</span>
+            <span>{{ prefs.t('aboutUs') }}</span>
+          </nav>
+        }
         <!-- laid out like dystolabz.com/about.html: the greeting is the page's heading -->
         <h1 class="hi">{{ ab.hi }}</h1>
         @for (p of ab.paras; track $index) { <p [innerHTML]="p"></p> }
@@ -57,6 +65,14 @@
     @case ('shell-archive') {
       @let sh = prefs.content().shell;
       <div class="shell" appInternalLinks>
+      <!-- the breadcrumb bar every collection page has: the collection on screen / this page -->
+      @if (collection(); as c) {
+        <nav class="crumb-box" aria-label="Breadcrumb">
+          <a [routerLink]="['/' + c.slug]">{{ c.name }}</a>
+          <span class="sep" aria-hidden="true">/</span>
+          <span>{{ sh.title }}</span>
+        </nav>
+      }
       <h1>{{ sh.title }}</h1>
       <p class="sub" [innerHTML]="sh.sub"></p>
 

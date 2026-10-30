@@ -1,9 +1,12 @@
 <div class="inner">
 
   <div class="header-wrapper">
-    <a class="button" [routerLink]="['/', slug()]">
-      &lt; {{ collectionName() }}
-    </a>
+    <!-- the breadcrumb bar every collection page has: the collection / Sales -->
+    <nav class="crumb-box" aria-label="Breadcrumb">
+      <a [routerLink]="['/', slug()]">{{ collectionName() }}</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <span>{{ t('sales') }}</span>
+    </nav>
 
     <h1>{{ t('salesAllTitle', { name: collectionName() }) }}</h1>
 

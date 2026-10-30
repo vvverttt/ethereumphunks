@@ -4,7 +4,7 @@
 </div>
 <div class="ps-bar">
   <app-address class="ps-who" [address]="address" />
-  <span class="ps-stat">{{ t('atmMyCollectibles') }} <b>{{ count === null ? '…' : (count | number) }}</b></span>
+  <span class="ps-stat">{{ t(own() ? 'atmMyCollectibles' : 'atmCollectibles') }} <b>{{ count === null ? '…' : (count | number) }}</b></span>
   <span class="ps-stat">{{ t('atmFloor') }} <b>Ξ{{ eth(floor()) }}</b></span>
   <span class="ps-stat">{{ t('atmValue') }} <b>Ξ{{ eth(value()) }}</b>@if (usd() && value()) {<small>{{ value()! * usd()! | fiat: 'short' }}</small>}</span>
 </div>
