@@ -777,6 +777,13 @@ form {
     background-color: #fff;
     border: .3rem solid rgba(var(--pink), 1);
     color: rgba(24, 26, 30, 1);
+    .actions button { color: #fff; }
+  }
+  // the bulk List / Transfer / Escrow / Withdraw panel: white on the colour for its buttons (their
+  // usual text colour is that same colour here) and dark ink for its heading on the light glass
+  ::ng-deep app-slideout {
+    .form-actions button, button.copy { color: #fff; }
+    .top-bar h2 { color: rgba(24, 26, 30, 1); }
   }
   // the sort box reads in dark ink on the light screen
   ::ng-deep .ng-select .ng-select-container,
