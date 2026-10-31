@@ -455,7 +455,7 @@ export const UI_ZH: Record<string, string> = {
   staleTitle: "市场记录已过期",
   staleBody: "由于一次无效的存入，我们的市场仍显示此物品已存入并在售。它安全地在你的钱包里。抱歉。点击一次清除即可修复（仅需 gas）。",
   staleClear: "清除",
-  atmTopSaleNote: "* 按最高成交价估值，而非地板价：其挂单都是玩笑价。",
+  atmTopSaleNote: "* 按最高成交价估值，而非地板价：它的挂单全是 boobies。",
   atmColCollection: "合集",
   atmColSupply: "供应量",
   atmColCap: "市值",

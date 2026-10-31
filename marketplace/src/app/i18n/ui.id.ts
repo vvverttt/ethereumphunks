@@ -449,7 +449,7 @@ export const UI_ID: Record<string, string> = {
   staleTitle: "Catatan market kedaluwarsa",
   staleBody: "Market kami masih mencatat ini sebagai disetor dan dijual, dari setoran yang tidak sah. Aman di dompetmu. Maaf soal itu. Ketuk Bersihkan sekali untuk memperbaikinya (hanya gas).",
   staleClear: "Bersihkan",
-  atmTopSaleNote: "* Dinilai dari penjualan tertingginya, bukan floor: listing-nya hanya harga bercanda.",
+  atmTopSaleNote: "* Dinilai dari penjualan tertingginya, bukan floor: listing-nya cuma boobies.",
   atmColCollection: "Koleksi",
   atmColSupply: "Suplai",
   atmColCap: "Kap. pasar",

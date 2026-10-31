@@ -455,7 +455,7 @@ export const UI_ES: Record<string, string> = {
   staleTitle: "Registro del mercado desactualizado",
   staleBody: "Nuestro mercado aún lo muestra como depositado y en venta, por un depósito que no contó. Está seguro en tu billetera. Perdón por eso. Toca Limpiar una vez para arreglarlo (solo gas).",
   staleClear: "Limpiar",
-  atmTopSaleNote: "* Valorada por su venta más alta, no por su piso: sus únicos listados son precios de broma.",
+  atmTopSaleNote: "* Valorada por su venta más alta, no por su piso: sus únicos listados son boobies.",
   atmColCollection: "Colección",
   atmColSupply: "Suministro",
   atmColCap: "Capitalización",

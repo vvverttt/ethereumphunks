@@ -456,7 +456,7 @@ export const UI_JA: Record<string, string> = {
   staleTitle: "マーケットの記録が古くなっています",
   staleBody: "無効だった預け入れにより、マーケットではまだ預け入れ・出品中と表示されています。アイテムはウォレットにあり安全です。ご迷惑をおかけしました。クリアを一度押して修正してください（ガス代のみ）。",
   staleClear: "クリア",
-  atmTopSaleNote: "* フロアではなく最高売買額で評価：出品はジョーク価格のみのため。",
+  atmTopSaleNote: "* フロアではなく最高売買額で評価：出品は boobies だけのため。",
   atmColCollection: "コレクション",
   atmColSupply: "供給数",
   atmColCap: "時価総額",

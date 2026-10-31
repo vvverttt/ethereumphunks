@@ -451,7 +451,7 @@ export const UI_EN: Record<string, string> = {
   staleTitle: "Market record out of date",
   staleBody: "Our market still lists this as deposited and for sale, from a deposit that didn't count. It's safe in your wallet. Sorry about that. Tap Clear once to fix it (gas only).",
   staleClear: "Clear",
-  atmTopSaleNote: "* Valued at its highest sale, not its floor: its only listings are joke prices.",
+  atmTopSaleNote: "* Valued at its highest sale, not its floor: its only listings are boobies.",
   atmColCollection: "Collection",
   atmColSupply: "Supply",
   atmColCap: "Market cap",
