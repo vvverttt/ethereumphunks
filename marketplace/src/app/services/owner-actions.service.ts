@@ -9,6 +9,7 @@ import { Web3Service } from '@/services/web3.service';
 import { DataService } from '@/services/data.service';
 import { UtilService } from '@/services/util.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { StaleDepositService } from '@/services/stale-deposit.service';
 
 import { upsertNotification } from '@/state/actions/notification.actions';
 import * as appStateActions from '@/state/actions/app-state.actions';
@@ -32,6 +33,7 @@ export class OwnerActionsService {
     private dataSvc: DataService,
     private utilSvc: UtilService,
     private prefs: PhunkPreferencesService,
+    private staleSvc: StaleDepositService,
   ) {}
 
   private qpSet(phunk: Phunk) {
@@ -129,6 +131,14 @@ export class OwnerActionsService {
   withdraw(phunk: Phunk): Promise<string> {
     return this.run('withdrawPhunk', phunk, () =>
       this.web3Svc.withdrawPhunk(phunk.hashId, this.web3Svc.resolveMarketAddress({ owner: phunk.owner })));
+  }
+
+  /** Clear a stale market deposit (see StaleDepositService): the market's withdraw for a piece that is
+   *  already in the wallet. Nothing moves; the market drops its record and any listing with it. */
+  async clearStaleDeposit(phunk: Phunk): Promise<string> {
+    const hash = await this.run('withdrawPhunk', phunk, () => this.web3Svc.withdrawPhunk(phunk.hashId, this.staleSvc.market));
+    this.staleSvc.cleared(phunk.hashId);
+    return hash;
   }
 
   /** Withdraw every market's balance for the connected wallet, one transaction per contract that

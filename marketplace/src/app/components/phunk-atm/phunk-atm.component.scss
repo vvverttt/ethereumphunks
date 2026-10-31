@@ -719,3 +719,23 @@
   .switch.on .track { background: rgba(var(--g-accent), 1); }
   .switch.on .knob { transform: translateX(1.6rem); }
 }
+
+// a piece whose market deposit never counted: a mark on its tile, and a short note with Clear on its screen
+.pieces .pc .stale-mark {
+  position: absolute; top: .3rem; left: .3rem;
+  display: grid; place-items: center;
+  width: 1.8rem; height: 1.8rem;
+  font-size: 1.2rem; font-weight: 800;
+  color: #fff; background: rgba(var(--pink), 1);
+}
+.stale-note {
+  margin: 0 auto 1.6rem;
+  max-width: 48rem;
+  padding: 1.2rem 1.4rem;
+  border: .2rem solid rgba(var(--pink), 1);
+  background: #fff;
+  font-size: 1.4rem;
+  b { color: rgba(var(--pink), 1); }
+  p { margin: .5rem 0 1rem; line-height: 1.45; }
+  .opt { width: 100%; max-width: none; }
+}

@@ -9,6 +9,7 @@ import { formatEther } from 'viem';
 import { GlobalState } from '@/models/global-state';
 import { Phunk } from '@/models/db';
 import { ReserveLeftOutService, VALUED_AT_TOP_SALE, reservePrice } from '@/services/reserve-left-out.service';
+import { StaleDepositService } from '@/services/stale-deposit.service';
 import { CollectionLook, WalletGroup, detailsLink } from '@/utils/wallet-groups';
 import { PHLEECA_FINE_PRINT, PHLEECA_SELL_SHAME } from '@/utils/phleeca-fine-print';
 import { finePrintLine, sellShameLine } from '@/utils/phleeca-fine-print.i18n';
@@ -52,6 +53,8 @@ type Missing = { slug: string; name: string; logo?: string | null };
 })
 export class PhunkAtmComponent implements OnChanges, OnInit {
   private actions = inject(OwnerActionsService);
+  /** pieces the market holds a deposit for that never counted (see StaleDepositService) */
+  staleSvc = inject(StaleDepositService);
   private prefs = inject(PhunkPreferencesService);
   private web3Svc = inject(Web3Service);
   private store = inject(Store<GlobalState>);
@@ -141,6 +144,8 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
   ngOnChanges(ch: SimpleChanges) {
     if (this.wallet && this.wallet !== this.fundsFor) { this.loadFunds(); this.loadWalletEth(); this.log.set(null); }
     if (this.wallet && !this.floorsAsked) { this.floorsAsked = true; this.loadFloors(); }
+    // the wallet's own pieces outside escrow: any with a market deposit that never counted?
+    if (this.wallet && (ch['groups'] || ch['wallet'])) this.staleSvc.check(this.wallet, this.groups.flatMap(g => g.items) as any);
     // holdings refreshed after a move: keep the open collection and piece, with their new state
     if (ch['groups']) {
       const g = this.group();
@@ -564,6 +569,20 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
       this.txHash.set(hash);
       this.amount.set('');
       this.recipient = '';
+      this.screen.set('done');
+      this.changed.emit();
+    } catch (err) {
+      this.fail(err);
+    }
+  }
+
+  /** the market's withdraw for a piece already in the wallet: clears its stale deposit and listing */
+  async clearStale(p: Phunk) {
+    this.after = 'piece';
+    if (!(await this.canSend())) return;
+    this.screen.set('working');
+    try {
+      this.txHash.set(await this.actions.clearStaleDeposit(p));
       this.screen.set('done');
       this.changed.emit();
     } catch (err) {

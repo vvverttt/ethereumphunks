@@ -347,6 +347,16 @@ app-phunk-billboard {
     position: relative;
     padding: 2rem 0;
 
+    // a deposit the market holds for this piece that never counted: a short note and its Clear button
+    .stale-deposit {
+      margin-bottom: 1.5rem;
+      padding: 1.4rem 1.6rem;
+      border: .2rem solid rgba(var(--pink), 1);
+      strong { display: block; font-family: var(--secondary-font-stack); font-size: 1.4rem; color: rgba(var(--pink), 1); }
+      p { margin: .6rem 0 1.2rem; font-size: 1.4rem; line-height: 1.5; }
+      button { width: 100%; }
+    }
+
     .form-group {
       &.private-sale {
         padding: 2rem;

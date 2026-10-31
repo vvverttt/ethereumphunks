@@ -183,7 +183,7 @@
                 <button type="button" class="pc" [class.listed]="!!p.listing" [class.escrow]="p.isEscrowed"
                   [class.picking]="picking()" [class.picked]="picked().has(p.hashId)" (click)="openPiece(p)"
                   [title]="g.single + ' #' + (p.tokenId | tokenNumber: p.slug)">
-                  <span class="img"><app-phunk-image [sha]="p.sha" [alt]="'#' + p.tokenId" />@if (picking()) { <span class="tick">✓</span> }</span>
+                  <span class="img"><app-phunk-image [sha]="p.sha" [alt]="'#' + p.tokenId" />@if (picking()) { <span class="tick">✓</span> }@if (staleSvc.has(p.hashId)) { <span class="stale-mark" [title]="t('staleTitle')">!</span> }</span>
                   <span class="id">#{{ p.tokenId | tokenNumber: p.slug }}</span>
                 </button>
               }
@@ -280,10 +280,20 @@
         @if (piece(); as p) {
           <ng-container *ngTemplateOutlet="account; context: { $implicit: p }" />
           <div class="page">
+            <!-- the market still holds a deposit for this piece that never counted -->
+            @if (staleSvc.has(p.hashId)) {
+              <div class="stale-note">
+                <b>{{ t('staleTitle') }}</b>
+                <p>{{ t('staleBody') }}</p>
+                <button type="button" class="opt main" (click)="clearStale(p)">{{ t('staleClear') }}</button>
+              </div>
+            }
             <p class="prompt">{{ t('atmPickKey') }}</p>
             <div class="menu">
               @for (o of options(p); track o.action) {
-                @if (o.action === 'bids') {
+                <!-- sell and escrow would be refused until the stale deposit is cleared -->
+                @if (staleSvc.has(p.hashId) && (o.action === 'sell' || o.action === 'escrow')) {
+                } @else if (o.action === 'bids') {
                   <a class="opt" [routerLink]="detailsLink(p)" [queryParams]="{ action: 'bids' }">{{ t(o.label) }} <span class="ext">↗</span></a>
                 } @else {
                   <button type="button" class="opt" [class.main]="o.main" (click)="choose($any(o.action))">{{ t(o.label) }}</button>

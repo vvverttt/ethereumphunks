@@ -657,7 +657,7 @@ export class EthscriptionsService {
     // DystoLabz market or on ours. Configure via TRACKED_MARKETPLACE_SLUGS env var.
     const trackedSlugs = new Set(
       (process.env.TRACKED_MARKETPLACE_SLUGS ||
-        'cryptophunksv67,ethsrocks,quantummissingphunksv67,quantumdystophunkzv67,missing-phunks,dysto-phunks,phikings')
+        'cryptophunksv67,ethsrocks,quantummissingphunksv67,quantumdystophunkzv67,missing-phunks,dysto-phunks,phikings,phunklloween')
         .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean),
     );
     if (!trackedSlugs.has((phunk.slug || '').toLowerCase())) return;

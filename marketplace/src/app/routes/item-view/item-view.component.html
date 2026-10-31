@@ -236,8 +236,20 @@
                             }
                           }
 
+                          <!-- the market still holds a deposit for this piece that never counted: clear it -->
+                          @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && staleSvc.has(phunk.hashId)) {
+                            <div class="stale-deposit">
+                              <strong>{{ t('staleTitle') }}</strong>
+                              <p>{{ t('staleBody') }}</p>
+                              <button class="withdraw" [disabled]="clearingStale()" (click)="clearStale(phunk)">
+                                <span>{{ t('staleClear') }}</span>
+                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawPhunk' }" />
+                              </button>
+                            </div>
+                          }
+
                           <!-- Escrow actions (Send) — ethscription-only; ERC-721C is approval-based -->
-                          @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && !(phunk.slug && erc721cContracts[phunk.slug])) {
+                          @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && !(phunk.slug && erc721cContracts[phunk.slug]) && !staleSvc.has(phunk.hashId)) {
                             <button class="send-to-escrow" (click)="escrowPhunk()" [class.active]="actionsState().escrow">
                               <span>{{ t('sendToEscrow') }}</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'sendToEscrow' }" />

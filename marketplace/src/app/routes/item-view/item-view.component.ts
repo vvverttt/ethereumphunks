@@ -2,7 +2,7 @@ import { FiatPipe } from '@/pipes/fiat.pipe';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ViewChild, ViewChildren, ElementRef, QueryList, Component, signal } from '@angular/core';
+import { ViewChild, ViewChildren, ElementRef, QueryList, Component, signal, inject } from '@angular/core';
 
 import { formatEther } from 'viem';
 import { HttpClient } from '@angular/common/http';
@@ -34,6 +34,8 @@ import { UtilService } from '@/services/util.service';
 import { EthsRocksService } from '@/services/ethsrocks.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { PoolBuyNowService, BuyItemTier } from '@/services/pool-buy-now.service';
+import { StaleDepositService } from '@/services/stale-deposit.service';
+import { OwnerActionsService } from '@/services/owner-actions.service';
 
 import { Phunk } from '@/models/db';
 import { GlobalState, Notification } from '@/models/global-state';
@@ -267,6 +269,17 @@ export class ItemViewComponent {
 
   expanded = false;
 
+  /** a market deposit that never counted, for the piece the connected wallet holds (see StaleDepositService) */
+  staleSvc = inject(StaleDepositService);
+  private ownerActions = inject(OwnerActionsService);
+  clearingStale = signal(false);
+
+  async clearStale(phunk: Phunk): Promise<void> {
+    this.clearingStale.set(true);
+    try { await this.ownerActions.clearStaleDeposit(phunk); } catch { /* the notification shows the error */ }
+    this.clearingStale.set(false);
+  }
+
   constructor(
     private store: Store<GlobalState>,
     private http: HttpClient,
@@ -296,6 +309,10 @@ export class ItemViewComponent {
       switchMap(() => this.singlePhunk$.pipe(take(1))),
       takeUntilDestroyed(),
     ).subscribe((phunk) => this.refreshPoolBuyNow(phunk));
+
+    // the connected wallet's own piece: does the market hold a deposit for it that never counted?
+    combineLatest([this.walletAddress$, this.singlePhunk$]).pipe(takeUntilDestroyed())
+      .subscribe(([address, phunk]) => { if (phunk) this.staleSvc.check(address, [phunk as any]); });
 
     // Arriving from the Account Details terminal with ?action=: once the piece is on screen,
     // open that action's form (never sends anything by itself) and bring the actions into view.
