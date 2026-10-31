@@ -282,7 +282,7 @@
         }
       }
 
-      .reserve-ticker { margin-right: 2rem; }
+      .reserve-ticker { margin-right: 2rem; @media (max-width: 700px) { margin-right: 1.2rem; } }
 
       .theme-switcher {
         padding-right: 2rem;

@@ -123,3 +123,37 @@ p {
     }
   }
 }
+
+// The Shell Archive's title: "Shell" in the turtles' logo style (the menu button's, at title size):
+// chunky green letters in a thick black outline, each tipped a little, the word leaning back
+.shell-title {
+  white-space: pre-wrap;
+  // "The" and "Archive" as on the menu's button: heavy italic capitals
+  font-style: italic;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -.02em;
+  .tmnt {
+    display: inline-flex;
+    margin: 0 .2em;
+    font-family: 'Titan One', 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1.12em;
+    letter-spacing: 0;
+    line-height: 1;
+    text-transform: uppercase;
+    vertical-align: -.05em;
+    color: #a6e22e;
+    -webkit-text-stroke: .9rem #000;
+    paint-order: stroke fill;
+    text-shadow: -.25rem .5rem 0 #000;
+    transform: perspective(40rem) rotateX(14deg);
+    span { display: inline-block; }
+    span:nth-child(1) { transform: rotate(-7deg) translateY(.02em); }
+    span:nth-child(2) { transform: rotate(4deg) translateY(-.04em); }
+    span:nth-child(3) { transform: rotate(-3deg); }
+    span:nth-child(4) { transform: rotate(5deg) translateY(-.03em); }
+    span:nth-child(5) { transform: rotate(-5deg) translateY(.03em); }
+  }
+}

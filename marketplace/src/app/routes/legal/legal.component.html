@@ -73,7 +73,9 @@
           <span>{{ sh.title }}</span>
         </nav>
       }
-      <h1>{{ sh.title }}</h1>
+      <!-- "Shell" drawn like the turtles' own logo, as on the menu's Shell Archive button -->
+      @let parts = sh.title.split('Shell');
+      <h1 class="shell-title" [attr.aria-label]="sh.title">@if (parts.length === 2) {{{ parts[0] }}<span class="tmnt" aria-hidden="true">@for (c of shellLetters; track $index) {<span>{{ c }}</span>}</span>{{ parts[1] }}} @else {{{ sh.title }}}</h1>
       <p class="sub" [innerHTML]="sh.sub"></p>
 
       <div class="archive-turtle">

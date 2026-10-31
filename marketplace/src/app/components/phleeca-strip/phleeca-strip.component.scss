@@ -1,4 +1,5 @@
-// Phleeca Bank's banner: the logo on white, the account bar in the page's colour, like the bank's top
+// Phleeca Bank's banner on the owned pages: the logo on the collection's own background (its ink in
+// the theme's text colour so it reads on any of them), then the account bar in the page's colour
 :host {
   display: block;
   // full width of the window, out of the page's centred column, like the bank's own top
@@ -10,13 +11,13 @@
 
 .ps-top {
   padding: 2rem var(--edge);
-  background: #fff;
+  background: rgba(var(--background), 1);
 }
 .ps-logo {
   display: block;
   height: 6rem;
   width: auto;
-  .ink { fill: #1d1f23; }
+  .ink { fill: rgba(var(--text-color), 1); }
   .acc { fill: rgba(var(--pink), 1); }
 }
 

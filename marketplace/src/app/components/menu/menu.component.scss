@@ -377,10 +377,30 @@ section {
       // the archive turtle's shell green: solid, and a colour none of the other links use
       background: #2e9e3f;
 
-      .shell-label { display: flex; align-items: center; white-space: pre; }
-      // "Shell" as a pixel turtle shell, in the label's white
-      // 2px to a pixel, the pixel font's own step, and as tall as its capitals so it sits in the line
-      .pixel-shell { display: block; width: 2.4rem; height: 1rem; margin: 0 .5rem .1rem; fill: currentColor; }
+      // "The" and "Archive" in heavy italic, the lean Phupreme and Phleeca have; "Shell" in the
+      // turtles' logo style: chunky green letters in a thick black outline, each tipped a little,
+      // the word leaning back in perspective
+      .shell-label { display: flex; align-items: center; gap: .7rem; line-height: 1; }
+      .w { font-family: 'Montserrat', sans-serif; font-style: italic; font-weight: 900; font-size: 1.7rem; text-transform: uppercase; letter-spacing: -.02em; }
+      .tmnt {
+        display: inline-flex;
+        font-family: 'Titan One', 'Montserrat', sans-serif;
+        font-size: 2.1rem;
+        text-transform: uppercase;
+        color: #a6e22e;
+        -webkit-text-stroke: .4rem #000;
+        paint-order: stroke fill;
+        text-shadow: -.1rem .25rem 0 #000;
+        transform: perspective(12rem) rotateX(14deg);
+        margin: -.4rem 0 -.3rem;
+        span { display: inline-block; }
+        span:nth-child(1) { transform: rotate(-7deg) translateY(.1rem); }
+        span:nth-child(2) { transform: rotate(4deg) translateY(-.15rem); }
+        span:nth-child(3) { transform: rotate(-3deg); }
+        span:nth-child(4) { transform: rotate(5deg) translateY(-.1rem); }
+        span:nth-child(5) { transform: rotate(-5deg) translateY(.1rem); }
+      }
+
       box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
       cursor: pointer;
 
@@ -1106,32 +1126,9 @@ section {
   &:active { transform: translate(-.2rem, .2rem); box-shadow: -.1rem .1rem 0 0 rgba(var(--m-shadow), 1); }
 }
 
-// The Phederal Reserve: reserve gold with black letters, a colour no other link in the menu uses.
-// Only below 1181px: wider screens have the Reserve in the header (app-reserve-ticker), so there
-// the button goes and the bank button takes back the gap before the auction box.
-@media (min-width: 1181px) {
-  .reserve-button { display: none !important; }
-  .bank-button { margin-bottom: 3rem; }
-}
-.reserve-button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 0 3rem;     // the same gap before the auction box as QuantumPhunks leaves before Phupreme
-  padding: 1.1rem 1.5rem .9rem;
-  font-family: var(--secondary-font-stack);
-  font-size: 1.4rem;
-  color: #000;
-  text-transform: uppercase;
-  text-decoration: none;
-  background: #d4a72c;
-  box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
-  cursor: pointer;
-
-  .arrow svg { width: 1rem; height: 2rem; path { fill: #000; } }
-
-  &:active { transform: translate(-.2rem, .2rem); box-shadow: -.1rem .1rem 0 0 rgba(var(--m-shadow), 1); }
-}
+// the Phederal Reserve lives in the header (app-reserve-ticker) on every screen size; the bank button
+// keeps the gap before the auction box
+.bank-button { margin-bottom: 3rem; }
 
 @keyframes my-holo-foil {
   from { background-position: 0 0, 0 0; }

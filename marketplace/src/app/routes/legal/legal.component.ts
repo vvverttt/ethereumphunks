@@ -23,6 +23,9 @@ import { InternalLinksDirective } from '@/directives/internal-links.directive';
   styleUrls: ['./legal.component.scss'],
 })
 export class LegalComponent {
+  /** the Shell Archive title's "Shell", one letter at a time (each is tipped on its own) */
+  readonly shellLetters = ['S', 'H', 'E', 'L', 'L'];
+
   readonly prefs = inject(PhunkPreferencesService);
   /** the collection on screen, for the breadcrumb ("DystoPhunks / The Shell Archive") */
   readonly collection = toSignal(inject(Store).select(dataStateSelectors.selectActiveCollection));

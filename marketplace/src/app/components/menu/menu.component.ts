@@ -62,6 +62,9 @@ import { environment } from '@/../environments/environment';
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent {
+  /** the Shell Archive button's "Shell", one letter at a time (each is tipped on its own) */
+  readonly shellLetters = ['S', 'H', 'E', 'L', 'L'];
+
 
   @ViewChild('menuMain') menuMain!: ElementRef;
   @ViewChild('menuLeaderboard') menuLeaderboard!: ElementRef;

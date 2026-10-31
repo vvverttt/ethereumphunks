@@ -8,6 +8,7 @@ import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
 import { FiatPipe } from '@/pipes/fiat.pipe';
+import { reservePrice } from '@/services/reserve-left-out.service';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
@@ -48,8 +49,9 @@ export class PhleecaStripComponent implements OnChanges {
     return !!this.me() && this.me()!.toLowerCase() === this.address.toLowerCase();
   }
 
+  /** at the floor, or the top sale for a collection valued that way (EthsRocks' joke floor) */
   value(): number | null {
-    const f = this.floor();
+    const f = reservePrice(this.slug, this.floor());
     return f && this.count !== null ? f * this.count : null;
   }
 

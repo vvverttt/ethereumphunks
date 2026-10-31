@@ -653,24 +653,36 @@
 }
 .reserve-sum { margin: 1rem 0 1.2rem; flex-wrap: wrap; gap: .4rem 2.4rem; }
 
-// narrower: the table keeps floor, top sale and market cap; listed, holders, volume and supply drop
-// out (holders and volume stay in the summary line above)
+// tablets and phones: the table keeps floor, top sale and market cap (listed, holders, volume and
+// supply drop out; holders and volume stay in the summary line above), and each collection's name
+// gets the top of its row so it never has to be cut short
 @media (max-width: 900px) {
-  .rs-table { --cols: minmax(0, 1fr) 8rem 7rem 9rem; }
-  .c-more { display: none; }
-}
-// phones: the name across the top of its row, floor / top sale / market cap in a row under it
-@media (max-width: 500px) {
   .rs-table { --cols: repeat(3, minmax(0, 1fr)); }
-  .rs-head .c-name { display: none; }
+  .c-more, .rs-head .c-name { display: none; }
+  .rs-row { row-gap: .4rem; .c-name { grid-column: 1 / -1; } }
+}
+@media (max-width: 500px) {
   .rs-head, .rs-row { column-gap: .8rem; }
   .rs-head { padding: 0 .8rem; font-size: .9rem; }
-  .rs-row { row-gap: .4rem; padding: .6rem .8rem; font-size: 1.2rem;
-    .c-name { grid-column: 1 / -1; gap: .7rem; }
+  .rs-row { padding: .6rem .8rem; font-size: 1.2rem;
+    .c-name { gap: .7rem; }
     .r-pic img { width: 2.8rem; height: 2.8rem; }
     .r-name { font-size: 1.3rem; }
     .r-v { font-size: 1.3rem; }
   }
+}
+
+// phones: a collection row's name may take two lines and its value always keeps its place on the
+// right; the buttons under a list wrap onto a second line instead of running off the screen
+@media (max-width: 700px) {
+  .row { gap: .8rem; padding: .6rem 1rem; font-size: 1.4rem;
+    .r-name { min-width: 0; line-height: 1.25; }
+    .r-v { min-width: 0; font-size: 1.3rem; }
+    .r-n { flex: none; font-size: 1.2rem; }
+    img { flex: none; }
+  }
+  .actions { flex-wrap: wrap; }
+  .actions .opt { flex: 1 1 12rem; min-width: 0; padding: 0 1rem; white-space: normal; }
 }
 
 // the bank statement: the printed receipt, as an image the width of the screen's content

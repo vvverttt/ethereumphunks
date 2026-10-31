@@ -77,9 +77,8 @@
 
     <!-- The Shell Archive: our credits, in the archive turtle's green. -->
     <a class="shell-button" routerLink="/shell-archive" (click)="goToAuction()">
-      <!-- the word Shell drawn as a pixel turtle shell -->
-      @let words = t('shellArchive').split('Shell');
-      <span class="shell-label">{{ words[0] }}<svg class="pixel-shell" viewBox="0 0 12 5" role="img" aria-label="Shell" shape-rendering="crispEdges"><rect x="3" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="5" y="0" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="7" y="0" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="2" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="9" y="1" width="1" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="5" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="11" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="7" y="4" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="9" y="4" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="11" y="4" width="1" height="1"/></svg>{{ words[1] }}</span>
+      <!-- "The" and "Archive" in the menu's heavy italic (Phupreme's lean); "Shell" drawn like the turtles' own logo -->
+      <span class="shell-label" [attr.aria-label]="t('shellArchive')"><span class="w">The</span><span class="tmnt" aria-hidden="true">@for (c of shellLetters; track $index) {<span>{{ c }}</span>}</span><span class="w">Archive</span></span>
       <div class="arrow">
         <ng-template [ngTemplateOutlet]="arrowIcon" />
       </div>
@@ -93,12 +92,6 @@
       <span class="arrow"><ng-template [ngTemplateOutlet]="arrowIcon" /></span>
     </a>
 
-    <!-- The bank's Phederal Reserve screen (every collection's market cap, floor, sales and holders),
-         on its own address so it can be opened and shared without going through the bank's menu. -->
-    <a class="reserve-button" routerLink="/phederal-reserve" (click)="goToAuction()">
-      <span>{{ t('atmReserve') }}</span>
-      <span class="arrow"><ng-template [ngTemplateOutlet]="arrowIcon" /></span>
-    </a>
 
     @if ((config$ | async)?.showAuction !== false) {
       <!-- Live auction card; mounted only while the menu is open, so it loads only then. -->

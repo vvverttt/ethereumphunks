@@ -154,10 +154,15 @@
   &:active { transform: translate(0, 1px); }
 }
 
-// narrower screens: the chip leaves the header below 1180px, where
-// the search, collections and wallet need all the room (the menu's gold Phederal Reserve button
-// still goes there)
-@media (max-width: 1180px) {
-  :host { display: none; }
+// phones: the header's top row only has room for the ₱ itself, so the chip is just the mark (tap it
+// for the panel), and the panel drops across the screen's width under the header
+@media (max-width: 700px) {
+  .chip { gap: 0; background-image: none; .value { gap: 0; font-size: 0; } .seal { font-size: 2.2rem; } }
+  .panel {
+    position: fixed;
+    top: var(--header-height);
+    left: 1rem; right: 1rem;
+    width: auto;
+    max-height: calc(100vh - var(--header-height) - 2rem);
+  }
 }
-
