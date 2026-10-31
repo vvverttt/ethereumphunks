@@ -8,6 +8,7 @@ import { Store } from '@ngrx/store';
 import { MenuComponent } from '@/components/menu/menu.component';
 import { SearchComponent } from '@/components/search/search.component';
 import { CollectionsDropdownComponent } from '@/components/collections-dropdown/collections-dropdown.component';
+import { ReserveTickerComponent } from '@/components/reserve-ticker/reserve-ticker.component';
 
 import { Web3Service } from '@/services/web3.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
@@ -38,6 +39,7 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
 
     SearchComponent,
     CollectionsDropdownComponent,
+    ReserveTickerComponent,
 
     WalletAddressDirective,
   ],

@@ -22,12 +22,17 @@
 
   <div class="user-tools">
 
+    <!-- The Phederal Reserve: the whole market's cap, with its breakdown underneath -->
+    <app-reserve-ticker class="reserve-ticker" />
+
+    <!-- The PHALACE triangle is off the header for now, kept for a place elsewhere later (its styles
+         below, the #themSwitcher template and assets/images/phalace-mask.png all stay):
     <div class="theme-switcher">
-      <!-- Light mode is retired; the PHALACE triangle stays here as a mark, not a switch. -->
       <button type="button" class="theme-mark" tabindex="-1" aria-hidden="true">
         <ng-template [ngTemplateOutlet]="themSwitcher" />
       </button>
     </div>
+    -->
 
     <div class="connect-menu">
       <!-- {{ connected$ | async | json }} -->

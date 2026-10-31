@@ -43,9 +43,12 @@ export class MyPhunksComponent {
 
 
   // the tab reads "Phleeca Bank" while the bank is open, and goes back to the site's own title after
+  /** the screen the machine opens on: 'reserve' on /phederal-reserve, otherwise its home menu */
+  start: 'reserve' | null = inject(ActivatedRoute).snapshot.data['screen'] || null;
+
   private title = inject(Title);
   private siteTitle = this.title.getTitle();
-  private setTitle = (this.title.setTitle('Phleeca Bank · ' + this.siteTitle),
+  private setTitle = (this.title.setTitle((this.start ? 'The Phederal Reserve · ' : 'Phleeca Bank · ') + this.siteTitle),
     inject(DestroyRef).onDestroy(() => this.title.setTitle(this.siteTitle)));
 
   /** Local dev only: `?preview=1` with `?address=` shows that wallet as if it were yours, so the

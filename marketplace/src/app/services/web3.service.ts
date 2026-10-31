@@ -959,6 +959,14 @@ export class Web3Service {
    * @returns Promise resolving to the transaction receipt
    * @throws Error if no public client
    */
+  /** waits until `hash` is `n` blocks deep, so a wallet whose node runs a block behind sees it too */
+  async waitForConfirmations(hash: string, n: number): Promise<TransactionReceipt> {
+    const chainId = getChainId(this.config);
+    const publicClient = getPublicClient(this.config, { chainId });
+    if (!publicClient) throw new Error('No public client');
+    return publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}`, confirmations: n });
+  }
+
   async waitForTransaction(hash: string): Promise<TransactionReceipt> {
     const chainId = getChainId(this.config);
     const publicClient = getPublicClient(this.config, { chainId });

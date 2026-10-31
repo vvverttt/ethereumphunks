@@ -34,6 +34,8 @@ export const routes: Routes = [
   { path: 'about', loadComponent: () => import('@/routes/legal/legal.component').then(m => m.LegalComponent), data: { page: 'about' } },
   // the connected wallet's pieces (or ?address=) across every collection, from the menu's Your Phunks
   { path: 'phleeca-bank', loadComponent: () => import('@/routes/my-phunks/my-phunks.component').then(m => m.MyPhunksComponent) },
+  // the bank opened straight on its Phederal Reserve screen, for linking the market-wide numbers
+  { path: 'phederal-reserve', loadComponent: () => import('@/routes/my-phunks/my-phunks.component').then(m => m.MyPhunksComponent), data: { screen: 'reserve' } },
   // the bank's old address, kept so saved links still land (query params carry over)
   { path: 'my-phunks', redirectTo: 'phleeca-bank' },
   { path: 'phaze-bank', redirectTo: 'phleeca-bank' },

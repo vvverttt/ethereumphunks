@@ -21,6 +21,10 @@
   // its buttons; .header-backdrop (below them) still colours the rest of the strip.
   &.panel-open {
     background-color: transparent;
+
+    // over the dark panel the PHALACE mark keeps the site pink (orange on Phunklloween) instead of
+    // the header text colour, which goes dark there
+    .inner .user-tools .theme-switcher button .phalace-icon { background-color: rgba(var(--pink), 1); }
   }
 
   pointer-events: none;
@@ -275,16 +279,10 @@
               font-size: .8rem;
             }
           }
-
-          &.active {
-            .arrow {
-              svg {
-                transform: rotate(180deg);
-              }
-            }
-          }
         }
       }
+
+      .reserve-ticker { margin-right: 2rem; }
 
       .theme-switcher {
         padding-right: 2rem;

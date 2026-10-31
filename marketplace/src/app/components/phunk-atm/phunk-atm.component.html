@@ -40,6 +40,12 @@
         <button type="button" class="opt" (click)="go('reserve')">{{ t('atmReserve') }}</button>
         <!-- an ATM's "insert card", for a wallet: opens the wallet picker -->
         <button type="button" class="opt card" (click)="connectWallet.emit()">{{ t('atmInsertWallet') }}</button>
+        <!-- the cards the slot takes -->
+        <div class="card-marks">
+          <img class="card-mark" src="assets/card-phisa.png" srcset="assets/card-phisa.png 1x, assets/card-phisa@2x.png 2x, assets/card-phisa@3x.png 3x" alt="PHISA" width="51" height="32">
+          <img class="card-mark" src="assets/card-masterwallet.png" srcset="assets/card-masterwallet.png 1x, assets/card-masterwallet@2x.png 2x, assets/card-masterwallet@3x.png 3x" alt="MasterWallet" width="51" height="32">
+          <img class="card-mark" src="assets/card-phunkian.png" srcset="assets/card-phunkian.png 1x, assets/card-phunkian@2x.png 2x, assets/card-phunkian@3x.png 3x" alt="PHUNKIAN EXPRESS" width="51" height="32">
+        </div>
       </div>
     } @else {
     @switch (screen()) {
@@ -69,32 +75,42 @@
           @if (salesTotal(); as st) {
             <p class="worth reserve-sum"><span>{{ t('atmVolume') }} <b>Ξ{{ st.volume.toLocaleString('en-US', { maximumFractionDigits: 2 }) }}</b> <small class="fiat">{{ fiat(st.volume) }}</small></span><span>{{ t('atmSales') }} <b>{{ st.n | number }}</b></span>@if (st.n) {<span>{{ t('atmAvgSale') }} <b>Ξ{{ valueShown(st.volume / st.n) }}</b></span>}<span>{{ t('atmHolders') }} <b>{{ holders()?.['*'] != null ? (holders()!['*'] | number) : '—' }}</b></span></p>
           }
-          <div class="list">
+          <!-- one table: the column names once at the top, plain figures in the rows, one line a collection -->
+          <div class="list rs-table">
+            <div class="rs-head" aria-hidden="true">
+              <span class="c-name">{{ t('atmColCollection') }}</span>
+              <span>{{ t('atmFloor') }}</span>
+              <span>{{ t('atmTopSale') }}</span>
+              <span class="c-more">{{ t('atmListedCount') }}</span>
+              <span class="c-more">{{ t('atmHolders') }}</span>
+              <span class="c-more">{{ t('atmVolume') }}</span>
+              <span class="c-more">{{ t('atmColSupply') }}</span>
+              <span class="c-cap">{{ t('atmColCap') }}</span>
+            </div>
             @for (c of reserveRows(); track c.slug) {
               @let so = salesOf(c.slug);
-              <a class="row rs-row" [style.--row]="c.accent" [routerLink]="['/', c.slug]">
-                @if (c.logo) { <img [src]="c.logo" alt="" /> }
-                <span class="r-main">
-                  <span class="r-name">{{ c.name }}</span>
-                  <!-- the collection's stats: floor, listed, sales and volume on record -->
-                  <span class="r-stats">
-                    <span>{{ t('atmFloor') }} Ξ{{ valueShown(floors()?.[c.slug] ?? null) }}</span>
-                    <span>{{ t('atmHolders') }} {{ holders()?.[c.slug] != null ? (holders()![c.slug] | number) : '—' }}</span>
-                    <span>{{ t('atmListedCount') }} {{ listed()[c.slug] || 0 }}</span>
-                    <span>{{ t('atmAvgListed') }} Ξ{{ valueShown(avgListed()[c.slug] ?? null) }}</span>
-                    @if (so) {
-                      <span>{{ t('atmSales') }} {{ so.n | number }}</span>
-                      <span>{{ t('atmVolume') }} Ξ{{ so.volume.toLocaleString('en-US', { maximumFractionDigits: 2 }) }}</span>
-                      <span>{{ t('atmAvgSale') }} Ξ{{ so.n ? valueShown(so.volume / so.n) : '—' }}</span>
-                    }
+              <div class="row rs-row" [style.--row]="c.accent" [class.off]="leftOut.has(c.slug)">
+                <!-- the picture takes the collection in and out of the totals; the row itself links nowhere -->
+                <span class="c-name">
+                  <span class="r-pic" role="button" tabindex="0" [attr.aria-pressed]="!leftOut.has(c.slug)"
+                    [title]="t(leftOut.has(c.slug) ? 'tickerCountIn' : 'tickerLeaveOut')"
+                    (click)="toggleLeftOut($event, c.slug)" (keydown.enter)="toggleLeftOut($event, c.slug)" (keydown.space)="toggleLeftOut($event, c.slug)">
+                    @if (c.logo) { <img [src]="c.logo" alt="" /> }
                   </span>
+                  <span class="r-name">{{ c.name }}</span>
                 </span>
-                <span class="r-n">{{ c.supply | number }}</span>
-                <span class="r-v">Ξ{{ valueShown(marketCap(c)) }}<small class="fiat">{{ fiat(marketCap(c)) }}</small></span>
-              </a>
+                <span>{{ xi(floors()?.[c.slug]) }}</span>
+                <span>{{ so ? xi(topSaleOf(c.slug)) : '…' }}@if (topSale(c.slug)) {<sup>*</sup>}</span>
+                <span class="c-more">{{ listed()[c.slug] || 0 }}</span>
+                <span class="c-more">{{ holders()?.[c.slug] != null ? (holders()![c.slug] | number) : '—' }}</span>
+                <span class="c-more">{{ so ? 'Ξ' + so.volume.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '…' }}</span>
+                <span class="c-more">{{ c.supply | number }}</span>
+                <span class="c-cap r-v">{{ xi(marketCap(c)) }}<small class="fiat">{{ fiat(marketCap(c)) }}</small></span>
+              </div>
             }
           </div>
           <p class="fine">{{ t('atmReserveNote') }}</p>
+          <p class="fine">{{ t('atmTopSaleNote') }}</p>
           <div class="actions">
             <button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button>
             <!-- this view as a picture to share -->

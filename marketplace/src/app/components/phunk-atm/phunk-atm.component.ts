@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -8,6 +8,7 @@ import { formatEther } from 'viem';
 
 import { GlobalState } from '@/models/global-state';
 import { Phunk } from '@/models/db';
+import { ReserveLeftOutService, VALUED_AT_TOP_SALE, reservePrice } from '@/services/reserve-left-out.service';
 import { CollectionLook, WalletGroup, detailsLink } from '@/utils/wallet-groups';
 import { PHLEECA_FINE_PRINT, PHLEECA_SELL_SHAME } from '@/utils/phleeca-fine-print';
 import { finePrintLine, sellShameLine } from '@/utils/phleeca-fine-print.i18n';
@@ -49,7 +50,7 @@ type Missing = { slug: string; name: string; logo?: string | null };
   templateUrl: './phunk-atm.component.html',
   styleUrls: ['./phunk-atm.component.scss'],
 })
-export class PhunkAtmComponent implements OnChanges {
+export class PhunkAtmComponent implements OnChanges, OnInit {
   private actions = inject(OwnerActionsService);
   private prefs = inject(PhunkPreferencesService);
   private web3Svc = inject(Web3Service);
@@ -99,6 +100,8 @@ export class PhunkAtmComponent implements OnChanges {
   @Input() ens: string | null = null;
   /** Local preview of someone else's wallet: everything works except sending. */
   @Input() preview = false;
+  /** the screen to open on instead of the home menu (/phederal-reserve opens on 'reserve') */
+  @Input() start: 'reserve' | null = null;
   /** A move went through: the page refreshes the holdings. */
   @Output() changed = new EventEmitter<void>();
   /** Signed out, Connect was pressed: the page opens the wallet picker. */
@@ -130,6 +133,10 @@ export class PhunkAtmComponent implements OnChanges {
   /** the transaction log, read when its screen opens */
   log = signal<any[] | null>(null);
   private fundsFor = '';
+
+  ngOnInit() {
+    if (this.start) this.go(this.start);
+  }
 
   ngOnChanges(ch: SimpleChanges) {
     if (this.wallet && this.wallet !== this.fundsFor) { this.loadFunds(); this.loadWalletEth(); this.log.set(null); }
@@ -357,9 +364,9 @@ export class PhunkAtmComponent implements OnChanges {
     this.floorsFailed.set(true);
   }
 
-  /** a collection's value: pieces held × its floor; null when nothing in it is listed */
+  /** a collection's value: pieces held × its floor (or its pinned top sale); null when neither */
   groupValue(g: WalletGroup): number | null {
-    const f = this.floors()?.[g.slug];
+    const f = this.floors() ? reservePrice(g.slug, this.floors()![g.slug]) : null;
     return f ? f * g.items.length : null;
   }
 
@@ -370,10 +377,23 @@ export class PhunkAtmComponent implements OnChanges {
     return v === null ? '—' : v.toLocaleString('en-US', { maximumFractionDigits: v >= 1000 ? 0 : 4 });
   }
 
-  /** The Phederal Reserve: a collection's market cap, its supply × its floor; null with no floor */
+  /** The Phederal Reserve: a collection's market cap, its supply × its floor (or its pinned top sale); null with neither */
   marketCap(c: CollectionLook): number | null {
-    const f = this.floors()?.[c.slug];
-    return f && c.supply ? f * c.supply : null;
+    if (!this.floors()) return null;
+    const p = reservePrice(c.slug, this.floors()![c.slug]);
+    return p && c.supply ? p * c.supply : null;
+  }
+  /** a table figure: "Ξ0.15", or "—" with none ("…" while the floors are read) */
+  xi(v: number | null | undefined): string {
+    if (!this.floors()) return this.floorsFailed() ? '—' : '…';
+    return v === null || v === undefined ? '—' : 'Ξ' + this.valueShown(v);
+  }
+  /** the pinned top sale a collection is valued at, if it is one of those */
+  topSale(slug: string): number | null { return VALUED_AT_TOP_SALE[slug] ?? null; }
+  /** a collection's highest sale on record (the pinned one when set); null with no sales */
+  topSaleOf(slug: string): number | null {
+    const mine = (this.sales() ?? []).filter(s => s.slug === slug);
+    return this.topSale(slug) ?? (mine.length ? Math.max(...mine.map(s => s.eth)) : null);
   }
 
   /** every collection, in the site's own order (as in the collections menu) */
@@ -398,7 +418,7 @@ export class PhunkAtmComponent implements OnChanges {
   salesTotal(): { n: number; volume: number } | null {
     const all = this.sales();
     if (!all) return null;
-    const live = new Set(this.reserve.map(c => c.slug));
+    const live = new Set(this.reserve.map(c => c.slug).filter(slug => !this.leftOut.has(slug)));
     const mine = all.filter(s => live.has(s.slug));
     return { n: mine.length, volume: mine.reduce((v, s) => v + s.eth, 0) };
   }
@@ -437,10 +457,19 @@ export class PhunkAtmComponent implements OnChanges {
     catch { this.salesFailed.set(true); }
   }
 
-  /** all the market caps together */
+  /** collections left out of the Reserve's totals (tap a collection's picture), shared with the
+   *  header's Reserve drop-down */
+  leftOut = inject(ReserveLeftOutService);
+  /** a tap on a Reserve row's picture: in or out of the totals, without following the row's link */
+  toggleLeftOut(e: Event, slug: string) {
+    e.preventDefault(); e.stopPropagation();
+    this.leftOut.toggle(slug);
+  }
+
+  /** all the market caps together, less any collection left out */
   reserveTotal(): number | null {
     if (!this.floors()) return null;
-    return this.reserve.reduce((n, c) => n + (this.marketCap(c) ?? 0), 0);
+    return this.reserve.reduce((n, c) => n + (this.leftOut.has(c.slug) ? 0 : this.marketCap(c) ?? 0), 0);
   }
 
   /** everything held, by floor; collections with nothing listed add nothing */
@@ -711,15 +740,17 @@ export class PhunkAtmComponent implements OnChanges {
       anonymous: true,   // market-wide figures: no address or balances on this one
       total: [this.t('atmReserveTotal'), this.reserveTotal()],
       sum,
-      rows: this.reserveRows().map(c => {
+      // the picture shows the market as counted: a collection left out isn't in it
+      rows: this.reserveRows().filter(c => !this.leftOut.has(c.slug)).map(c => {
         const so = this.salesOf(c.slug);
         const stats = [
           `${this.t('atmFloor')} Ξ${this.valueShown(this.floors()?.[c.slug] ?? null)}`,
-          `${this.t('atmHolders')} ${h?.[c.slug] != null ? h[c.slug].toLocaleString('en-US') : '—'}`,
           `${this.t('atmListedCount')} ${this.listed()[c.slug] || 0}`,
           `${this.t('atmAvgListed')} Ξ${this.valueShown(this.avgListed()[c.slug] ?? null)}`,
+          `${this.t('atmHolders')} ${h?.[c.slug] != null ? h[c.slug].toLocaleString('en-US') : '—'}`,
           ...(so ? [`${this.t('atmSales')} ${so.n}`, `${this.t('atmVolume')} ${eth2(so.volume)}`,
-            `${this.t('atmAvgSale')} Ξ${so.n ? this.valueShown(so.volume / so.n) : '—'}`] : []),
+            `${this.t('atmAvgSale')} Ξ${so.n ? this.valueShown(so.volume / so.n) : '—'}`,
+            `${this.t('atmTopSale')} Ξ${this.valueShown(this.topSaleOf(c.slug))}${this.topSale(c.slug) ? ' *' : ''}`] : []),
         ].join('   ');
         return this.viewRow({ name: c.name, accent: c.accent, logo: c.logo, badge: c.supply.toLocaleString('en-US'), value: this.marketCap(c), stats });
       }),

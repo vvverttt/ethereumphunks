@@ -233,8 +233,11 @@ export class OwnerActionsService {
       else toEscrow.push(p);
     }
     if (toEscrow.length) {
-      await this.runBatch('sendToEscrow', toEscrow, () =>
+      const escrowHash = await this.runBatch('sendToEscrow', toEscrow, () =>
         this.web3Svc.transferPhunk('0x' + toEscrow.map(p => p.hashId.substring(2)).join(''), slugMarket));
+      // listing straight after the escrow block fails in wallets whose node hasn't seen it yet (the
+      // wallet's own check reverts as "not deposited"): give it two more blocks first
+      await this.web3Svc.waitForConfirmations(escrowHash, 3);
       escrowed.push(...toEscrow.map(p => ({ p, market: slugMarket })));
     }
     let last = '';
@@ -253,8 +256,12 @@ export class OwnerActionsService {
   async escrowMany(phunks: Phunk[]): Promise<string> {
     await this.checkConsensusAll(phunks);
     const market = this.web3Svc.resolveMarketAddress({ slug: phunks[0].slug });
-    return this.runBatch('sendToEscrow', phunks, () =>
-      this.web3Svc.transferPhunk('0x' + phunks.map(p => p.hashId.substring(2)).join(''), market));
+    // indexed state can lag: one piece already in escrow reverts the whole batch, so leave those out
+    const todo: Phunk[] = [];
+    for (const p of phunks) if (!(await this.web3Svc.isInEscrow(p.hashId, market))) todo.push(p);
+    if (!todo.length) throw new Error(this.prefs.t('atmInEscrow'));
+    return this.runBatch('sendToEscrow', todo, () =>
+      this.web3Svc.transferPhunk('0x' + todo.map(p => p.hashId.substring(2)).join(''), market));
   }
 
   async withdrawMany(phunks: Phunk[]): Promise<string> {

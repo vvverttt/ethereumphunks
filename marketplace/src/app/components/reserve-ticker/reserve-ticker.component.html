@@ -1,0 +1,42 @@
+<div class="wrap" [class.active]="open()">
+  <!-- the chip, built like the Connect button: the whole market's cap -->
+  <button type="button" class="chip" (click)="toggle()" [attr.aria-expanded]="open()" aria-haspopup="dialog" [title]="t('atmReserve')">
+    <span class="value"><b class="seal" aria-hidden="true">₱</b>{{ eth(total()) }}</span>
+  </button>
+
+  @if (open()) {
+    <!-- the breakdown, dropping down from the chip: one frame, everything inside laid flat -->
+    <div class="panel" role="dialog" [attr.aria-label]="t('atmReserve')">
+      <!-- the way into the full Reserve: just the ₱, top right -->
+      <a class="go" routerLink="/phederal-reserve" [attr.aria-label]="t('tickerOpen')" [title]="t('tickerOpen')">₱</a>
+      <span class="kicker">{{ t('atmReserve') }}</span>
+      <span class="big">{{ eth(total()) }}</span>
+      @if (fiat(total()); as f) { <span class="big-fiat">{{ f }}</span> }
+      <span class="sub">{{ t('atmReserveTotal') }}</span>
+
+      <dl class="stats">
+        <div><dt>{{ t('atmVolume') }}</dt><dd>{{ volume() ? eth(volume()!.eth) : '…' }}</dd></div>
+        <div><dt>{{ t('atmHolders') }}</dt><dd>{{ holders()?.['*'] != null ? (holders()!['*'] | number) : '…' }}</dd></div>
+      </dl>
+
+      <ul class="rows">
+        @for (r of rows(); track r.c.slug) {
+          <li class="row" [attr.data-slug]="r.c.slug" [class.off]="left().has(r.c.slug)">
+            <!-- the picture takes the collection in and out of the totals -->
+            <button type="button" class="logo" (click)="toggleLeft(r.c.slug)"
+              [title]="t(left().has(r.c.slug) ? 'tickerCountIn' : 'tickerLeaveOut')" [attr.aria-pressed]="!left().has(r.c.slug)">
+              @if (r.c.logo) { <img [src]="r.c.logo" alt="" loading="lazy" /> } @else { <i>{{ r.c.name[0] }}</i> }
+            </button>
+            <span class="name">
+              <span class="n">{{ r.c.name }}</span>
+              <span class="fl">{{ r.topSale ? t('atmTopSale') + ' ' + eth(r.topSale) + ' *' : r.floor ? t('atmFloor') + ' ' + eth(r.floor) : t('tickerNoListings') }}</span>
+            </span>
+            <span class="cap">{{ r.cap ? eth(r.cap) : '—' }}@if (!left().has(r.c.slug) && fiat(r.cap); as f) { <small>{{ f }}</small> }</span>
+          </li>
+        }
+      </ul>
+      <!-- why a row shows its top sale and not its floor -->
+      @if (pinnedShown()) { <p class="note">{{ t('atmTopSaleNote') }}</p> }
+    </div>
+  }
+</div>

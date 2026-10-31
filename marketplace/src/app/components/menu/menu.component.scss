@@ -34,7 +34,7 @@ $menu-status-height: 4.5rem;
   --m-accent-fg: 19, 19, 19;
   --m-toggle-border: 255, 4, 180;
   --m-shadow: 255, 4, 180;         // the offset under every box
-  --m-lead-bg: 195, 255, 0;    --m-lead-fg: 19, 19, 19;
+  --m-lead-bg: 255, 255, 255;  --m-lead-fg: 19, 19, 19;     // the Fart Leaderboard: white on every collection
   --m-lead-title: 255, 4, 180; --m-lead-badge: 255, 4, 180; --m-lead-badge-fg: 255, 255, 255;
   --m-ext-bg: 255, 4, 180;     --m-ext-fg: 255, 255, 255;  --m-ext-shadow: 195, 255, 0;
   --m-dys-bg: 0, 255, 200;     --m-dys-fg: 19, 19, 19;
@@ -97,7 +97,7 @@ $menu-status-height: 4.5rem;
   --m-accent-fg: 24, 5, 54;
   --m-toggle-border: 255, 140, 26;
   --m-shadow: 10, 2, 26;           // ink
-  --m-lead-bg: 255, 140, 26;   --m-lead-fg: 24, 5, 54;
+  --m-lead-bg: 255, 255, 255;  --m-lead-fg: 24, 5, 54;
   --m-lead-title: 24, 5, 54;   --m-lead-badge: 24, 5, 54;  --m-lead-badge-fg: 255, 140, 26;
   --m-ext-bg: 255, 210, 63;    --m-ext-fg: 24, 5, 54;      --m-ext-shadow: 10, 2, 26;   // #ffd23f
   --m-dys-bg: 157, 255, 60;    --m-dys-fg: 24, 5, 54;      // #9dff3c
@@ -376,6 +376,11 @@ section {
 
       // the archive turtle's shell green: solid, and a colour none of the other links use
       background: #2e9e3f;
+
+      .shell-label { display: flex; align-items: center; white-space: pre; }
+      // "Shell" as a pixel turtle shell, in the label's white
+      // 2px to a pixel, the pixel font's own step, and as tall as its capitals so it sits in the line
+      .pixel-shell { display: block; width: 2.4rem; height: 1rem; margin: 0 .5rem .1rem; fill: currentColor; }
       box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
       cursor: pointer;
 
@@ -565,7 +570,11 @@ section {
       align-items: center;
       justify-content: space-between;
 
-      padding: 1.2rem 1.5rem 1rem;
+      padding: .6rem 1.5rem .5rem;    // as the Phleeca Bank button, now that it carries a logo
+
+      // the Phupreme lettering, white, its capital P as tall as PHLEECA's below it (the logo file
+      // itself, unaltered: same lettering, same weight)
+      .lot-logo { display: block; height: 3.3rem; width: auto; }
       margin-bottom: 1.5rem;
 
       font-family: var(--secondary-font-stack);
@@ -1079,7 +1088,7 @@ section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 0 3rem;     // the same gap before the auction box as QuantumPhunks leaves before Phupreme
+  margin: 0 0 1.5rem;
   padding: .6rem 1.5rem .5rem;
   font-family: var(--secondary-font-stack);
   font-size: 1.4rem;
@@ -1093,6 +1102,33 @@ section {
   .arrow svg { width: 1rem; height: 2rem; path { fill: rgba(var(--m-bank-fg), 1); } }
   // the PHLEECA BANK logo: black letters, the EE and BANK green (Fleeca's) or the collection's colour
   .bank-logo { display: block; height: 3.3rem; width: auto; .ink { fill: #000; } .acc { fill: rgba(var(--m-bank-ee), 1); } }
+
+  &:active { transform: translate(-.2rem, .2rem); box-shadow: -.1rem .1rem 0 0 rgba(var(--m-shadow), 1); }
+}
+
+// The Phederal Reserve: reserve gold with black letters, a colour no other link in the menu uses.
+// Only below 1181px: wider screens have the Reserve in the header (app-reserve-ticker), so there
+// the button goes and the bank button takes back the gap before the auction box.
+@media (min-width: 1181px) {
+  .reserve-button { display: none !important; }
+  .bank-button { margin-bottom: 3rem; }
+}
+.reserve-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 3rem;     // the same gap before the auction box as QuantumPhunks leaves before Phupreme
+  padding: 1.1rem 1.5rem .9rem;
+  font-family: var(--secondary-font-stack);
+  font-size: 1.4rem;
+  color: #000;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: #d4a72c;
+  box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow), 1);
+  cursor: pointer;
+
+  .arrow svg { width: 1rem; height: 2rem; path { fill: #000; } }
 
   &:active { transform: translate(-.2rem, .2rem); box-shadow: -.1rem .1rem 0 0 rgba(var(--m-shadow), 1); }
 }

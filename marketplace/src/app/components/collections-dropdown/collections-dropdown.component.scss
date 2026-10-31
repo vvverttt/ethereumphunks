@@ -242,11 +242,6 @@
   }
 
   &.active {
-    .curated-button {
-      .arrow {
-        transform: rotate(180deg);
-      }
-    }
 
     .curated-dropdown {
       // z-index: 1;

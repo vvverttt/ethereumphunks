@@ -582,12 +582,21 @@
   // from the top, at the same height the signed-in menu starts
   justify-content: flex-start;
   gap: 1.4rem;
-  padding: 3.8rem 2.4rem 4rem;
+  // the bottom leaves room for the card row hanging under Insert wallet (2.8rem + 3.2rem tiles), so
+  // on phones, where the column has no spare height, the fine print never runs under the cards;
+  // on desktop the column's min-height already has this room, so nothing there moves
+  padding: 3.8rem 2.4rem 7rem;
   text-align: center;
 
   .signin-mark { width: auto; height: 6.4rem; margin-bottom: .6rem; path { fill: rgba(var(--g-accent), 1); } }  // the logo's ₱, slanted
   .signin-title { margin: 0 0 1.4rem; font-size: 2.2rem; line-height: 1.3; color: #2b2d31; }
   .opt { width: 30rem; max-width: 100%; }   // both keys one width, like a machine's
+  // under Insert wallet: the cards the slot takes, side by side and one height, like an ATM's sticker row
+  // the card row hangs under Insert wallet without taking any room, so nothing below it moves:
+  // no height, and a negative margin that cancels the column's 1.4rem gap; the tiles just draw below
+  .card-marks { display: flex; align-items: flex-start; justify-content: center; gap: .8rem; height: 0; margin-top: -1.4rem; overflow: visible; }
+  .card-marks .card-mark { transform: translateY(2.8rem); }   // as far below Insert wallet as the welcome line sits above the Reserve key (1.4rem margin + 1.4rem gap)
+  .card-mark { display: block; width: 5.1rem; height: 3.2rem; }   // PHISA, MasterWallet, PHUNKIAN EXPRESS: three tiles, one size
 }
 
 
@@ -603,33 +612,64 @@
 }
 .r-v .fiat { display: block; margin: .2rem 0 0; text-align: right; }
 
-// the Reserve's rows carry the collection's stats under its name
+// the Reserve as one table: the column names once in a header, plain figures in the rows, the
+// same columns on both so everything lines up straight down the page
+.rs-table {
+  --cols: minmax(0, 1fr) 9.5rem 7.5rem 5rem 6rem 7rem 6rem 10rem;
+  display: flex; flex-direction: column; gap: .6rem;
+}
+.rs-head, .rs-row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  column-gap: 1.2rem;
+  > span:not(.c-name) { text-align: right; white-space: nowrap; }
+}
+.rs-head {
+  padding: 0 1.4rem;
+  border-left: .6rem solid transparent;   // the rows' colour edge, so the header sits over their columns
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: #8a8e95;
+}
 .rs-row {
-  .r-main { flex: 1; display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
-  .r-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .2rem 1.2rem;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #6d7076;
+  // not a link: no hand cursor or hover tint on the row, only on its picture
+  cursor: default;
+  &:hover { background: #fff; }
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.3rem; font-weight: 700; color: #3d4046;
+  font-variant-numeric: tabular-nums;
+  .c-name { display: flex; align-items: center; gap: 1.2rem; min-width: 0; }
+  .r-pic { display: block; flex: none; cursor: pointer; }
+  .r-name { font-family: var(--secondary-font-stack); font-size: 1.6rem; font-weight: 400; color: rgba(var(--ink), 1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  sup { margin-left: .1rem; color: #8a8e95; }
+  .r-v { min-width: 0; font-size: 1.5rem; color: rgba(var(--ink), 1); }
+  // left out of the totals: greyed, its market cap struck through
+  &.off {
+    > span { opacity: .45; }
+    .r-pic img { filter: grayscale(1); }
+    .r-v { text-decoration: line-through; }
   }
 }
-.reserve-sum { margin: 1rem 0 1.2rem; }
+.reserve-sum { margin: 1rem 0 1.2rem; flex-wrap: wrap; gap: .4rem 2.4rem; }
 
-// phones: a Reserve row is name, supply and market cap on top, its stats on a line of their own
-// underneath (squeezed beside the name they spilled into the next row)
-@media (max-width: 700px) {
-  .rs-row {
-    flex-wrap: wrap;
-    row-gap: .6rem;
-    height: auto;
-    .r-main { display: contents; }
-    .r-name { flex: 1; min-width: 0; font-size: 1.5rem; }
-    .r-stats { order: 5; flex-basis: 100%; gap: .2rem 1rem; font-size: 1.1rem; }
-    .r-v { min-width: 0; font-size: 1.3rem; }
-    .r-n { font-size: 1.2rem; }
+// narrower: the table keeps floor, top sale and market cap; listed, holders, volume and supply drop
+// out (holders and volume stay in the summary line above)
+@media (max-width: 900px) {
+  .rs-table { --cols: minmax(0, 1fr) 8rem 7rem 9rem; }
+  .c-more { display: none; }
+}
+// phones: the name across the top of its row, floor / top sale / market cap in a row under it
+@media (max-width: 500px) {
+  .rs-table { --cols: repeat(3, minmax(0, 1fr)); }
+  .rs-head .c-name { display: none; }
+  .rs-head, .rs-row { column-gap: .8rem; }
+  .rs-head { padding: 0 .8rem; font-size: .9rem; }
+  .rs-row { row-gap: .4rem; padding: .6rem .8rem; font-size: 1.2rem;
+    .c-name { grid-column: 1 / -1; gap: .7rem; }
+    .r-pic img { width: 2.8rem; height: 2.8rem; }
+    .r-name { font-size: 1.3rem; }
+    .r-v { font-size: 1.3rem; }
   }
 }
 
