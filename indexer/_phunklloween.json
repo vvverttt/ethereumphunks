@@ -826,6 +826,70 @@
       ]
     },
     {
+      "index": 10412,
+      "name": "Chatterer",
+      "id": "0x2a35cc9ecbf7b1a3e8759976677c062c5b7887e65b4a26ab5f9f49050ccfd160",
+      "sha": "dc27490509b110532e3986d91617fba4d437167e3263bd7f4fb6bcb60432bda4",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Chatterer"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Skinless"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Exposed Teeth"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Chains"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10413,
+      "name": "Count Chocula",
+      "id": "0x2beae32f42b659f86f2e9fb519965f84690730971af47eab63062ce3a89ff09b",
+      "sha": "4f9c60ad19f56574e362ecbce0582199af02631f728cd3edd87b99f67c0cd047",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Vampire"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Count Chocula"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Brown Cape"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Grin"
+        }
+      ]
+    },
+    {
       "index": 10414,
       "name": "Scarecrow",
       "id": "0xfe25931b5d591e8be5a018ad76f2c9a82ba27d041125d02d98566db6b880058f",
@@ -898,6 +962,62 @@
       ]
     },
     {
+      "index": 10416,
+      "name": "Franken Berry",
+      "id": "0x423148798e01fbd829dd0a269b1b734f118ac2d467b1eb57423c774de679ef84",
+      "sha": "134fe9ecc8be655123bc3f5ce6a5f732b6e4bda4eb2a1095989638723f3882c2",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Franken Berry"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Bolts"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Smile"
+        }
+      ]
+    },
+    {
+      "index": 10417,
+      "name": "Stay Puft Marshmallow Man",
+      "id": "0xf798ab78c569f13f15a2c69df10ac69a5d26bf49c507ae1805cdcbfc8b017329",
+      "sha": "59aabaf50d72cd084b17e312793e1e3e8c1394f35be7ac6038b5195e6c889533",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Stay Puft Marshmallow Man"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Sailor Hat"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Red Bow Tie"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Scream"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "White Glow"
+        }
+      ]
+    },
+    {
       "index": 10418,
       "name": "Ghost",
       "id": "0x489a0a6d0fa67d34743a21d52d96ea4ad2fed78a31f612e92f5aaaa4db42799d",
@@ -914,6 +1034,30 @@
         {
           "trait_type": "Aura",
           "value": "Lavender Glow"
+        }
+      ]
+    },
+    {
+      "index": 10419,
+      "name": "Fruit Brute",
+      "id": "0xdabdb3a4540ae68e78246d4db2c4a9b264f1eec41a2966f6c0f7810d9dfb3433",
+      "sha": "22b3233746e6f43c12f676dd1f441b19b61b9a28365461301c058829f482d0b4",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Werewolf"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Fruit Brute"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Grin"
         }
       ]
     },
@@ -1082,6 +1226,66 @@
       ]
     },
     {
+      "index": 10425,
+      "name": "Zombie",
+      "id": "0xd0c16a3e98bd29ce232cfb0cbbc83dead74b2038a5da8fc9078583608d8141c4",
+      "sha": "e638c8941a7b9ce33943e3c703733fa2b639b4ad0316da9e295d4beb32dde93a",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Zombie"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Exposed Brain"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Red"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Flies"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10426,
+      "name": "Sam",
+      "id": "0x0b510ba3dc1385da1e8e4f028b742fc4422f941ae39f84127308847708f796f9",
+      "sha": "16f4b5810b2544f5ce3e0f0d820eaadbe384d04484817dd50ffce6d40df7c5fb",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Sam"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Burlap Sack"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Lollipop"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
       "index": 10427,
       "name": "Skully Pettibones",
       "id": "0xc637d7fe542fbe3b8e0738d346a496032e2e486eacad11457cbf9039f96a0a02",
@@ -1138,6 +1342,66 @@
       ]
     },
     {
+      "index": 10429,
+      "name": "Uncle Frank",
+      "id": "0x21ddbe9218b04a69fff3efb0d988e3dd04649efbd69a49f7538d9d7bc67be86a",
+      "sha": "d4239b4e4740206405c20e7f467b38b6c6718f844192c10492a704da2f7d5bde",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Uncle Frank"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Skinless"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Crooked Teeth"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10431,
+      "name": "Carrie",
+      "id": "0xb8de7eb76400c55d79459bc20165bc2b21d18e38da52e91730c230fa064bf777",
+      "sha": "327cbfe103c674026ff50c8b814e9f1c254cf6be2d2082faec5839d09b333a98",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Carrie"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Red Hair"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Tiara"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Blood"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Flames"
+        }
+      ]
+    },
+    {
       "index": 10433,
       "name": "Casper",
       "id": "0x8a45269a47bb7c7b148f903420569479bb4746f24470974933493367021cc19c",
@@ -1154,6 +1418,58 @@
         {
           "trait_type": "Aura",
           "value": "White Glow"
+        }
+      ]
+    },
+    {
+      "index": 10434,
+      "name": "Ruby",
+      "id": "0xa3460cbe71ce835e2fbe2a00d20bf772e612b6da9114f9044bc0051779c5ef08",
+      "sha": "31016d6ff6aa1387fda77e499f4cdb0d4ca70dfb18f7d1fdb0956ab9084b0b06",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Vampire"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Ruby"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Purple Hair"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Umbrella"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10435,
+      "name": "Creature from the Black Lagoon",
+      "id": "0x499d735806529f3687c1ee445ef9775c32e6362330814b9c6d49d44cbcfcd4db",
+      "sha": "222ed162091d749e8e4e188cb7ff61d63b392cbb5351561adc97b162b5ef61da",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Creature from the Black Lagoon"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Green Glow"
         }
       ]
     },
@@ -1186,6 +1502,98 @@
         {
           "trait_type": "Weapon",
           "value": "Machete"
+        }
+      ]
+    },
+    {
+      "index": 10438,
+      "name": "Oogie Boogie",
+      "id": "0x4dfa74dc7bd32f1062c1202cab0caadc8506f24e07c13573983e45eda26f62b1",
+      "sha": "1cdc133e1f9a4cc56376df25677d06f3576e086f734aab12018d5a34447af164",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Oogie Boogie"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Hollow"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Grin"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Dice"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10439,
+      "name": "Tiffany",
+      "id": "0xf6f11843a0deaee8e0b8321ba4896262dfd7894c95e8f7bbaf090e63f80781f5",
+      "sha": "c6832de65d4100ca5390920e7e05f9cda7316c3d8e37ca4812871279a71217ef",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Doll"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Tiffany"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Blonde Hair"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Scars"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Bloody Knife"
+        }
+      ]
+    },
+    {
+      "index": 10440,
+      "name": "Pinhead",
+      "id": "0x2f4b634548f80b4b2cea97428be9748c7405fb1d7d44a458c8ab99bfc6a3bd1d",
+      "sha": "20c02b4e291ae7fcb6c36a20c9df44d906e13ed45b739b37c6efc0a04b42771f",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Pinhead"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Pins"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Puzzle Box"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Chains"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
         }
       ]
     },
@@ -1242,6 +1650,102 @@
         {
           "trait_type": "Neck",
           "value": "Red Bow Tie"
+        }
+      ]
+    },
+    {
+      "index": 10450,
+      "name": "Count Orlok",
+      "id": "0x60d294e60c5b70190f2c4df26c978e6a174967f2aba48bb2c3ba453d40b8a0e0",
+      "sha": "45760ce7a753e81c13a398c71b5c2a5ae9a0479e357e5a7557c8db2dd2684a17",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Vampire"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Count Orlok"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Bald"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Gold Key"
+        },
+        {
+          "trait_type": "Item",
+          "value": "Candle"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10451,
+      "name": "Edward Scissorhands",
+      "id": "0xbb46fd2fd1e7387de65f7a6bb1ead50933dc6e6194561734933972375a9f2cc6",
+      "sha": "cc357414ce1fafc767bf8f95f3339c99abfb2a0ec2fda1d059777dba8ea14fe5",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Edward Scissorhands"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Hair"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Scars"
+        }
+      ]
+    },
+    {
+      "index": 10453,
+      "name": "Huggy Wuggy",
+      "id": "0xf0470c1081325f6f8ad47d3b7e5758ce87541228401a23ba151a9d30094d2573",
+      "sha": "5e774e911e80220576b143daa3160d5ab08e600973eea5c7ce67e94c83f02a18",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Huggy Wuggy"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Hollow"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Red Lipstick"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Blue Glow"
         }
       ]
     }
