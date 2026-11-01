@@ -58,7 +58,7 @@ export const UI_ZH: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks 拍卖行',
   introForked: '基于 Chopperdad 的项目分叉并升级。',
-  introPhunklloween: 'Phunklloween 现已上线。手工制作的 Phunk 万圣节 1/1 作品在此拍卖，每天一件，每件 24 小时，起拍价 0.001 ETH。67 件中的 19 件每天在拍卖行拍卖，最后一件在万圣节结算；其余作品将在市场上架。',
+  introPhunklloween: 'Phunklloween 快乐！今天是 19 场 Phunklloween 拍卖的最后一天，也是出价的最后机会。其余作品已全部在市场上架，价格为 0.0367 和 0.067 ETH，最后 11 件也将很快加入。感谢每一位出价、收藏和参与的朋友。最后一次出价结算后，拍卖行将陷入黑暗。但不会太久。',
   introBidRules: '每次出价必须比上一次高出至少 10%，在最后 10 分钟内出价会让倒计时延长 10 分钟，因此不会有人在最后一刻抢拍。被超过出价时，你的 ETH 会退回到可提取余额。倒计时结束后任何人都可以结算：物品归赢家所有，下一场拍卖随即开始。',
   introMadeBy: '由 DystoLabz 制作，也就是',
   introAndMe: '和我。',

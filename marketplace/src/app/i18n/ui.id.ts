@@ -57,7 +57,7 @@ export const UI_ID: Record<string, string> = {
   // app intro popup
   introTitle: 'Rumah Lelang QuantumPhunks',
   introForked: 'Di-fork dari Chopperdad lalu di-upgrade.',
-  introPhunklloween: 'Phunklloween sekarang sudah live. Phunk Halloween 1/1 buatan tangan dilelang di sini, satu per hari, masing-masing 24 jam, mulai dari 0.001 ETH. 19 dari 67 dilelang setiap hari lewat rumah lelang, dan yang terakhir selesai tepat di hari Halloween; sisanya di-listing di market.',
+  introPhunklloween: 'Selamat Phunklloween! Hari ini hari terakhir dari 19 lelang Phunklloween, jadi ini kesempatan terakhirmu untuk menawar. Semua karya yang tersisa sudah di-listing di market seharga 0.0367 dan 0.067 ETH, dan 11 karya terakhir segera menyusul. Terima kasih untuk semua yang menawar, mengoleksi, dan ikut serta. Saat tawaran terakhir selesai, rumah lelang akan gelap. Tapi tidak lama.',
   introBidRules: 'Setiap bid harus minimal 10% lebih tinggi dari bid sebelumnya, dan bid di 10 menit terakhir menambah waktu 10 menit, jadi tidak ada yang bisa nyolong di detik terakhir. Kalau bid-mu dikalahkan, ETH-mu kembali ke saldo yang bisa ditarik. Saat timer habis, siapa pun bisa menyelesaikannya: item dikirim ke pemenang dan lelang berikutnya dimulai.',
   introMadeBy: 'Dibuat oleh DystoLabz, alias',
   introAndMe: 'dan aku.',

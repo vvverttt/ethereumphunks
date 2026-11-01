@@ -59,7 +59,7 @@ export const UI_EN: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks Auction House',
   introForked: 'Forked from Chopperdad and upgraded.',
-  introPhunklloween: 'Phunklloween is now live. Handcrafted Phunk Halloween 1/1s go to auction here, one a day, 24 hours each, opening at 0.001 ETH. 19 of the 67 run daily through the auction house, with the last one settling on Halloween; the rest get listed on the market.',
+  introPhunklloween: 'Happy Phunklloween! Today is the final day of the 19 Phunklloween auctions, so this is your last chance to bid. All remaining pieces are listed on the market at 0.0367 and 0.067 ETH, with the last 11 joining shortly. Thank you to everyone who bid, collected and took part. When the last bid settles, the auction house goes dark. Not for long.',
   introBidRules: 'Each bid must beat the last by at least 10%, and a bid in the final 10 minutes extends the clock by 10 minutes, so nothing gets sniped at the buzzer. Outbid and your ETH returns to your withdrawable balance. When the timer ends anyone can settle it: the item goes to the winner and the next one starts.',
   introMadeBy: 'Made by DystoLabz, aka',
   introAndMe: 'and me.',

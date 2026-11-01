@@ -58,7 +58,7 @@ export const UI_ES: Record<string, string> = {
   // popup de introducción
   introTitle: 'Casa de Subastas QuantumPhunks',
   introForked: 'Un fork de Chopperdad, mejorado.',
-  introPhunklloween: 'Phunklloween ya está en vivo. Piezas 1/1 de Halloween hechas a mano salen a subasta aquí, una al día, 24 horas cada una, desde 0.001 ETH. 19 de las 67 pasan a diario por la casa de subastas, y la última se liquida en Halloween; el resto se lista en el mercado.',
+  introPhunklloween: '¡Feliz Phunklloween! Hoy es el último día de las 19 subastas de Phunklloween: es tu última oportunidad para pujar. Todas las piezas restantes están listadas en el mercado a 0.0367 y 0.067 ETH, y las últimas 11 se suman muy pronto. Gracias a todos los que pujaron, coleccionaron y participaron. Cuando se liquide la última puja, la casa de subastas se queda a oscuras. No por mucho tiempo.',
   introBidRules: 'Cada puja debe superar a la anterior por al menos 10%, y una puja en los últimos 10 minutos extiende el reloj 10 minutos, así que nadie te gana en el último segundo. Si te superan, tu ETH regresa a tu saldo retirable. Cuando el temporizador termina, cualquiera puede liquidarla: el item va al ganador y empieza el siguiente.',
   introMadeBy: 'Hecho por DystoLabz, alias',
   introAndMe: 'y yo.',
