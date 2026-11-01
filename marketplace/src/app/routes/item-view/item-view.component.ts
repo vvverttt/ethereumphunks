@@ -10,7 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { Store } from '@ngrx/store';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { combineLatest, distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, take, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 
 import { PhunkBillboardComponent } from '@/components/phunk-billboard/phunk-billboard.component';
 import { TxHistoryComponent } from '@/components/tx-history/tx-history.component';
@@ -311,6 +311,22 @@ export class ItemViewComponent {
     ).subscribe((phunk) => this.refreshPoolBuyNow(phunk));
 
     // the connected wallet's own piece: does the market hold a deposit for it that never counted?
+    // the current block is read only while this item needs it: a withdraw cooldown on it, or the
+    // visitor's own accepted bid waiting out its confirm blocks
+    let releaseBlocks: (() => void) | null = null;
+    combineLatest([this.store.select(appStateSelectors.selectCooldowns), this.singlePhunk$, this.walletAddress$, toObservable(this.currentBid)]).pipe(
+      map(([cooldowns, phunk, address, bid]) =>
+        !!(phunk && cooldowns?.[phunk.hashId] > 0) || !!(bid?.accepted && address && bid.bidder?.toLowerCase() === address.toLowerCase())),
+      distinctUntilChanged(),
+      takeUntilDestroyed(),
+    ).subscribe({
+      next: (need) => {
+        if (need && !releaseBlocks) releaseBlocks = this.web3Svc.wantBlocks();
+        if (!need && releaseBlocks) { releaseBlocks(); releaseBlocks = null; }
+      },
+      complete: () => { releaseBlocks?.(); releaseBlocks = null; },
+    });
+
     combineLatest([this.walletAddress$, this.singlePhunk$]).pipe(takeUntilDestroyed())
       .subscribe(([address, phunk]) => { if (phunk) this.staleSvc.check(address, [phunk as any]); });
 

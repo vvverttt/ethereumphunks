@@ -62,3 +62,15 @@
   font-style: italic;
   font-display: swap;
 }
+
+// The ₱ alone, for the Phleeca/Reserve seal: Montserrat ExtraBold Italic's P (SIL Open Font License)
+// with two bars through the stem. Montserrat's own ₱ blurs into a blob at the seal's size, and the
+// Black Italic file above has none, so without this each device drew the seal in its own system font
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/montserrat-peso.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+20B1;
+}

@@ -1,6 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 
 const KEY = 'reserve-left-out';
+const BASIS_KEY = 'reserve-basis';
+
+/** what a market cap is worked out from: the floor, or the average of the cheapest 35% of the listings */
+export type ReserveBasis = 'floor' | 'half';
+const BASES: ReserveBasis[] = ['floor', 'half'];
+/** the average the other basis reads, from the same listings read */
+export interface ReserveAverages { avgLow: Record<string, number> }
 
 /**
  * Collections The Phederal Reserve values at their highest sale, not their floor: a thin market
@@ -24,6 +31,27 @@ export function reservePrice(slug: string, floor: number | null | undefined): nu
 @Injectable({ providedIn: 'root' })
 export class ReserveLeftOutService {
   readonly left = signal<Set<string>>(this.read());
+  /** the Floor / Avg 5 switch, shared the same way */
+  readonly basis = signal<ReserveBasis>(this.readBasis());
+
+  private readBasis(): ReserveBasis {
+    try { const b = localStorage.getItem(BASIS_KEY) as ReserveBasis; return BASES.includes(b) ? b : 'floor'; } catch { return 'floor'; }
+  }
+
+  setBasis(b: ReserveBasis) {
+    this.basis.set(b);
+    try { localStorage.setItem(BASIS_KEY, b); } catch { /* storage blocked: this visit only */ }
+  }
+
+  /** the asking price the switch picks: the floor, or the average of the cheapest 35% */
+  ask(slug: string, floors: Record<string, number> | null, avgs: ReserveAverages | null): number | null {
+    return (this.basis() === 'half' ? avgs?.avgLow[slug] : floors?.[slug]) ?? null;
+  }
+
+  /** the i18n key naming the basis now picked */
+  label(): string {
+    return { floor: 'atmFloor', half: 'atmAvgHalf' }[this.basis()];
+  }
 
   private read(): Set<string> {
     try { return new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch { return new Set(); }

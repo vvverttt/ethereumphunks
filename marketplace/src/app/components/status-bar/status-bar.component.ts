@@ -1,4 +1,4 @@
-import { Component, effect, input, OnDestroy, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, OnDestroy, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AsyncPipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { Subscription, map } from 'rxjs';
@@ -9,6 +9,7 @@ import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { GasService } from '@/services/gas.service';
+import { Web3Service } from '@/services/web3.service';
 import { setChat } from '@/state/actions/chat.actions';
 import { LogItem, SocketService } from '@/services/socket.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
@@ -40,8 +41,9 @@ export class StatusBarComponent implements OnDestroy {
     this.store.select(appStateSelectors.selectIndexerBlock),
   ]);
 
-  // The indexer block and its live logs are for the owner wallet only. DataService polls the
-  // indexer block from Supabase only for that wallet too, so no other visitor pays for it.
+  // The gas price, the chain and indexer blocks and the live logs are for the owner wallet
+  // (quantumphunks.eth) only. GasService and DataService read the gas price and the indexer block
+  // only while they are shown, so no other visitor pays for either.
   isOwner = toSignal(
     this.store.select(appStateSelectors.selectWalletAddress).pipe(map((address) => isAdminWallet(address))),
     { initialValue: false },
@@ -67,6 +69,7 @@ export class StatusBarComponent implements OnDestroy {
     private store: Store<GlobalState>,
     public gasSvc: GasService,
     private socketSvc: SocketService,
+    private web3Svc: Web3Service,
     public preferences: PhunkPreferencesService,
   ) {
     effect(() => {
@@ -75,6 +78,15 @@ export class StatusBarComponent implements OnDestroy {
         untracked(() => this.expanded.set(false));
       }
     });
+
+    // the chain block is read for quantumphunks.eth only while the menu (and so this bar) is open
+    let releaseBlocks: (() => void) | null = null;
+    effect(() => {
+      const need = this.visible() && this.isOwner();
+      if (need && !releaseBlocks) releaseBlocks = untracked(() => this.web3Svc.wantBlocks());
+      if (!need && releaseBlocks) { releaseBlocks(); releaseBlocks = null; }
+    });
+    inject(DestroyRef).onDestroy(() => releaseBlocks?.());
 
     effect(() => {
       if (this.expanded()) {

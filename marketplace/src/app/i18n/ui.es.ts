@@ -58,7 +58,7 @@ export const UI_ES: Record<string, string> = {
   // popup de introducción
   introTitle: 'Casa de Subastas QuantumPhunks',
   introForked: 'Un fork de Chopperdad, mejorado.',
-  introPhunklloween: '¡Feliz Phunklloween! Hoy es el último día de las 19 subastas de Phunklloween: es tu última oportunidad para pujar. Todas las piezas restantes están listadas en el mercado a 0.0367 y 0.067 ETH, y las últimas 11 se suman muy pronto. Gracias a todos los que pujaron, coleccionaron y participaron. Cuando se liquide la última puja, la casa de subastas se queda a oscuras. No por mucho tiempo.',
+  introPhunklloween: 'Las 19 subastas de Phunklloween ya se liquidaron. Gracias a todos los que pujaron, coleccionaron y participaron. Las piezas restantes están listadas en el mercado a 0.0367 y 0.067 ETH, y las últimas 11 se suman muy pronto. La casa de subastas está a oscuras por ahora. No por mucho tiempo.',
   introBidRules: 'Cada puja debe superar a la anterior por al menos 10%, y una puja en los últimos 10 minutos extiende el reloj 10 minutos, así que nadie te gana en el último segundo. Si te superan, tu ETH regresa a tu saldo retirable. Cuando el temporizador termina, cualquiera puede liquidarla: el item va al ganador y empieza el siguiente.',
   introMadeBy: 'Hecho por DystoLabz, alias',
   introAndMe: 'y yo.',
@@ -133,7 +133,7 @@ export const UI_ES: Record<string, string> = {
 
   // página de subasta
   auctionLoading: 'Cargando subasta...',
-  auctionNotice: 'La prueba de subastas con EthsRocks sin precio de reserva fue un éxito. Las subastas ahora pasan a los items más raros de las colecciones V67, con precios de reserva, y también incluirán nuestras colecciones más pequeñas y posiblemente cualquier item de cualquier colección de aquí.',
+  auctionNotice: 'La casa de subastas está cerrada por ahora. Las 19 subastas de Phunklloween ya se liquidaron, y las próximas subastas se anunciarán aquí.',
   auctionEthscriptionsTag: 'Los items subastados aquí son Ethscriptions, no la colección ERC-721 CryptoPhunksV67',
   auctionNewBidUpdating: 'Nueva puja detectada, actualizando...',
   auctionPoolItems: 'Items en el Pool de Subasta ({n})',
@@ -449,8 +449,14 @@ export const UI_ES: Record<string, string> = {
   atmShowBalance: "Mostrar saldo",
   atmReserveTotal: "Capitalización total",
   atmReserveNote: "Capitalización = suministro × el piso de la colección (el anuncio más barato). \"—\" significa que no hay nada en venta.",
+  atmReserveNoteHalf: "Capitalización = suministro × el promedio del 35% más barato de los anuncios de la colección. \"—\" significa que no hay nada en venta.",
   atmValueTotal: 'Valor total al piso',
   atmFloor: 'Piso',
+  atmAvgHalf: 'Piso prom.',
+  atmAvgHalfHint: 'El promedio del 35% más barato de los anuncios: un solo anuncio regalado no hunde el valor y los precios más altos (los de broma incluidos) quedan fuera',
+  atmFloorMeans: 'La capitalización usa el anuncio más barato',
+  atmAvgHalfMeans: 'La capitalización usa el precio promedio del 35% más barato de los anuncios',
+  atmBasis: 'Valorar por',
   atmTopSale: 'Mejor venta',
   staleTitle: "Registro del mercado desactualizado",
   staleBody: "Nuestro mercado aún lo muestra como depositado y en venta, por un depósito que no contó. Está seguro en tu billetera. Perdón por eso. Toca Limpiar una vez para arreglarlo (solo gas).",

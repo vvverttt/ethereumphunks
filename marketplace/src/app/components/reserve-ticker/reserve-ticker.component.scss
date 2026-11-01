@@ -31,7 +31,8 @@
 
   &:hover { background-size: 100% .2rem; }
   .seal { font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 800; font-style: italic; color: rgba(var(--pink), 1); }   // the site pink (orange on Phunklloween), open or closed
-  .value { display: flex; align-items: center; gap: .7rem; }
+  // the total in Montserrat (the pixel face's Ξ reads as a 3)
+  .value { display: flex; align-items: center; gap: .7rem; font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 800; }
 }
 .active .chip { background-size: 100% .2rem; }
 // the menu or side panel open: the header goes see-through over a dark panel, so the words go white
@@ -59,11 +60,24 @@
 }
 @keyframes drop { from { opacity: 0; transform: translate3d(0, -1.5rem, 0); } to { opacity: 1; transform: none; } }
 
-.kicker { font-family: var(--secondary-font-stack); font-size: 1.1rem; color: rgba(var(--pink), 1); }
-.big { margin-top: 1rem; font-family: var(--secondary-font-stack); font-size: 3rem; line-height: 1; font-variant-numeric: tabular-nums; }
+// the panel's words and Ξ amounts in Montserrat, not the pixel face, so they read cleanly at small sizes
+.kicker { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: rgba(var(--pink), 1); }
+.big { margin-top: 1rem; font-size: 3.2rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
 // the total in the language's currency, right under the Ξ figure
 .big-fiat { margin-top: .6rem; font-size: 1.8rem; font-weight: 800; color: #3d4046; font-variant-numeric: tabular-nums; }
 .sub { margin-top: .5rem; font-size: 1.2rem; font-weight: 600; color: #6b6f76; }
+// Floor / Avg floor: two keys joined across the panel's width, the picked one filled black like its frame
+.basis {
+  display: grid; grid-template-columns: 1fr 1fr; margin-top: 1.2rem;
+  button {
+    padding: .6rem 1rem;
+    font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700;
+    color: #000; background: #fff; border: .2rem solid #000; cursor: pointer;
+    & + button { border-left: 0; }
+    &.on { color: #fff; background: #000; }
+  }
+}
+.basis-means { margin-top: .5rem; font-size: 1.1rem; font-weight: 600; color: #6b6f76; }
 
 // volume, holders: one row, thin dividers, no boxes
 .stats {
@@ -72,7 +86,7 @@
   border-top: 1px solid #e6e7ea; border-bottom: 1px solid #e6e7ea;
   > div { padding: 0 1.2rem; border-left: 1px solid #e6e7ea; &:first-child { padding-left: 0; border-left: 0; } }
   dt { font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #8a8e95; }
-  dd { margin: .5rem 0 0; font-family: var(--secondary-font-stack); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+  dd { margin: .5rem 0 0; font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 }
 
 .rows {
@@ -133,11 +147,16 @@
 }
 .note { margin: -.2rem 0 .6rem; font-size: 1.05rem; font-weight: 600; line-height: 1.4; color: #6b6f76; }
 .name { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
-.n { font-family: var(--secondary-font-stack); font-size: 1.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.n { font-size: 1.3rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fl { font-size: 1.1rem; font-weight: 600; color: rgba(0, 0, 0, .62); font-variant-numeric: tabular-nums; }
+// the price in the language's currency, right after the Ξ, a shade darker like the cap's own
+// the collection's size, small and quiet after its name
+.sup { margin-left: .5rem; font-size: 1rem; font-weight: 600; color: rgba(0, 0, 0, .62); }
+.fl { white-space: nowrap; }
+.fl-fiat { margin-left: .3rem; font-weight: 700; color: rgba(0, 0, 0, .75); }
 .cap {
   display: flex; flex-direction: column; align-items: flex-end; gap: .2rem;
-  font-family: var(--secondary-font-stack); font-size: 1.3rem; font-variant-numeric: tabular-nums;
+  font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums;
   small { font-family: 'Montserrat', sans-serif; font-size: 1.05rem; font-weight: 700; color: rgba(0, 0, 0, .62); }
 }
 // the way into the full Reserve: the ₱ alone, in the theme accent, in the top-right corner
@@ -154,10 +173,10 @@
   &:active { transform: translate(0, 1px); }
 }
 
-// phones: the header's top row only has room for the ₱ itself, so the chip is just the mark (tap it
-// for the panel), and the panel drops across the screen's width under the header
+// phones: the chip shrinks to fit the header's top row (the ₱ and the total, smaller), and the panel
+// drops across the screen's width under the header
 @media (max-width: 700px) {
-  .chip { gap: 0; background-image: none; .value { gap: 0; font-size: 0; } .seal { font-size: 2.2rem; } }
+  .chip { background-image: none; font-size: 1.1rem; .value { gap: .4rem; } .seal { font-size: 1.9rem; } }
   .panel {
     position: fixed;
     top: var(--header-height);

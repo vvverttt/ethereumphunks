@@ -31,7 +31,7 @@ import * as appStateActions from '@/state/actions/app-state.actions';
 import { Chain, mainnet, sepolia } from 'viem/chains';
 import { magma } from '@/constants/magmaChain';
 
-import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPublicClient, decodeEventLog, decodeFunctionData, encodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
+import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPublicClient, decodeFunctionData, encodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 // The ONE Ankr endpoint. Ankr's terms (effective 2026-11-15) allow a single Freemium
@@ -202,9 +202,10 @@ export class Web3Service {
 
     this.discoverEip6963Wallets();
     this.createListeners();
-    this.startBlockWatcher();
+    // the block watcher starts only when something on screen asks for the block (wantBlocks)
     this.setupBlockWatcherVisibilityHandling();
-    this.startPointsWatcher();
+    // no points watcher: a wallet's points are read from Supabase when it connects (every page
+    // load), which is often enough, so connected wallets make no background RPC calls for them
 
     // setInterval(() => {
     //   console.log({
@@ -402,8 +403,24 @@ export class Web3Service {
    * Updates the current block number in the store when new blocks arrive
    */
   blockWatcher!: WatchBlockNumberReturnType | undefined;
+  /** the block is read only while something on screen needs it (see wantBlocks): the menu's block
+   *  line for quantumphunks.eth, an item's withdraw cooldown, a bidder's confirm countdown. Nothing
+   *  else makes an eth_blockNumber call */
+  private blockDemand = 0;
+  /** asks for the current block until the returned release is called */
+  wantBlocks(): () => void {
+    this.blockDemand++;
+    this.startBlockWatcher();
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.blockDemand--;
+      if (!this.blockDemand) this.stopBlockWatcher();
+    };
+  }
   startBlockWatcher(): void {
-    if (this.blockWatcher) return;
+    if (this.blockWatcher || !this.blockDemand) return;
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     this.blockWatcher = this.l1PollingClient.watchBlockNumber({
       emitOnBegin: true,
@@ -438,122 +455,6 @@ export class Web3Service {
       }
       this.startBlockWatcher();
     });
-  }
-
-  /**
-   * Starts watching for points-related events from the Points contract
-   * Dispatches store actions when points are added or multipliers change
-   */
-  pointsWatcher!: (() => void) | undefined;
-  private pointsWatcherPollTimer: ReturnType<typeof setTimeout> | undefined;
-  private pointsWatcherPollInFlight = false;
-  private pointsLastProcessedBlock: bigint | undefined;
-  private pointsWatcherRetryAttempt = 0;
-  startPointsWatcher(): void {
-    if (this.pointsWatcher) return;
-    let stopped = false;
-    // A real poll (eth_blockNumber + eth_getLogs) every 10 min: points only need to show up
-    // eventually, and the 500-block read window (~100 min) still covers every gap. The cheap
-    // "wallet connected and tab visible?" check below stays at a minute and makes no RPC call.
-    const POINTS_POLL_MS = 10 * 60_000;
-
-    const scheduleNextPoll = (delayMs: number) => {
-      if (stopped) return;
-      if (this.pointsWatcherPollTimer) clearTimeout(this.pointsWatcherPollTimer);
-      this.pointsWatcherPollTimer = setTimeout(() => {
-        void pollPointsEvents();
-      }, delayMs);
-    };
-
-    // Set when polls were skipped, so the next real one refetches the wallet's points once.
-    let skipped = false;
-
-    const pollPointsEvents = async () => {
-      if (stopped || this.pointsWatcherPollInFlight) return;
-      // Only the connected wallet's own PointsAdded events do anything (pointsChanged$ refetches
-      // that wallet's points), so with no wallet — most visitors, and every crawler — or a hidden
-      // tab, skip both RPC calls. The cursor is dropped so the next real poll starts at the head.
-      const account = getAccount(this.config).address;
-      if (!account || (typeof document !== 'undefined' && document.hidden)) {
-        this.pointsLastProcessedBlock = undefined;
-        skipped = true;
-        scheduleNextPoll(60_000);   // no RPC: just checks again whether to start
-        return;
-      }
-      this.pointsWatcherPollInFlight = true;
-      try {
-        const latest = await this.l1PollingClient.getBlockNumber();
-
-        // Seed cursor at current head to avoid expensive historical backfill on app boot.
-        if (this.pointsLastProcessedBlock === undefined) {
-          this.pointsLastProcessedBlock = latest;
-          this.pointsWatcherRetryAttempt = 0;
-          // Events from the skipped stretch were never read; one authoritative refetch covers them.
-          if (skipped) {
-            skipped = false;
-            this.store.dispatch(appStateActions.fetchUserPoints({ address: account.toLowerCase() }));
-          }
-          scheduleNextPoll(POINTS_POLL_MS);
-          return;
-        }
-
-        if (latest <= this.pointsLastProcessedBlock) {
-          this.pointsWatcherRetryAttempt = 0;
-          scheduleNextPoll(POINTS_POLL_MS);
-          return;
-        }
-
-        const fromBlock = this.pointsLastProcessedBlock + 1n > latest - 499n
-          ? this.pointsLastProcessedBlock + 1n
-          : latest - 499n;
-        const logs = await this.l1PollingClient.getLogs({
-          address: pointsAddress as `0x${string}`,
-          fromBlock,
-          toBlock: latest,
-        });
-
-        logs.forEach((log: any) => {
-          let decoded: any;
-          try {
-            decoded = decodeEventLog({
-              abi: PointsABI,
-              data: log.data,
-              topics: log.topics,
-            });
-          } catch {
-            return;
-          }
-
-          const normalizedLog = { ...log, eventName: decoded.eventName, args: decoded.args };
-          if (decoded.eventName === 'PointsAdded') this.store.dispatch(appStateActions.pointsChanged({ log: normalizedLog }));
-          if (decoded.eventName === 'MultiplierSet') {}
-        });
-
-        this.pointsLastProcessedBlock = latest;
-        this.pointsWatcherRetryAttempt = 0;
-        scheduleNextPoll(POINTS_POLL_MS);
-      } catch (error) {
-        console.error('[Web3Service] Points poll error, retrying:', error);
-        this.pointsWatcherRetryAttempt += 1;
-        const baseDelay = Math.min(10_000 * (2 ** Math.min(this.pointsWatcherRetryAttempt, 5)), 120_000);
-        const jitter = Math.floor(Math.random() * 2_500);
-        scheduleNextPoll(baseDelay + jitter);
-      } finally {
-        this.pointsWatcherPollInFlight = false;
-      }
-    };
-
-    this.pointsWatcher = () => {
-      stopped = true;
-      if (this.pointsWatcherPollTimer) clearTimeout(this.pointsWatcherPollTimer);
-      this.pointsWatcherPollTimer = undefined;
-      this.pointsWatcherPollInFlight = false;
-      this.pointsWatcher = undefined;
-      this.pointsWatcherRetryAttempt = 0;
-      this.pointsLastProcessedBlock = undefined;
-    };
-
-    void pollPointsEvents();
   }
 
   /**

@@ -8,7 +8,7 @@ import { formatEther } from 'viem';
 
 import { GlobalState } from '@/models/global-state';
 import { Phunk } from '@/models/db';
-import { ReserveLeftOutService, VALUED_AT_TOP_SALE, reservePrice } from '@/services/reserve-left-out.service';
+import { ReserveLeftOutService, VALUED_AT_TOP_SALE, reservePrice, ReserveAverages, ReserveBasis } from '@/services/reserve-left-out.service';
 import { StaleDepositService } from '@/services/stale-deposit.service';
 import { CollectionLook, WalletGroup, detailsLink } from '@/utils/wallet-groups';
 import { PHLEECA_FINE_PRINT, PHLEECA_SELL_SHAME } from '@/utils/phleeca-fine-print';
@@ -363,7 +363,7 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
 
   async loadFloors() {
     for (let attempt = 0; attempt < 3; attempt++) {
-      try { const st = await this.dataSvc.fetchFloorStats(); this.floors.set(st.floors); this.listed.set(st.listed); this.avgListed.set(st.avgListed); this.floorsFailed.set(false); return; }
+      try { const st = await this.dataSvc.fetchFloorStats(); this.floors.set(st.floors); this.listed.set(st.listed); this.avgListed.set(st.avgListed); this.avgs.set(st); this.floorsFailed.set(false); return; }
       catch { await new Promise(r => setTimeout(r, 3000)); }
     }
     this.floorsFailed.set(true);
@@ -382,10 +382,11 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
     return v === null ? '—' : v.toLocaleString('en-US', { maximumFractionDigits: v >= 1000 ? 0 : 4 });
   }
 
-  /** The Phederal Reserve: a collection's market cap, its supply × its floor (or its pinned top sale); null with neither */
+  /** The Phederal Reserve: a collection's market cap, its supply × its floor or its 5-cheapest average
+   *  (the switch), or its pinned top sale; null with none */
   marketCap(c: CollectionLook): number | null {
     if (!this.floors()) return null;
-    const p = reservePrice(c.slug, this.floors()![c.slug]);
+    const p = reservePrice(c.slug, this.reserveAsk(c.slug));
     return p && c.supply ? p * c.supply : null;
   }
   /** a table figure: "Ξ0.15", or "—" with none ("…" while the floors are read) */
@@ -410,6 +411,21 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
   listed = signal<Record<string, number>>({});
   /** the average asking price of each collection's listings */
   avgListed = signal<Record<string, number>>({});
+  /** the switch's two keys */
+  readonly bases: { key: ReserveBasis; label: string; hint: string; means: string }[] = [
+    { key: 'floor', label: 'atmFloor', hint: '', means: 'atmFloorMeans' },
+    { key: 'half', label: 'atmAvgHalf', hint: 'atmAvgHalfHint', means: 'atmAvgHalfMeans' },
+  ];
+  /** each collection's average of the cheapest 35% of its listings (the switch's other basis) */
+  avgs = signal<ReserveAverages | null>(null);
+  /** the asking price the Reserve's switch values a collection at */
+  reserveAsk(slug: string): number | null { return this.leftOut.ask(slug, this.floors(), this.avgs()); }
+  /** what the basis picked means, in plain words under the switch */
+  basisMeans(): string { return this.bases.find(b => b.key === this.leftOut.basis())!.means; }
+  /** the fine print for the basis picked */
+  noteKey(): string { return { floor: 'atmReserveNote', half: 'atmReserveNoteHalf' }[this.leftOut.basis()]; }
+  /** the switch's own name for that price, for the column and the saved picture */
+  askLabel(): string { return this.t(this.leftOut.label()); }
 
   /** a collection's recorded sales and their total, from the sales the chart reads */
   salesOf(slug: string): { n: number; volume: number } | null {
@@ -763,7 +779,7 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
       rows: this.reserveRows().filter(c => !this.leftOut.has(c.slug)).map(c => {
         const so = this.salesOf(c.slug);
         const stats = [
-          `${this.t('atmFloor')} Ξ${this.valueShown(this.floors()?.[c.slug] ?? null)}`,
+          `${this.askLabel()} Ξ${this.valueShown(this.reserveAsk(c.slug))}`,
           `${this.t('atmListedCount')} ${this.listed()[c.slug] || 0}`,
           `${this.t('atmAvgListed')} Ξ${this.valueShown(this.avgListed()[c.slug] ?? null)}`,
           `${this.t('atmHolders')} ${h?.[c.slug] != null ? h[c.slug].toLocaleString('en-US') : '—'}`,

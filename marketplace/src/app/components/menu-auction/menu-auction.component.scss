@@ -16,6 +16,9 @@
   box-shadow: -.3rem .3rem 0 0 rgba(var(--m-shadow, 0, 0, 0), 1);
   cursor: pointer;
 
+  // nothing up for auction: just the title, padded like the menu's other buttons so it sits level
+  &.idle { padding: 1.2rem 1.5rem 1rem; }
+
   &:active {
     transform: translate(0, 1px);
   }

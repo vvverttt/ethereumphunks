@@ -4,6 +4,9 @@ import { BehaviorSubject, Observable, switchMap, catchError, of, startWith, filt
 import { environment } from 'src/environments/environment';
 import { visibleTimer } from '@/utils/visible-interval';
 
+/** how often the gas price is read, at most */
+const GAS_EVERY_MS = 15 * 60_000;
+
 export interface GasData {
   FastGasPrice: string;
   LastBlock: string;
@@ -37,16 +40,33 @@ export class GasService {
 
   private lastFetch = 0;
 
+  /** the last reading, kept in the browser so a reload or another tab within 15 minutes reuses it */
+  private static readonly CACHE_KEY = 'gas-price';
+  constructor() {
+    try {
+      const c = JSON.parse(localStorage.getItem(GasService.CACHE_KEY) || 'null');
+      if (c?.data && Date.now() - c.at < GAS_EVERY_MS) { this.lastFetch = c.at; this.gasSubject.next(c.data); }
+    } catch { /* storage blocked: read live */ }
+  }
+
   // Polls only while something is showing the price — the status bar, which lives in the menu
-  // and is rendered only while the menu is open — every 2 minutes, and not in a hidden tab.
-  // The number is informational (wallets price their own transactions) and the first RPC tried
-  // is a keyed Alchemy one. Opening the menu shows the last price at once and refreshes it if
-  // it is more than 30 s old, so opening and closing it repeatedly doesn't refetch each time.
-  private poll$ = visibleTimer(120_000).pipe(
+  // and is rendered only while the menu is open — at most once every 15 minutes, and not in a
+  // hidden tab. The number is informational (wallets price their own transactions) and the first
+  // RPC tried is a keyed Alchemy one. Opening the menu shows the last price at once and refreshes
+  // it only if it is more than 15 minutes old, so opening and closing it never refetches,
+  // and nor do reloads or other tabs (the reading is kept in the browser).
+  private poll$ = visibleTimer(GAS_EVERY_MS).pipe(
     startWith(undefined),
-    filter(() => Date.now() - this.lastFetch > 30_000),
+    filter(() => Date.now() - this.lastFetch > GAS_EVERY_MS),
     switchMap(() => this.fetchGasPrice()),
-    tap((data) => { this.lastFetch = Date.now(); this.gasSubject.next(data); }),
+    // a failed read isn't counted, so the next menu open tries again
+    tap((data) => {
+      if (data.ProposeGasPrice !== 'err') {
+        this.lastFetch = Date.now();
+        try { localStorage.setItem(GasService.CACHE_KEY, JSON.stringify({ at: this.lastFetch, data })); } catch {}
+      }
+      this.gasSubject.next(data);
+    }),
     ignoreElements(),
   );
 

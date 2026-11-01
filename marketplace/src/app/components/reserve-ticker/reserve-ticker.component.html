@@ -1,7 +1,7 @@
 <div class="wrap" [class.active]="open()">
   <!-- the chip, built like the Connect button: the whole market's cap -->
   <button type="button" class="chip" (click)="toggle()" [attr.aria-expanded]="open()" aria-haspopup="dialog" [title]="t('atmReserve')">
-    <span class="value"><b class="seal" aria-hidden="true">₱</b>{{ eth(total()) }}</span>
+    <span class="value" [title]="t('atmReserveTotal')"><b class="seal" aria-hidden="true">₱</b>{{ eth(total()) }}</span>
   </button>
 
   @if (open()) {
@@ -13,10 +13,17 @@
       <span class="big">{{ eth(total()) }}</span>
       @if (fiat(total()); as f) { <span class="big-fiat">{{ f }}</span> }
       <span class="sub">{{ t('atmReserveTotal') }}</span>
+      <!-- what the caps are worked out from: the floor, or the average of the cheapest 35% of the listings -->
+      <div class="basis" role="group" [attr.aria-label]="t('atmBasis')">
+        @for (b of bases; track b.key) {
+          <button type="button" [class.on]="basis() === b.key" [attr.aria-pressed]="basis() === b.key" (click)="setBasis(b.key)" [title]="b.hint ? t(b.hint) : ''">{{ t(b.label) }}</button>
+        }
+      </div>
+      <span class="basis-means">{{ t(basisMeans()) }}</span>
 
       <dl class="stats">
-        <div><dt>{{ t('atmVolume') }}</dt><dd>{{ volume() ? eth(volume()!.eth) : '…' }}</dd></div>
-        <div><dt>{{ t('atmHolders') }}</dt><dd>{{ holders()?.['*'] != null ? (holders()!['*'] | number) : '…' }}</dd></div>
+        <div><dt>{{ t('atmVolume') }}</dt><dd>{{ volume() != null ? eth(volume()) : '…' }}</dd></div>
+        <div><dt>{{ t('atmHolders') }}</dt><dd>{{ holdersTotal() != null ? (holdersTotal() | number) : '…' }}</dd></div>
       </dl>
 
       <ul class="rows">
@@ -28,8 +35,10 @@
               @if (r.c.logo) { <img [src]="r.c.logo" alt="" loading="lazy" /> } @else { <i>{{ r.c.name[0] }}</i> }
             </button>
             <span class="name">
-              <span class="n">{{ r.c.name }}</span>
-              <span class="fl">{{ r.topSale ? t('atmTopSale') + ' ' + eth(r.topSale) + ' *' : r.floor ? t('atmFloor') + ' ' + eth(r.floor) : t('tickerNoListings') }}</span>
+              <!-- the name, with the collection's size beside it in small type -->
+              <span class="n">{{ r.c.name }}@if (r.c.supply) { <small class="sup" [title]="t('atmColSupply')">{{ r.c.supply | number }}</small>}</span>
+              <!-- the price its cap multiplies the size by, with its value in the language's currency -->
+              <span class="fl">{{ r.topSale ? t('atmTopSale') + ' ' + eth(r.topSale) : r.floor ? t(basisLabel()) + ' ' + eth(r.floor) : t('tickerNoListings') }}@if (fiat(r.topSale || r.floor); as f) { <span class="fl-fiat">{{ f }}</span>}@if (r.topSale) { *}</span>
             </span>
             <span class="cap">{{ r.cap ? eth(r.cap) : '—' }}@if (!left().has(r.c.slug) && fiat(r.cap); as f) { <small>{{ f }}</small> }</span>
           </li>

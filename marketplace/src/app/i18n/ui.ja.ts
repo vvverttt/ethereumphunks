@@ -59,7 +59,7 @@ export const UI_JA: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks オークションハウス',
   introForked: 'Chopperdad からフォークしてアップグレードしました。',
-  introPhunklloween: 'ハッピー Phunklloween！今日は全19回の Phunklloween オークションの最終日、入札のラストチャンスです。残りの作品はすべてマーケットに 0.0367 ETH と 0.067 ETH で出品中で、最後の11点もまもなく加わります。入札し、コレクトし、参加してくれたすべての皆さんに感謝します。最後の入札が決済されると、オークションハウスの灯りは消えます。でも、それも長くはありません。',
+  introPhunklloween: '全19回の Phunklloween オークションはすべて決済済みです。入札し、コレクトし、参加してくれたすべての皆さんに感謝します。残りの作品はマーケットに 0.0367 ETH と 0.067 ETH で出品中で、最後の11点もまもなく加わります。オークションハウスの灯りはいったん消えます。でも、それも長くはありません。',
   introBidRules: '各入札は直前の入札を少なくとも10%上回る必要があります。終了前の10分以内に入札があると時間が10分延長されるため、終了間際の滑り込みはできません。上回る入札があった場合、あなたの ETH は引き出し可能残高に戻ります。タイマー終了後は誰でも決済でき、アイテムは落札者に渡り、次のオークションが始まります。',
   introMadeBy: '制作: DystoLabz、別名',
   introAndMe: 'と私。',
@@ -134,7 +134,7 @@ export const UI_JA: Record<string, string> = {
 
   // auction page
   auctionLoading: 'オークションを読み込み中...',
-  auctionNotice: 'リザーブ 0 の EthsRocks でのオークションテストは成功しました。今後のオークションは V67 コレクションの最もレアなアイテムに移り、リザーブ価格が設定されます。また、小規模なコレクションや、ここにある任意のコレクションのアイテムも扱う可能性があります。',
+  auctionNotice: 'オークションハウスは現在お休み中です。全19回の Phunklloween オークションはすべて決済済みで、次回のオークションはここでお知らせします。',
   auctionEthscriptionsTag: 'ここでオークションされるアイテムは Ethscriptions であり、CryptoPhunksV67 ERC-721 コレクションではありません',
   auctionNewBidUpdating: '新しい入札を検出、更新中...',
   auctionPoolItems: 'オークションプールのアイテム ({n})',
@@ -450,8 +450,14 @@ export const UI_JA: Record<string, string> = {
   atmShowBalance: "残高を表示",
   atmReserveTotal: "時価総額の合計",
   atmReserveNote: "時価総額 = 供給数 × フロア（最安の出品）。「—」は出品がないことを示します。",
+  atmReserveNoteHalf: "時価総額 = 供給数 × 安いほうから35%の出品の平均。「—」は出品がないことを示します。",
   atmValueTotal: 'フロア価格での合計',
   atmFloor: 'フロア',
+  atmAvgHalf: '平均フロア',
+  atmAvgHalfHint: '安いほうから35%の出品の平均。1件の投げ売りで下がらず、高めの出品（ネタ価格を含む）は除きます',
+  atmFloorMeans: '時価総額は最安の出品で計算',
+  atmAvgHalfMeans: '時価総額は安いほうから35%の出品の平均価格で計算',
+  atmBasis: '評価の基準',
   atmTopSale: '最高売買額',
   staleTitle: "マーケットの記録が古くなっています",
   staleBody: "無効だった預け入れにより、マーケットではまだ預け入れ・出品中と表示されています。アイテムはウォレットにあり安全です。ご迷惑をおかけしました。クリアを一度押して修正してください（ガス代のみ）。",

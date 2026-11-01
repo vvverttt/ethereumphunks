@@ -22,6 +22,10 @@ import { visibleTimer } from '@/utils/visible-interval';
 import { environment } from 'src/environments/environment';
 import { isErc721c } from '@/constants/erc721c';
 import { supabase } from './supabase';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+
+/** crawlers run the page's script too; they get the page without its live updates */
+const IS_BOT = typeof navigator !== 'undefined' && (navigator.webdriver || /bot|crawl|spider|slurp|bytespider|headless|lighthouse|preview/i.test(navigator.userAgent));
 import { isAdminWallet } from '@/constants/admin-wallets';
 
 import * as dataStateActions from '@/state/actions/data-state.actions';
@@ -171,15 +175,11 @@ export class DataService {
     if (!this.attributeCache.has(slug)) {
       const attributes$ = from(this.storageSvc.getItem<AttributeItem>(`${slug}__attributes`)).pipe(
         switchMap((res: AttributeItem | null) => {
-          if (!res) return this.fetchAttributes(slug);
-          // The stored copy is keyed on environment.version, so an app release busts it —
-          // but trait data changes on its own schedule (a token re-rendered, a collection
-          // extended) with no deploy. Without this check those visitors keep a stale file
-          // forever and see missing or wrong traits. A HEAD is cheap; compare the ETag and
-          // only refetch when the file actually changed.
-          return from(this.attributesChangedRemotely(slug)).pipe(
-            switchMap(changed => changed ? this.fetchAttributes(slug) : of(res)),
-          );
+          // The stored copy is keyed on environment.version, so it is read once per release and
+          // then reused with no request at all. Traits only change with a release (a collection
+          // added or re-edited, and the file ships in the bundle), so a version bump is what
+          // refreshes them.
+          return res ? of(res) : this.fetchAttributes(slug);
         }),
         tap((res) => {
           if (res && !this.rarityCache.has(slug)) this.buildRarityCache(slug, res);
@@ -222,19 +222,14 @@ export class DataService {
   }
 
   fetchAttributes(slug: string): Observable<AttributeItem> {
-    // fetch() with cache: 'no-cache', and the ETag read off this same response. The file is
-    // served with max-age=3600, so a plain GET could come straight from the browser's HTTP
-    // cache — the OLD file — right after attributesChangedRemotely() saw the NEW ETag. That
-    // stored old traits under the new tag, and every later check then matched: the visitor
-    // was stuck on stale traits until the next app version. Body and tag from one response
-    // cannot disagree, and no-cache makes the browser revalidate instead of trusting its copy.
+    // cache: 'no-cache': the file keeps its name across releases and is served with max-age=3600,
+    // so a plain GET right after a release could store last release's traits under the new version.
     const url = `${environment.staticUrl}/data/${this.attributesFileName(slug)}`;
     return from(fetch(url, { cache: 'no-cache' }).then(async (res) => {
       if (!res.ok) throw { status: res.status };
-      const tag = res.headers.get('etag') || res.headers.get('content-length');
-      return { body: await res.json() as AttributeItem, tag };
+      return await res.json() as AttributeItem;
     })).pipe(
-      switchMap(({ body, tag }) => from(this.cacheAttributes(slug, body, tag))),
+      switchMap((body) => from(this.cacheAttributes(slug, body))),
       tap((res: AttributeItem) => this.createFilters(slug, res)),
       // Traits are decoration; the collection must still render without them.
       // Without this, a missing or renamed attributes file errors the observable
@@ -253,35 +248,8 @@ export class DataService {
    * @param slug Collection slug
    * @param attributes Attributes
    */
-  private async cacheAttributes(slug: string, attributes: AttributeItem, tag: string | null) {
-    const stored = await this.storageSvc.setItem<AttributeItem>(`${slug}__attributes`, attributes);
-    // Remember what the file looked like when we cached it, so we can tell later. The tag
-    // comes from the response the body came from, never from a separate request.
-    try {
-      if (tag) await this.storageSvc.setItem<string>(`${slug}__attributes_etag`, tag);
-    } catch { /* never let cache bookkeeping break the data path */ }
-    return stored;
-  }
-
-  /** ETag (falling back to length) of the remote attributes file, or null if unreachable. */
-  private async attributesEtag(slug: string): Promise<string | null> {
-    try {
-      // no-cache: revalidate with the server rather than answer from the browser's own copy.
-      const res = await fetch(`${environment.staticUrl}/data/${this.attributesFileName(slug)}`, { method: 'HEAD', cache: 'no-cache' });
-      if (!res.ok) return null;
-      return res.headers.get('etag') || res.headers.get('content-length');
-    } catch { return null; }
-  }
-
-  /** True when the remote file differs from the one we cached. Unreachable = keep cache. */
-  private async attributesChangedRemotely(slug: string): Promise<boolean> {
-    const [seen, now] = await Promise.all([
-      this.storageSvc.getItem<string>(`${slug}__attributes_etag`),
-      this.attributesEtag(slug),
-    ]);
-    if (!now) return false;      // offline or blocked — the cache is better than nothing
-    if (!seen) return true;      // cached before this check existed; refresh once
-    return seen !== now;
+  private async cacheAttributes(slug: string, attributes: AttributeItem) {
+    return this.storageSvc.setItem<AttributeItem>(`${slug}__attributes`, attributes);
   }
 
   /**
@@ -584,21 +552,19 @@ export class DataService {
   private bidsChannel$: Observable<void> | null = null;
   watchBids(): Observable<void> {
     if (this.bidsChannel$) return this.bidsChannel$;
-    this.bidsChannel$ = new Observable<void>((subscriber) => {
-      const channel = supabase
-        .channel(`bids_changes${this.suffix}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'bids' + this.suffix,
-          },
-          () => subscriber.next(),
-        )
-        .subscribe();
-      return () => channel.unsubscribe();
-    }).pipe(debounceTime(2000), share());
+    this.bidsChannel$ = this.live((next) => supabase
+      .channel(`bids_changes${this.suffix}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bids' + this.suffix,
+        },
+        next,
+      )
+      .subscribe()
+    ).pipe(debounceTime(2000), share());
     return this.bidsChannel$;
   }
 
@@ -635,7 +601,7 @@ export class DataService {
   private watchEthscriptionsBySlug(slug: string) {
     if (!this.ethscriptionChannels.has(slug)) {
       const channel$ = new Observable<void>((subscriber) => {
-        const channel = supabase
+        const sub = this.live((next) => supabase
           .channel(`ethscriptions_changes__${slug}`)
           .on(
             'postgres_changes',
@@ -645,15 +611,13 @@ export class DataService {
               table: 'ethscriptions' + this.suffix,
               filter: `slug=eq.${slug}`
             },
-            (payload: any) => {
-              // console.log('watchEthscriptionsBySlug', payload);
-              subscriber.next();
-            }
+            next,
           )
-          .subscribe();
+          .subscribe()
+        ).subscribe(subscriber);
 
         return () => {
-          channel.unsubscribe();
+          sub.unsubscribe();
           this.ethscriptionChannels.delete(slug);
         };
       }).pipe(
@@ -1086,11 +1050,10 @@ export class DataService {
    * @param hashId Token hash ID
    */
   private watchSinglePhunk(hashId: string) {
-    return new Observable<void>((subscriber) => {
-      // Both watches ride one channel. They cover the same row on the same page, so
-      // opening two cost an extra websocket topic and an extra join/leave against
-      // realtime.subscription on every item view, for no added coverage.
-      const channel = supabase
+    // Both watches ride one channel. They cover the same row on the same page, so
+    // opening two cost an extra websocket topic and an extra join/leave against
+    // realtime.subscription on every item view, for no added coverage.
+    return this.live((next) => supabase
         .channel(`phunk_changes__${hashId}`)
         .on(
           'postgres_changes',
@@ -1100,7 +1063,7 @@ export class DataService {
             table: 'ethscriptions' + this.suffix,
             filter: `hashId=eq.${hashId}`
           },
-          () => subscriber.next()
+          next
         )
         .on(
           'postgres_changes',
@@ -1110,12 +1073,39 @@ export class DataService {
             table: 'listings' + this.suffix,
             filter: `hashId=eq.${hashId}`
           },
-          () => subscriber.next()
+          next
         )
-        .subscribe();
+        .subscribe()
+    );
+  }
 
+  /**
+   * A realtime channel, opened only for real visitors and only while the tab is visible. Crawlers
+   * run the page's script too, and every open channel is a realtime connection that makes its page
+   * re-read on each change; a background tab has no one to show the change to. Coming back after
+   * more than a minute away emits once, so the page catches up on anything it missed.
+   */
+  private live(open: (next: () => void) => RealtimeChannel): Observable<void> {
+    if (IS_BOT || typeof document === 'undefined') return EMPTY;
+    return new Observable<void>((subscriber) => {
+      let channel: RealtimeChannel | null = null;
+      let hiddenAt = document.hidden ? Date.now() : 0;
+      const next = () => subscriber.next();
+      const sync = () => {
+        if (document.hidden) {
+          if (channel) { supabase.removeChannel(channel); channel = null; hiddenAt = Date.now(); }
+          return;
+        }
+        if (channel) return;
+        channel = open(next);
+        if (hiddenAt && Date.now() - hiddenAt > 60_000) next();
+        hiddenAt = 0;
+      };
+      sync();
+      document.addEventListener('visibilitychange', sync);
       return () => {
-        channel.unsubscribe();
+        document.removeEventListener('visibilitychange', sync);
+        if (channel) supabase.removeChannel(channel);
       };
     });
   }
@@ -1503,6 +1493,23 @@ export class DataService {
     return this.holdersOnce;
   }
 
+  /** Each collection's all-time volume in Ξ, from get_total_volume (the app's one definition of a sale):
+   *  a few dozen bytes a collection, against the thousands of event rows fetchAllSales reads. */
+  private volumesOnce: Promise<Record<string, number>> | null = null;
+  fetchVolumes(slugs: string[]): Promise<Record<string, number>> {
+    if (!slugs.length) return Promise.reject(new Error('no collections yet'));   // not cached: ask again once they load
+    if (!this.volumesOnce) {
+      const end = new Date().toISOString();
+      this.volumesOnce = Promise.all(slugs.map(async slug => {
+        const { data, error } = await supabase.rpc('get_total_volume' + this.suffix,
+          { start_date: '1970-01-01T00:00:00Z', end_date: end, slug_filter: slug });
+        if (error) throw error;
+        return [slug, Number(data?.[0]?.volume ?? 0)] as const;
+      })).then(Object.fromEntries).catch(e => { this.volumesOnce = null; throw e; });
+    }
+    return this.volumesOnce;
+  }
+
   private salesOnce: Promise<{ slug: string; eth: number; at: number }[]> | null = null;
   fetchAllSales(): Promise<{ slug: string; eth: number; at: number }[]> {
     if (!this.salesOnce) {
@@ -1544,8 +1551,8 @@ export class DataService {
 
   /** Every collection's floor and how many of its pieces are listed, from the same one read. */
   // one floor read shared for a minute (the bank and the owned page's Phleeca banner both ask)
-  private floorStatsOnce: { at: number; p: Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number> }> } | null = null;
-  fetchFloorStats(): Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number> }> {
+  private floorStatsOnce: { at: number; p: Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number>; avgLow: Record<string, number> }> } | null = null;
+  fetchFloorStats(): Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number>; avgLow: Record<string, number> }> {
     if (!this.floorStatsOnce || Date.now() - this.floorStatsOnce.at > 60_000) {
       const p = this.readFloorStats();
       this.floorStatsOnce = { at: Date.now(), p };
@@ -1554,11 +1561,11 @@ export class DataService {
     return this.floorStatsOnce.p;
   }
 
-  private async readFloorStats(): Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number> }> {
+  private async readFloorStats(): Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number>; avgLow: Record<string, number> }> {
     const { data: rows, error } = await supabase
       .from('listings' + this.suffix).select('hashId,minValue').eq('listed', true);
     if (error) throw error;
-    if (!rows?.length) return { floors: {}, listed: {}, avgListed: {} };
+    if (!rows?.length) return { floors: {}, listed: {}, avgListed: {}, avgLow: {} };
     const { data: eths, error: e2 } = await supabase
       .from('ethscriptions' + this.suffix).select('hashId,slug')
       .in('hashId', rows.map((r: any) => r.hashId));
@@ -1580,7 +1587,12 @@ export class DataService {
       return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
     };
     const avgListed = Object.fromEntries(Object.entries(asks).map(([k, xs]) => [k, median(xs)]));
-    return { floors, listed, avgListed };
+    // the Reserve's other basis: the average of the cheapest 35% of the asks (rounded up, so at
+    // least one), so one lowball listing can't drag a collection's value down, and the pricier asks,
+    // where the joke ones sit (Ξ80,085, Ξ8,008,135), never push it up
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    const avgLow = Object.fromEntries(Object.entries(asks).map(([k, xs]) => [k, mean([...xs].sort((a, b) => a - b).slice(0, Math.ceil(xs.length * 35 / 100)))]));
+    return { floors, listed, avgListed, avgLow };
   }
 
   /**

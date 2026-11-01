@@ -57,7 +57,7 @@ export const UI_ID: Record<string, string> = {
   // app intro popup
   introTitle: 'Rumah Lelang QuantumPhunks',
   introForked: 'Di-fork dari Chopperdad lalu di-upgrade.',
-  introPhunklloween: 'Selamat Phunklloween! Hari ini hari terakhir dari 19 lelang Phunklloween, jadi ini kesempatan terakhirmu untuk menawar. Semua karya yang tersisa sudah di-listing di market seharga 0.0367 dan 0.067 ETH, dan 11 karya terakhir segera menyusul. Terima kasih untuk semua yang menawar, mengoleksi, dan ikut serta. Saat tawaran terakhir selesai, rumah lelang akan gelap. Tapi tidak lama.',
+  introPhunklloween: 'Ke-19 lelang Phunklloween sudah diselesaikan. Terima kasih untuk semua yang menawar, mengoleksi, dan ikut serta. Karya yang tersisa sudah di-listing di market seharga 0.0367 dan 0.067 ETH, dan 11 karya terakhir segera menyusul. Rumah lelang gelap untuk sementara. Tapi tidak lama.',
   introBidRules: 'Setiap bid harus minimal 10% lebih tinggi dari bid sebelumnya, dan bid di 10 menit terakhir menambah waktu 10 menit, jadi tidak ada yang bisa nyolong di detik terakhir. Kalau bid-mu dikalahkan, ETH-mu kembali ke saldo yang bisa ditarik. Saat timer habis, siapa pun bisa menyelesaikannya: item dikirim ke pemenang dan lelang berikutnya dimulai.',
   introMadeBy: 'Dibuat oleh DystoLabz, alias',
   introAndMe: 'dan aku.',
@@ -132,7 +132,7 @@ export const UI_ID: Record<string, string> = {
 
   // auction page
   auctionLoading: 'Memuat lelang...',
-  auctionNotice: 'Uji coba lelang dengan EthsRocks tanpa harga cadangan berhasil. Lelang kini beralih ke item paling langka di koleksi V67, dengan harga cadangan, dan juga akan menampung koleksi-koleksi kecil kami, bahkan mungkin item apa pun dari koleksi mana pun di sini.',
+  auctionNotice: 'Rumah lelang tutup untuk sementara. Ke-19 lelang Phunklloween sudah diselesaikan, dan lelang berikutnya akan diumumkan di sini.',
   auctionEthscriptionsTag: 'Item yang dilelang di sini adalah Ethscriptions, bukan koleksi ERC-721 CryptoPhunksV67',
   auctionNewBidUpdating: 'Bid baru terdeteksi, memperbarui...',
   auctionPoolItems: 'Item di Pool Lelang ({n})',
@@ -443,8 +443,14 @@ export const UI_ID: Record<string, string> = {
   atmShowBalance: "Tampilkan saldo",
   atmReserveTotal: "Total kapitalisasi pasar",
   atmReserveNote: "Kapitalisasi pasar = suplai × floor koleksi (listing termurah). \"—\" berarti tidak ada yang dijual.",
+  atmReserveNoteHalf: "Kapitalisasi pasar = suplai × rata-rata 35% listing termurah koleksi. \"—\" berarti tidak ada yang dijual.",
   atmValueTotal: 'Total nilai di floor',
   atmFloor: 'Floor',
+  atmAvgHalf: 'Floor rata²',
+  atmAvgHalfHint: 'Rata-rata 35% listing termurah: satu listing murah tidak menjatuhkan nilainya, dan harga yang lebih tinggi (termasuk harga bercanda) tidak dihitung',
+  atmFloorMeans: 'Kapitalisasi pasar memakai listing termurah',
+  atmAvgHalfMeans: 'Kapitalisasi pasar memakai harga rata-rata 35% listing termurah',
+  atmBasis: 'Nilai berdasarkan',
   atmTopSale: 'Penjualan tertinggi',
   staleTitle: "Catatan market kedaluwarsa",
   staleBody: "Market kami masih mencatat ini sebagai disetor dan dijual, dari setoran yang tidak sah. Aman di dompetmu. Maaf soal itu. Ketuk Bersihkan sekali untuk memperbaikinya (hanya gas).",

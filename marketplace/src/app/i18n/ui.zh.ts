@@ -58,7 +58,7 @@ export const UI_ZH: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks 拍卖行',
   introForked: '基于 Chopperdad 的项目分叉并升级。',
-  introPhunklloween: 'Phunklloween 快乐！今天是 19 场 Phunklloween 拍卖的最后一天，也是出价的最后机会。其余作品已全部在市场上架，价格为 0.0367 和 0.067 ETH，最后 11 件也将很快加入。感谢每一位出价、收藏和参与的朋友。最后一次出价结算后，拍卖行将陷入黑暗。但不会太久。',
+  introPhunklloween: '19 场 Phunklloween 拍卖已全部结算。感谢每一位出价、收藏和参与的朋友。其余作品已在市场上架，价格为 0.0367 和 0.067 ETH，最后 11 件也将很快加入。拍卖行暂时陷入黑暗。但不会太久。',
   introBidRules: '每次出价必须比上一次高出至少 10%，在最后 10 分钟内出价会让倒计时延长 10 分钟，因此不会有人在最后一刻抢拍。被超过出价时，你的 ETH 会退回到可提取余额。倒计时结束后任何人都可以结算：物品归赢家所有，下一场拍卖随即开始。',
   introMadeBy: '由 DystoLabz 制作，也就是',
   introAndMe: '和我。',
@@ -133,7 +133,7 @@ export const UI_ZH: Record<string, string> = {
 
   // auction page
   auctionLoading: '正在加载拍卖...',
-  auctionNotice: '以 0 底价拍卖 EthsRocks 的测试已圆满成功。拍卖现将转向 V67 收藏系列中最稀有的物品，并设置底价；同时也会拍卖我们的小型收藏系列，并可能包括这里任何收藏系列中的物品。',
+  auctionNotice: '拍卖行暂时关闭。19 场 Phunklloween 拍卖已全部结算，下一轮拍卖将在这里公布。',
   auctionEthscriptionsTag: '此处拍卖的物品是 Ethscriptions，而不是 CryptoPhunksV67 ERC-721 收藏系列',
   auctionNewBidUpdating: '检测到新出价，正在更新...',
   auctionPoolItems: '拍卖池中的物品（{n}）',
@@ -449,8 +449,14 @@ export const UI_ZH: Record<string, string> = {
   atmShowBalance: "显示余额",
   atmReserveTotal: "总市值",
   atmReserveNote: "市值 = 总量 × 地板价（最低在售价）。“—”表示没有在售。",
+  atmReserveNoteHalf: "市值 = 总量 × 该系列最便宜的 35% 挂单的平均价。“—”表示没有在售。",
   atmValueTotal: '按地板价总值',
   atmFloor: '地板价',
+  atmAvgHalf: '平均地板价',
+  atmAvgHalfHint: '最便宜的 35% 挂单的平均价：单个低价挂单无法拉低估值，较贵的挂单（含玩笑价）不计入',
+  atmFloorMeans: '市值按最便宜的挂单计算',
+  atmAvgHalfMeans: '市值按最便宜的 35% 挂单的平均价计算',
+  atmBasis: '估值依据',
   atmTopSale: '最高成交',
   staleTitle: "市场记录已过期",
   staleBody: "由于一次无效的存入，我们的市场仍显示此物品已存入并在售。它安全地在你的钱包里。抱歉。点击一次清除即可修复（仅需 gas）。",

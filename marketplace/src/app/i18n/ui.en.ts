@@ -59,7 +59,7 @@ export const UI_EN: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks Auction House',
   introForked: 'Forked from Chopperdad and upgraded.',
-  introPhunklloween: 'Happy Phunklloween! Today is the final day of the 19 Phunklloween auctions, so this is your last chance to bid. All remaining pieces are listed on the market at 0.0367 and 0.067 ETH, with the last 11 joining shortly. Thank you to everyone who bid, collected and took part. When the last bid settles, the auction house goes dark. Not for long.',
+  introPhunklloween: 'All 19 Phunklloween auctions have settled. Thank you to everyone who bid, collected and took part. The remaining pieces are listed on the market at 0.0367 and 0.067 ETH, with the last 11 joining shortly. The auction house is dark for now. Not for long.',
   introBidRules: 'Each bid must beat the last by at least 10%, and a bid in the final 10 minutes extends the clock by 10 minutes, so nothing gets sniped at the buzzer. Outbid and your ETH returns to your withdrawable balance. When the timer ends anyone can settle it: the item goes to the winner and the next one starts.',
   introMadeBy: 'Made by DystoLabz, aka',
   introAndMe: 'and me.',
@@ -134,7 +134,7 @@ export const UI_EN: Record<string, string> = {
 
   // auction page
   auctionLoading: 'Loading auction...',
-  auctionNotice: 'Auction testing with EthsRocks at 0 reserve was a success. Auctions now move to the rarest items in the V67 collections, with reserve prices set, and will also hold our smaller collections, and possibly anything from any collection here.',
+  auctionNotice: 'The auction house is closed for now. All 19 Phunklloween auctions have settled, and the next auctions will be announced here.',
   auctionEthscriptionsTag: 'Items auctioned here are Ethscriptions, not the CryptoPhunksV67 ERC-721 collection',
   auctionNewBidUpdating: 'New bid detected, updating...',
   auctionPoolItems: 'Items in Auction Pool ({n})',
@@ -445,8 +445,14 @@ export const UI_EN: Record<string, string> = {
   atmShowBalance: "Show balance",
   atmReserveTotal: "Total market cap",
   atmReserveNote: "Market cap = supply × the collection's floor (cheapest live listing). \"—\" means nothing in it is listed.",
+  atmReserveNoteHalf: "Market cap = supply × the average of the cheapest 35% of the collection's listings. \"—\" means nothing in it is listed.",
   atmValueTotal: 'Total value at floor',
   atmFloor: 'Floor',
+  atmAvgHalf: 'Avg floor',
+  atmAvgHalfHint: 'The average of the cheapest 35% of the listings: one lowball listing cannot drag the value down, and the pricier asks (joke prices included) are left out',
+  atmFloorMeans: 'Market cap uses the cheapest listing',
+  atmAvgHalfMeans: 'Market cap uses the average price of the cheapest 35% of the listings',
+  atmBasis: 'Value by',
   atmTopSale: 'Top sale',
   staleTitle: "Market record out of date",
   staleBody: "Our market still lists this as deposited and for sale, from a deposit that didn't count. It's safe in your wallet. Sorry about that. Tap Clear once to fix it (gas only).",

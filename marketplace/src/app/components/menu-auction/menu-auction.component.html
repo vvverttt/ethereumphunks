@@ -1,4 +1,4 @@
-<a class="auction-card" routerLink="/auction" (click)="navigate.emit()">
+<a class="auction-card" [class.idle]="!live()" routerLink="/auction" (click)="navigate.emit()">
   <div class="title">
     <span>{{ title() }}</span>
     <!-- Same arrow as the other menu links: this card is a link to the auction house. -->

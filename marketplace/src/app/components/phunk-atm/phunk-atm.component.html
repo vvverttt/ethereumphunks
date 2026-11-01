@@ -71,6 +71,13 @@
         <div class="page">
           <p class="prompt">{{ t('atmReserve') }}</p>
           <div class="total"><span>{{ t('atmReserveTotal') }}</span><b>Ξ{{ valueShown(reserveTotal()) }} <small class="fiat">{{ fiat(reserveTotal()) }}</small></b></div>
+          <!-- what the caps are worked out from: the floor, or the average of the cheapest 35% of the listings -->
+          <div class="basis" role="group" [attr.aria-label]="t('atmBasis')">
+            @for (b of bases; track b.key) {
+              <button type="button" [class.on]="leftOut.basis() === b.key" [attr.aria-pressed]="leftOut.basis() === b.key" (click)="leftOut.setBasis(b.key)" [title]="b.hint ? t(b.hint) : ''">{{ t(b.label) }}</button>
+            }
+          </div>
+          <p class="basis-means">{{ t(basisMeans()) }}</p>
           <!-- all collections together: volume and sales on record -->
           @if (salesTotal(); as st) {
             <p class="worth reserve-sum"><span>{{ t('atmVolume') }} <b>Ξ{{ st.volume.toLocaleString('en-US', { maximumFractionDigits: 2 }) }}</b> <small class="fiat">{{ fiat(st.volume) }}</small></span><span>{{ t('atmSales') }} <b>{{ st.n | number }}</b></span>@if (st.n) {<span>{{ t('atmAvgSale') }} <b>Ξ{{ valueShown(st.volume / st.n) }}</b></span>}<span>{{ t('atmHolders') }} <b>{{ holders()?.['*'] != null ? (holders()!['*'] | number) : '—' }}</b></span></p>
@@ -79,7 +86,7 @@
           <div class="list rs-table">
             <div class="rs-head" aria-hidden="true">
               <span class="c-name">{{ t('atmColCollection') }}</span>
-              <span>{{ t('atmFloor') }}</span>
+              <span>{{ askLabel() }}</span>
               <span>{{ t('atmTopSale') }}</span>
               <span class="c-more">{{ t('atmListedCount') }}</span>
               <span class="c-more">{{ t('atmHolders') }}</span>
@@ -99,7 +106,7 @@
                   </span>
                   <span class="r-name">{{ c.name }}</span>
                 </span>
-                <span>{{ xi(floors()?.[c.slug]) }}</span>
+                <span>{{ xi(reserveAsk(c.slug)) }}</span>
                 <span>{{ so ? xi(topSaleOf(c.slug)) : '…' }}@if (topSale(c.slug)) {<sup>*</sup>}</span>
                 <span class="c-more">{{ listed()[c.slug] || 0 }}</span>
                 <span class="c-more">{{ holders()?.[c.slug] != null ? (holders()![c.slug] | number) : '—' }}</span>
@@ -109,7 +116,7 @@
               </div>
             }
           </div>
-          <p class="fine">{{ t('atmReserveNote') }}</p>
+          <p class="fine">{{ t(noteKey()) }}</p>
           <p class="fine">{{ t('atmTopSaleNote') }}</p>
           <div class="actions">
             <button type="button" class="opt exit" (click)="back()">{{ t('atmBack') }}</button>

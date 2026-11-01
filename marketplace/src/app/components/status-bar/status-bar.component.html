@@ -2,7 +2,8 @@
   <ng-template [ngTemplateOutlet]="chatIcon" />
 </button> -->
 
-@if ((gasSvc.gas$ | async); as gas) {
+<!-- the gas price, for quantumphunks.eth only (subscribing is what makes GasService read it) -->
+@if (isOwner() && (gasSvc.gas$ | async); as gas) {
   <div class="network-gas">
     <div class="gas">
       @if (gas?.ProposeGasPrice === 'err' || gas?.ProposeGasPrice === '...') {
@@ -17,8 +18,8 @@
   </div>
 }
 
-@if (blocks$ | async; as blocks) {
-  <!-- Indexer block + logs: owner wallet only (see isOwner). Everyone sees the chain block. -->
+@if (isOwner() && (blocks$ | async); as blocks) {
+  <!-- The chain block, indexer block and logs: quantumphunks.eth only (see isOwner). -->
   <div
     class="blocks-wrapper"
     [class.active]="expanded()"

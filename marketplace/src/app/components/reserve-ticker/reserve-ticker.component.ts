@@ -9,7 +9,7 @@ import { GlobalState } from '@/models/global-state';
 import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { ThemeService } from '@/services/theme.service';
-import { ReserveLeftOutService, VALUED_AT_TOP_SALE, reservePrice } from '@/services/reserve-left-out.service';
+import { ReserveAverages, ReserveBasis, ReserveLeftOutService, VALUED_AT_TOP_SALE, reservePrice } from '@/services/reserve-left-out.service';
 import { FiatPipe } from '@/pipes/fiat.pipe';
 import { CollectionLook, liveCollections } from '@/utils/wallet-groups';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -18,6 +18,8 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 /** the floors, kept a while so page loads and repeat visits don't read the listings again */
 const CACHE_KEY = 'reserve-ticker';
 const CACHE_MS = 10 * 60_000;
+/** bumped when the Avg floor's sum changes, so nobody is shown a saved figure worked out the old way */
+const CACHE_V = 4;
 /** crawlers run the page's script too; they get the ticker without its read */
 const BOT = /bot|crawl|spider|slurp|bytespider|headless|lighthouse|preview/i;
 
@@ -42,7 +44,15 @@ export class ReserveTickerComponent {
 
   open = signal(false);
   floors = signal<Record<string, number> | null>(null);
-  sales = signal<{ slug: string; eth: number }[] | null>(null);
+  /** each collection's average of the cheapest 35% of its listings (the switch's other basis) */
+  avgs = signal<ReserveAverages | null>(null);
+  /** the switch's two keys */
+  readonly bases: { key: ReserveBasis; label: string; hint: string; means: string }[] = [
+    { key: 'floor', label: 'atmFloor', hint: '', means: 'atmFloorMeans' },
+    { key: 'half', label: 'atmAvgHalf', hint: 'atmAvgHalfHint', means: 'atmAvgHalfMeans' },
+  ];
+  /** each collection's all-time volume in Ξ */
+  volumes = signal<Record<string, number> | null>(null);
   holders = signal<Record<string, number> | null>(null);
 
   private config = toSignal(this.store.select(appStateSelectors.selectConfig));
@@ -54,11 +64,12 @@ export class ReserveTickerComponent {
 
   /** each collection's cap, in the site's own order (the collections menu's); null cap = nothing listed */
   rows = computed(() => {
-    const f = this.floors();
+    const f = this.floors(), avgs = this.avgs();
     return this.collections()
       .map(c => {
-        const price = f ? reservePrice(c.slug, f[c.slug]) : null;
-        return { c, floor: f?.[c.slug] ?? null, topSale: VALUED_AT_TOP_SALE[c.slug] ?? null, cap: price && c.supply ? price * c.supply : null };
+        const ask = f ? this.leftOut.ask(c.slug, f, avgs) : null;
+        const price = f ? reservePrice(c.slug, ask) : null;
+        return { c, floor: ask, topSale: VALUED_AT_TOP_SALE[c.slug] ?? null, cap: price && c.supply ? price * c.supply : null };
       });
   });
   /** a row valued at its top sale is on show (so the footnote explains it) */
@@ -66,17 +77,22 @@ export class ReserveTickerComponent {
   /** collections left out of the totals (tap a collection's picture), shared with the bank's Reserve */
   private leftOut = inject(ReserveLeftOutService);
   left = this.leftOut.left;
+  basis = this.leftOut.basis;
+  setBasis(b: ReserveBasis) { this.leftOut.setBasis(b); }
+  basisLabel() { return this.leftOut.label(); }
+  /** what the basis picked means, in plain words under the switch */
+  basisMeans() { return this.bases.find(b => b.key === this.basis())!.means; }
   toggleLeft(slug: string) { this.leftOut.toggle(slug); }
 
   total = computed(() => this.floors()
     ? this.rows().reduce((n, r) => n + (this.left().has(r.c.slug) ? 0 : r.cap ?? 0), 0) : null);
 
+  /** the panel's two stats: volume across the counted collections, and holders */
   volume = computed(() => {
-    const s = this.sales(); if (!s) return null;
-    const live = new Set(this.collections().map(c => c.slug).filter(slug => !this.left().has(slug)));
-    const mine = s.filter(x => live.has(x.slug));
-    return { n: mine.length, eth: mine.reduce((v, x) => v + x.eth, 0) };
+    const v = this.volumes(); if (!v) return null;
+    return this.collections().reduce((n, c) => n + (this.left().has(c.slug) ? 0 : v[c.slug] ?? 0), 0);
   });
+  holdersTotal = computed(() => this.holders()?.['*'] ?? null);
 
   private usd = toSignal(this.store.select(dataStateSelectors.selectDisplayUsd));
   private fiatPipe = new FiatPipe(this.prefs);
@@ -95,7 +111,7 @@ export class ReserveTickerComponent {
   private readCache() {
     try {
       const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-      if (c && Date.now() - c.at < CACHE_MS && c.floors) this.floors.set(c.floors);
+      if (c && c.v === CACHE_V && Date.now() - c.at < CACHE_MS && c.floors && c.avgs?.avgLow) { this.floors.set(c.floors); this.avgs.set(c.avgs); }
     } catch { /* storage blocked: read live */ }
   }
 
@@ -103,7 +119,9 @@ export class ReserveTickerComponent {
     try {
       const st = await this.dataSvc.fetchFloorStats();
       this.floors.set(st.floors);
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), floors: st.floors })); } catch {}
+      const avgs = { avgLow: st.avgLow };
+      this.avgs.set(avgs);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ v: CACHE_V, at: Date.now(), floors: st.floors, avgs })); } catch {}
     } catch { /* the chip just keeps its "…" */ }
   }
 
@@ -112,8 +130,9 @@ export class ReserveTickerComponent {
     if (this.extrasAsked) return;
     this.extrasAsked = true;
     if (!this.floors()) this.loadFloors();
-    this.dataSvc.fetchAllSales().then(s => this.sales.set(s)).catch(() => {});
-    this.dataSvc.fetchHolders(this.config()?.hiddenSlugs || []).then(h => this.holders.set(h)).catch(() => {});
+    // a retry on a failed read: the next open asks again
+    this.dataSvc.fetchVolumes(this.collections().map(c => c.slug)).then(v => this.volumes.set(v)).catch(() => { this.extrasAsked = false; });
+    this.dataSvc.fetchHolders(this.config()?.hiddenSlugs || []).then(h => this.holders.set(h)).catch(() => { this.extrasAsked = false; });
   }
 
   show() { this.loadExtras(); this.open.set(true); }
