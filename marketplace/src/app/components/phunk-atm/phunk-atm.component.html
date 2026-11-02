@@ -23,8 +23,8 @@
         }
       </span>
       <span class="bals">
-        <span class="bal">{{ t('atmAccountBalance') }} Ξ{{ walletShown() }} <small class="fiat">{{ fiat(walletEth()) }}</small></span>
-        <span class="bal sub">{{ t('atmCollectiblesBalance') }} Ξ{{ valueShown(totalValue()) }} <small class="fiat">{{ fiat(totalValue()) }}</small></span>
+        <!-- just the collectibles: the wallet's own ETH isn't shown, so the bank makes no read for it -->
+        <span class="bal">{{ t('atmCollectiblesBalance') }} Ξ{{ valueShown(totalValue()) }} <small class="fiat">{{ fiat(totalValue()) }}</small></span>
       </span>
       }
     </div>
@@ -137,13 +137,10 @@
           } @else {
             <div class="loader" aria-hidden="true"><span></span><span></span><span></span></div>
           }
-          <!-- what goes on the slip: switch the address or the balance off before saving it to share -->
+          <!-- what goes on the slip: switch the address off before saving it to share -->
           <div class="st-switches">
             <button type="button" class="switch" role="switch" [class.on]="stShowAddress()" [attr.aria-checked]="stShowAddress()" (click)="toggleStatement('address')">
               <span class="track"><span class="knob"></span></span>{{ t('atmShowAddress') }}
-            </button>
-            <button type="button" class="switch" role="switch" [class.on]="stShowBalance()" [attr.aria-checked]="stShowBalance()" (click)="toggleStatement('balance')">
-              <span class="track"><span class="knob"></span></span>{{ t('atmShowBalance') }}
             </button>
           </div>
           <div class="actions">

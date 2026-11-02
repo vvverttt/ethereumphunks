@@ -73,10 +73,16 @@ export class AdminService {
   // Market Reads
   // =========================================================
 
-  async getMarketOwner(): Promise<string> {
-    return await this.web3Svc.l1Client.readContract({
-      address: marketAddress, abi: EtherPhunksMarketV3ABI, functionName: 'owner',
-    });
+  // the owner hardly ever changes: read once per visit (the menu asks on every open)
+  private marketOwner: Promise<string> | null = null;
+  getMarketOwner(): Promise<string> {
+    if (!this.marketOwner) {
+      this.marketOwner = this.web3Svc.l1Client.readContract({
+        address: marketAddress, abi: EtherPhunksMarketV3ABI, functionName: 'owner',
+      }) as Promise<string>;
+      this.marketOwner.catch(() => { this.marketOwner = null; });
+    }
+    return this.marketOwner;
   }
 
   async getMarketPaused(): Promise<boolean> {

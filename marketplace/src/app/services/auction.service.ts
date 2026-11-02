@@ -9,6 +9,11 @@ import { Web3Service } from './web3.service';
 import { SpriteService } from './sprite.service';
 import { EtherPhunksAuctionHouseV2ABI } from '@/abi/EtherPhunksAuctionHouseV2';
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
+
+/** An auction is running (or about to). Off between drops: the menu's auction card and the collection
+ *  pages' auction strip make no reads at all, and the auction page loads once with no polling or live
+ *  feed. Set true when the next auctions start. */
+export const AUCTIONS_LIVE = false;
 const auctionAddress = (environment as any).auctionAddress as `0x${string}`;
 const auctionDeployBlock = ((environment as any).auctionDeployBlock as bigint) || 0n;
 // Alchemy Free allows at most a 10-block range per eth_getLogs request.
@@ -563,21 +568,12 @@ export class AuctionService {
 
   async getBidHistory(currentAuctionId: number): Promise<AuctionBidEvent[]> {
     try {
-      // Check if this auction is indexed — if so, trust DB result (even 0 bids is valid)
-      const [bidsResult, auctionResult] = await Promise.all([
-        supabase
-          .from('auctionBids' + suffix)
-          .select('fromAddress, amount, txHash')
-          .eq('auctionId', currentAuctionId)
-          .eq('contractAddress', this.address.toLowerCase())
-          .order('createdAt', { ascending: false }),
-        supabase
-          .from('auctions' + suffix)
-          .select('auctionId')
-          .eq('auctionId', currentAuctionId)
-          .eq('contractAddress', this.address.toLowerCase())
-          .limit(1),
-      ]);
+      const bidsResult = await supabase
+        .from('auctionBids' + suffix)
+        .select('fromAddress, amount, txHash')
+        .eq('auctionId', currentAuctionId)
+        .eq('contractAddress', this.address.toLowerCase())
+        .order('createdAt', { ascending: false });
 
       // Return whatever bids the indexer has — DB is authoritative.
       // No RPC fallback: eth_getLogs over thousands of blocks hammers Alchemy.

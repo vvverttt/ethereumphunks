@@ -7,7 +7,8 @@ import { ThemeService } from '@/services/theme.service';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { Store } from '@ngrx/store';
 
-import { Subscription, firstValueFrom } from 'rxjs';
+import { Subscription, distinctUntilChanged, firstValueFrom, skip } from 'rxjs';
+import { IS_BOT } from '@/utils/is-bot';
 import { formatEther } from 'viem';
 
 import { environment } from 'src/environments/environment';
@@ -15,7 +16,7 @@ import { GlobalState } from '@/models/global-state';
 import { LotteryGridItem, LotteryWin, SpinPhase } from '@/models/lottery';
 
 import { Web3Service } from '@/services/web3.service';
-import { LotteryService, OwnedNft } from '@/services/lottery.service';
+import { LOTTERY_LAUNCHED, LotteryService, OwnedNft } from '@/services/lottery.service';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
@@ -224,6 +225,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
   }
 
   private recentWinsSub!: Subscription;
+  private addressSub?: Subscription;
   private totalWinsCountSub!: Subscription;
   private spinTimeout: any;
   private spinPath: number[] = getSpinPath(8);
@@ -263,6 +265,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
       if (faces.length) this.faceImages.set(faces);
     } catch {}
 
+    // crawlers get the page without its contract and wallet reads
+    if (IS_BOT) return;
+
     await this.loadContractState();
     await this.initGrid();
     // Teaser mode shows no wins and no price, so skip those reads until it is live.
@@ -271,8 +276,10 @@ export class LotteryComponent implements OnInit, OnDestroy {
     const address = await firstValueFrom(this.address$);
     if (address) await this.loadWalletState(address);
 
-    // Re-load wallet-specific state when the wallet connects after page load.
-    this.address$.subscribe(addr => { if (addr) this.loadWalletState(addr); });
+    // Re-load wallet-specific state when the wallet connects or changes after page load (not for the
+    // one just read: the store hands that straight back on subscribe); dropped when the page closes
+    this.addressSub = this.address$.pipe(distinctUntilChanged(), skip(1))
+      .subscribe(addr => { if (addr) this.loadWalletState(addr); });
 
     setTimeout(() => this.loadedIn.set(true), 300);
     setTimeout(() => this.buttonShown.set(true), 1400);
@@ -283,6 +290,7 @@ export class LotteryComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.recentWinsSub?.unsubscribe();
+    this.addressSub?.unsubscribe();
     this.totalWinsCountSub?.unsubscribe();
     clearTimeout(this.spinTimeout);
     clearInterval(this.confirmTimer);
@@ -297,16 +305,14 @@ export class LotteryComponent implements OnInit, OnDestroy {
   // =========================================================
 
   private async loadContractState() {
+    // not launched: the teaser, without asking the contract
+    if (!LOTTERY_LAUNCHED) {
+      this.isActive.set(false);
+      this.activeKnown.set(true);
+      return;
+    }
     try {
-      const [price, active, size, maxBatch, maxWallet, wl, disc] = await Promise.all([
-        this.lotterySvc.getMintPrice(),
-        this.lotterySvc.isActive(),
-        this.lotterySvc.getPoolSize(),
-        this.lotterySvc.getMaxBatchSize(),
-        this.lotterySvc.getMaxPerWallet(),
-        this.lotterySvc.isWhitelistEnabled(),
-        this.lotterySvc.isDiscountsEnabled(),
-      ]);
+      const { price, active, size, maxBatch, maxWallet, wl, disc } = await this.lotterySvc.getState();
       this.mintPrice.set(price);
       this.isActive.set(active);
       this.activeKnown.set(true);
@@ -321,8 +327,9 @@ export class LotteryComponent implements OnInit, OnDestroy {
   }
 
   private async loadWalletState(address: string) {
-    // Teaser mode: the owner panel is the only wallet-specific thing on the page.
-    if (this.comingSoon()) return this.loadOwnerState(address);
+    // Teaser mode: the owner panel is the only wallet-specific thing on the page, and before launch
+    // not even that (the owner sets it up on Etherscan), so no read at all
+    if (this.comingSoon()) return LOTTERY_LAUNCHED ? this.loadOwnerState(address) : undefined;
     try {
       const [mints, whitelisted, refund] = await Promise.all([
         this.lotterySvc.getMintsOf(address),

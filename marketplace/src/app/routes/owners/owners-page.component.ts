@@ -9,7 +9,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 
 import { environment } from 'src/environments/environment';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
-import { supabase } from '@/services/supabase';
+import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 interface OwnerRow {
@@ -33,6 +33,7 @@ interface CollectionOwners {
 })
 export class OwnersPageComponent implements OnInit {
   private readonly prefs = inject(PhunkPreferencesService);
+  private readonly dataSvc = inject(DataService);
 
   /** Interface strings in the current language (see i18n/ui.en.ts). */
   t(key: string, params?: Record<string, string | number>): string {
@@ -110,32 +111,9 @@ export class OwnersPageComponent implements OnInit {
     const result: CollectionOwners[] = [];
 
     for (const slug of slugs) {
-      // Get all items for this collection
-      const items: { owner: string }[] = [];
-      let offset = 0;
-      while (true) {
-        const { data } = await supabase
-          .from('ethscriptions')
-          .select('owner')
-          .eq('slug', slug)
-          .range(offset, offset + 999);
-        if (!data?.length) break;
-        items.push(...data);
-        if (data.length < 1000) break;
-        offset += 1000;
-      }
-
-      // Count per owner
-      const counts: Record<string, number> = {};
-      for (const item of items) {
-        const addr = item.owner?.toLowerCase();
-        if (!addr || excludeAddresses.has(addr)) continue;
-        counts[addr] = (counts[addr] || 0) + 1;
-      }
-
-      const rows: OwnerRow[] = Object.entries(counts)
-        .map(([address, count]) => ({ address, count, lastActive: '' }))
-        .sort((a, b) => b.count - a.count);
+      const rows: OwnerRow[] = (await this.dataSvc.fetchOwnerCounts(slug).catch(() => []))
+        .filter(o => !excludeAddresses.has(o.address))
+        .map(o => ({ ...o, lastActive: '' }));
 
       result.push({
         slug,

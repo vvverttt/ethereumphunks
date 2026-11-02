@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, computed, inject, input, output, signal }
 import { Router, RouterModule } from '@angular/router';
 import { formatEther } from 'viem';
 
-import { AuctionService, AuctionData } from '@/services/auction.service';
+import { AUCTIONS_LIVE, AuctionService, AuctionData } from '@/services/auction.service';
 import { SpriteService } from '@/services/sprite.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { TimerComponent } from '@/components/auction/timer/timer.component';
@@ -62,6 +62,8 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    // no auctions running: the card is just the link, with no reads
+    if (!AUCTIONS_LIVE) return;
     await this.load();
     // On the auction page itself the page shows the auction live, so the card keeps its first
     // read (its countdown still ticks) instead of polling alongside it.

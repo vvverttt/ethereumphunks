@@ -1,3 +1,4 @@
+import { IS_BOT } from '@/utils/is-bot';
 import { GlobalState } from '@/models/global-state';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -110,6 +111,9 @@ export class MarketStateEffects {
 
   fetchMarketData$ = createEffect(() => this.actions$.pipe(
     ofType(marketStateActions.setMarketSlug),
+    // every item of the collection with its listings and bids (thousands of rows): crawlers land
+    // on item pages by the thousand and never use it, so they skip it
+    filter(() => !IS_BOT),
     distinctUntilChanged((a, b) => a.marketSlug === b.marketSlug),
     switchMap(({ marketSlug }) => this.dataSvc.fetchMarketData(marketSlug)),
     // tap((marketData) => console.log('fetchMarketData$', marketData)),
@@ -217,6 +221,9 @@ export class MarketStateEffects {
     ),
   ));
 
+  /** the "all" grid's filtered reads, by collection + filters */
+  private allReads = new Map<string, { at: number; data: MarketState['activeMarketRouteData'] }>();
+
   setTraitFilter$ = createEffect(() => this.actions$.pipe(
     ofType(marketStateActions.setActiveTraitFilters),
     withLatestFrom(
@@ -225,14 +232,25 @@ export class MarketStateEffects {
       this.store.select(marketStateSelectors.selectActiveTraitFilters),
       this.store.select(appStateSelectors.selectConfig),
     ),
-    filter(([action, marketType]) => marketType === 'all'),
+    filter(([action, marketType]) => marketType === 'all' && !IS_BOT),
     switchMap(([action, marketType, slug, traitFilters, config]) => {
       // RPC filters via attributes_new table; no client-side re-filtering needed
       const fetchLength = 10000;
       const preset = slug ? (config?.collectionTraitFilters?.[slug] ?? {}) : {};
       const effectiveFilters = Object.keys(preset).length ? { ...preset, ...traitFilters } : traitFilters;
 
-      return this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength, effectiveFilters).pipe(
+      // every page change re-sends the filters: the same collection and filters within 5 minutes
+      // reuse the last read instead of reading up to 10,000 rows again
+      const key = slug + '|' + JSON.stringify(effectiveFilters ?? {});
+      const hit = this.allReads.get(key);
+      const read$ = hit && Date.now() - hit.at < 5 * 60_000
+        ? of(hit.data)
+        : this.dataSvc.fetchAllWithPagination(slug, 0, fetchLength, effectiveFilters).pipe(
+          // an empty answer may be a failed read (the fetch swallows errors): never keep it
+          tap((data: MarketState['activeMarketRouteData']) => { if ((data as any)?.data?.length || (data as any)?.total) this.allReads.set(key, { at: Date.now(), data }); }),
+        );
+
+      return read$.pipe(
         mergeMap((data: MarketState['activeMarketRouteData']) => [
           marketStateActions.setActiveMarketRouteData({ activeMarketRouteData: data })
         ]),

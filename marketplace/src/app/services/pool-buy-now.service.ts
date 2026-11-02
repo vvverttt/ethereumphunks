@@ -75,7 +75,15 @@ export class PoolBuyNowService {
    * the V5 selectors — allowFailure treats those as off, so the UI degrades to "no buy-now" instead
    * of throwing. Hard 8s timeout so a flaky gateway can never wedge the details page.
    */
-  async getConfig(): Promise<PoolBuyNowConfig> {
+  // read once per visit and shared: every pool item, grid and wallet change asks, and the answer
+  // (on mainnet: retired, so off) only changes with a contract upgrade
+  private configOnce: Promise<PoolBuyNowConfig> | null = null;
+  getConfig(): Promise<PoolBuyNowConfig> {
+    if (!this.configOnce) this.configOnce = this.readConfig();
+    return this.configOnce;
+  }
+
+  private async readConfig(): Promise<PoolBuyNowConfig> {
     const OFF: PoolBuyNowConfig = {
       itemEnabled: false,
       publicEnabled: false, publicPrice: 0n,
@@ -122,8 +130,14 @@ export class PoolBuyNowService {
         tier2Root: (r[8]?.result as string) ?? '0x',
       };
     })();
-    const timeout = new Promise<PoolBuyNowConfig>((res) => setTimeout(() => res(OFF), 8000));
-    try { return await Promise.race([read, timeout]); } catch { return OFF; }
+    const TIMED_OUT = { ...OFF };
+    const timeout = new Promise<PoolBuyNowConfig>((res) => setTimeout(() => res(TIMED_OUT), 8000));
+    try {
+      const res = await Promise.race([read, timeout]);
+      // a timed-out read isn't kept (the retired answer is): the next ask tries again
+      if (res === TIMED_OUT) this.configOnce = null;
+      return res;
+    } catch { this.configOnce = null; return OFF; }
   }
 
   /**

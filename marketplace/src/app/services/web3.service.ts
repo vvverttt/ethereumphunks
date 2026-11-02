@@ -15,6 +15,7 @@ import { EtherPhunksMarketV3ABI } from '@/abi/EtherPhunksMarketV3';
 import { QuantumPhunksMarketABI } from '@/abi/QuantumPhunksMarket';
 import { ERC721C_CONTRACT_SETS } from '@/constants/erc721c';
 import { PointsABI } from '@/abi/Points';
+import { IS_BOT } from '@/utils/is-bot';
 
 // Evolve
 import { EtherPhunksEvolveABI } from '@/abi/EtherPhunksEvolve';
@@ -57,6 +58,9 @@ const evolveAddress: string = (environment as any).evolveAddress || '';
 const evolvePairs: Record<string, string> = (environment as any).evolvePairs || {};
 const marketAddressL2 = environment.marketAddressL2;
 const pointsAddress = environment.pointsAddress;
+/** ENS names kept in the browser for a day */
+const ENS_CACHE_KEY = 'ens-names';
+const ENS_TTL_MS = 7 * 24 * 3600_000;   // names rarely change: a week
 const bridgeAddressL2 = environment.bridgeAddressL2;
 const receiptRpcUrl = ((environment as any).receiptRpcUrl || environment.rpcHttpProvider) as string;
 const frontendBackupRpcUrl = ((environment as any).frontendBackupRpcUrl || '') as string;
@@ -108,8 +112,11 @@ export class Web3Service {
     private store: Store<GlobalState>,
     private ngZone: NgZone
   ) {
+    // batch.multicall: reads made at the same moment (a page's ENS names, the paused flag, an item's
+    // bid...) go out as ONE eth_call through Multicall3 instead of one request each
     this.l1Client = createPublicClient({
       chain: this.chains[0],
+      batch: { multicall: true },
       transport: fallback([
         http(environment.rpcHttpProvider),
         http(receiptRpcUrl),
@@ -159,6 +166,7 @@ export class Web3Service {
     // Falls back to C2mkw, Ankr, and the indexer /rpc proxy if jjWbKkRb fails.
     this.l1DedicatedClient = createPublicClient({
       chain: this.chains[0],
+      batch: { multicall: true },
       transport: fallback([
         ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
         http('https://eth.llamarpc.com'),
@@ -237,10 +245,20 @@ export class Web3Service {
       onChange: (account) => this.ngZone.run(() => observer.next(account))
     }));
 
+    // wagmi reports every step (connecting, reconnecting, connected) for the same account, and each
+    // setWalletAddress sets off the wallet's reads (points, funds, owned...): pass on real changes only
+    let lastConnected: boolean | undefined, lastAddress: string | undefined | null = null;
     this.connectedState.pipe(
       tap((account: GetAccountReturnType) => {
-        this.store.dispatch(appStateActions.setConnected({ connected: account.isConnected }));
-        this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: account.address?.toLowerCase() }));
+        const addr = account.address?.toLowerCase();
+        if (account.isConnected !== lastConnected) {
+          lastConnected = account.isConnected;
+          this.store.dispatch(appStateActions.setConnected({ connected: account.isConnected }));
+        }
+        if (addr !== lastAddress) {
+          lastAddress = addr;
+          this.store.dispatch(appStateActions.setWalletAddress({ walletAddress: addr }));
+        }
 
         if (account.isConnected && account.address) {
           localStorage.setItem('ep_wallet', account.address.toLowerCase());
@@ -616,16 +634,10 @@ export class Web3Service {
    * @returns Promise resolving to the total pending withdrawal amount as a bigint
    */
   async checkHasWithdrawal(address: string): Promise<bigint> {
-    let total = (await this._readMarketContractAt(marketAddress, 'pendingWithdrawals', [address])) || BigInt(0);
-    for (const oldAddr of oldMarketAddresses) {
-      const pending = (await this._readMarketContractAt(oldAddr, 'pendingWithdrawals', [address])) || BigInt(0);
-      total += pending;
-    }
-    // the QuantumPhunks market keeps sale proceeds and refunds the same way
-    try {
-      for (const f of (await this.fundsByMarket(address)).filter(f => f.kind === 'quantumphunks')) total += f.wei;
-    } catch {}
-    return total;
+    // every market's balance in one fresh read (it runs on connect and after a transaction), which
+    // Phleeca Bank then reuses; a failed read counts as 0 here
+    this.forgetFunds();
+    try { return (await this.fundsByMarket(address)).reduce((n, f) => n + f.wei, 0n); } catch { return 0n; }
   }
 
   /**
@@ -633,24 +645,36 @@ export class Web3Service {
    * the EtherPhunks market, its old versions, and the QuantumPhunks (ERC-721C) market(s), which
    * keep sale proceeds and refunds the same pull-payment way.
    */
-  async fundsByMarket(address: string): Promise<{ market: string; kind: 'etherphunks' | 'quantumphunks'; wei: bigint }[]> {
+  private fundsOnce: { key: string; at: number; p: Promise<{ market: string; kind: 'etherphunks' | 'quantumphunks'; wei: bigint }[]> } | null = null;
+  fundsByMarket(address: string): Promise<{ market: string; kind: 'etherphunks' | 'quantumphunks'; wei: bigint }[]> {
+    // shared for a minute: connecting (checkHasWithdrawal) and Phleeca Bank both ask for it
+    const key = address.toLowerCase();
+    if (!this.fundsOnce || this.fundsOnce.key !== key || Date.now() - this.fundsOnce.at > 60_000) {
+      const p = this.readFundsByMarket(key);
+      this.fundsOnce = { key, at: Date.now(), p };
+      p.catch(() => { if (this.fundsOnce?.p === p) this.fundsOnce = null; });
+    }
+    return this.fundsOnce.p;
+  }
+
+  /** forget the shared balances, so the next read is fresh (after a withdrawal or a sale) */
+  forgetFunds() { this.fundsOnce = null; }
+
+  private async readFundsByMarket(address: string): Promise<{ market: string; kind: 'etherphunks' | 'quantumphunks'; wei: bigint }[]> {
     const qpMarkets = [...new Set(Object.values(ERC721C_CONTRACT_SETS).map(c => c.marketplace.toLowerCase()))];
-    // all the reads at once: each can be slow while the RPC fails over
-    const reads = await Promise.all([
-      ...[marketAddress, ...oldMarketAddresses].map(async m => {
-        const wei = (await this._readMarketContractAt(m, 'pendingWithdrawals', [address])) as bigint | null;
-        // null means the read failed, which is not the same as owing nothing
-        if (wei === null || wei === undefined) throw new Error('Could not read the market balance');
-        return { market: m, kind: 'etherphunks' as const, wei };
-      }),
-      ...qpMarkets.map(async m => ({
-        market: m, kind: 'quantumphunks' as const,
-        wei: (await this.l1Client.readContract({
-          address: m as `0x${string}`, abi: QuantumPhunksMarketABI as any, functionName: 'pendingWithdrawals', args: [address as `0x${string}`],
-        })) as bigint,
-      })),
-    ]);
-    return reads.filter(r => r.wei > 0n);
+    const markets = [
+      ...[marketAddress, ...oldMarketAddresses].map(m => ({ market: m, kind: 'etherphunks' as const, abi: EtherPhunksMarketABI as any })),
+      ...qpMarkets.map(m => ({ market: m, kind: 'quantumphunks' as const, abi: QuantumPhunksMarketABI as any })),
+    ];
+    // every market's pendingWithdrawals in one multicall: one RPC request, not one per contract
+    const res = await this.l1Client.multicall({
+      contracts: markets.map(m => ({ address: m.market as `0x${string}`, abi: m.abi, functionName: 'pendingWithdrawals', args: [address as `0x${string}`] })),
+    });
+    return markets.map((m, i) => {
+      // a failed read is not the same as owing nothing
+      if (res[i].status !== 'success') throw new Error('Could not read the market balance');
+      return { market: m.market, kind: m.kind, wei: res[i].result as bigint };
+    }).filter(r => r.wei > 0n);
   }
 
   /** The wallet's own ETH balance. */
@@ -660,6 +684,7 @@ export class Web3Service {
 
   /** Withdraw everything owed to the connected wallet from one market contract. */
   async withdrawFundsFrom(market: string, kind: 'etherphunks' | 'quantumphunks'): Promise<string | undefined> {
+    this.forgetFunds();
     return this._writeMarketContractAt(market, 'withdraw', [], undefined, kind === 'quantumphunks' ? QuantumPhunksMarketABI as any : undefined);
   }
 
@@ -667,10 +692,6 @@ export class Web3Service {
    * Checks if the marketplace contract is currently paused
    * @returns Promise resolving to true if paused, false otherwise
    */
-  async checkContractPaused(): Promise<boolean> {
-    const paused = await this.readMarketContract('paused', []);
-    return paused;
-  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // L1 CONTRACT METHODS ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1365,12 +1386,20 @@ export class Web3Service {
    * @returns Promise resolving to the current multiplier value
    */
   async getMultiplier(): Promise<any> {
+    // read on every page load but it changes rarely: kept in the browser for a day, and not
+    // read at all for crawlers
+    if (IS_BOT) return 1;
+    try {
+      const c = JSON.parse(localStorage.getItem('points-multiplier') || 'null');
+      if (c && Date.now() - c.at < 24 * 3600_000) return c.v;   // changed by hand, rarely: a day
+    } catch {}
     const multiplier = await this.l1Client.readContract({
       address: pointsAddress as `0x${string}`,
       abi: PointsABI,
       functionName: 'multiplier',
       args: [],
     });
+    try { localStorage.setItem('points-multiplier', JSON.stringify({ at: Date.now(), v: Number(multiplier) })); } catch {}
     return multiplier;
   }
 
@@ -1854,12 +1883,43 @@ export class Web3Service {
    * @returns Promise resolving to the associated ENS name or null if not found
    */
   async getEnsFromAddress(address: string | null | undefined): Promise<string | null> {
-    if (!address) return null;
-    try {
-      return await this.l1Client.getEnsName({ address: address as `0x${string}` });
-    } catch (err) {
-      return null;
+    // only real wallet addresses (not tx hashes or placeholders), and never for crawlers
+    if (!address || !/^0x[0-9a-f]{40}$/i.test(address) || /^0x0{40}$/i.test(address) || IS_BOT) return null;
+    const key = address.toLowerCase();
+    // each address is looked up once: kept for the visit (shared by every place it's shown) and in
+    // the browser for a week, names and "no name" alike
+    const known = this.ensCache().get(key);
+    if (known && Date.now() - known.at < ENS_TTL_MS) return known.name;
+    let p = this.ensInFlight.get(key);
+    if (!p) {
+      p = this.l1Client.getEnsName({ address: key as `0x${string}` })
+        .then((name) => { this.rememberEns(key, name ?? null); return name ?? null; })
+        .catch(() => null)
+        .finally(() => this.ensInFlight.delete(key));
+      this.ensInFlight.set(key, p);
     }
+    return p;
+  }
+
+  private ensInFlight = new Map<string, Promise<string | null>>();
+  private ensMap: Map<string, { name: string | null; at: number }> | null = null;
+  private ensSaveTimer: ReturnType<typeof setTimeout> | undefined;
+  private ensCache(): Map<string, { name: string | null; at: number }> {
+    if (!this.ensMap) {
+      this.ensMap = new Map();
+      try {
+        const saved = JSON.parse(localStorage.getItem(ENS_CACHE_KEY) || '{}');
+        for (const [k, v] of Object.entries(saved)) if (Date.now() - (v as any).at < ENS_TTL_MS) this.ensMap.set(k, v as any);
+      } catch { /* storage blocked: this visit only */ }
+    }
+    return this.ensMap;
+  }
+  private rememberEns(key: string, name: string | null) {
+    this.ensCache().set(key, { name, at: Date.now() });
+    clearTimeout(this.ensSaveTimer);
+    this.ensSaveTimer = setTimeout(() => {
+      try { localStorage.setItem(ENS_CACHE_KEY, JSON.stringify(Object.fromEntries(this.ensCache()))); } catch {}
+    }, 1000);
   }
 
   /**
@@ -1868,9 +1928,16 @@ export class Web3Service {
    * @returns Promise resolving to the avatar URL or null if not found
    */
   async getEnsAvatar(name: string): Promise<string | null> {
-    if (!name) return null;
-    return await this.l1Client.getEnsAvatar({ name });
+    if (!name || IS_BOT) return null;
+    // once per name per visit
+    let p = this.ensAvatars.get(name);
+    if (!p) {
+      p = this.l1Client.getEnsAvatar({ name }).catch(() => null);
+      this.ensAvatars.set(name, p);
+    }
+    return p;
   }
+  private ensAvatars = new Map<string, Promise<string | null>>();
 
   // ─── Evolve / Devolve ─────────────────────────────────
 

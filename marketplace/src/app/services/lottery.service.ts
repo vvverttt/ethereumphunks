@@ -12,6 +12,10 @@ import { LotteryWin } from '@/models/lottery';
 const suffix = environment.chainId === 1 ? '' : '_sepolia';
 const lotteryAddress = ((environment as any).lotteryAddress || '') as `0x${string}`;
 
+/** The Phupreme drop isn't launched: the page is its "Coming Soon" teaser and makes no contract reads.
+ *  Set true when the owner has loaded the pool and activated it, and the page reads it live again. */
+export const LOTTERY_LAUNCHED = false;
+
 /** The QuantumPhunks ERC-721 collection slug (prizes resolve their image via this collection). */
 const PRIZE_SLUG = 'cryptophunksv67';
 
@@ -72,6 +76,16 @@ export class LotteryService {
       functionName: functionName as any,
       args: args as any,
     }) as Promise<T>;
+  }
+
+  /** the page's contract settings in one multicall, instead of seven separate reads */
+  async getState(): Promise<{ price: bigint; active: boolean; size: bigint; maxBatch: number; maxWallet: number; wl: boolean; disc: boolean }> {
+    const fns = ['mintPrice', 'lotteryActive', 'poolSize', 'maxBatchSize', 'maxPerWallet', 'whitelistEnabled', 'discountsEnabled'];
+    const [price, active, size, maxBatch, maxWallet, wl, disc] = await this.web3Svc.l1DedicatedClient.multicall({
+      contracts: fns.map(functionName => ({ address: this._address, abi: PhilipLotteryV67Erc721ABI as any, functionName })),
+      allowFailure: false,
+    }) as any[];
+    return { price, active, size, maxBatch: Number(maxBatch), maxWallet: Number(maxWallet), wl, disc };
   }
 
   /** Base mint price per token (before any discount), in wei. */
@@ -382,6 +396,7 @@ export class LotteryService {
    */
   private activeCheck?: { at: number; active: Promise<boolean> };
   private liveWhileActive<T>(changes$: Observable<void>, query$: Observable<T>): Observable<T> {
+    if (!LOTTERY_LAUNCHED) return EMPTY;   // not launched: nothing to watch, and no read to find that out
     if (!this.activeCheck || Date.now() - this.activeCheck.at > 60_000) {
       this.activeCheck = { at: Date.now(), active: this.isActive().catch(() => true) };
     }

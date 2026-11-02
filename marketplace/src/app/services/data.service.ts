@@ -16,20 +16,22 @@ import { Collection } from '@/models/data.state';
 import { AttributeItem } from '@/models/attributes';
 
 
-import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, merge, filter, share, catchError, debounceTime, distinctUntilChanged, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
-import { visibleTimer } from '@/utils/visible-interval';
+import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, merge, mergeMap, filter, share, catchError, debounceTime, distinctUntilChanged, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { isErc721c } from '@/constants/erc721c';
 import { supabase } from './supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { IS_BOT } from '@/utils/is-bot';
 
-/** crawlers run the page's script too; they get the page without its live updates */
-const IS_BOT = typeof navigator !== 'undefined' && (navigator.webdriver || /bot|crawl|spider|slurp|bytespider|headless|lighthouse|preview/i.test(navigator.userAgent));
+/** a collection's sales on record: how many, their total in Ξ and the highest (null with none) */
+export interface SalesStats { n: number; volume: number; top: number | null }
+
 import { isAdminWallet } from '@/constants/admin-wallets';
 
 import * as dataStateActions from '@/state/actions/data-state.actions';
 import * as appStateActions from '@/state/actions/app-state.actions';
+import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
 @Injectable({
   providedIn: 'root'
@@ -56,18 +58,6 @@ export class DataService {
     private storageSvc: StorageService,
     private prefs: PhunkPreferencesService,
   ) {
-
-    // Listen for blocks and set indexer block
-    // The indexer block number only feeds the status bar, which shows it to the owner wallet
-    // alone — so only that wallet polls Supabase for it.
-    this.walletAddress$.pipe(
-      map((address) => isAdminWallet(address)),
-      distinctUntilChanged(),
-      switchMap((isOwner) => isOwner ? this.listenForBlocks() : EMPTY),
-      tap((blockNumber) => {
-        this.store.dispatch(appStateActions.setIndexerBlock({ indexerBlock: blockNumber }));
-      }),
-    ).subscribe();
 
     // ETH's price in every display currency, fetched once; the store's `usd` holds the price in
     // the current language's currency (USD, MXN, JPY, CNY, IDR) and follows a language switch.
@@ -141,30 +131,10 @@ export class DataService {
   /**
    * Sets up real-time listener for new blocks with polling fallback
    */
-  listenForBlocks(): Observable<number> {
-    const fetchBlock = () => from(
-      supabase
-        .from('blocks')
-        .select('blockNumber')
-        .eq('network', environment.chainId)
-    ).pipe(
-      map((res: any) => res.data?.[0]?.blockNumber || 0),
-      catchError(() => of(0)),
-    );
-
-    // Initial fetch
-    const initial$ = fetchBlock();
-
-    // Poll every 60s (no realtime channel needed — saves DB IO), and not at all while the tab
-    // is hidden: it refreshes the moment the visitor comes back.
-    const polling$ = visibleTimer(60_000).pipe(
-      switchMap(() => fetchBlock()),
-      filter((block) => block > 0),
-    );
-
-    return merge(initial$, polling$).pipe(
-      share()
-    );
+  /** the block the indexer has reached (0 on a failed read): read by the owner's status line only */
+  async fetchIndexerBlock(): Promise<number> {
+    const { data } = await supabase.from('blocks').select('blockNumber').eq('network', environment.chainId);
+    return Number(data?.[0]?.blockNumber || 0);
   }
 
   /**
@@ -458,10 +428,15 @@ export class DataService {
       .from('events' + this.suffix)
       .select(`*, ethscriptions${this.suffix}(tokenId,slug)`)
       .or(`from.eq.${address},to.eq.${address}`)
-      .in('type', ['PhunkBought', 'AuctionSettled', 'transfer'])
+      // only the wallet's buys and sells (market buys, accepted bids, won auctions) and its auction
+      // bids, each with a price
+      .in('type', ['PhunkBought', 'BidAccepted', 'AuctionSettled', 'AuctionBid'])
+      .gt('value', 0)
       .order('blockNumber', { ascending: false })
       .range(offset, offset + limit - 1);
-    return (data || []).map((e: any) => {
+    // a sale can log more than one row (an auction settling); show it once
+    const seen = new Set<string>();
+    return (data || []).filter((e: any) => !seen.has(e.txHash + e.hashId) && !!seen.add(e.txHash + e.hashId)).map((e: any) => {
       const c = e[`ethscriptions${this.suffix}`];
       return { ...e, tokenId: c?.tokenId ?? e.tokenId ?? null, slug: c?.slug ?? e.slug };
     });
@@ -533,7 +508,7 @@ export class DataService {
         tap(() => this.marketDataCache.delete(slug)),
         switchMap(() => rpcFetch$)
       ),
-      this.watchBids().pipe(
+      this.watchBidsForSlug(slug).pipe(
         tap(() => this.marketDataCache.delete(slug)),
         switchMap(() => rpcFetch$),
       ),
@@ -552,20 +527,58 @@ export class DataService {
   private bidsChannel$: Observable<void> | null = null;
   watchBids(): Observable<void> {
     if (this.bidsChannel$) return this.bidsChannel$;
-    this.bidsChannel$ = this.live((next) => supabase
-      .channel(`bids_changes${this.suffix}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'bids' + this.suffix,
-        },
-        next,
-      )
-      .subscribe()
-    ).pipe(debounceTime(2000), share());
+    this.bidsChannel$ = this.bidChanges().pipe(map(() => undefined), debounceTime(2000), share());
     return this.bidsChannel$;
+  }
+
+  /** each bid change as the item's hashId (the bids table is keyed by it, so even a removed bid
+   *  carries it), from the one shared channel */
+  private bidHashIds$: Observable<string> | null = null;
+  bidChanges(): Observable<string> {
+    if (this.bidHashIds$) return this.bidHashIds$;
+    this.bidHashIds$ = new Observable<string>((subscriber) => {
+      let last = '';
+      const sub = this.live((next) => supabase
+        .channel(`bids_changes${this.suffix}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bids' + this.suffix,
+          },
+          (payload: any) => { last = String(payload?.new?.hashId || payload?.old?.hashId || '').toLowerCase(); next(); },
+        )
+        .subscribe()
+      // '' = a catch-up after the tab was hidden a while (no particular item): everyone refreshes
+      ).subscribe(() => { subscriber.next(last); last = ''; });
+      return () => sub.unsubscribe();
+    }).pipe(share());
+    return this.bidHashIds$;
+  }
+
+  /** bid changes on this collection's items only: a bid on another collection no longer reloads
+   *  this one. The item's collection is looked up once (tiny read, kept); unknown passes through. */
+  watchBidsForSlug(slug: string): Observable<void> {
+    return this.bidChanges().pipe(
+      mergeMap((hashId) => from(this.slugOfHashId(hashId))),
+      filter((s) => s === null || s === slug),
+      map(() => undefined),
+      debounceTime(2000),
+    );
+  }
+
+  private slugOfHash = new Map<string, Promise<string | null>>();
+  private slugOfHashId(hashId: string): Promise<string | null> {
+    if (!hashId) return Promise.resolve(null);
+    if (!this.slugOfHash.has(hashId)) {
+      this.slugOfHash.set(hashId, (async () => {
+        const { data, error } = await supabase.from('ethscriptions' + this.suffix).select('slug').eq('hashId', hashId).maybeSingle();
+        if (error) { this.slugOfHash.delete(hashId); return null; }
+        return (data?.slug as string) ?? null;
+      })());
+    }
+    return this.slugOfHash.get(hashId)!;
   }
 
   /**
@@ -744,7 +757,7 @@ export class DataService {
       // Bid lifecycle events (BidEntered/Accepted/Confirmed/Withdrawn/Refunded)
       // land in the events/bids tables, not ethscriptions — so without this the
       // Recent Activity feed wouldn't refresh live when a bid event arrives.
-      this.watchBids().pipe(
+      (slug ? this.watchBidsForSlug(slug) : this.watchBids()).pipe(
         tap(() => this.eventsCache.delete(cacheKey)),
         switchMap(() => rpcFetch$)
       ),
@@ -1422,29 +1435,21 @@ export class DataService {
       catchError(() => of({ sales: 0, volume: 0 })),
     );
 
-    const listings$ = from(
-      supabase.from('listings' + this.suffix).select('hashId,minValue,listed').eq('listed', true),
-    ).pipe(
-      switchMap(async (res: any) => {
-        const rows = (res.data ?? []) as { hashId: string; minValue: string }[];
-        if (!rows.length) return { floor: null as number | null, listed: 0 };
-        const { data: eths } = await supabase
-          .from('ethscriptions' + this.suffix)
-          .select('hashId')
-          .eq('slug', slug)
-          .in('hashId', rows.map((r) => r.hashId));
-        const mine = new Set((eths ?? []).map((e: any) => e.hashId));
-        const values = rows.filter((r) => mine.has(r.hashId)).map((r) => Number(r.minValue));
-        return {
-          floor: values.length ? Math.min(...values) / 1e18 : null,
-          listed: values.length,
-        };
-      }),
+    // the floor and listed count from the shared floor read (one request, kept a minute, the same
+    // one Phleeca Bank uses), and the size from the collections the page already loaded
+    const listings$ = from(this.fetchFloorStats()).pipe(
+      map((st) => ({ floor: st.floors[slug] ?? null, listed: st.listed[slug] ?? 0 })),
     );
 
-    const collection$ = from(
-      supabase.from('collections' + this.suffix).select('supply').eq('slug', slug).limit(1),
-    ).pipe(map((res: any) => Number(res.data?.[0]?.supply ?? 0)));
+    const collection$ = this.store.select(dataStateSelectors.selectCollections).pipe(
+      take(1),
+      switchMap((cs: any[]) => {
+        const known = cs?.find((c) => c.slug === slug)?.supply;
+        if (known) return of(Number(known));
+        return from(supabase.from('collections' + this.suffix).select('supply').eq('slug', slug).limit(1))
+          .pipe(map((res: any) => Number(res.data?.[0]?.supply ?? 0)));
+      }),
+    );
 
     const result$ = forkJoin([volume$, listings$, collection$]).pipe(
       map(([vol, listing, supply]: any) => ({
@@ -1510,12 +1515,110 @@ export class DataService {
     return this.volumesOnce;
   }
 
-  private salesOnce: Promise<{ slug: string; eth: number; at: number }[]> | null = null;
-  fetchAllSales(): Promise<{ slug: string; eth: number; at: number }[]> {
-    if (!this.salesOnce) {
-      this.salesOnce = this.readAllSales().catch(e => { this.salesOnce = null; throw e; });
+  /** each collection's sales, volume (Ξ) and top sale, already added up in the database
+   *  (sales_per_collection, one small call); until that function exists it falls back to reading
+   *  every sale and adding them up here */
+  private salesStatsOnce: Promise<Record<string, SalesStats>> | null = null;
+  fetchSalesStats(): Promise<Record<string, SalesStats>> {
+    if (!this.salesStatsOnce) {
+      this.salesStatsOnce = this.readSalesStats().catch(e => { this.salesStatsOnce = null; throw e; });
     }
-    return this.salesOnce;
+    return this.salesStatsOnce;
+  }
+
+  private async readSalesStats(): Promise<Record<string, SalesStats>> {
+    const { data, error } = await supabase.rpc('sales_per_collection' + this.suffix);
+    if (!error && data) {
+      return Object.fromEntries((data as any[]).map(r =>
+        [r.slug, { n: Number(r.sales), volume: Number(r.volume), top: r.top_sale == null ? null : Number(r.top_sale) }]));
+    }
+    const out: Record<string, SalesStats> = {};
+    for (const sale of await this.readAllSales()) {
+      const st = out[sale.slug] ??= { n: 0, volume: 0, top: null };
+      st.n++; st.volume += sale.eth; st.top = Math.max(st.top ?? 0, sale.eth);
+    }
+    return out;
+  }
+
+  /** a collection's owners and how many items each holds, most first, counted in the database
+   *  (owners_per_collection, one small call) and kept for the visit; until that function exists it
+   *  falls back to reading every item's owner and counting them here */
+  private ownerCountsOnce = new Map<string, { at: number; p: Promise<{ address: string; count: number }[]> }>();
+  fetchOwnerCounts(slug: string): Promise<{ address: string; count: number }[]> {
+    const hit = this.ownerCountsOnce.get(slug);
+    if (hit && Date.now() - hit.at < 5 * 60_000) return hit.p;
+    const p = this.readOwnerCounts(slug).catch(e => { this.ownerCountsOnce.delete(slug); throw e; });
+    this.ownerCountsOnce.set(slug, { at: Date.now(), p });
+    return p;
+  }
+
+  private async readOwnerCounts(slug: string): Promise<{ address: string; count: number }[]> {
+    // Supabase hands back at most 1,000 rows per response, so a collection with more owners is
+    // read a page at a time (one page for every collection today)
+    const owners: { address: string; count: number }[] = [];
+    let rpcOk = true;
+    for (let offset = 0; ; offset += 1000) {
+      const { data, error } = await supabase.rpc('owners_per_collection' + this.suffix, { p_slug: slug }).range(offset, offset + 999);
+      if (error || !data) { rpcOk = false; break; }
+      owners.push(...(data as any[]).map(r => ({ address: r.owner, count: Number(r.items) })));
+      if (data.length < 1000) break;
+    }
+    if (rpcOk) return owners;
+    const counts: Record<string, number> = {};
+    for (let offset = 0; ; offset += 1000) {
+      const { data: rows, error: e } = await supabase
+        .from('ethscriptions' + this.suffix)
+        .select('owner')
+        .eq('slug', slug)
+        .range(offset, offset + 999);
+      if (e) throw e;
+      for (const r of rows ?? []) {
+        const addr = r.owner?.toLowerCase();
+        if (!addr || addr === '0x0000000000000000000000000000000000000000') continue;
+        counts[addr] = (counts[addr] || 0) + 1;
+      }
+      if (!rows || rows.length < 1000) break;
+    }
+    return Object.entries(counts).map(([address, count]) => ({ address, count })).sort((a, b) => b.count - a.count);
+  }
+
+  /** a collection's newest sales (bought, bid accepted, won at auction), newest first, for the sales strip.
+   *  The browser keeps the ones it has seen; each read after the first asks only for sales newer than
+   *  the newest one it knows (usually none), in one call with each item's picture joined on. */
+  async fetchRecentSales(slug: string, limit: number): Promise<Event[]> {
+    const key = 'recent-sales:' + slug;
+    let known: Event[] = [];
+    try { known = JSON.parse(localStorage.getItem(key) || '[]'); } catch { /* storage blocked: read them all */ }
+    const newest = known[0]?.blockTimestamp;
+
+    let q = supabase
+      .from('events' + this.suffix)
+      .select(`hashId,txHash,type,to,value,blockTimestamp,ethscriptions${this.suffix}!inner(slug,sha,tokenId)`)
+      .eq(`ethscriptions${this.suffix}.slug`, slug)
+      .in('type', ['PhunkBought', 'BidAccepted', 'AuctionSettled'])
+      .gt('value', 0)
+      .order('blockTimestamp', { ascending: false })
+      .limit(limit);
+    if (newest) q = q.gt('blockTimestamp', newest);
+    const { data, error } = await q;
+    if (error) { if (known.length) return known.slice(0, limit); throw error; }
+
+    const fresh = (data ?? []).map((r: any) => {
+      const es = r['ethscriptions' + this.suffix];
+      return { hashId: r.hashId, txHash: r.txHash, type: r.type, to: r.to, value: r.value,
+        blockTimestamp: r.blockTimestamp, sha: es?.sha, slug: es?.slug, tokenId: es?.tokenId } as any as Event;
+    });
+    // one sale can log more than one event, and an auction that ended with no bidder isn't a sale
+    const seen = new Set<string>();
+    const sales = [...fresh, ...known].filter(e => {
+      if (e.type === 'AuctionSettled' && (!e.to || /^0x0{40}$/i.test(e.to))) return false;
+      const k = (e as any).txHash + e.hashId;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).slice(0, limit);
+    try { localStorage.setItem(key, JSON.stringify(sales)); } catch { /* storage full or blocked */ }
+    return sales;
   }
 
   private async readAllSales(): Promise<{ slug: string; eth: number; at: number }[]> {
@@ -1562,15 +1665,12 @@ export class DataService {
   }
 
   private async readFloorStats(): Promise<{ floors: Record<string, number>; listed: Record<string, number>; avgListed: Record<string, number>; avgLow: Record<string, number> }> {
+    // one request: each listing with its collection joined in (no second lookup by hashId)
     const { data: rows, error } = await supabase
-      .from('listings' + this.suffix).select('hashId,minValue').eq('listed', true);
+      .from('listings' + this.suffix).select(`hashId,minValue,ethscriptions${this.suffix}(slug)`).eq('listed', true);
     if (error) throw error;
     if (!rows?.length) return { floors: {}, listed: {}, avgListed: {}, avgLow: {} };
-    const { data: eths, error: e2 } = await supabase
-      .from('ethscriptions' + this.suffix).select('hashId,slug')
-      .in('hashId', rows.map((r: any) => r.hashId));
-    if (e2) throw e2;
-    const slugOf = new Map((eths ?? []).map((e: any) => [e.hashId, e.slug]));
+    const slugOf = new Map((rows as any[]).map(r => [r.hashId, r[`ethscriptions${this.suffix}`]?.slug]));
     const floors: Record<string, number> = {};
     const listed: Record<string, number> = {};
     const asks: Record<string, number[]> = {};
@@ -1608,7 +1708,8 @@ export class DataService {
     return merge(
       this.fetchCollectionStatSummary(slug),
       this.watchEthscriptionsBySlug(slug).pipe(
-        tap(() => this.statSummaryCache.delete(slug)),
+        // a change in the collection: drop the shared floor read too, so the re-read is fresh
+        tap(() => { this.statSummaryCache.delete(slug); this.floorStatsOnce = null; }),
         switchMap(() => this.fetchCollectionStatSummary(slug)),
       ),
     );
@@ -1795,9 +1896,13 @@ export class DataService {
   /**
    * Fetches leaderboard data
    */
+  // the menu asks on every open; the board moves slowly, so one read serves five minutes
+  private leaderboardOnce: { at: number; data: any } | null = null;
   fetchLeaderboard(): Observable<any> {
-    return from(from(supabase.rpc('fetch_leaderboard' + this.suffix))).pipe(
+    if (this.leaderboardOnce && Date.now() - this.leaderboardOnce.at < 5 * 60_000) return of(this.leaderboardOnce.data);
+    return from(supabase.rpc('fetch_leaderboard' + this.suffix)).pipe(
       map((res: any) => res.data),
+      tap((data) => { if (data) this.leaderboardOnce = { at: Date.now(), data }; }),
     );
   }
 
@@ -1827,33 +1932,31 @@ export class DataService {
   async fetchComments(rootTopic: string): Promise<CommentWithReplies[]> {
     if (!rootTopic) return [];
 
-    // Helper function to fetch comments for a given topic
-    const fetchReplies = async (topic: string): Promise<CommentWithReplies[]> => {
+    // One read per level of the thread (the topic's comments, then all their replies at once, then
+    // the replies to those...), not one read per comment: a reply's topic is its parent's id
+    const byTopic = new Map<string, CommentWithReplies[]>();
+    let topics = [rootTopic.toLowerCase()];
+    for (let depth = 0; topics.length && depth < 20; depth++) {
       const { data, error } = await supabase
         .from('comments' + this.suffix)
         .select('*')
-        .eq('topic', topic.toLowerCase())
+        .in('topic', topics)
         // .eq('deleted', false)
         .order('createdAt', { ascending: false });
+      if (error || !data?.length) break;
+      for (const c of data) {
+        const t = String(c.topic).toLowerCase();
+        if (!byTopic.has(t)) byTopic.set(t, []);
+        byTopic.get(t)!.push(c);
+      }
+      topics = data.map((c: any) => String(c.id).toLowerCase());
+    }
 
-      if (error || !data) return [];
-
-      // For each comment, recursively fetch its replies
-      const commentsWithReplies = await Promise.all(
-        data.map(async (comment) => {
-          const replies = await fetchReplies(comment.id);
-          return {
-            ...comment,
-            replies: replies.length > 0 ? replies : undefined
-          };
-        })
-      );
-
-      return commentsWithReplies;
-    };
-
-    // Start fetching from the root topic
-    return await fetchReplies(rootTopic.toLowerCase());
+    const build = (topic: string): CommentWithReplies[] => (byTopic.get(topic) ?? []).map(c => {
+      const replies = build(String(c.id).toLowerCase());
+      return { ...c, replies: replies.length > 0 ? replies : undefined };
+    });
+    return build(rootTopic.toLowerCase());
   }
 
   /**

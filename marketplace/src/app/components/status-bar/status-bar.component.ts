@@ -1,7 +1,10 @@
 import { Component, DestroyRef, effect, inject, input, OnDestroy, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AsyncPipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
-import { Subscription, map } from 'rxjs';
+import { Subscription, map, startWith } from 'rxjs';
+import { visibleTimer } from '@/utils/visible-interval';
+import { DataService } from '@/services/data.service';
+import { setCurrentBlock, setIndexerBlock } from '@/state/actions/app-state.actions';
 import { isAdminWallet } from '@/constants/admin-wallets';
 
 import { Store } from '@ngrx/store';
@@ -70,6 +73,7 @@ export class StatusBarComponent implements OnDestroy {
     public gasSvc: GasService,
     private socketSvc: SocketService,
     private web3Svc: Web3Service,
+    private dataSvc: DataService,
     public preferences: PhunkPreferencesService,
   ) {
     effect(() => {
@@ -79,14 +83,15 @@ export class StatusBarComponent implements OnDestroy {
       }
     });
 
-    // the chain block is read for quantumphunks.eth only while the menu (and so this bar) is open
-    let releaseBlocks: (() => void) | null = null;
+    // the chain block and the indexer's block, for quantumphunks.eth only: read once when the menu
+    // (and so this bar) opens, then every 3 minutes while it stays open in a visible tab
+    let health: Subscription | null = null;
     effect(() => {
       const need = this.visible() && this.isOwner();
-      if (need && !releaseBlocks) releaseBlocks = untracked(() => this.web3Svc.wantBlocks());
-      if (!need && releaseBlocks) { releaseBlocks(); releaseBlocks = null; }
+      if (need && !health) health = visibleTimer(180_000).pipe(startWith(undefined)).subscribe(() => this.readBlocks());
+      if (!need && health) { health.unsubscribe(); health = null; }
     });
-    inject(DestroyRef).onDestroy(() => releaseBlocks?.());
+    inject(DestroyRef).onDestroy(() => health?.unsubscribe());
 
     effect(() => {
       if (this.expanded()) {
@@ -96,6 +101,15 @@ export class StatusBarComponent implements OnDestroy {
 
       this.disconnectLogs();
     });
+  }
+
+  private readBlocks() {
+    this.web3Svc.l1PollingClient.getBlockNumber()
+      .then((b) => this.store.dispatch(setCurrentBlock({ currentBlock: Number(b) })))
+      .catch(() => {});
+    this.dataSvc.fetchIndexerBlock()
+      .then((b) => { if (b) this.store.dispatch(setIndexerBlock({ indexerBlock: b })); })
+      .catch(() => {});
   }
 
   t(key: string, params?: Record<string, string | number>): string {

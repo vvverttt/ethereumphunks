@@ -9,6 +9,9 @@
 }
 
 .auction-notice {
+  // the strip sits behind the fixed header and the hero starts where it ends, so it is exactly the
+  // header's height: the hero's frame then has the same gap under the header as above the bottom line
+  min-height: var(--header-height);
   padding: 1.2rem 2rem;
   text-align: center;
   background-color: rgba(var(--base-color), 1);

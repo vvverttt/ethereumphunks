@@ -18,7 +18,7 @@ import { isErc721c } from '@/constants/erc721c';
 import { OwnerAction, OwnerActionsService } from '@/services/owner-actions.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { Web3Service } from '@/services/web3.service';
-import { DataService } from '@/services/data.service';
+import { DataService, SalesStats } from '@/services/data.service';
 
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
 import { FiatPipe } from '@/pipes/fiat.pipe';
@@ -128,11 +128,8 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
 
   /** ETH the wallet can withdraw from the market contracts (sales, refunds), per contract. */
   funds = signal<Funds | null>(null);
-  /** the wallet's own ETH, shown as the account balance */
-  walletEth = signal<string | null>(null);
   /** a balance that couldn't be read after the retries: shown as "—", never as 0 */
   fundsFailed = signal(false);
-  walletFailed = signal(false);
   /** the transaction log, read when its screen opens */
   log = signal<any[] | null>(null);
   private fundsFor = '';
@@ -142,7 +139,7 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
   }
 
   ngOnChanges(ch: SimpleChanges) {
-    if (this.wallet && this.wallet !== this.fundsFor) { this.loadFunds(); this.loadWalletEth(); this.log.set(null); }
+    if (this.wallet && this.wallet !== this.fundsFor) { this.loadFunds(); this.log.set(null); }
     if (this.wallet && !this.floorsAsked) { this.floorsAsked = true; this.loadFloors(); }
     // the wallet's own pieces outside escrow: any with a market deposit that never counted?
     if (this.wallet && (ch['groups'] || ch['wallet'])) this.staleSvc.check(this.wallet, this.groups.flatMap(g => g.items) as any);
@@ -398,8 +395,7 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
   topSale(slug: string): number | null { return VALUED_AT_TOP_SALE[slug] ?? null; }
   /** a collection's highest sale on record (the pinned one when set); null with no sales */
   topSaleOf(slug: string): number | null {
-    const mine = (this.sales() ?? []).filter(s => s.slug === slug);
-    return this.topSale(slug) ?? (mine.length ? Math.max(...mine.map(s => s.eth)) : null);
+    return this.topSale(slug) ?? this.sales()?.[slug]?.top ?? null;
   }
 
   /** every collection, in the site's own order (as in the collections menu) */
@@ -427,21 +423,21 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
   /** the switch's own name for that price, for the column and the saved picture */
   askLabel(): string { return this.t(this.leftOut.label()); }
 
-  /** a collection's recorded sales and their total, from the sales the chart reads */
+  /** a collection's recorded sales and their total (the Reserve's volume column) */
   salesOf(slug: string): { n: number; volume: number } | null {
     const all = this.sales();
     if (!all) return null;
-    const mine = all.filter(s => s.slug === slug);
-    return { n: mine.length, volume: mine.reduce((v, s) => v + s.eth, 0) };
+    return all[slug] ?? { n: 0, volume: 0 };
   }
 
   /** every collection's sales together, for the Reserve's summary */
   salesTotal(): { n: number; volume: number } | null {
     const all = this.sales();
     if (!all) return null;
-    const live = new Set(this.reserve.map(c => c.slug).filter(slug => !this.leftOut.has(slug)));
-    const mine = all.filter(s => live.has(s.slug));
-    return { n: mine.length, volume: mine.reduce((v, s) => v + s.eth, 0) };
+    return this.reserve.filter(c => !this.leftOut.has(c.slug)).reduce((t, c) => {
+      const st = all[c.slug];
+      return st ? { n: t.n + st.n, volume: t.volume + st.volume } : t;
+    }, { n: 0, volume: 0 });
   }
 
   // ---- the language's currency beside Ξ amounts (en USD, es MXN, ja JPY, zh CNY, id IDR)
@@ -468,13 +464,13 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
     } catch { /* the function isn't there yet, or the read failed: holders show "—" */ }
   }
 
-  /** every sale, for the Reserve's sales and volume: null while reading */
-  sales = signal<{ slug: string; eth: number; at: number }[] | null>(null);
+  /** each collection's sales, volume and top sale, for the Reserve: null while reading */
+  sales = signal<Record<string, SalesStats> | null>(null);
   salesFailed = signal(false);
 
   async loadSales() {
     this.salesFailed.set(false);
-    try { this.sales.set(await this.dataSvc.fetchAllSales()); }
+    try { this.sales.set(await this.dataSvc.fetchSalesStats()); }
     catch { this.salesFailed.set(true); }
   }
 
@@ -660,27 +656,9 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
     if (this.fundsFor === w) this.fundsFailed.set(true);
   }
 
-  async loadWalletEth() {
-    const w = this.wallet;
-    if (!w) return;
-    for (let attempt = 0; attempt < 4; attempt++) {
-      try {
-        const wei = await this.web3Svc.getEthBalance(w);
-        if (this.wallet === w) { this.walletEth.set(this.short(formatEther(wei))); this.walletFailed.set(false); }
-        return;
-      } catch {
-        await new Promise(r => setTimeout(r, 3000));
-      }
-    }
-    if (this.wallet === w) this.walletFailed.set(true);
-  }
-
   /** the balances as shown: the amount, "…" while reading, "—" if it couldn't be read */
   fundsShown(): string {
     return this.funds() ? this.fundsTotal() : this.fundsFailed() ? '—' : '…';
-  }
-  walletShown(): string {
-    return this.walletEth() ?? (this.walletFailed() ? '—' : '…');
   }
 
   /** at most 4 decimals, no trailing zeros */
@@ -700,12 +678,11 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
   /** the statement as an image (a PNG data URL), drawn when its screen opens */
   statementUrl = signal<string | null>(null);
 
-  /** what the statement shows: the holder's name/address, and the wallet's ETH balance */
+  /** whether the statement shows the holder's name/address */
   stShowAddress = signal(true);
-  stShowBalance = signal(true);
 
-  async toggleStatement(which: 'address' | 'balance') {
-    const s = which === 'address' ? this.stShowAddress : this.stShowBalance;
+  async toggleStatement(which: 'address') {
+    const s = this.stShowAddress;
     s.set(!s());
     try { this.statementUrl.set(await this.drawStatement()); } catch { this.statementUrl.set(''); }
   }
@@ -846,9 +823,7 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
     if (this.wallet && !spec.anonymous) {
       ctx.fillText((this.ens || this.shortAddress()).toUpperCase(), side, y + barH / 2);
       ctx.textAlign = 'right';
-      ctx.fillText(`${this.t('atmAccountBalance').toUpperCase()} Ξ${this.walletShown()}`, W - side, y + barH / 2 - 11);
-      ctx.font = `14px ${pixel}`;
-      ctx.fillText(`${this.t('atmCollectiblesBalance').toUpperCase()} Ξ${this.valueShown(this.totalValue())}`, W - side, y + barH / 2 + 13);
+      ctx.fillText(`${this.t('atmCollectiblesBalance').toUpperCase()} Ξ${this.valueShown(this.totalValue())}`, W - side, y + barH / 2);
     } else {
       ctx.fillText(this.t('atmWelcome').toUpperCase(), side, y + barH / 2);
     }
@@ -951,14 +926,10 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
     lines.push([this.t('atmBranch'), '', 's']);
     lines.push([new Date().toLocaleString(this.prefs.currentLanguage(), { dateStyle: 'medium', timeStyle: 'short' }), '', 's']);
     lines.push(['', '', 'rule']);
-    // the holder's name/address and the wallet balance each have a switch, for a shareable slip
+    // the holder's name/address has a switch, for a shareable slip
     if (this.stShowAddress()) {
       lines.push([this.ens || this.shortAddress(), '', 'b']);
       if (this.ens) lines.push([this.shortAddress(), '', 's']);
-      lines.push(['', '', 'rule']);
-    }
-    if (this.stShowBalance()) {
-      lines.push([this.t('atmAccountBalance'), 'Ξ' + this.walletShown()]);
       lines.push(['', '', 'rule']);
     }
     lines.push([this.collectiblesLabel() + ' · ' + this.totalPieces(), '', 'b']);
@@ -1071,6 +1042,7 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
     const out = (e.from || '').toLowerCase() === me;
     switch (e.type) {
       case 'PhunkBought': return out ? 'atmLogSold' : 'atmLogBought';
+      case 'BidAccepted': return out ? 'atmLogSold' : 'atmLogBought';
       case 'PhunkOffered': return 'atmLogListed';
       case 'PhunkNoLongerForSale': return 'atmLogDelisted';
       case 'PhunkBidEntered': return out ? 'atmLogBidPlaced' : 'atmLogBidReceived';
@@ -1117,6 +1089,7 @@ export class PhunkAtmComponent implements OnChanges, OnInit {
     try {
       this.txHash.set(await this.actions.withdrawFunds(f));
       this.screen.set('done');
+      this.web3Svc.forgetFunds();
       this.loadFunds();
     } catch (err) {
       this.fail(err);

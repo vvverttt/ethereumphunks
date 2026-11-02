@@ -41,6 +41,9 @@ const FIXED_THEME_PAGES: Record<string, string> = {
 // visitor came from (or, on a reload, the last one this browser showed).
 const FOOTER_PAGES = ['about', 'shell-archive', 'my-phunks', 'phaze-bank', 'phleeca-bank', 'phederal-reserve', 'terms', 'license', 'privacy'];
 
+/** a points multiplier (2x, 3x...) is running: the header reads and shows it. Off until one starts. */
+const POINTS_MULTIPLIER_LIVE = false;
+
 @Injectable()
 export class AppStateEffects {
 
@@ -48,21 +51,9 @@ export class AppStateEffects {
     ofType(appStateActions.initGlobalConfig),
     switchMap(() => {
       return this.dataSvc.fetchGlobalConfig().pipe(
-        switchMap((config) => {
-          // Emit config immediately so UI can render, then update with paused status
-          const immediate = of(appStateActions.setGlobalConfig({ config }));
-          const withPaused = from(this.web3Svc.checkContractPaused()).pipe(
-            map((paused) => {
-              const newConfig = {
-                ...config,
-                maintenance: paused || config.maintenance,
-              };
-              return appStateActions.setGlobalConfig({ config: newConfig });
-            }),
-            catchError(() => of(appStateActions.setGlobalConfig({ config }))),
-          );
-          return merge(immediate, withPaused);
-        })
+        // No on-chain paused() read on every load: if the market is ever paused, the admin's
+        // Maintenance Mode switch (saved in the config) shows it, and the contract refuses trades anyway
+        map((config) => appStateActions.setGlobalConfig({ config }))
       )
     })
   ));
@@ -88,13 +79,6 @@ export class AppStateEffects {
         appStateActions.reconnectChat(),
       ];
     }),
-  ));
-
-  checkIsBanned$ = createEffect(() => this.actions$.pipe(
-    ofType(appStateActions.setWalletAddress),
-    filter((action) => !!action.walletAddress),
-    switchMap((action) => this.dataSvc.checkIsBanned(action.walletAddress!)),
-    map(isBanned => appStateActions.setIsBanned({ isBanned })),
   ));
 
   checkHasWithdrawal$ = createEffect(() => this.actions$.pipe(
@@ -127,7 +111,8 @@ export class AppStateEffects {
 
   fetchActiveMultiplier$ = createEffect(() => this.actions$.pipe(
     ofType(appStateActions.fetchActiveMultiplier),
-    switchMap(() => from(this.web3Svc.getMultiplier())),
+    // no points multiplier running: 1x without a contract read (set POINTS_MULTIPLIER_LIVE when one starts)
+    switchMap(() => POINTS_MULTIPLIER_LIVE ? from(this.web3Svc.getMultiplier()) : of(1)),
     map((activeMultiplier) => appStateActions.setActiveMultiplier({ activeMultiplier: Number(activeMultiplier) }))
   ));
 

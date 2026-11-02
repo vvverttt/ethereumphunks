@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
-import { combineLatest, distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, take, tap } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, fromEvent, map, shareReplay, switchMap, take, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 
 import { PhunkBillboardComponent } from '@/components/phunk-billboard/phunk-billboard.component';
@@ -182,6 +182,8 @@ export class ItemViewComponent {
   // the bid was placed) it's the previous owner recovered from the indexer. Withdraw/
   // confirm must use THIS key, not the current owner, or the tx reverts ("No bid").
   private bidKeyOwner: string | null = null;
+  /** the item and owner the per-item contract reads were last made for */
+  private lastReadKey = '';
 
   singlePhunk$ = this.route.params.pipe(
     filter((params: any) => !!params.hashId || (!!params.contract && !!params.tokenId)),
@@ -194,6 +196,11 @@ export class ItemViewComponent {
       if (phunk?.slug) {
         this.store.dispatch(marketStateActions.setMarketSlug({ marketSlug: phunk.slug }));
       }
+      // the item arrives twice (a quick copy, then the full one) and again on every live update;
+      // its contract reads only need redoing when the item or its owner changes
+      const readKey = `${phunk?.hashId}|${phunk?.owner}|${phunk?.prevOwner}|${phunk?.slug}`;
+      if (readKey === this.lastReadKey) return;
+      this.lastReadKey = readKey;
       this.isRegisteredPair.set(false);
       this.evolveCost.set(null);
       if (phunk?.hashId && this.web3Svc.isEvolveSlug(phunk.slug)) {
@@ -206,10 +213,8 @@ export class ItemViewComponent {
           })
           .catch(() => this.isRegisteredPair.set(false));
       }
+      // no free claims are being given out, so they aren't read (loadFreeClaims is kept for when they are)
       this.freeClaims.set(0);
-      if (phunk?.slug && this.web3Svc.isOgEvolveSlug(phunk.slug)) {
-        this.loadFreeClaims();
-      }
       this.currentBid.set(null);
       if (phunk?.hashId && phunk?.owner) {
         this.loadCurrentBid(phunk);
@@ -296,8 +301,10 @@ export class ItemViewComponent {
     // Live-refresh the current bid status (Accepted → Confirm, withdrawn, etc.)
     // when the bids table changes — so a bidder watching the item page sees the
     // owner's accept land without a manual reload.
-    this.dataSvc.watchBids().pipe(
-      switchMap(() => this.singlePhunk$.pipe(take(1))),
+    // Only a change to THIS item's bid re-reads it (a bid elsewhere used to re-read it on-chain too).
+    this.dataSvc.bidChanges().pipe(
+      switchMap((hashId) => this.singlePhunk$.pipe(take(1), filter((phunk) => !hashId || phunk?.hashId?.toLowerCase() === hashId))),
+      debounceTime(2000),
       takeUntilDestroyed(),
     ).subscribe((phunk) => {
       if (phunk?.hashId && phunk?.owner) this.loadCurrentBid(phunk);

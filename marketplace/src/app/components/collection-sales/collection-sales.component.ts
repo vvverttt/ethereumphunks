@@ -17,22 +17,21 @@ import { Event } from '@/models/db';
 
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
-import { combineLatest, of, startWith, switchMap } from 'rxjs';
+import { IS_BOT } from '@/utils/is-bot';
+
+import { startWith, switchMap } from 'rxjs';
 
 /**
- * Every sale a collection has ever had, newest first, kept live.
+ * A collection's newest sales, kept live.
  *
  * A "sale" is any event where the item changed hands for ETH, which is three
  * distinct types rather than one:
  *   PhunkBought    — bought outright off a listing
  *   BidAccepted    — owner accepted a standing bid
  *   AuctionSettled — won at auction (skipped when it settled with no bidder)
- * Showing only PhunkBought would silently under-report; ethsrocks for example
- * has 5 PhunkBought against 8 AuctionSettled and 2 BidAccepted.
  *
- * The events table itself carries no slug/sha — those come from a join onto
- * ethscriptions, which the fetch_events RPC already does, so everything is
- * pulled through that rather than queried directly.
+ * Read by DataService.fetchRecentSales: one call with each item's picture joined
+ * on, and the browser keeps what it has seen, so later reads ask only for newer sales.
  */
 @Component({
   selector: 'app-collection-sales',
@@ -53,11 +52,9 @@ export class CollectionSalesComponent {
 
   slug = input.required<string | undefined>();
 
-  /** How many to render. Everything is fetched so the total is honest. */
+  /** How many to render, and how many of each sale type are read (the newest of each is enough to fill it) */
   limit = input<number>(110);
 
-  private static readonly SALE_TYPES = ['PhunkBought', 'BidAccepted', 'AuctionSettled'] as const;
-  private static readonly ZERO = '0x0000000000000000000000000000000000000000';
 
   sales = signal<Event[]>([]);
   loading = signal<boolean>(true);
@@ -72,6 +69,9 @@ export class CollectionSalesComponent {
     effect((onCleanup) => {
       const slug = this.slug();
       if (!slug) return;
+      // crawlers get the page without the sales grid's reads
+      if (IS_BOT) { this.loading.set(false); return; }
+      const limit = this.limit();
 
       this.loading.set(true);
 
@@ -81,18 +81,10 @@ export class CollectionSalesComponent {
       // a fresh events row has no slug/sha until it is joined.
       const sub = this.dataSvc.watchCollection(slug).pipe(
         startWith(null),
-        switchMap(() => combineLatest(
-          CollectionSalesComponent.SALE_TYPES.map((type) =>
-            this.dataSvc.fetchEvents(0, 1000, type as any, slug),
-          ),
-        )),
+        switchMap(() => this.dataSvc.fetchRecentSales(slug, limit)),
       ).subscribe({
-        next: (groups) => {
-          const merged = groups
-            .flat()
-            .filter((e) => this.isRealSale(e))
-            .sort((a, b) => this.time(b) - this.time(a));
-          this.sales.set(merged);
+        next: (sales) => {
+          this.sales.set(sales);
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
@@ -100,18 +92,6 @@ export class CollectionSalesComponent {
 
       onCleanup(() => sub.unsubscribe());
     });
-  }
-
-  /** An auction that ended with no bidder is not a sale. */
-  private isRealSale(e: Event): boolean {
-    if (e.type === 'AuctionSettled') {
-      if (!e.to || e.to === CollectionSalesComponent.ZERO) return false;
-    }
-    return !!e.value && e.value !== '0';
-  }
-
-  private time(e: Event): number {
-    return e.blockTimestamp ? new Date(e.blockTimestamp).getTime() : 0;
   }
 
   t(key: string, params?: Record<string, string | number>): string {
@@ -122,7 +102,6 @@ export class CollectionSalesComponent {
     return tokenNumber(e.tokenId, e.slug);
   }
 
-  // fetch_events does not return txHash, so it cannot be part of the key — the
-  // same item can sell more than once and each sale must stay distinct.
+  // the same item can sell more than once and each sale must stay distinct
   trackSale = (i: number, e: Event) => `${e.hashId}-${e.blockTimestamp}-${e.type}-${i}`;
 }

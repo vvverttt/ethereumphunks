@@ -10,7 +10,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
 import { environment } from 'src/environments/environment';
 import { WalletAddressDirective } from '@/directives/wallet-address.directive';
-import { supabase } from '@/services/supabase';
+import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 interface OwnerRow {
@@ -58,6 +58,7 @@ export class CollectionOwnersComponent implements OnInit {
     private store: Store<GlobalState>,
     private route: ActivatedRoute,
     public preferences: PhunkPreferencesService,
+    private dataSvc: DataService,
   ) {}
 
   t(key: string, params?: Record<string, string | number>): string {
@@ -87,32 +88,7 @@ export class CollectionOwnersComponent implements OnInit {
     const col = collections?.find(c => c.slug === this.slug);
     this.collectionName.set(col?.name || this.slug);
 
-    const items: { owner: string }[] = [];
-    let offset = 0;
-    while (true) {
-      const { data } = await supabase
-        .from('ethscriptions')
-        .select('owner')
-        .eq('slug', this.slug)
-        .range(offset, offset + 999);
-      if (!data?.length) break;
-      items.push(...data);
-      if (data.length < 1000) break;
-      offset += 1000;
-    }
-
-    const counts: Record<string, number> = {};
-    for (const item of items) {
-      const addr = item.owner?.toLowerCase();
-      if (!addr || addr === '0x0000000000000000000000000000000000000000') continue;
-      counts[addr] = (counts[addr] || 0) + 1;
-    }
-
-    this.owners.set(
-      Object.entries(counts)
-        .map(([address, count]) => ({ address, count }))
-        .sort((a, b) => b.count - a.count)
-    );
+    this.owners.set(await this.dataSvc.fetchOwnerCounts(this.slug).catch(() => []));
     this.loading.set(false);
   }
 }

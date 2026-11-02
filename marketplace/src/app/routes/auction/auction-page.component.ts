@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal, effect } from '
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { combineLatest, firstValueFrom } from 'rxjs';
+import { combineLatest, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { formatEther, encodePacked, keccak256 } from 'viem';
 import { supabase } from '@/services/supabase';
@@ -14,7 +14,7 @@ import { GlobalState } from '@/models/global-state';
 import { Web3Service } from '@/services/web3.service';
 import { SpriteService } from '@/services/sprite.service';
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
-import { AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
+import { AUCTIONS_LIVE, AuctionService, AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
 import { BuyNowWhitelistService } from '@/services/buy-now-whitelist.service';
 import { ThemeService } from '@/services/theme.service';
 
@@ -34,6 +34,7 @@ import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 import * as dataStateActions from '@/state/actions/data-state.actions';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { IS_BOT } from '@/utils/is-bot';
 
 const AUCTION_SLUG_KEY = 'EtherPhunks_auction_collection';
 
@@ -248,7 +249,9 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   async pollSwapCooldown(item: any) {
     const address = await firstValueFrom(this.store.select(appStateSelectors.selectWalletAddress));
     if (!address) return;
-    const poll = setInterval(async () => {
+    clearInterval(this.swapPoll);
+    const poll = this.swapPoll = setInterval(async () => {
+      if (document.hidden) return;   // nobody's looking: wait for them to come back
       try {
         const stored = await this.rpcClient.readContract({
           address: this.auction2Address, abi: AUCTION_SWAP_ABI,
@@ -384,6 +387,9 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
   }
 
   private pollInterval: any;
+  /** the swap cooldown check, one at a time and stopped when the page closes */
+  private swapPoll: any;
+  private adminSub?: { unsubscribe(): void };
   private realtimeChannel: any;
   private walletSub?: { unsubscribe(): void };
   private headerCollectionSub?: { unsubscribe(): void };
@@ -428,9 +434,10 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       this.auctionSvc.setAddress('');
     }
 
-    // Check admin after wallet restores
-    this.web3Svc.connectionReady?.then(() => this.checkAdmin());
-    this.store.select(appStateSelectors.selectWalletAddress).subscribe(() => this.checkAdmin());
+    // Check admin now and whenever the wallet changes (this emits the current one straight away,
+    // and again once a remembered wallet is restored); dropped when the page closes
+    this.adminSub = this.store.select(appStateSelectors.selectWalletAddress)
+      .pipe(distinctUntilChanged()).subscribe(() => this.checkAdmin());
   }
 
   onMainImageLoad(event: Event) {
@@ -507,6 +514,10 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
     // Eligibility is per-wallet, so re-resolve the proof whenever the connected account changes.
     this.walletSub = this.walletAddress$.subscribe(() => { this.refreshBuyNow(); });
 
+    // crawlers get the page as it loaded, without the live feed or the poll; so does everyone
+    // between auctions (nothing to follow)
+    if (IS_BOT || !AUCTIONS_LIVE) return;
+
     // Realtime: refresh from DB immediately when a new bid lands
     this.realtimeChannel = supabase
       .channel('auction_bids_live')
@@ -529,7 +540,13 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       const timeLeft = (this.auction()?.endTime ?? 0) * 1000 - Date.now();
       const delay = !this.auctionEnded() && timeLeft < 5 * 60 * 1000 && timeLeft > 0 ? 10_000 : 30_000;
       this.pollInterval = setTimeout(async () => {
-        if (!this.isHistorical()) {
+        // no live auction (the last one ended and was settled): nothing can change until a new one is
+        // started, so stop; a visitor sees it on their next load
+        // (a past auction on screen, or a failed read, isn't that: keep going)
+        const a = this.auction();
+        if (a && !this.isHistorical() && a.settled && this.auctionEnded()) return;
+        // a hidden tab skips the read and checks again later
+        if (!this.isHistorical() && !document.hidden) {
           const prevHashId = this.auction()?.hashId;
           await this.refreshAuctionFromDB();
           const nextHashId = this.auction()?.hashId;
@@ -546,6 +563,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     clearTimeout(this.pollInterval);
+    clearInterval(this.swapPoll);
+    this.adminSub?.unsubscribe();
     if (this.realtimeChannel) supabase.removeChannel(this.realtimeChannel);
     this.walletSub?.unsubscribe();
     this.headerCollectionSub?.unsubscribe();

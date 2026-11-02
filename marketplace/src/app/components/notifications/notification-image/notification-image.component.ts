@@ -11,6 +11,9 @@ import { ImageService } from '@/services/image.service';
 
 import { environment } from 'src/environments/environment';
 
+/** each item's picture, read once per visit and shared by every notification showing it */
+const imageReads = new Map<string, Promise<string>>();
+
 @Component({
   standalone: true,
   imports: [
@@ -47,7 +50,15 @@ export class NotificationImageComponent {
    * @param hashId Transaction hash ID
    * @returns Promise resolving when image is processed
    */
-  async getPhunkByHashId(hashId: string): Promise<string> {
+  getPhunkByHashId(hashId: string): Promise<string> {
+    // the same item shows in many notifications and re-renders: read its inscription once per visit
+    if (!imageReads.has(hashId)) {
+      imageReads.set(hashId, this.readPhunkByHashId(hashId).catch(e => { imageReads.delete(hashId); throw e; }));
+    }
+    return imageReads.get(hashId)!;
+  }
+
+  private async readPhunkByHashId(hashId: string): Promise<string> {
     const tx = await this.web3Svc.getTransactionL1(hashId);
     const isDevMode = environment.chainId === 11155111;
 

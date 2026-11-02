@@ -1,3 +1,4 @@
+import { IS_BOT } from '@/utils/is-bot';
 import { Component, OnDestroy, OnInit, inject, input, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -6,7 +7,7 @@ import { formatEther } from 'viem';
 import { firstValueFrom } from 'rxjs';
 import { Store } from '@ngrx/store';
 
-import { AuctionService, AuctionData, AuctionBidEvent } from '@/services/auction.service';
+import { AUCTIONS_LIVE, AuctionService, AuctionData, AuctionBidEvent } from '@/services/auction.service';
 import { Web3Service } from '@/services/web3.service';
 import { SpriteService } from '@/services/sprite.service';
 import { TimerComponent } from '@/components/auction/timer/timer.component';
@@ -115,7 +116,13 @@ export class AuctionStripComponent implements OnInit, OnDestroy {
   endTimeMs = computed<number>(() => (this.auction()?.endTime ?? 0) * 1000);
 
   async ngOnInit() {
+    // crawlers don't get the strip (or its reads), and between auctions nobody does
+    if (IS_BOT || !AUCTIONS_LIVE) return;
     await this.load();
+    // nothing up for auction (the last one settled): one read was enough, no poll. A new
+    // auction shows on the next page load.
+    // (a failed read isn't that: it keeps the poll, which retries)
+    if (this.auction()?.settled) return;
     // The auction page owns the heavy refresh; here a slow poll is enough to keep the price
     // honest without adding RPC load to every collection-page visit: every 60 s, tightening to
     // 10 s in the last 5 minutes. Paused while the tab is hidden, refreshed on return.

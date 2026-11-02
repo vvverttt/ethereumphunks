@@ -161,9 +161,11 @@ export class MenuComponent {
   }
 
   private async checkOwner(): Promise<void> {
+    // no wallet, no admin link: skip the read
+    const address = this.web3Svc.getCurrentAddress();
+    if (!address) { this.isOwner.set(false); return; }
     try {
       const owner = await this.adminSvc.getMarketOwner();
-      const address = this.web3Svc.getCurrentAddress();
       this.isOwner.set(!!address && owner.toLowerCase() === address.toLowerCase());
     } catch {
       this.isOwner.set(false);
