@@ -7,6 +7,8 @@ import { CustomLogger } from '@/modules/shared/services/logger.service';
 import { StorageService } from '@/modules/storage/storage.service';
 
 import { chain } from '@/constants/ethereum';
+import { ACCOUNTS_MIN_GAP_MS, parseAccounts } from '@/rpc.limits';
+
 @WebSocketGateway({
   cors: {
     origin: (origin, callback) => {
@@ -19,6 +21,8 @@ import { chain } from '@/constants/ethereum';
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer() server: Server;
+
+  private lastAccounts = new Map<string, number>();
 
   constructor(
     private readonly logger: CustomLogger,
@@ -45,6 +49,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   handleDisconnect(client: Socket, ...args: any[]) {
+    this.lastAccounts.delete(client.id);
     Logger.verbose(client.id, 'Client disconnected');
   }
 
@@ -53,9 +58,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     @MessageBody() data: { id: string, message: string },
     @ConnectedSocket() client: Socket
   ) {
-    const { id, message } = data;
-    if (id === 'accounts') {
-      this.storageService.setConnectedAccounts(JSON.parse(message));
-    }
+    if (data?.id !== 'accounts') return;
+
+    // one write every couple of seconds per socket, and only a short list of wallet addresses
+    const now = Date.now();
+    if (now - (this.lastAccounts.get(client.id) ?? 0) < ACCOUNTS_MIN_GAP_MS) return;
+    this.lastAccounts.set(client.id, now);
+
+    const accounts = parseAccounts(data.message);
+    if (accounts) this.storageService.setConnectedAccounts(accounts);
   }
 }

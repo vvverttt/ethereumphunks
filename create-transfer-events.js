@@ -6,7 +6,7 @@ const axios = require('axios');
 // Configuration
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
 const SUPABASE_SERVICE_ROLE = 'REDACTED_SUPABASE_SERVICE_ROLE';
-const RPC_URL = 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO';
+const RPC_URL = (process.env.RPC_URL_MAINNET || 'https://ethereum-rpc.publicnode.com');
 const ETHSCRIPTIONS_API = 'https://mainnet-api.ethscriptions.com/api';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE);

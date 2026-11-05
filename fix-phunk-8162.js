@@ -103,7 +103,7 @@ async function fixPhunk8162() {
 
       const client = createPublicClient({
         chain: mainnet,
-        transport: http('https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO')
+        transport: http((process.env.RPC_URL_MAINNET || 'https://ethereum-rpc.publicnode.com'))
       });
 
       try {

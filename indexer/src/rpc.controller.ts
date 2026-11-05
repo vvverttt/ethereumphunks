@@ -1,4 +1,10 @@
-import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
+
+import {
+  FixedWindow, GLOBAL_UPSTREAM_LIMIT, MAX_CACHE_ENTRIES, MAX_PARAMS_CHARS, PER_IP_LIMIT, PER_IP_WINDOW_MS,
+  UPSTREAM_TIMEOUT_MS, clientIp, logRangeOk,
+} from './rpc.limits';
 
 const ALLOWED_RPC_METHODS = new Set([
   'eth_blockNumber',
@@ -41,6 +47,19 @@ type JsonRpcBody = {
 type CacheEntry = { value: unknown; expiresAt: number };
 const cache = new Map<string, CacheEntry>();
 
+const perIp = new FixedWindow(PER_IP_LIMIT, PER_IP_WINDOW_MS);
+const upstreamCalls = new FixedWindow(GLOBAL_UPSTREAM_LIMIT, 60_000);
+
+// keep the cache bounded: drop expired entries first, then the oldest
+function cacheSet(key: string, entry: CacheEntry) {
+  if (cache.size >= MAX_CACHE_ENTRIES) {
+    const now = Date.now();
+    for (const [k, v] of cache) if (v.expiresAt <= now) cache.delete(k);
+    while (cache.size >= MAX_CACHE_ENTRIES) cache.delete(cache.keys().next().value as string);
+  }
+  cache.set(key, entry);
+}
+
 function cacheKeyFor(method: string, params: unknown[] | undefined): string {
   return `${method}:${JSON.stringify(params || [])}`;
 }
@@ -75,6 +94,7 @@ async function forwardWithFallback(body: object): Promise<{ ok: boolean; status:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
       });
       const text = await response.text();
       let payload: unknown = null;
@@ -112,13 +132,23 @@ async function forwardWithFallback(body: object): Promise<{ ok: boolean; status:
 @Controller()
 export class RpcController {
   @Post('rpc')
-  async proxy(@Body() body: JsonRpcBody) {
+  async proxy(@Body() body: JsonRpcBody, @Req() req: Request) {
+    if (!perIp.take(clientIp(req))) {
+      throw new HttpException('Too many requests', HttpStatus.TOO_MANY_REQUESTS);
+    }
+
     const method = body?.method || '';
     if (!ALLOWED_RPC_METHODS.has(method)) {
       throw new HttpException('Unsupported RPC method', HttpStatus.BAD_REQUEST);
     }
 
     const params = body?.params;
+    if (params !== undefined && (!Array.isArray(params) || JSON.stringify(params).length > MAX_PARAMS_CHARS)) {
+      throw new HttpException('Invalid params', HttpStatus.BAD_REQUEST);
+    }
+    if (method === 'eth_getLogs' && !logRangeOk((params as any[])?.[0])) {
+      throw new HttpException('eth_getLogs needs a numeric block range of at most 2,000 blocks', HttpStatus.BAD_REQUEST);
+    }
     const ttl = CACHE_TTL_MS[method];
 
     // Cache check (only for methods with TTL configured)
@@ -137,6 +167,11 @@ export class RpcController {
       throw new HttpException('RPC relay unavailable', HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    // only calls that reach a provider count against the shared budget
+    if (!upstreamCalls.take('all')) {
+      throw new HttpException('RPC relay is busy, try again shortly', HttpStatus.TOO_MANY_REQUESTS);
+    }
+
     const result = await forwardWithFallback({
       id: body?.id ?? 1,
       jsonrpc: body?.jsonrpc || '2.0',
@@ -151,7 +186,7 @@ export class RpcController {
     // Store in cache only if method has TTL AND response has no error field
     if (ttl && result.payload && typeof result.payload === 'object' && !('error' in (result.payload as object))) {
       const key = cacheKeyFor(method, params);
-      cache.set(key, { value: result.payload, expiresAt: Date.now() + ttl });
+      cacheSet(key, { value: result.payload, expiresAt: Date.now() + ttl });
     }
 
     return result.payload;

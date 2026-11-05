@@ -108,7 +108,7 @@ const config: HardhatUserConfig = {
     //   chainId: 1,
     //   forking: {
     //     enabled: true,
-    //     url: 'https://eth-mainnet.g.alchemy.com/v2/yPJzT7r3rcFmI4ekjA9S7S1SP688b-au',
+    //     url: process.env.RPC_URL_SEPOLIA,
     //     blockNumber: 20452276,
     //   },
     // },

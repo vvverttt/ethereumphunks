@@ -19,8 +19,10 @@ if (!process.env.ALLOWED_ORIGINS) {
   process.env.ALLOWED_ORIGINS = 'http://localhost:9000,http://localhost:4200,https://ethereumphunks.pages.dev,https://etherphunks.eth.limo,https://quantumphunks.com,https://www.quantumphunks.com';
 }
 
-if (!process.env.REDIS_URL) {
-  process.env.REDIS_URL = 'redis://:5VuaxZYlQ6IyRN9VQEnpHpObEhAtobql@redis-13048.c17.us-east-1-4.ec2.cloud.redislabs.com:13048';
+// REDIS_URL carries a password, so it must come from the environment (Render), never from code.
+// The block queue cannot run without it.
+if (process.env.QUEUE === '1' && !process.env.REDIS_URL) {
+  throw new Error('REDIS_URL is not set: the block queue needs it. Set it in the environment.');
 }
 
 if (!process.env.ETHSCRIPTIONS_API_URL) {

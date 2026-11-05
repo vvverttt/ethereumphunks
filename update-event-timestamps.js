@@ -5,7 +5,7 @@ const { mainnet } = require('viem/chains');
 // Configuration
 const SUPABASE_URL = 'https://hzpwkpjxhtpcygrwtwku.supabase.co';
 const SUPABASE_SERVICE_ROLE = 'REDACTED_SUPABASE_SERVICE_ROLE';
-const RPC_URL = 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO'; // From indexer .env
+const RPC_URL = (process.env.RPC_URL_MAINNET || 'https://ethereum-rpc.publicnode.com'); // From indexer .env
 const BATCH_SIZE = 50; // Process in batches
 const DELAY_MS = 1000; // 1 second delay between batches
 
