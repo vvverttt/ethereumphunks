@@ -35,33 +35,33 @@
     },
     {
       "index": 10388,
-      "name": "Black Cat",
-      "id": "0xedeec0667336f3f0bccb3e1576abb265a21a192e584ed0d09e2b290b00b09be1",
-      "sha": "3115bad04200478d110016753f605310a430447110043e32a96d3f827cc854ab",
+      "name": "Stay Puft Marshmallow Man",
+      "id": "0xf798ab78c569f13f15a2c69df10ac69a5d26bf49c507ae1805cdcbfc8b017329",
+      "sha": "59aabaf50d72cd084b17e312793e1e3e8c1394f35be7ac6038b5195e6c889533",
       "attributes": [
         {
           "trait_type": "Type",
-          "value": "Cat"
+          "value": "Monster"
         },
         {
           "trait_type": "Character",
-          "value": "Black Cat"
+          "value": "Stay Puft Marshmallow Man"
         },
         {
           "trait_type": "Head",
-          "value": "Black Witch Hat"
-        },
-        {
-          "trait_type": "Eyes",
-          "value": "Gold"
-        },
-        {
-          "trait_type": "Teeth",
-          "value": "Fangs"
+          "value": "Sailor Hat"
         },
         {
           "trait_type": "Neck",
-          "value": "Buckled Collar"
+          "value": "Red Bow Tie"
+        },
+        {
+          "trait_type": "Emotion",
+          "value": "Scream"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "White Glow"
         }
       ]
     },
@@ -711,33 +711,33 @@
     },
     {
       "index": 10408,
-      "name": "Uncle Fester",
-      "id": "0x6c37a5da00d2e28a9ba06e4250845467fe09045535a917cb7a52aa4914236172",
-      "sha": "6315397914eb5259b2bd3911dadbece46396ae36718362e582a415c7825d5712",
+      "name": "Devil",
+      "id": "0x450788b43af718c94f354c20c44b658529ac9b47d2d2332cf2a158d084398991",
+      "sha": "635511c2b01c7e98bc33e53587bc479f2c57256c27216a066978a5b45331c883",
       "attributes": [
         {
           "trait_type": "Type",
-          "value": "Male"
+          "value": "Demon"
         },
         {
           "trait_type": "Character",
-          "value": "Uncle Fester"
+          "value": "Devil"
         },
         {
-          "trait_type": "Hair",
-          "value": "Bald"
+          "trait_type": "Head",
+          "value": "Horns"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Pitchfork"
         },
         {
           "trait_type": "Eyes",
-          "value": "Dark Circles"
+          "value": "Gold"
         },
         {
-          "trait_type": "Teeth",
-          "value": "Crooked Teeth"
-        },
-        {
-          "trait_type": "Neck",
-          "value": "Grey Coat"
+          "trait_type": "Aura",
+          "value": "Flames"
         }
       ]
     },
@@ -987,33 +987,33 @@
     },
     {
       "index": 10417,
-      "name": "Stay Puft Marshmallow Man",
-      "id": "0xf798ab78c569f13f15a2c69df10ac69a5d26bf49c507ae1805cdcbfc8b017329",
-      "sha": "59aabaf50d72cd084b17e312793e1e3e8c1394f35be7ac6038b5195e6c889533",
+      "name": "Black Cat",
+      "id": "0xedeec0667336f3f0bccb3e1576abb265a21a192e584ed0d09e2b290b00b09be1",
+      "sha": "3115bad04200478d110016753f605310a430447110043e32a96d3f827cc854ab",
       "attributes": [
         {
           "trait_type": "Type",
-          "value": "Monster"
+          "value": "Cat"
         },
         {
           "trait_type": "Character",
-          "value": "Stay Puft Marshmallow Man"
+          "value": "Black Cat"
         },
         {
           "trait_type": "Head",
-          "value": "Sailor Hat"
+          "value": "Black Witch Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Fangs"
         },
         {
           "trait_type": "Neck",
-          "value": "Red Bow Tie"
-        },
-        {
-          "trait_type": "Emotion",
-          "value": "Scream"
-        },
-        {
-          "trait_type": "Aura",
-          "value": "White Glow"
+          "value": "Buckled Collar"
         }
       ]
     },
@@ -1370,6 +1370,42 @@
       ]
     },
     {
+      "index": 10430,
+      "name": "Bug-a-Boo",
+      "id": "0x812a8ce44d70dc687d57a53f62f82e72202896f34549dd45a82f0be2848a7930",
+      "sha": "05913214b7cbbffb4c3e84b965bebfaf156eab118240d2eeea6129c047b0e57b",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Monster"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Bug-a-Boo"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Horns"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Crooked Teeth"
+        },
+        {
+          "trait_type": "Tongue",
+          "value": "Pink Tongue"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
       "index": 10431,
       "name": "Carrie",
       "id": "0xb8de7eb76400c55d79459bc20165bc2b21d18e38da52e91730c230fa064bf777",
@@ -1398,6 +1434,42 @@
         {
           "trait_type": "Aura",
           "value": "Flames"
+        }
+      ]
+    },
+    {
+      "index": 10432,
+      "name": "Bat",
+      "id": "0x153825a28f7f028b1773c641c40390a29ef7568a69cae181477d54f5c4241d8e",
+      "sha": "29077f9de080132c5c19e42fc2f09bdd4a81a097330311d8421d9f31abd06502",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Bat"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Bat Demon"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Horns"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Red"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Bloody Fangs"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Bats"
         }
       ]
     },
@@ -1506,6 +1578,46 @@
       ]
     },
     {
+      "index": 10437,
+      "name": "Captain Spaulding",
+      "id": "0x726cdbf27864ada235afc330dfd5b9c6e22c52cea0410e3dd63b6fa24432d11b",
+      "sha": "96f38842fbe33826bda74fd9346ea9d8b6b53c576ddd01204c4b99b6ee8556a2",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Captain Spaulding"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Striped Top Hat"
+        },
+        {
+          "trait_type": "Weapon",
+          "value": "Gun"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Clown Makeup"
+        },
+        {
+          "trait_type": "Cheeks",
+          "value": "Rosy Cheeks"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "Striped Suit"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
       "index": 10438,
       "name": "Oogie Boogie",
       "id": "0x4dfa74dc7bd32f1062c1202cab0caadc8506f24e07c13573983e45eda26f62b1",
@@ -1598,6 +1710,178 @@
       ]
     },
     {
+      "index": 10441,
+      "name": "Dr. Satan",
+      "id": "0x4f324a468ab18b4d8f42af0e95e4c9be2915d117293e5f008851b1662d3eed85",
+      "sha": "6065e2ffed7cc5fd780ccc923e636ded8dc2a23aecaf9cc1060d44c9a3a716d6",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Dr. Satan"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Brown Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Glasses"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Surgical Mask"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10442,
+      "name": "Sparky",
+      "id": "0x2184315ddb6a1b7743dd0acef953ab1db91192faa006ef1d71a5f6cf9823903a",
+      "sha": "57f18f32b0655ce22e9be825b9db4f2fdcca3d48c3578b00d7e0547772dcf742",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Dog"
+        },
+        {
+          "trait_type": "Type",
+          "value": "Ghost"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Sparky"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Hollow"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Stitches"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "White Glow"
+        }
+      ]
+    },
+    {
+      "index": 10443,
+      "name": "Jester",
+      "id": "0x918127783c233f6de7435d36bdb9469141204eb0b3c514c9d3429bad265c8b19",
+      "sha": "111ccc76efb72431abedbacb6f8878be6952139814a1473065b642904ba2ba9c",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Jester"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Purple Jester Hat"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Clown Makeup"
+        },
+        {
+          "trait_type": "Nose",
+          "value": "Clown Nose"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Buck Teeth"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "White Ruffle Collar"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10444,
+      "name": "The Creeper",
+      "id": "0x3bb9e83eb7741c8a8e19a91fb8e4dea7650da109cc45412942e9e81b79ea3d3f",
+      "sha": "6ddbba195246822f2380e63c4ed3c994c7d295c8c0e764217ea949850f7ecaf2",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Character",
+          "value": "The Creeper"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Cowboy Hat"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Teeth",
+          "value": "Crooked Teeth"
+        },
+        {
+          "trait_type": "Wings",
+          "value": "Bat Wings"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
+        }
+      ]
+    },
+    {
+      "index": 10445,
+      "name": "Elvira",
+      "id": "0x04a82b5314b010dbdeee88f4118f5651b0e6810cce210d442f58cbef7132fdb6",
+      "sha": "d008d95144acaffe1406aa424df7104f878e3b802283e49aa1da28bad927083d",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Female"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Elvira"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Black Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Purple Eyeshadow"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Red Lipstick"
+        },
+        {
+          "trait_type": "Cheeks",
+          "value": "Rosy Cheeks"
+        }
+      ]
+    },
+    {
       "index": 10446,
       "name": "Bride of Frankenstein",
       "id": "0x73ecd80b2656af58f95f21085a54ddfa76bcbd7179de623fdf95b5cf22fba04c",
@@ -1650,6 +1934,74 @@
         {
           "trait_type": "Neck",
           "value": "Red Bow Tie"
+        }
+      ]
+    },
+    {
+      "index": 10448,
+      "name": "Mrs Vampire",
+      "id": "0x3a436d96f730a00e9c22824b3a5a80429c942167f328c921820db66973d03365",
+      "sha": "707ed291e7fc9d2df518f06f0fc73d964d5ce143272a544d5f36625ec4c11d0c",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Vampire"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Mrs Vampire"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "White Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Red"
+        },
+        {
+          "trait_type": "Lips",
+          "value": "Red Lipstick"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Bats"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "White Glow"
+        }
+      ]
+    },
+    {
+      "index": 10449,
+      "name": "Valak",
+      "id": "0x58b7e10d9fcdbac337a5bf76341a6942632aaa647f8581ac6bf7e28fd218d34f",
+      "sha": "669286cde310b14da9f6284b89362c397883f6269a65bed25dece089a341a093",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Demon"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Valak"
+        },
+        {
+          "trait_type": "Head",
+          "value": "Black Habit"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Gold"
+        },
+        {
+          "trait_type": "Neck",
+          "value": "White Collar"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
         }
       ]
     },
@@ -1714,6 +2066,38 @@
         {
           "trait_type": "Face",
           "value": "Scars"
+        }
+      ]
+    },
+    {
+      "index": 10452,
+      "name": "Otis B. Driftwood",
+      "id": "0x206dea0b785593f8f909ead57ed6782daeebe1a2d9d8d9bb0a1a9c26f33fdf50",
+      "sha": "785070f2d5323d1af23fb2bacaf9bb41a03a1a77d170ab0171d3c1b6c8f75ecf",
+      "attributes": [
+        {
+          "trait_type": "Type",
+          "value": "Male"
+        },
+        {
+          "trait_type": "Character",
+          "value": "Otis B. Driftwood"
+        },
+        {
+          "trait_type": "Hair",
+          "value": "Blonde Hair"
+        },
+        {
+          "trait_type": "Eyes",
+          "value": "Blue"
+        },
+        {
+          "trait_type": "Face",
+          "value": "Skull Face Paint"
+        },
+        {
+          "trait_type": "Aura",
+          "value": "Shadow"
         }
       ]
     },
