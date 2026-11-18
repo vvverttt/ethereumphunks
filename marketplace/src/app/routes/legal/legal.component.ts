@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
@@ -20,6 +20,7 @@ import { InternalLinksDirective } from '@/directives/internal-links.directive';
   imports: [RouterModule, InternalLinksDirective],
   selector: 'app-legal',
   templateUrl: './legal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./legal.component.scss'],
 })
 export class LegalComponent {

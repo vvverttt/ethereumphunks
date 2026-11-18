@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, computed } from '@angular/core';
+import { Component, EventEmitter, Input, Output, computed, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { formatEther } from 'viem';
@@ -24,6 +24,7 @@ import { KeepInViewDirective } from '@/directives/keep-in-view.directive';
     KeepInViewDirective
 ],
   templateUrl: './bid-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./bid-panel.component.scss'],
 })
 export class BidPanelComponent {

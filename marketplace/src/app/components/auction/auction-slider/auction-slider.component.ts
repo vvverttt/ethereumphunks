@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, signal, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, signal, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 
 
 import { TimeAgoPipe } from '@/pipes/time-ago.pipe';
@@ -11,6 +11,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
   standalone: true,
   imports: [TimeAgoPipe, TokenNumberPipe],
   templateUrl: './auction-slider.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./auction-slider.component.scss'],
 })
 export class AuctionSliderComponent implements OnChanges {

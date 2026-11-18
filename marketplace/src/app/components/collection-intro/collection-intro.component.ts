@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, computed, signal } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -55,6 +55,7 @@ interface BandItem { sha: string; link: any[] | string | null; label: string }
   imports: [RouterModule, PhunkImageComponent, CollectionMapComponent, InternalLinksDirective],
   selector: 'app-collection-intro',
   templateUrl: './collection-intro.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./collection-intro.component.scss'],
 })
 export class CollectionIntroComponent implements OnChanges {

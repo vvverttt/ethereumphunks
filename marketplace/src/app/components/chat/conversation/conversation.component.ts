@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { AsyncPipe, DatePipe, JsonPipe, NgTemplateOutlet } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
@@ -29,6 +29,7 @@ import { selectChatState } from '@/state/selectors/chat.selectors';
     WalletAddressDirective
   ],
   templateUrl: './conversation.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './conversation.component.scss'
 })
 export class ConversationComponent {

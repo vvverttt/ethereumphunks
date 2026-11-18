@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, computed, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, computed, inject, input, signal, ChangeDetectionStrategy } from '@angular/core';
 
 
 import { SpriteService } from '@/services/sprite.service';
@@ -51,6 +51,7 @@ import { environment } from 'src/environments/environment';
         (error)="retry($event)" />
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     /* Square by aspect-ratio, not height 100%.
      *

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -21,6 +21,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
   ],
   selector: 'app-collections-dropdown',
   templateUrl: './collections-dropdown.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './collections-dropdown.component.scss'
 })
 export class CollectionsDropdownComponent {

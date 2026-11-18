@@ -1,4 +1,4 @@
-﻿import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal, computed, NgZone } from '@angular/core';
+﻿import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal, computed, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -84,6 +84,7 @@ const MAX_STEP_DELAY = 400;
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, PhunkGridComponent, PhunkImageComponent],
   templateUrl: './lottery.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./lottery.component.scss']
 })
 export class LotteryComponent implements OnInit, OnDestroy {

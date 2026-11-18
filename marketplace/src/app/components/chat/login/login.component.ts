@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Store } from '@ngrx/store';
 
@@ -12,6 +12,7 @@ import { setChat, setChatConnected } from '@/state/actions/chat.actions';
   standalone: true,
   imports: [NgTemplateOutlet],
   templateUrl: './login.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {

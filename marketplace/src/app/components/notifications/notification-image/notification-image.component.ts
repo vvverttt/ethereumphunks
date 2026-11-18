@@ -1,4 +1,4 @@
-import { Component, effect, input, signal, untracked } from '@angular/core';
+import { Component, effect, input, signal, untracked, ChangeDetectionStrategy } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 
@@ -21,6 +21,7 @@ const imageReads = new Map<string, Promise<string>>();
 ],
   selector: 'app-notification-image',
   templateUrl: './notification-image.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./notification-image.component.scss'],
 })
 export class NotificationImageComponent {

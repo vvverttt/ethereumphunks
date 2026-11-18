@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 
 
 import anime from 'animejs';
@@ -9,6 +9,7 @@ import anime from 'animejs';
   imports: [],
   templateUrl: './slideout.component.html',
   styleUrl: './slideout.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '[class.active]': 'active',
     'style': 'transform: translateX(100%);',

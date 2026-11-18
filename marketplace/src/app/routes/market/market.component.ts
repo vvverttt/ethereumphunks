@@ -1,5 +1,5 @@
 import { FiatPipe } from '@/pipes/fiat.pipe';
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -84,6 +84,7 @@ const defaultActionState = {
   selector: 'app-phunk-grid-view',
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { '[class.owned-bank]': '!!ownedAddress()' },
 })
 

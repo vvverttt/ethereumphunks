@@ -18,7 +18,7 @@
 
       <div class="profile-item">
         <div class="image-wrapper">
-          <app-phunk-image [sha]="conversation.profileItem?.sha" />
+          <app-phunk-image [sha]="$safeNavigationMigration(conversation.profileItem?.sha)" />
         </div>
       </div>
 

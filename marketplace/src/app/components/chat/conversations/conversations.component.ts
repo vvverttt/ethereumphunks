@@ -1,5 +1,5 @@
 import { AsyncPipe, JsonPipe, NgTemplateOutlet } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TimeagoModule } from 'ngx-timeago';
 
 import { ChatService } from '@/services/chat.service';
@@ -29,6 +29,7 @@ import { setChat } from '@/state/actions/chat.actions';
   selector: 'app-conversations',
   standalone: true,
   templateUrl: './conversations.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './conversations.component.scss'
 })
 export class ConversationsComponent implements OnInit {

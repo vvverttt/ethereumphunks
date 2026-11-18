@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -29,6 +29,7 @@ import { Collection } from '@/models/data.state';
     </form>
     @if (error()) { <p class="error">{{ error() }}</p> }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; }
     h3 { margin: 0; padding-bottom: 2rem; font-size: 2.4rem; }

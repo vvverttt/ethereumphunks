@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 
@@ -13,6 +13,7 @@ import { setChat } from '@/state/actions/chat.actions';
   ],
   selector: 'app-modal',
   templateUrl: './modal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./modal.component.scss'],
 })
 export class ModalComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { ConversationComponent } from './conversation/conversation.component';
 import { ConversationsComponent } from './conversations/conversations.component';
@@ -27,6 +27,7 @@ type View = 'conversations' | 'conversation' | 'login' | 'disabled';
   ],
   selector: 'app-chat',
   templateUrl: './chat.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chat.component.scss'
 })
 export class ChatComponent {

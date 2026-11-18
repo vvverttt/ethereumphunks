@@ -1,4 +1,4 @@
-import { Component, inject, input, effect, model } from '@angular/core';
+import { Component, inject, input, effect, model, ChangeDetectionStrategy } from '@angular/core';
 
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 
@@ -15,6 +15,7 @@ import { environment } from 'src/environments/environment';
 ],
   selector: 'app-avatar',
   templateUrl: './avatar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./avatar.component.scss']
 })
 export class AvatarComponent {

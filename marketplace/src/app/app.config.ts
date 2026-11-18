@@ -1,7 +1,7 @@
 import { isDevMode } from '@angular/core';
 import { RouteReuseStrategy, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 
 import { TimeagoClock, TimeagoDefaultClock, TimeagoFormatter } from 'ngx-timeago';
 import { LangTimeagoFormatter } from '@/services/timeago-lang.formatter';
@@ -68,7 +68,7 @@ export const config = {
       serialize: false
     }),
     provideRouterStore(),
-    provideHttpClient(),
+    provideHttpClient(withXhr()),
     provideRouter(
       routes,
       // withHashLocation(),

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -25,6 +25,7 @@ import { combineLatest, filter, map } from 'rxjs';
     PhunkGridComponent
   ],
   templateUrl: './collections.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './collections.component.scss'
 })
 export class CollectionsComponent {

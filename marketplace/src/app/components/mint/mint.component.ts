@@ -1,4 +1,4 @@
-import { Component, input, OnDestroy, output, signal, inject } from '@angular/core';
+import { Component, input, OnDestroy, output, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -54,6 +54,7 @@ interface MintState {
   ],
   selector: 'app-mint',
   templateUrl: './mint.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './mint.component.scss'
 })
 export class MintComponent implements OnDestroy {

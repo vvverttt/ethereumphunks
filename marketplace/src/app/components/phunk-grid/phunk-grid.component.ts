@@ -1,5 +1,5 @@
 import { FiatPipe } from '@/pipes/fiat.pipe';
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -58,6 +58,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
     '[class]': 'viewType',
   },
   templateUrl: './phunk-grid.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./phunk-grid.component.scss']
 })
 

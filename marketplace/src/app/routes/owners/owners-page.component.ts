@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -29,6 +29,7 @@ interface CollectionOwners {
   imports: [RouterModule, DecimalPipe, WalletAddressDirective],
   selector: 'app-owners-page',
   templateUrl: './owners-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./owners-page.component.scss'],
 })
 export class OwnersPageComponent implements OnInit {

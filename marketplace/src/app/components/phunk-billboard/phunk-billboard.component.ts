@@ -1,4 +1,4 @@
-import { Component, effect, input, signal, untracked, inject } from '@angular/core';
+import { Component, effect, input, signal, untracked, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 
@@ -18,6 +18,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
     RouterModule
 ],
   templateUrl: './phunk-billboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./phunk-billboard.component.scss']
 })
 export class PhunkBillboardComponent {

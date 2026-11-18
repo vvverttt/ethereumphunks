@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -130,6 +130,7 @@ interface CacheEntry {
   imports: [CommonModule, RouterModule, DecimalPipe, PhunkImageComponent],
   selector: 'app-collection-attributes',
   templateUrl: './collection-attributes.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./collection-attributes.component.scss'],
 })
 export class CollectionAttributesComponent implements OnInit {

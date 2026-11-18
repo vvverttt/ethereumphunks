@@ -1,4 +1,4 @@
-import { Component, effect, input, signal, inject } from '@angular/core';
+import { Component, effect, input, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { DataService } from '@/services/data.service';
@@ -16,6 +16,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './collection-stat-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./collection-stat-bar.component.scss'],
 })
 export class CollectionStatBarComponent {

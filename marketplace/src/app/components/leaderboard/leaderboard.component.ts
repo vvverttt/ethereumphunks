@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { Store } from '@ngrx/store';
@@ -22,6 +22,7 @@ import { RouterModule } from '@angular/router';
     WalletAddressDirective
   ],
   templateUrl: './leaderboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './leaderboard.component.scss'
 })
 export class LeaderboardComponent {

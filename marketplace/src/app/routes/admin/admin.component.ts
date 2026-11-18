@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -29,6 +29,7 @@ interface TransferStep {
   standalone: true,
   imports: [FormsModule],
   templateUrl: './admin.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin.component.scss'],
 })
 export class AdminComponent implements OnInit {

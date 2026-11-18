@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -41,6 +41,7 @@ type EventLabels = {
   ],
   selector: 'app-tx-history',
   templateUrl: './tx-history.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./tx-history.component.scss']
 })
 

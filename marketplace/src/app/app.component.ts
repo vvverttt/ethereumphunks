@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, signal, DOCUMENT } from '@angular/core';
+import { Component, Inject, OnInit, signal, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
 
 import { NavigationEnd, NavigationStart, Router, RouterModule, Scroll } from '@angular/router';
 
@@ -45,6 +45,7 @@ import { environment } from 'src/environments/environment';
 ],
   selector: 'app-root',
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app.component.scss'],
 })
 

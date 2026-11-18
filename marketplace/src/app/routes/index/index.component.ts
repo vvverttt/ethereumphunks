@@ -1,5 +1,5 @@
 import { FiatPipe } from '@/pipes/fiat.pipe';
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { InternalLinksDirective } from '@/directives/internal-links.directive';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -69,6 +69,7 @@ const LINKED_SLUG_MAP: Record<string, string> = {
   ],
   selector: 'app-index',
   templateUrl: './index.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./index.component.scss']
 })
 

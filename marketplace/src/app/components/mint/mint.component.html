@@ -1,5 +1,5 @@
 <div class="collection-info-wrapper">
-  <img [src]="'/assets/collections/' + collection()?.slug + '/logo.png'" alt="">
+  <img [src]="'/assets/collections/' + $safeNavigationMigration(collection()?.slug) + '/logo.png'" alt="">
 
   <div class="x-link">
     <a href="https://x.com/nomorelabs" target="_blank">
@@ -14,7 +14,7 @@
 
   <div class="mint-info-wrapper">
     <div>
-      <span class="minted">{{ state().mintProgress | number }}</span>/{{ collection()?.supply | number }} {{ t('mintInscribed') }}
+      <span class="minted">{{ state().mintProgress | number }}</span>/{{ $safeNavigationMigration(collection()?.supply) | number }} {{ t('mintInscribed') }}
     </div>
 
     <div>

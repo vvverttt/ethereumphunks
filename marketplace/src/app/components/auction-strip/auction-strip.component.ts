@@ -1,5 +1,5 @@
 import { IS_BOT } from '@/utils/is-bot';
-import { Component, OnDestroy, OnInit, inject, input, signal, computed } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, input, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -42,6 +42,7 @@ import { KeepInViewDirective } from '@/directives/keep-in-view.directive';
   providers: [AuctionService],
   selector: 'app-auction-strip',
   templateUrl: './auction-strip.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./auction-strip.component.scss'],
 })
 export class AuctionStripComponent implements OnInit, OnDestroy {

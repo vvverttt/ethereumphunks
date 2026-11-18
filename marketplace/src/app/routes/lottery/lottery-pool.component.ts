@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -16,6 +16,7 @@ const PAGE_SIZE = 200;
   standalone: true,
   imports: [RouterModule, PhunkGridComponent],
   templateUrl: './lottery-pool.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./lottery-pool.component.scss']
 })
 export class LotteryPoolComponent implements OnInit {

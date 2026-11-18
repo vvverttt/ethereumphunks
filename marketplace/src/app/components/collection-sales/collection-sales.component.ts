@@ -1,4 +1,4 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -45,6 +45,7 @@ import { startWith, switchMap } from 'rxjs';
     FormatCashPipe
 ],
   templateUrl: './collection-sales.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./collection-sales.component.scss'],
 })
 export class CollectionSalesComponent {

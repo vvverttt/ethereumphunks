@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Input, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, ViewChild, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
@@ -51,6 +51,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; width: 100%; }
     .map {

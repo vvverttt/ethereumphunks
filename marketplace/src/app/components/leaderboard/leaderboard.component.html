@@ -25,7 +25,7 @@
     <span class="rank" [class.highlight]="$index < 3" [class.top]="$index === 0">{{ $index + 1 }}</span>
 
     <a
-      [routerLink]="['/', 'curated', (activeCollection$ | async)?.slug, 'market', 'owned']"
+      [routerLink]="['/', 'curated', $safeNavigationMigration((activeCollection$ | async)?.slug), 'market', 'owned']"
       [queryParams]="{ address: item.address }">
 
       <app-address [address]="item.address" />
