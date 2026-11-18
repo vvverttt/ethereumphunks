@@ -23,11 +23,6 @@
         "src/app/*"
       ]
     },
-    "lib": [
-      "ES2022",
-      "dom",
-      "esnext.asynciterable"
-    ],
     "useDefineForClassFields": false
   },
   "angularCompilerOptions": {

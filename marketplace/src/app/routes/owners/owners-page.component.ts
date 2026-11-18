@@ -1,5 +1,5 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { Store } from '@ngrx/store';
@@ -26,7 +26,7 @@ interface CollectionOwners {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, DecimalPipe, WalletAddressDirective],
+  imports: [RouterModule, DecimalPipe, WalletAddressDirective],
   selector: 'app-owners-page',
   templateUrl: './owners-page.component.html',
   styleUrls: ['./owners-page.component.scss'],

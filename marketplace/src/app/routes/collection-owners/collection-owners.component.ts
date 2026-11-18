@@ -1,5 +1,5 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 
 import { Store } from '@ngrx/store';
@@ -41,7 +41,7 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, DecimalPipe, WalletAddressDirective],
+  imports: [RouterModule, DecimalPipe, WalletAddressDirective],
   selector: 'app-collection-owners',
   templateUrl: './collection-owners.component.html',
   styleUrls: ['./collection-owners.component.scss'],

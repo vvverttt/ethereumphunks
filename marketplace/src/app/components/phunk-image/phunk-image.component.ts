@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnDestroy, computed, inject, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 import { SpriteService } from '@/services/sprite.service';
 
@@ -33,7 +33,7 @@ import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-phunk-image',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     @if (tile(); as t) {
       <div

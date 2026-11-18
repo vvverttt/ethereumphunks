@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 import { environment } from 'src/environments/environment';
@@ -15,7 +15,7 @@ interface MosaicItem {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, PhunkImageComponent],
+  imports: [RouterModule, PhunkImageComponent],
   selector: 'app-mosaic',
   template: `
     @if (allItems.length) {

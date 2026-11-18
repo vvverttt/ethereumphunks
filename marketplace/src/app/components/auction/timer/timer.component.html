@@ -1,10 +1,11 @@
-<div
-  class="days"
-  *ngIf="days !== '00'">
-
-  <span class="label">{{ t('timerDay') }}</span>
-  <span class="value">{{ days }}:</span>
-</div>
+@if (days !== '00') {
+  <div
+    class="days"
+    >
+    <span class="label">{{ t('timerDay') }}</span>
+    <span class="value">{{ days }}:</span>
+  </div>
+}
 
 <div>
   <span class="label">{{ t('timerHr') }}</span>

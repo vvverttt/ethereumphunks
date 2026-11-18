@@ -1,5 +1,5 @@
 import { Component, effect, input, signal, untracked } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { HttpClient } from '@angular/common/http';
 
 import { LazyLoadImageModule } from 'ng-lazyload-image';
@@ -17,9 +17,8 @@ const imageReads = new Map<string, Promise<string>>();
 @Component({
   standalone: true,
   imports: [
-    CommonModule,
-    LazyLoadImageModule,
-  ],
+    LazyLoadImageModule
+],
   selector: 'app-notification-image',
   templateUrl: './notification-image.component.html',
   styleUrls: ['./notification-image.component.scss'],

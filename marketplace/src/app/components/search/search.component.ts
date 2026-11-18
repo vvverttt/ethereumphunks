@@ -74,7 +74,7 @@ export class SearchComponent {
   }
 
   @HostListener('document:keydown.escape', ['$event'])
-  keydownHandler($event: KeyboardEvent) {
+  keydownHandler($event: Event) {
     // console.log('keydownHandler', $event);
     this.unfocusInput();
   }

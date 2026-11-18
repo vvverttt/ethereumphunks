@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
@@ -14,7 +14,7 @@ const PAGE_SIZE = 200;
 @Component({
   selector: 'app-lottery-pool',
   standalone: true,
-  imports: [CommonModule, RouterModule, PhunkGridComponent],
+  imports: [RouterModule, PhunkGridComponent],
   templateUrl: './lottery-pool.component.html',
   styleUrls: ['./lottery-pool.component.scss']
 })

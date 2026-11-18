@@ -1,12 +1,12 @@
 import { Component, ElementRef, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 import anime from 'animejs';
 
 @Component({
   selector: 'app-slideout',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './slideout.component.html',
   styleUrl: './slideout.component.scss',
   host: {

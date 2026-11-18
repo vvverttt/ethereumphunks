@@ -1,5 +1,5 @@
 import { Component, inject, input, effect, model } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 
 import { Web3Service } from '@/services/web3.service';
@@ -11,9 +11,8 @@ import { environment } from 'src/environments/environment';
 @Component({
   standalone: true,
   imports: [
-    CommonModule,
-    LazyLoadImageModule,
-  ],
+    LazyLoadImageModule
+],
   selector: 'app-avatar',
   templateUrl: './avatar.component.html',
   styleUrls: ['./avatar.component.scss']

@@ -39,8 +39,8 @@ import { setChat } from '@/state/actions/chat.actions';
   templateUrl: './notification.component.html',
   styleUrls: ['./notification.component.scss'],
   host: {
-    '(mouseenter)': 'onMouseEnter(txn.id)',
-    '(mouseleave)': 'onMouseLeave(txn.id)'
+    '(mouseenter)': 'onMouseEnter(txn()?.id)',
+    '(mouseleave)': 'onMouseLeave(txn()?.id)'
   }
 })
 export class NotificationComponent {
@@ -81,13 +81,13 @@ export class NotificationComponent {
     this.store.dispatch(removeNotification({ txId: txn.id }));
   }
 
-  onMouseEnter(notificationId: string) {
-    if (this.isMenu()) return;
+  onMouseEnter(notificationId: string | undefined) {
+    if (this.isMenu() || !notificationId) return;
     this.store.dispatch(setNotifHoverState({ notifHoverState: { [notificationId]: true } }));
   }
 
-  onMouseLeave(notificationId: string) {
-    if (this.isMenu()) return;
+  onMouseLeave(notificationId: string | undefined) {
+    if (this.isMenu() || !notificationId) return;
     this.store.dispatch(setNotifHoverState({ notifHoverState: { [notificationId]: false } }));
   }
 

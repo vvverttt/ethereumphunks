@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
@@ -52,7 +52,7 @@ interface BandItem { sha: string; link: any[] | string | null; label: string }
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, PhunkImageComponent, CollectionMapComponent, InternalLinksDirective],
+  imports: [RouterModule, PhunkImageComponent, CollectionMapComponent, InternalLinksDirective],
   selector: 'app-collection-intro',
   templateUrl: './collection-intro.component.html',
   styleUrls: ['./collection-intro.component.scss'],

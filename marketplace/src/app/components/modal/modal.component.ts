@@ -14,9 +14,6 @@ import { setChat } from '@/state/actions/chat.actions';
   selector: 'app-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
-  host: {
-    '[class.active]': 'active'
-  }
 })
 export class ModalComponent implements OnInit {
 

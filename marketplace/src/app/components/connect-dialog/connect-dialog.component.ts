@@ -1,5 +1,5 @@
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Web3Service } from '@/services/web3.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
@@ -11,7 +11,7 @@ interface WalletOption {
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   selector: 'app-connect-dialog',
   templateUrl: './connect-dialog.component.html',
   styleUrls: ['./connect-dialog.component.scss'],

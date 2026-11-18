@@ -114,378 +114,378 @@
                 class="actions-wrapper"
                 [class.disabled]="(blocksBehind$ | async)">
 
-                  @if ((connected$ | async) && (walletAddress$ | async); as address) {
-                    @if (phunk.owner; as owner) {
-                      @if (phunk.isSupported) {
-                        @if (phunk.consensus) {
+                @if ((connected$ | async) && (walletAddress$ | async); as address) {
+                  @if (phunk.owner; as owner) {
+                    @if (phunk.isSupported) {
+                      @if (phunk.consensus) {
 
-                          <!-- Buy button -->
-                          @if (
-                            phunk.listing &&
-                            ((
-                              phunk.isEscrowed &&
-                              (phunk.prevOwner | lowercase) !== (address | lowercase)
-                            ) || (
-                              phunk.nft &&
-                              phunk.nft.owner !== address
-                            ) || (
-                              (phunk.slug && erc721cContracts[phunk.slug]) &&
-                              (owner | lowercase) !== (address | lowercase)
-                            ))
+                        <!-- Buy button -->
+                        @if (
+                          phunk.listing &&
+                          ((
+                          phunk.isEscrowed &&
+                          (phunk.prevOwner | lowercase) !== (address | lowercase)
+                          ) || (
+                          phunk.nft &&
+                          phunk.nft.owner !== address
+                          ) || (
+                          (phunk.slug && erc721cContracts[phunk.slug]) &&
+                          (owner | lowercase) !== (address | lowercase)
+                          ))
                           ) {
-                            <button class="buy" (click)="buyPhunk(phunk)">
-                              <span>{{ t('buy') }}</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
-                            </button>
-                          }
+                          <button class="buy" (click)="buyPhunk(phunk)">
+                            <span>{{ t('buy') }}</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
+                          </button>
+                        }
 
-                          <!-- Auction House Buy Now (pool item, fixed tier price — auctions disabled) -->
-                          <!-- tier 2 = Diamond Hands (EthsRocks whitelist) @ 0.167; else public @ 0.267 -->
-                          @if (isPoolItem(phunk) && poolBuy(); as pb) {
-                            <button class="buy" (click)="submitPoolBuy(phunk)">
-                              <span>@if (pb.tier === 2) { {{ t('itemDiamondHands') }} }{{ t('buyNow') }} — {{ pb.priceEth }} ETH</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
-                            </button>
-                          }
+                        <!-- Auction House Buy Now (pool item, fixed tier price — auctions disabled) -->
+                        <!-- tier 2 = Diamond Hands (EthsRocks whitelist) @ 0.167; else public @ 0.267 -->
+                        @if (isPoolItem(phunk) && poolBuy(); as pb) {
+                          <button class="buy" (click)="submitPoolBuy(phunk)">
+                            <span>@if (pb.tier === 2) { {{ t('itemDiamondHands') }} }{{ t('buyNow') }} — {{ pb.priceEth }} ETH</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'buyPhunk' }" />
+                          </button>
+                        }
 
-                          <!-- Bid button (visible to anyone who is NOT the current owner). -->
-                          <!-- prevOwner is excluded ONLY when escrowed (there prevOwner = the beneficial owner who deposited it). -->
-                          <!-- For non-escrowed items prevOwner is just a past owner (e.g. airdropped/transferred away) and may bid to buy it back. -->
-                          @if (
-                            (!phunk.isEscrowed || (phunk.prevOwner | lowercase) !== (address | lowercase)) &&
-                            (phunk.owner | lowercase) !== (address | lowercase)
+                        <!-- Bid button (visible to anyone who is NOT the current owner). -->
+                        <!-- prevOwner is excluded ONLY when escrowed (there prevOwner = the beneficial owner who deposited it). -->
+                        <!-- For non-escrowed items prevOwner is just a past owner (e.g. airdropped/transferred away) and may bid to buy it back. -->
+                        @if (
+                          (!phunk.isEscrowed || (phunk.prevOwner | lowercase) !== (address | lowercase)) &&
+                          (phunk.owner | lowercase) !== (address | lowercase)
                           ) {
-                            <!-- Place Bid: shown ONLY on bid-enabled collections (OG Missing/Dysto, EthsRocks), and hidden if you're already the current bidder or a bid is accepted/locked. Withdraw/confirm of an existing bid is never gated. -->
-                            @if (
-                              bidsEnabled(phunk) &&
-                              (!(phunk.slug && erc721cContracts[phunk.slug]) || (address | lowercase) === qpBidderAllowed) &&
-                              !(currentBid() && (currentBid()!.bidder | lowercase) === (address | lowercase)) &&
-                              !(currentBid() && currentBid()!.accepted)
+                          <!-- Place Bid: shown ONLY on bid-enabled collections (OG Missing/Dysto, EthsRocks), and hidden if you're already the current bidder or a bid is accepted/locked. Withdraw/confirm of an existing bid is never gated. -->
+                          @if (
+                            bidsEnabled(phunk) &&
+                            (!(phunk.slug && erc721cContracts[phunk.slug]) || (address | lowercase) === qpBidderAllowed) &&
+                            !(currentBid() && (currentBid()!.bidder | lowercase) === (address | lowercase)) &&
+                            !(currentBid() && currentBid()!.accepted)
                             ) {
-                              <button class="bid" (click)="bidPhunk()" [class.active]="actionsState().bid">
-                                <span>{{ t('placeBid') || 'Place Bid' }}</span>
-                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'enterBid' }" />
+                            <button class="bid" (click)="bidPhunk()" [class.active]="actionsState().bid">
+                              <span>{{ t('placeBid') || 'Place Bid' }}</span>
+                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'enterBid' }" />
+                            </button>
+
+                            @if (actionsState().bid) {
+                              <ng-container *ngTemplateOutlet="bidForm; context:{ $implicit: phunk }" />
+                            }
+                          }
+
+                          <!-- Confirm Bid (visible to the bidder once their bid is accepted) -->
+                          @if (
+                            currentBid() &&
+                            (currentBid()!.bidder | lowercase) === (address | lowercase) &&
+                            currentBid()!.accepted
+                            ) {
+                            @if (confirmBlocksRemaining((currentBlock$ | async) || 0); as remaining) {
+                              <button class="confirm-bid disabled" disabled>
+                                <span>{{ t('confirmInBlocks').replace('%n%', remaining + '') }}</span>
                               </button>
-
-                              @if (actionsState().bid) {
-                                <ng-container *ngTemplateOutlet="bidForm; context:{ $implicit: phunk }" />
-                              }
-                            }
-
-                            <!-- Confirm Bid (visible to the bidder once their bid is accepted) -->
-                            @if (
-                              currentBid() &&
-                              (currentBid()!.bidder | lowercase) === (address | lowercase) &&
-                              currentBid()!.accepted
-                            ) {
-                              @if (confirmBlocksRemaining((currentBlock$ | async) || 0); as remaining) {
-                                <button class="confirm-bid disabled" disabled>
-                                  <span>{{ t('confirmInBlocks').replace('%n%', remaining + '') }}</span>
-                                </button>
-                              } @else {
-                                <button class="confirm-bid" (click)="confirmBidAction(phunk)">
-                                  <span>{{ t('confirmBidButton') }}</span>
-                                  <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'confirmBid' }" />
-                                </button>
-                              }
-                            }
-
-                            <!-- Withdraw Bid (visible to the bidder while their bid is open + not accepted) -->
-                            @if (
-                              currentBid() &&
-                              (currentBid()!.bidder | lowercase) === (address | lowercase) &&
-                              !currentBid()!.accepted
-                            ) {
-                              <button class="withdraw-bid" (click)="withdrawBidAction(phunk)">
-                                <span>{{ t('withdrawBidButton') }}</span>
-                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawBid' }" />
+                            } @else {
+                              <button class="confirm-bid" (click)="confirmBidAction(phunk)">
+                                <span>{{ t('confirmBidButton') }}</span>
+                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'confirmBid' }" />
                               </button>
                             }
                           }
 
-                          <!-- Accept Bid (OWNER, bid exists & not yet accepted) -->
-                          <!-- One tx: if the phunk is already escrowed → acceptBid; -->
-                          <!-- if not → escrow+accept atomically (V3_3 combined path). -->
-                          @if (canAcceptBid(address)) {
-                            <button class="accept-bid" (click)="acceptBidAction(phunk)">
-                              <span>{{ t('acceptBidButton') }}</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'acceptBid' }" />
-                            </button>
-                            @if (!phunk.isEscrowed && !phunk.nft && !(phunk.slug && erc721cContracts[phunk.slug])) {
-                              <p class="small bid-escrow-hint">
-                                {{ bidEscrowHintText(phunk) }}
-                              </p>
-                            }
-                          }
-
-                          <!-- Sell (Ownership actions) -->
-                          @if (
-                            (phunk.isEscrowed &&
-                            (phunk.prevOwner | lowercase) === (address | lowercase)) ||
-                            (phunk.nft && phunk.nft.owner === address) ||
-                            ((phunk.slug && erc721cContracts[phunk.slug]) && (owner | lowercase) === (address | lowercase))
-                          ) {
-                            <button class="sell" (click)="sellPhunk()" [class.active]="actionsState().sell">
-                              <span>{{ t('sell') }}</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'offerPhunkForSale' }" />
-                            </button>
-
-                            <!-- Sell Actions -->
-                            @if (actionsState().sell) {
-                              <ng-container *ngTemplateOutlet="sellForm; context:{ $implicit: phunk }" />
-                            }
-                          }
-
-                          <!-- the market still holds a deposit for this piece that never counted: clear it -->
-                          @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && staleSvc.has(phunk.hashId)) {
-                            <div class="stale-deposit">
-                              <strong>{{ t('staleTitle') }}</strong>
-                              <p>{{ t('staleBody') }}</p>
-                              <button class="withdraw" [disabled]="clearingStale()" (click)="clearStale(phunk)">
-                                <span>{{ t('staleClear') }}</span>
-                                <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawPhunk' }" />
-                              </button>
-                            </div>
-                          }
-
-                          <!-- Escrow actions (Send) — ethscription-only; ERC-721C is approval-based -->
-                          @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && !(phunk.slug && erc721cContracts[phunk.slug]) && !staleSvc.has(phunk.hashId)) {
-                            <button class="send-to-escrow" (click)="escrowPhunk()" [class.active]="actionsState().escrow">
-                              <span>{{ t('sendToEscrow') }}</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'sendToEscrow' }" />
-                            </button>
-
-                            @if (actionsState().escrow) {
-                              <ng-container *ngTemplateOutlet="escrowForm; context:{ $implicit: phunk }" />
-                            }
-                          }
-
-                          <!-- Escrow actions (Withdraw) -->
-                          @if (phunk.isEscrowed && (phunk.prevOwner | lowercase) === (address | lowercase)) {
-                            <button class="withdraw" (click)="withdrawPhunk(phunk)">
-                              <span>{{ t('withdrawFromEscrow') }}</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawPhunk' }" />
-                            </button>
-                          }
-
-                          <!-- Delist button -->
-                          @if (
-                            phunk.listing &&
-                            ((
-                              (phunk.isEscrowed &&
-                              (phunk.prevOwner | lowercase) === (address | lowercase)) ||
-                              (phunk.nft?.owner === address)
-                            ) || (
-                              phunk.nft &&
-                              phunk.nft.owner === address
-                            ) || (
-                              (phunk.slug && erc721cContracts[phunk.slug]) &&
-                              (owner | lowercase) === (address | lowercase)
-                            ))
-                          ) {
-                            <button class="sell" (click)="phunkNoLongerForSale(phunk)">
-                              <span>{{ t('delist') }}</span>
-                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'phunkNoLongerForSale' }" />
-                            </button>
-                          }
-
-                        } @else {
-                          @if (!phunk.loading && !(isCooling$ | async) && !(phunk.slug && erc721cContracts[phunk.slug])) {
-                            <div class="notice">
-                              <div class="consensus">{{ phunk.collection?.singleName }} {{ t('noConsensus') }} <a (click)="setChat()">{{ t('contactSupport') }}</a> {{ t('resolveIssue') }}</div>
-                            </div>
-                          }
-
-                          <!-- Item flagged (no consensus): trading is blocked, but a bidder must
-                               still be able to reclaim their own deposited ETH. Withdraw stays. -->
+                          <!-- Withdraw Bid (visible to the bidder while their bid is open + not accepted) -->
                           @if (
                             currentBid() &&
                             (currentBid()!.bidder | lowercase) === (address | lowercase) &&
                             !currentBid()!.accepted
-                          ) {
+                            ) {
                             <button class="withdraw-bid" (click)="withdrawBidAction(phunk)">
                               <span>{{ t('withdrawBidButton') }}</span>
                               <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawBid' }" />
                             </button>
                           }
                         }
+
+                        <!-- Accept Bid (OWNER, bid exists & not yet accepted) -->
+                        <!-- One tx: if the phunk is already escrowed → acceptBid; -->
+                        <!-- if not → escrow+accept atomically (V3_3 combined path). -->
+                        @if (canAcceptBid(address)) {
+                          <button class="accept-bid" (click)="acceptBidAction(phunk)">
+                            <span>{{ t('acceptBidButton') }}</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'acceptBid' }" />
+                          </button>
+                          @if (!phunk.isEscrowed && !phunk.nft && !(phunk.slug && erc721cContracts[phunk.slug])) {
+                            <p class="small bid-escrow-hint">
+                              {{ bidEscrowHintText(phunk) }}
+                            </p>
+                          }
+                        }
+
+                        <!-- Sell (Ownership actions) -->
+                        @if (
+                          (phunk.isEscrowed &&
+                          (phunk.prevOwner | lowercase) === (address | lowercase)) ||
+                          (phunk.nft && phunk.nft.owner === address) ||
+                          ((phunk.slug && erc721cContracts[phunk.slug]) && (owner | lowercase) === (address | lowercase))
+                          ) {
+                          <button class="sell" (click)="sellPhunk()" [class.active]="actionsState().sell">
+                            <span>{{ t('sell') }}</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'offerPhunkForSale' }" />
+                          </button>
+
+                          <!-- Sell Actions -->
+                          @if (actionsState().sell) {
+                            <ng-container *ngTemplateOutlet="sellForm; context:{ $implicit: phunk }" />
+                          }
+                        }
+
+                        <!-- the market still holds a deposit for this piece that never counted: clear it -->
+                        @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && staleSvc.has(phunk.hashId)) {
+                          <div class="stale-deposit">
+                            <strong>{{ t('staleTitle') }}</strong>
+                            <p>{{ t('staleBody') }}</p>
+                            <button class="withdraw" [disabled]="clearingStale()" (click)="clearStale(phunk)">
+                              <span>{{ t('staleClear') }}</span>
+                              <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawPhunk' }" />
+                            </button>
+                          </div>
+                        }
+
+                        <!-- Escrow actions (Send) — ethscription-only; ERC-721C is approval-based -->
+                        @if (!phunk.isEscrowed && (owner | lowercase) === (address | lowercase) && !(phunk.slug && erc721cContracts[phunk.slug]) && !staleSvc.has(phunk.hashId)) {
+                          <button class="send-to-escrow" (click)="escrowPhunk()" [class.active]="actionsState().escrow">
+                            <span>{{ t('sendToEscrow') }}</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'sendToEscrow' }" />
+                          </button>
+
+                          @if (actionsState().escrow) {
+                            <ng-container *ngTemplateOutlet="escrowForm; context:{ $implicit: phunk }" />
+                          }
+                        }
+
+                        <!-- Escrow actions (Withdraw) -->
+                        @if (phunk.isEscrowed && (phunk.prevOwner | lowercase) === (address | lowercase)) {
+                          <button class="withdraw" (click)="withdrawPhunk(phunk)">
+                            <span>{{ t('withdrawFromEscrow') }}</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawPhunk' }" />
+                          </button>
+                        }
+
+                        <!-- Delist button -->
+                        @if (
+                          phunk.listing &&
+                          ((
+                          (phunk.isEscrowed &&
+                          (phunk.prevOwner | lowercase) === (address | lowercase)) ||
+                          (phunk.nft?.owner === address)
+                          ) || (
+                          phunk.nft &&
+                          phunk.nft.owner === address
+                          ) || (
+                          (phunk.slug && erc721cContracts[phunk.slug]) &&
+                          (owner | lowercase) === (address | lowercase)
+                          ))
+                          ) {
+                          <button class="sell" (click)="phunkNoLongerForSale(phunk)">
+                            <span>{{ t('delist') }}</span>
+                            <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'phunkNoLongerForSale' }" />
+                          </button>
+                        }
+
                       } @else {
-                        <!-- Item not "supported": trading UI is hidden, but a bidder must
-                             still be able to reclaim their own deposited ETH. Withdraw stays. -->
+                        @if (!phunk.loading && !(isCooling$ | async) && !(phunk.slug && erc721cContracts[phunk.slug])) {
+                          <div class="notice">
+                            <div class="consensus">{{ phunk.collection?.singleName }} {{ t('noConsensus') }} <a (click)="setChat()">{{ t('contactSupport') }}</a> {{ t('resolveIssue') }}</div>
+                          </div>
+                        }
+
+                        <!-- Item flagged (no consensus): trading is blocked, but a bidder must
+                        still be able to reclaim their own deposited ETH. Withdraw stays. -->
                         @if (
                           currentBid() &&
                           (currentBid()!.bidder | lowercase) === (address | lowercase) &&
                           !currentBid()!.accepted
-                        ) {
+                          ) {
                           <button class="withdraw-bid" (click)="withdrawBidAction(phunk)">
                             <span>{{ t('withdrawBidButton') }}</span>
                             <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawBid' }" />
                           </button>
                         }
                       }
-
-                      <!-- Transfer (hidden when the item fails consensus — owner can't validly move it anyway) -->
-                      @if ((owner | lowercase) === (address | lowercase) && phunk.consensus) {
-
-                        <button class="transfer" [class.active]="actionsState().transfer" (click)="transferPhunkAction()">
-                          <span>{{ t('transfer') }}</span>
-                          <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'transferPhunk' }" />
+                    } @else {
+                      <!-- Item not "supported": trading UI is hidden, but a bidder must
+                      still be able to reclaim their own deposited ETH. Withdraw stays. -->
+                      @if (
+                        currentBid() &&
+                        (currentBid()!.bidder | lowercase) === (address | lowercase) &&
+                        !currentBid()!.accepted
+                        ) {
+                        <button class="withdraw-bid" (click)="withdrawBidAction(phunk)">
+                          <span>{{ t('withdrawBidButton') }}</span>
+                          <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'withdrawBid' }" />
                         </button>
-
-                        <!-- Transfer actions -->
-                        @if (actionsState().transfer) {
-                          <ng-container *ngTemplateOutlet="transferForm; context:{ $implicit: phunk }" />
-                        }
                       }
-
-                      <!-- Mutate/Devolve retired: does not work with the ownership model -->
                     }
-                  } @else {
-                    <!-- Connect wallet -->
-                    <button (click)="web3Svc.connect()">
-                      {{ t('connectItem') }}
-                    </button>
-                  }
 
-                  <!-- Out links: ethscription collections only. ERC-721C (e.g. v67) trades on our own market — no external link. -->
-                  @if (!(phunk.slug && erc721cContracts[phunk.slug]) && !phunk.isSupported) {
-                    <a
-                      class="button external"
-                      [href]="externalMarketUrl + '/ethscriptions/' + phunk.hashId"
-                      target="_blank">
+                    <!-- Transfer (hidden when the item fails consensus — owner can't validly move it anyway) -->
+                    @if ((owner | lowercase) === (address | lowercase) && phunk.consensus) {
 
-                      {{ t('viewOnEthscriptions') }}
-                    </a>
+                      <button class="transfer" [class.active]="actionsState().transfer" (click)="transferPhunkAction()">
+                        <span>{{ t('transfer') }}</span>
+                        <ng-container *ngTemplateOutlet="pending; context:{ $implicit: 'transferPhunk' }" />
+                      </button>
+
+                      <!-- Transfer actions -->
+                      @if (actionsState().transfer) {
+                        <ng-container *ngTemplateOutlet="transferForm; context:{ $implicit: phunk }" />
+                      }
+                    }
+
+                    <!-- Mutate/Devolve retired: does not work with the ownership model -->
                   }
+                } @else {
+                  <!-- Connect wallet -->
+                  <button (click)="web3Svc.connect()">
+                    {{ t('connectItem') }}
+                  </button>
+                }
+
+                <!-- Out links: ethscription collections only. ERC-721C (e.g. v67) trades on our own market — no external link. -->
+                @if (!(phunk.slug && erc721cContracts[phunk.slug]) && !phunk.isSupported) {
+                  <a
+                    class="button external"
+                    [href]="externalMarketUrl + '/ethscriptions/' + phunk.hashId"
+                    target="_blank">
+
+                    {{ t('viewOnEthscriptions') }}
+                  </a>
+                }
               </div>
 
               @if (!(isMobile$ | async) && (globalConfig$ | async)?.comments) {
                 @defer {
-                  <app-comments [hashId]="phunk.hashId" />
-                }
+                <app-comments [hashId]="phunk.hashId" />
               }
-            </div>
+            }
+          </div>
 
-            <div class="right">
-              <div class="accessories-wrapper">
-                @if (phunk.attributes?.length) {
-                  <h2>{{ t('attributes') }}</h2>
-                  <div class="accessories">
-                    @for (item of phunk.attributes; track item; let i = $index) {
-                      @if (i > 0 || phunk.attributes!.length === 1) {
-                        <!-- {{ item | json }} -->
-                        <div class="accessory">
-                          @if (item.v | isNumber) {
-                            <span class="value">{{ item.k }}</span>
-
-                            <span class="trait-count">
-                              <span>{{ (item.v) }}</span>
-                            </span>
-                          } @else {
-                            <a
-                              class="value"
-                              [class]="'value rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v)"
-                              [routerLink]="['/', 'curated', phunk.slug, 'market', 'all']"
-                              [queryParams]="item | queryParams">
-
-                              <span>{{ item.v }}</span>
-                              @if (item | traitCount : phunk.slug) {
-                                <span class="percent">
-                                  ({{ (+(item | traitCount : phunk.slug) / (phunk.collection?.supply || 0)) | percent : '1.1-1' }})
-                                </span>
-                                <span [class]="'rarity-label rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v)">
-                                  {{ (item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v : true | titlecase }}
-                                </span>
-                              }
-                            </a>
-
-                            <span class="trait-count">
-                              <span>{{ (item | traitCount : phunk.slug) && (item | traitCount : phunk.slug) + ' ' + phunk.collection?.name + ' ' + t('haveThis') }}</span>
-                            </span>
-                          }
-                        </div>
-                      }
-                    }
-                    @let attrCount = getPhunkAttrCount(phunk.attributes!);
-                    @if (attrCount > 0) {
-                      @let attrInfo = getAttrCountRarity(phunk.slug, attrCount);
+          <div class="right">
+            <div class="accessories-wrapper">
+              @if (phunk.attributes?.length) {
+                <h2>{{ t('attributes') }}</h2>
+                <div class="accessories">
+                  @for (item of phunk.attributes; track item; let i = $index) {
+                    @if (i > 0 || phunk.attributes!.length === 1) {
+                      <!-- {{ item | json }} -->
                       <div class="accessory">
-                        <a [class]="'value rarity-' + attrInfo.rarityClass">
-                          <span>{{ attrCount }} {{ attrCount === 1 ? t('attribute') : t('attributes') }}</span>
-                          @if (attrInfo.pct) {
-                            <span class="percent"> ({{ attrInfo.pct }})</span>
-                            <span [class]="'rarity-label rarity-' + attrInfo.rarityClass"> {{ attrInfo.rarityLabel }}</span>
-                          }
-                        </a>
-                        <span class="trait-count">
-                          <span>{{ attrInfo.count || attrCount }} {{ phunk.collection?.name }} {{ t('haveThis') }}</span>
-                        </span>
+                        @if (item.v | isNumber) {
+                          <span class="value">{{ item.k }}</span>
+
+                          <span class="trait-count">
+                            <span>{{ (item.v) }}</span>
+                          </span>
+                        } @else {
+                          <a
+                            class="value"
+                            [class]="'value rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v)"
+                            [routerLink]="['/', 'curated', phunk.slug, 'market', 'all']"
+                            [queryParams]="item | queryParams">
+
+                            <span>{{ item.v }}</span>
+                            @if (item | traitCount : phunk.slug) {
+                              <span class="percent">
+                                ({{ (+(item | traitCount : phunk.slug) / (phunk.collection?.supply || 0)) | percent : '1.1-1' }})
+                              </span>
+                              <span [class]="'rarity-label rarity-' + ((item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v)">
+                                {{ (item | traitCount : phunk.slug) | rarityTier : phunk.collection?.supply : item.v : true | titlecase }}
+                              </span>
+                            }
+                          </a>
+
+                          <span class="trait-count">
+                            <span>{{ (item | traitCount : phunk.slug) && (item | traitCount : phunk.slug) + ' ' + phunk.collection?.name + ' ' + t('haveThis') }}</span>
+                          </span>
+                        }
                       </div>
                     }
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-        } @else {
-          <div class="title-wrapper">
-            <h1>{{ phunk.collection?.singleName }} {{ t('doesNotExist') }} 👎</h1>
-            <div class="hash-id">
-              @if (phunk.slug && erc721cContracts[phunk.slug]) {
-                <span i18n>{{ t('contract') }}: </span>
-                <a [href]="explorerUrl + '/nft/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)" target="_blank">
-                  <app-address [address]="erc721cContracts[phunk.slug]" /> #{{ phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId }}
-                </a>
-              } @else {
-                <span>{{ t('provenanceHash') }}: </span>
-                <a [href]="explorerUrl + '/tx/' + phunk.hashId" target="_blank">
-                  <app-address [address]="phunk.hashId" />
-                </a>
+                  }
+                  @let attrCount = getPhunkAttrCount(phunk.attributes!);
+                  @if (attrCount > 0) {
+                    @let attrInfo = getAttrCountRarity(phunk.slug, attrCount);
+                    <div class="accessory">
+                      <a [class]="'value rarity-' + attrInfo.rarityClass">
+                        <span>{{ attrCount }} {{ attrCount === 1 ? t('attribute') : t('attributes') }}</span>
+                        @if (attrInfo.pct) {
+                          <span class="percent"> ({{ attrInfo.pct }})</span>
+                          <span [class]="'rarity-label rarity-' + attrInfo.rarityClass"> {{ attrInfo.rarityLabel }}</span>
+                        }
+                      </a>
+                      <span class="trait-count">
+                        <span>{{ attrInfo.count || attrCount }} {{ phunk.collection?.name }} {{ t('haveThis') }}</span>
+                      </span>
+                    </div>
+                  }
+                </div>
               }
             </div>
           </div>
-        }
-
-        @if ((isMobile$ | async) && (globalConfig$ | async)?.comments) {
-          @defer {
-            <app-comments [hashId]="phunk.hashId" />
-          }
-        }
-
-        @defer {
-          <app-tx-history [phunk]="phunk" />
-        }
-      </div>
-    </div>
-  } @else {
-    <!-- Loading -->
-    <div class="inner">
-      <div class="details-wrapper">
-
+        </div>
+      } @else {
         <div class="title-wrapper">
-          <h1>{{ t('loading') }}</h1>
+          <h1>{{ phunk.collection?.singleName }} {{ t('doesNotExist') }} 👎</h1>
           <div class="hash-id">
-            <span>{{ t('provenanceHash') }}: </span>
-            <a><app-address [address]="'0x000000000000000000000'" /></a>
-            <h2>&nbsp;</h2>
+            @if (phunk.slug && erc721cContracts[phunk.slug]) {
+              <span i18n>{{ t('contract') }}: </span>
+              <a [href]="explorerUrl + '/nft/' + erc721cContracts[phunk.slug] + '/' + (phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId)" target="_blank">
+                <app-address [address]="erc721cContracts[phunk.slug]" /> #{{ phunk.tokenId < 0 ? -phunk.tokenId : phunk.tokenId }}
+              </a>
+            } @else {
+              <span>{{ t('provenanceHash') }}: </span>
+              <a [href]="explorerUrl + '/tx/' + phunk.hashId" target="_blank">
+                <app-address [address]="phunk.hashId" />
+              </a>
+            }
           </div>
         </div>
+      }
 
-        <div class="split">
-          <div class="left">
-            <div class="market-status">
-              <h2 i18n>&nbsp;</h2>
-              <p i18n>&nbsp;</p>
-              <p i18n>&nbsp;</p>
-            </div>
+      @if ((isMobile$ | async) && (globalConfig$ | async)?.comments) {
+        @defer {
+        <app-comments [hashId]="phunk.hashId" />
+      }
+    }
+
+    @defer {
+    <app-tx-history [phunk]="phunk" />
+  }
+</div>
+</div>
+} @else {
+  <!-- Loading -->
+  <div class="inner">
+    <div class="details-wrapper">
+
+      <div class="title-wrapper">
+        <h1>{{ t('loading') }}</h1>
+        <div class="hash-id">
+          <span>{{ t('provenanceHash') }}: </span>
+          <a><app-address [address]="'0x000000000000000000000'" /></a>
+          <h2>&nbsp;</h2>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="left">
+          <div class="market-status">
+            <h2 i18n>&nbsp;</h2>
+            <p i18n>&nbsp;</p>
+            <p i18n>&nbsp;</p>
           </div>
-          <div class="right">
-            <div class="accessories-wrapper"></div>
-          </div>
+        </div>
+        <div class="right">
+          <div class="accessories-wrapper"></div>
         </div>
       </div>
     </div>
-  }
+  </div>
+}
 </div>
 
 <!-- Transfer Form -->
@@ -497,82 +497,84 @@
       <label for="transfer-address">{{ t('transferToAddress') }}</label>
       <input #transferAddressInput type="text" id="transfer-address" [formControl]="transferAddress"
         [placeholder]="t('itemAddressPlaceholder')" role="presentation" autocomplete="off" />
-    </div>
+      </div>
 
-    <div class="form-actions">
-      <button type="reset" class="cancel" (click)="closeTransfer()">{{ t('cancel') }}</button>
-      <button type="button" class="submit" (click)="transferPhunk(phunk)">{{ t('submit') }}</button>
-    </div>
-  </form>
-</ng-template>
+      <div class="form-actions">
+        <button type="reset" class="cancel" (click)="closeTransfer()">{{ t('cancel') }}</button>
+        <button type="button" class="submit" (click)="transferPhunk(phunk)">{{ t('submit') }}</button>
+      </div>
+    </form>
+  </ng-template>
 
-<!-- Sell Form -->
-<ng-template #sellForm let-phunk>
-  <form class="form-wrapper">
-    @if (!phunk.isEscrowed) {
-      <ng-container *ngTemplateOutlet="cooldown; context:{ $implicit: phunk }" />
-    }
-
-    <div class="form-group">
-      <!-- <div class="row row-2"> -->
-        <!-- <div class="list-price"> -->
-          <label for="list-price">{{ t('askingPrice') }}</label>
-          <input #sellPriceInput type="number" id="list-price" [formControl]="listPrice" />
-
-          <!-- @if (listPrice.value && revShare.value) {
-            <div class="sale-total">Upon sale you receive: Ξ{{ ((listPrice.value || 0) - ((listPrice.value || 0) * ((revShare.value || 0) / 100))) | number : '1.0-6' }}</div>
-          } -->
-        <!-- </div> -->
-        <!-- <div class="rev-share">
-          <label for="rev-share">
-            <span>Rev Share</span>
-
-            <div class="info-ind">?</div>
-          </label>
-          <div class="percent-input">
-            <span>%</span>
-            <input #revShareInput type="number" id="rev-share" [max]="100" [min]="0" step="0.1" [formControl]="revShare" />
-          </div>
-
-          @if (listPrice.value && revShare.value) {
-            <div class="rev-total">
-              Total: Ξ{{ ((listPrice.value || 0) * ((revShare.value || 0) / 100)) | number : '1.0-6' }}
-            </div>
-          }
-        </div> -->
-      <!-- </div> -->
-    </div>
-
-    <button
-      class="private-sale"
-      (click)="privateSalePhunkAction()"
-      [class.active]="actionsState().privateSale">
-
-      {{ t('listPrivately') }}
-    </button>
-
-    <div class="form-group private-sale" *ngIf="actionsState().privateSale">
-      <label for="list-to-address">{{ t('offerToAddress') }}</label>
-      <input type="text" id="list-to-address" [placeholder]="'0x or ens'" [formControl]="listToAddress" role="presentation" autocomplete="off" />
-    </div>
-
-    <div class="form-actions">
-      <button type="reset" class="cancel" (click)="closeListing()">{{ t('cancel') }}</button>
-      <button type="button" class="submit" (click)="submitListing(phunk)">{{ t('offer') }} {{ phunk.singleName }}</button>
-    </div>
-
-    @if (web3Svc.slugHasRoyalty(phunk.slug)) {
-      <p class="small">{{ t('royaltyNotice') }}</p>
-    }
-
-    @if (!phunk.isEscrowed && !phunk.nft) {
-      @if (phunk.slug && erc721cContracts[phunk.slug]) {
-        <p class="small">{{ t('itemQpListingNote') }}</p>
-      } @else {
-        <p class="small">{{ t('escrowSaleNotice') }}</p>
+  <!-- Sell Form -->
+  <ng-template #sellForm let-phunk>
+    <form class="form-wrapper">
+      @if (!phunk.isEscrowed) {
+        <ng-container *ngTemplateOutlet="cooldown; context:{ $implicit: phunk }" />
       }
-    }
-  </form>
+
+      <div class="form-group">
+        <!-- <div class="row row-2"> -->
+        <!-- <div class="list-price"> -->
+        <label for="list-price">{{ t('askingPrice') }}</label>
+        <input #sellPriceInput type="number" id="list-price" [formControl]="listPrice" />
+
+        <!-- @if (listPrice.value && revShare.value) {
+        <div class="sale-total">Upon sale you receive: Ξ{{ ((listPrice.value || 0) - ((listPrice.value || 0) * ((revShare.value || 0) / 100))) | number : '1.0-6' }}</div>
+        } -->
+      <!-- </div> -->
+      <!-- <div class="rev-share">
+      <label for="rev-share">
+        <span>Rev Share</span>
+
+        <div class="info-ind">?</div>
+      </label>
+      <div class="percent-input">
+        <span>%</span>
+        <input #revShareInput type="number" id="rev-share" [max]="100" [min]="0" step="0.1" [formControl]="revShare" />
+      </div>
+
+      @if (listPrice.value && revShare.value) {
+        <div class="rev-total">
+          Total: Ξ{{ ((listPrice.value || 0) * ((revShare.value || 0) / 100)) | number : '1.0-6' }}
+        </div>
+      }
+    </div> -->
+  <!-- </div> -->
+</div>
+
+<button
+  class="private-sale"
+  (click)="privateSalePhunkAction()"
+  [class.active]="actionsState().privateSale">
+
+  {{ t('listPrivately') }}
+</button>
+
+@if (actionsState().privateSale) {
+  <div class="form-group private-sale">
+    <label for="list-to-address">{{ t('offerToAddress') }}</label>
+    <input type="text" id="list-to-address" [placeholder]="'0x or ens'" [formControl]="listToAddress" role="presentation" autocomplete="off" />
+  </div>
+}
+
+<div class="form-actions">
+  <button type="reset" class="cancel" (click)="closeListing()">{{ t('cancel') }}</button>
+  <button type="button" class="submit" (click)="submitListing(phunk)">{{ t('offer') }} {{ phunk.singleName }}</button>
+</div>
+
+@if (web3Svc.slugHasRoyalty(phunk.slug)) {
+  <p class="small">{{ t('royaltyNotice') }}</p>
+}
+
+@if (!phunk.isEscrowed && !phunk.nft) {
+  @if (phunk.slug && erc721cContracts[phunk.slug]) {
+    <p class="small">{{ t('itemQpListingNote') }}</p>
+  } @else {
+    <p class="small">{{ t('escrowSaleNotice') }}</p>
+  }
+}
+</form>
 </ng-template>
 
 <!-- Bid Form -->
@@ -587,67 +589,67 @@
         min="0"
         [formControl]="bidPrice"
         [placeholder]="bidAmountPlaceholderText()" />
+      </div>
+
+      @if (currentBid()) {
+        <p class="small">
+          {{ t('currentBidColon') }} Ξ{{ currentBid()!.value | weiToEth }} {{ t('by') }}
+          <app-address [address]="currentBid()!.bidder"></app-address>
+        </p>
+      }
+
+      <div class="form-actions">
+        <button type="reset" class="cancel" (click)="closeBid()">{{ t('cancel') }}</button>
+        <button type="button" class="submit" (click)="submitBid(phunk)">{{ t('placeBid') }}</button>
+      </div>
+
+      @if (phunk.slug && erc721cContracts[phunk.slug]) {
+        <p class="small">{{ t('itemQpBidNote') }}</p>
+      } @else {
+        <p class="small">{{ t('bidNonCustodialNote') }}</p>
+      }
+    </form>
+  </ng-template>
+
+  <!-- Escrow Form -->
+  <ng-template #escrowForm let-phunk>
+    <div class="form-wrapper">
+      <ng-container *ngTemplateOutlet="cooldown; context:{ $implicit: phunk }" />
+
+      <p>{{ t('escrowRequirement').replace('%singleName%', phunk.singleName) }} <span class="small">{{ t('escrowRequirementSmall') }}</span></p>
+
+      <div class="form-actions">
+        <button type="reset" class="cancel" (click)="closeEscrow()">{{ t('cancel') }}</button>
+        <button class="sell" (click)="sendToEscrow(phunk)">
+          {{ t('sendToEscrowCaps') }}
+        </button>
+      </div>
     </div>
+  </ng-template>
 
-    @if (currentBid()) {
-      <p class="small">
-        {{ t('currentBidColon') }} Ξ{{ currentBid()!.value | weiToEth }} {{ t('by') }}
-        <app-address [address]="currentBid()!.bidder"></app-address>
-      </p>
-    }
-
-    <div class="form-actions">
-      <button type="reset" class="cancel" (click)="closeBid()">{{ t('cancel') }}</button>
-      <button type="button" class="submit" (click)="submitBid(phunk)">{{ t('placeBid') }}</button>
-    </div>
-
-    @if (phunk.slug && erc721cContracts[phunk.slug]) {
-      <p class="small">{{ t('itemQpBidNote') }}</p>
+  <ng-template #expandIcon let-expanded>
+    @if (expanded) {
+      <svg height="21" viewBox="0 0 21 21" width="21" xmlns="http://www.w3.org/2000/svg"><path d="m0 0h9v3h-6v15h15v-6h3v9h-21zm9 12v3h-3v-3zm3-3v3h-3v-3zm3-3v3h-3v-3zm6-6v6h-3v-3h-3v-3z" fill="rgba(var(--background), 1)" fill-rule="evenodd"/></svg>
     } @else {
-      <p class="small">{{ t('bidNonCustodialNote') }}</p>
+      <svg height="21" viewBox="0 0 21 21" width="21" xmlns="http://www.w3.org/2000/svg"><path d="m0 0h9v3h-6v15h15v-6h3v9h-21zm9 9v3h3v3h-6v-6zm6-3v3h-3v-3zm3-3v3h-3v-3zm3-3v3h-3v-3z" fill="rgba(var(--background), 1)" fill-rule="evenodd"/></svg>
     }
-  </form>
-</ng-template>
+  </ng-template>
 
-<!-- Escrow Form -->
-<ng-template #escrowForm let-phunk>
-  <div class="form-wrapper">
-    <ng-container *ngTemplateOutlet="cooldown; context:{ $implicit: phunk }" />
-
-    <p>{{ t('escrowRequirement').replace('%singleName%', phunk.singleName) }} <span class="small">{{ t('escrowRequirementSmall') }}</span></p>
-
-    <div class="form-actions">
-      <button type="reset" class="cancel" (click)="closeEscrow()">{{ t('cancel') }}</button>
-      <button class="sell" (click)="sendToEscrow(phunk)">
-        {{ t('sendToEscrowCaps') }}
-      </button>
-    </div>
-  </div>
-</ng-template>
-
-<ng-template #expandIcon let-expanded>
-  @if (expanded) {
-    <svg height="21" viewBox="0 0 21 21" width="21" xmlns="http://www.w3.org/2000/svg"><path d="m0 0h9v3h-6v15h15v-6h3v9h-21zm9 12v3h-3v-3zm3-3v3h-3v-3zm3-3v3h-3v-3zm6-6v6h-3v-3h-3v-3z" fill="rgba(var(--background), 1)" fill-rule="evenodd"/></svg>
-  } @else {
-    <svg height="21" viewBox="0 0 21 21" width="21" xmlns="http://www.w3.org/2000/svg"><path d="m0 0h9v3h-6v15h15v-6h3v9h-21zm9 9v3h3v3h-6v-6zm6-3v3h-3v-3zm3-3v3h-3v-3zm3-3v3h-3v-3z" fill="rgba(var(--background), 1)" fill-rule="evenodd"/></svg>
-  }
-</ng-template>
-
-<!-- Pending 'spinner' -->
-<ng-template #pending let-txFunction>
-  @if (pendingTx$ | async; as tx) {
-    @if (tx.function === txFunction) {
-      <img src="/assets/loader-dark.gif" width="15" height="15" alt="" />
+  <!-- Pending 'spinner' -->
+  <ng-template #pending let-txFunction>
+    @if (pendingTx$ | async; as tx) {
+      @if (tx.function === txFunction) {
+        <img src="/assets/loader-dark.gif" width="15" height="15" alt="" />
+      }
     }
-  }
-</ng-template>
+  </ng-template>
 
-<!-- Cooldown overlay -->
-<ng-template #cooldown let-phunk>
-  @if ((isCooling$ | async) && !phunk.nft) {
-    <div class="cooldown-wrapper">
-      <p>{{ web3Svc.maxCooldown }} {{ t('blockCooldown') }}</p>
-      <img src="/assets/loader-phunk.gif" width="40" height="40" alt="">
-    </div>
-  }
-</ng-template>
+  <!-- Cooldown overlay -->
+  <ng-template #cooldown let-phunk>
+    @if ((isCooling$ | async) && !phunk.nft) {
+      <div class="cooldown-wrapper">
+        <p>{{ web3Svc.maxCooldown }} {{ t('blockCooldown') }}</p>
+        <img src="/assets/loader-phunk.gif" width="40" height="40" alt="">
+      </div>
+    }
+  </ng-template>

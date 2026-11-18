@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, signal, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 import { TimeAgoPipe } from '@/pipes/time-ago.pipe';
 import { TokenNumberPipe } from '@/pipes/token-number.pipe';
@@ -9,7 +9,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 @Component({
   selector: 'app-auction-slider',
   standalone: true,
-  imports: [CommonModule, TimeAgoPipe, TokenNumberPipe],
+  imports: [TimeAgoPipe, TokenNumberPipe],
   templateUrl: './auction-slider.component.html',
   styleUrls: ['./auction-slider.component.scss'],
 })
