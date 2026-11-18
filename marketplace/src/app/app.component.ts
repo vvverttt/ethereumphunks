@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, Inject, OnInit, signal, DOCUMENT } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router, RouterModule, Scroll } from '@angular/router';
 
 import { Store } from '@ngrx/store';
