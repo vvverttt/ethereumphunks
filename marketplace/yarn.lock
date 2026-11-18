@@ -163,6 +163,14 @@
     "@oxc-parser/binding-wasm32-wasi" "0.156.0"
     lmdb "3.5.6"
 
+"@angular/cdk@^22":
+  version "22.3.0"
+  resolved "https://registry.yarnpkg.com/@angular/cdk/-/cdk-22.3.0.tgz#b4aa3e520c5f209c265bd127e74a1ae00b06abb6"
+  integrity sha512-5qLK4np1a26u/MgCgRzmP/E35DVK9lsMibT2yC22UiK5GCI7epT1bCy9PSmiTIMWNo4d7G2c6XxDWrwo0EmTCQ==
+  dependencies:
+    parse5 "^8.0.0"
+    tslib "^2.3.0"
+
 "@angular/cli@22.2.8":
   version "22.2.8"
   resolved "https://registry.yarnpkg.com/@angular/cli/-/cli-22.2.8.tgz#a6deac25f187c6364e541cee570573867701f112"
@@ -263,25 +271,6 @@
   integrity sha512-1L0Mw32r2R+6xjRW5kruy6mmNLGj/wch4545fOXrxdcqnMZKVTlsK6EmC5qzECINccCbmAQxDEk2GMVeikYxRQ==
   dependencies:
     tslib "^2.3.0"
-
-"@apollo/client@^3.13.8":
-  version "3.14.0"
-  resolved "https://registry.npmjs.org/@apollo/client/-/client-3.14.0.tgz"
-  integrity sha512-0YQKKRIxiMlIou+SekQqdCo0ZTHxOcES+K8vKB53cIDpwABNR0P0yRzPgsbgcj3zRJniD93S/ontsnZsCLZrxQ==
-  dependencies:
-    "@graphql-typed-document-node/core" "^3.1.1"
-    "@wry/caches" "^1.0.0"
-    "@wry/equality" "^0.5.6"
-    "@wry/trie" "^0.5.0"
-    graphql-tag "^2.12.6"
-    hoist-non-react-statics "^3.3.2"
-    optimism "^0.18.0"
-    prop-types "^15.7.2"
-    rehackt "^0.1.0"
-    symbol-observable "^4.0.0"
-    ts-invariant "^0.10.3"
-    tslib "^2.3.0"
-    zen-observable-ts "^1.2.5"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.28.6", "@babel/code-frame@^7.29.0":
   version "7.29.0"
@@ -1500,11 +1489,6 @@
     "@metamask/rpc-errors" "7.0.2"
     eventemitter3 "5.0.1"
 
-"@graphql-typed-document-node/core@^3.1.1":
-  version "3.2.0"
-  resolved "https://registry.npmjs.org/@graphql-typed-document-node/core/-/core-3.2.0.tgz"
-  integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
-
 "@harperfast/extended-iterable@^1.0.3":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@harperfast/extended-iterable/-/extended-iterable-1.0.5.tgz#be0e33796dcbcb32b40ff7ac44925a1b37e7c006"
@@ -2389,59 +2373,59 @@
   dependencies:
     "@tybys/wasm-util" "^0.10.3"
 
-"@ng-select/ng-select@^14.7.0":
-  version "14.9.0"
-  resolved "https://registry.npmjs.org/@ng-select/ng-select/-/ng-select-14.9.0.tgz"
-  integrity sha512-f/E3EaSVwdKmwvZL43nS961bGaXR90F0Gtb8vA+ub8Hfwqjr1NTI6X7+yu5iMkqfy5ZW5cJdoGvo+kv8zcAkjQ==
+"@ng-select/ng-select@^24.2.1":
+  version "24.2.1"
+  resolved "https://registry.yarnpkg.com/@ng-select/ng-select/-/ng-select-24.2.1.tgz#afecd6ab4755c39d348ca7d4e4cdbea28eb4b223"
+  integrity sha512-eMXGIgFQMHuUrR2jwNeUtiwcW+KvjGyPoq5p1iomDwIm0DXvm2rWi2i2E8aXdG6tU24FKIqiGJNXjFQCpS3YBQ==
   dependencies:
-    tslib "^2.3.1"
+    tslib "^2.8.1"
 
-"@ng-web-apis/common@^4.12.0":
-  version "4.14.0"
-  resolved "https://registry.npmjs.org/@ng-web-apis/common/-/common-4.14.0.tgz"
-  integrity sha512-eLrpy9e8R+eJKRUWv06jauaDCJ/6/9llmHPTvmWH3yTS9HIn+twk5ZmyfNwFqA/r8g9Kt4Ap48YuaydQy00nuw==
-  dependencies:
-    tslib "^2.3.0"
-
-"@ng-web-apis/intersection-observer@^4.12.0":
-  version "4.14.0"
-  resolved "https://registry.npmjs.org/@ng-web-apis/intersection-observer/-/intersection-observer-4.14.0.tgz"
-  integrity sha512-VDuak0+jDPwPttqQbgIYCD1tM2F7wKSXZWWUjFdNfkV47GspEPzzf12lY1eiltIiCB4cv6asZNs5ijnsxpnb9A==
+"@ng-web-apis/common@^5.4.1":
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/@ng-web-apis/common/-/common-5.4.1.tgz#d723f32c31acf20698ceb0447d8e8e95d7968322"
+  integrity sha512-Yrk7BHQQyqsabCGjFICgFkqHerxuRHUeUhpoH8YJl488kHblFY02dglPy/Sncgg7Wwi8dbujiv3XCx7ZEMO8Sw==
   dependencies:
     tslib "^2.3.0"
 
-"@ngrx/effects@^20.1.0":
-  version "20.1.0"
-  resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-20.1.0.tgz#e8947a0840dc76d289eafcaa929113ab303335ea"
-  integrity sha512-wkIu0QnTarBd1zUswk643H5SILO9Be1OeswMe7g4tXlkNLFRPkyu0BUzXT80PsUPP5p0VrdFz3akrn3HHjjTjA==
-  dependencies:
-    tslib "^2.0.0"
-
-"@ngrx/operators@^20.1.0":
-  version "20.1.0"
-  resolved "https://registry.yarnpkg.com/@ngrx/operators/-/operators-20.1.0.tgz#5ecb070435dc0980662246abf4e7a8104608e7c8"
-  integrity sha512-soNrLfWaAjV3BJnZ2gYOQ2jLniGMQB444Jeiu5Vs1RCHQ9KEB40OrznJkynUOMUIie4I19cHXb/O/FVaDIPIRQ==
+"@ng-web-apis/intersection-observer@^5.4.1":
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/@ng-web-apis/intersection-observer/-/intersection-observer-5.4.1.tgz#b8e465f4393d1c6e2d420a3760f08cba4ffad6f9"
+  integrity sha512-mcUtvEFCfQIz5XeXuiBU/Kq6RMga+GRj8YiGi17iToLQTsuvxYQEAS1Cki9NZ3bpf+QLkTQ1/efbAJ8phwgDSQ==
   dependencies:
     tslib "^2.3.0"
 
-"@ngrx/router-store@^20.1.0":
-  version "20.1.0"
-  resolved "https://registry.yarnpkg.com/@ngrx/router-store/-/router-store-20.1.0.tgz#5d08a573890c86f6cde6dd3ec6ba1968a6bf668e"
-  integrity sha512-XlpQsgmEc1E9Ogiv6QbJ8g8JzjrJOlr7JX9FngHIDLyXQFCMn5wcXsqhjiBjG9JgJLwlzV+v14i7EM/nqwQCGA==
+"@ngrx/effects@^22.0.1":
+  version "22.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-22.0.1.tgz#c488832049ccf082ae1232bea2ea1f84835aff72"
+  integrity sha512-SRI6Q04rJfrf/qUwphzoJU8IJsPAPzP0MmmXK5qbMUuZ24V1JbAyI5+c0bEVzIFMMOooAU7wkO6iuJg5TVjmsw==
   dependencies:
     tslib "^2.0.0"
 
-"@ngrx/store-devtools@^20.1.0":
-  version "20.1.0"
-  resolved "https://registry.yarnpkg.com/@ngrx/store-devtools/-/store-devtools-20.1.0.tgz#7d03929964e4fb959110e5a74ca053c5f56d47fe"
-  integrity sha512-4N6X/uAfjiCFcuauX2gG+6TnDAuixrfMfUVebLYvifLkrDmqDO8lbeH+Lhk3EVGnpUih4yJiCaU437awVyKckw==
+"@ngrx/operators@^22.0.1":
+  version "22.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/operators/-/operators-22.0.1.tgz#c10a315519fd0e5453ee70892ab0c420e2ad5a4e"
+  integrity sha512-UyF1ESIKX8sClhXCz4/B+YhC4Baa4sZ4O0neHzMwdqFxvXg4P19AT6+RQ5lNCuwmYt/aH1dZuHr+EBaQSRFNyQ==
+  dependencies:
+    tslib "^2.3.0"
+
+"@ngrx/router-store@^22.0.1":
+  version "22.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/router-store/-/router-store-22.0.1.tgz#ca6695b44ed80498b590c9ee06342be2edc827ba"
+  integrity sha512-g7F8bGXhe1THdNdUC4xySObd3q2Rkfu0lkrlR4s8/nm0nDsJoqY/q9Jm/m438QXVyiRC1dV42W0v6Gg37eaFRw==
   dependencies:
     tslib "^2.0.0"
 
-"@ngrx/store@^20.1.0":
-  version "20.1.0"
-  resolved "https://registry.yarnpkg.com/@ngrx/store/-/store-20.1.0.tgz#107e49efddf816df5f3e5b482ce8320f1eed971a"
-  integrity sha512-o8j3CGAGedm+BIb+QDhNXrVaU//n9uF0wH0HZWtXHmW1mjRBaQiUA+ZPMUkDwAeN8KuOcoIEC+2QUXxXGVI7ow==
+"@ngrx/store-devtools@^22.0.1":
+  version "22.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/store-devtools/-/store-devtools-22.0.1.tgz#11d2edccf3ca03b2d3d3cf1fe380cff9f7723386"
+  integrity sha512-mnsz+k0+07dUvThTehbKvlV8lyVWRRy6GTQuo30EW+40PSBvUkdcqhb8u63K2zIdV43SjsZOWEjDSjMJJSCCmg==
+  dependencies:
+    tslib "^2.0.0"
+
+"@ngrx/store@^22.0.1":
+  version "22.0.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/store/-/store-22.0.1.tgz#e28c1d0c41ceb660fc9457d7f4ef2b37b2c0f539"
+  integrity sha512-CWCqqG+qepatkH9HE4+a17x/uyU/sTDO75IQWEntJi0xGTeE++iZH/QUm4MWB7mmb43Y+PnwydI3515DzfINtg==
   dependencies:
     tslib "^2.0.0"
 
@@ -4573,34 +4557,6 @@
     "@webassemblyjs/ast" "1.14.1"
     "@xtuc/long" "4.2.2"
 
-"@wry/caches@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@wry/caches/-/caches-1.0.1.tgz"
-  integrity sha512-bXuaUNLVVkD20wcGBWRyo7j9N3TxePEWFZj2Y+r9OoUzfqmavM84+mFykRicNsBqatba5JLay1t48wxaXaWnlA==
-  dependencies:
-    tslib "^2.3.0"
-
-"@wry/context@^0.7.0":
-  version "0.7.4"
-  resolved "https://registry.npmjs.org/@wry/context/-/context-0.7.4.tgz"
-  integrity sha512-jmT7Sb4ZQWI5iyu3lobQxICu2nC/vbUhP0vIdd6tHC9PTfenmRmuIFqktc6GH9cgi+ZHnsLWPvfSvc4DrYmKiQ==
-  dependencies:
-    tslib "^2.3.0"
-
-"@wry/equality@^0.5.6":
-  version "0.5.7"
-  resolved "https://registry.npmjs.org/@wry/equality/-/equality-0.5.7.tgz"
-  integrity sha512-BRFORjsTuQv5gxcXsuDXx6oGRhuVsEGwZy6LOzRRfgu+eSfxbhUQ9L9YtSEIuIjY/o7g3iWFjrc5eSY1GXP2Dw==
-  dependencies:
-    tslib "^2.3.0"
-
-"@wry/trie@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.npmjs.org/@wry/trie/-/trie-0.5.0.tgz"
-  integrity sha512-FNoYzHawTMk/6KMQoEG5O4PuioX19UbwdQKF44yw0nLfOypfQdjtfZzo/UIJWAJ23sNIFbD1Ug9lbaDGMwbqQA==
-  dependencies:
-    tslib "^2.3.0"
-
 "@xmtp/consent-proof-signature@^0.1.3":
   version "0.1.4"
   resolved "https://registry.npmjs.org/@xmtp/consent-proof-signature/-/consent-proof-signature-0.1.4.tgz"
@@ -4810,13 +4766,6 @@ anymatch@^3.1.3:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
-
-apollo-angular@^10.0.3:
-  version "10.0.3"
-  resolved "https://registry.npmjs.org/apollo-angular/-/apollo-angular-10.0.3.tgz"
-  integrity sha512-gBNxKVraflbEG5tcFHEklCYjmer6vlOQ8sOw3EfD8SvIlYqTQ0DqES7oOau9lnHDgINnCtFYDZ3/c2SjLsXxVg==
-  dependencies:
-    tslib "^2.6.2"
 
 argparse@^2.0.1:
   version "2.0.1"
@@ -6220,13 +6169,6 @@ graceful-fs@^4.1.2, graceful-fs@^4.2.11, graceful-fs@^4.2.4:
   resolved "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.11.tgz"
   integrity sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==
 
-graphql-tag@^2.12.6:
-  version "2.12.6"
-  resolved "https://registry.npmjs.org/graphql-tag/-/graphql-tag-2.12.6.tgz"
-  integrity sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==
-  dependencies:
-    tslib "^2.1.0"
-
 gsap@^3.12.7:
   version "3.14.2"
   resolved "https://registry.npmjs.org/gsap/-/gsap-3.14.2.tgz"
@@ -6299,13 +6241,6 @@ hmac-drbg@^1.0.1:
     hash.js "^1.0.3"
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
-
-hoist-non-react-statics@^3.3.2:
-  version "3.3.2"
-  resolved "https://registry.npmjs.org/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz"
-  integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
-  dependencies:
-    react-is "^16.7.0"
 
 hono@4.13.16, hono@^4.9.6:
   version "4.13.16"
@@ -7038,7 +6973,7 @@ long@^5.2.0, long@^5.2.3, long@^5.3.2:
   resolved "https://registry.npmjs.org/long/-/long-5.3.2.tgz"
   integrity sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==
 
-loose-envify@^1.1.0, loose-envify@^1.4.0:
+loose-envify@^1.1.0:
   version "1.4.0"
   resolved "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz"
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
@@ -7335,29 +7270,21 @@ ngx-pagination@^6.0.3:
   dependencies:
     tslib "^2.3.0"
 
-ngx-socket-io@4.8.5:
-  version "4.8.5"
-  resolved "https://registry.npmjs.org/ngx-socket-io/-/ngx-socket-io-4.8.5.tgz"
-  integrity sha512-E/HCB5vYGPhiXcd+9bDYathCgQ7aocgZISeqKoQeqOHfPxtYDiyGHWqAZSdlmjfuPLURvtULsOW1OcDnQVaTnQ==
+ngx-socket-io@^4.11.1:
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/ngx-socket-io/-/ngx-socket-io-4.11.1.tgz#7ae9fd0382958fd6f6b40a55761bdc31ef94e53f"
+  integrity sha512-UemQAZ3ZymAcb8p/fJJMyat3PqhTvTx1RO87ooYGF+2UAhK2pJ0zxUZCra8f+H1dnIxlL2DaFpfB/4HuYuxfKg==
   dependencies:
     core-js "^3.39.0"
     reflect-metadata "^0.2.2"
     socket.io "^4.8.1"
     socket.io-client "^4.8.1"
     tslib "^2.3.0"
-    zone.js "~0.15.0"
 
-ngx-timeago@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npmjs.org/ngx-timeago/-/ngx-timeago-3.0.0.tgz"
-  integrity sha512-oz+X8qbPJD6uFHXVWUTE+scjLPskOKbrAVlUG0pUwrn8wru7woryGdK/xdjvS74n187tbo5+e8AXgLCqEvUSjw==
-  dependencies:
-    tslib "^2.3.0"
-
-ngxtension@^5.0.0:
-  version "5.2.0"
-  resolved "https://registry.npmjs.org/ngxtension/-/ngxtension-5.2.0.tgz"
-  integrity sha512-OZR1xnMYiCpCMnwjN1pkSrrfNbKk9VzHzpNW7elD51tEI63l8p27R8Kc1VPqRuYhBSwZ53mc891o8mWWJYuMSA==
+ngx-timeago@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ngx-timeago/-/ngx-timeago-4.1.0.tgz#f47d155ed9532d3c3159fff6b11eaef23b4cf9b3"
+  integrity sha512-FsrschqKtMwOAJUGtj9V9hM14bc1sApUUlzFhy+QVfl/h3OEe42Z8aSSGNhfNlLA/vy3ZBcEOjzux4qwpxf+wQ==
   dependencies:
     tslib "^2.3.0"
 
@@ -7441,7 +7368,7 @@ obj-multiplex@^1.0.0:
     once "^1.4.0"
     readable-stream "^2.3.3"
 
-object-assign@^4, object-assign@^4.1.1:
+object-assign@^4:
   version "4.1.1"
   resolved "https://registry.npmjs.org/object-assign/-/object-assign-4.1.1.tgz"
   integrity sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==
@@ -7524,16 +7451,6 @@ openapi-typescript-helpers@^0.0.15:
   version "0.0.15"
   resolved "https://registry.npmjs.org/openapi-typescript-helpers/-/openapi-typescript-helpers-0.0.15.tgz"
   integrity sha512-opyTPaunsklCBpTK8JGef6mfPhLSnyy5a0IN9vKtx3+4aExf+KxEqYwIy3hqkedXIB97u357uLMJsOnm3GVjsw==
-
-optimism@^0.18.0:
-  version "0.18.1"
-  resolved "https://registry.npmjs.org/optimism/-/optimism-0.18.1.tgz"
-  integrity sha512-mLXNwWPa9dgFyDqkNi54sjDyNJ9/fTI6WGBLgnXku1vdKY/jovHfZT5r+aiVeFFLOz+foPNOm5YJ4mqgld2GBQ==
-  dependencies:
-    "@wry/caches" "^1.0.0"
-    "@wry/context" "^0.7.0"
-    "@wry/trie" "^0.5.0"
-    tslib "^2.3.0"
 
 ora@9.4.1:
   version "9.4.1"
@@ -7976,15 +7893,6 @@ process@^0.11.10:
   resolved "https://registry.npmjs.org/process/-/process-0.11.10.tgz"
   integrity sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==
 
-prop-types@^15.7.2:
-  version "15.8.1"
-  resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
-  integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
-  dependencies:
-    loose-envify "^1.4.0"
-    object-assign "^4.1.1"
-    react-is "^16.13.1"
-
 protobufjs@7.6.6, protobufjs@^7.0.0, protobufjs@^7.5.4:
   version "7.6.6"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-7.6.6.tgz#7a3923e8e32b0ee2ff689f8eed6e455c090ac67e"
@@ -8120,11 +8028,6 @@ raw-body@^3.0.2:
     iconv-lite "~0.7.0"
     unpipe "~1.0.0"
 
-react-is@^16.13.1, react-is@^16.7.0:
-  version "16.13.1"
-  resolved "https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz"
-  integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
-
 react@^18.3.1:
   version "18.3.1"
   resolved "https://registry.npmjs.org/react/-/react-18.3.1.tgz"
@@ -8230,11 +8133,6 @@ regjsparser@^0.14.0:
   integrity sha512-IeYboCLG1KBNRksrZQIZ1SV5KVWZiR0ikFokOcA0n63vLvlaFvCsfxN+fd4aXwL0KW3YD+ByRzIgo9ZAHdbldw==
   dependencies:
     jsesc "~3.1.0"
-
-rehackt@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/rehackt/-/rehackt-0.1.0.tgz"
-  integrity sha512-7kRDOuLHB87D/JESKxQoRwv4DzbIdwkAGQ7p6QKGdVlY1IZheUnVhlk/4UZlNUVxdAXpyxikE3URsG067ybVzw==
 
 rename-keys@^1.1.2:
   version "1.2.0"
@@ -8930,11 +8828,6 @@ svgson@^5.3.1:
     deep-rename-keys "^0.2.1"
     xml-reader "2.4.3"
 
-symbol-observable@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/symbol-observable/-/symbol-observable-4.0.0.tgz"
-  integrity sha512-b19dMThMV4HVFynSAM1++gBHAbk2Tc/osgLIBZMKsyqh34jb2e8Os7T6ZW/Bt3pJFdBTd2JwAnAAEQV7rSNvcQ==
-
 sync-child-process@^1.0.2:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/sync-child-process/-/sync-child-process-1.1.1.tgz#b09b8975f12cb6cd07627ee4cc329f280022aa9f"
@@ -9069,19 +8962,12 @@ tree-dump@^1.0.3, tree-dump@^1.1.0:
   resolved "https://registry.npmjs.org/tree-dump/-/tree-dump-1.1.0.tgz"
   integrity sha512-rMuvhU4MCDbcbnleZTFezWsaZXRFemSqAM+7jPnzUl1fo9w3YEKOxAeui0fz3OI4EU4hf23iyA7uQRVko+UaBA==
 
-ts-invariant@^0.10.3:
-  version "0.10.3"
-  resolved "https://registry.npmjs.org/ts-invariant/-/ts-invariant-0.10.3.tgz"
-  integrity sha512-uivwYcQaxAucv1CzRp2n/QdYPo4ILf9VXgH19zEIjFx2EJufV16P0JtJVpYHy89DItG6Kwj2oIUjrcK5au+4tQ==
-  dependencies:
-    tslib "^2.1.0"
-
 tslib@1.14.1, tslib@^1.9.3:
   version "1.14.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@2.8.1, tslib@^2.0.0, tslib@^2.1.0, tslib@^2.3.0, tslib@^2.3.1, tslib@^2.4.0, tslib@^2.6.0, tslib@^2.6.2:
+tslib@2.8.1, tslib@^2.0.0, tslib@^2.1.0, tslib@^2.3.0, tslib@^2.3.1, tslib@^2.4.0, tslib@^2.6.0:
   version "2.8.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
@@ -9712,18 +9598,6 @@ yoctocolors@^2.1.1:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/yoctocolors/-/yoctocolors-2.2.0.tgz#c4b68ee477f3982c33e4de24a5aa4a354be506d3"
   integrity sha512-xYqdZFUK/VYazNl/oCDYN+3WloWQwMfZxBoiNt6qNyk+xfOdi598muWE42rNZFp1kNOiqW936q5RhUdnpqElSg==
-
-zen-observable-ts@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.npmjs.org/zen-observable-ts/-/zen-observable-ts-1.2.5.tgz"
-  integrity sha512-QZWQekv6iB72Naeake9hS1KxHlotfRpe+WGNbNx5/ta+R3DNjVO2bswf63gXlWDcs+EMd7XY8HfVQyP1X6T4Zg==
-  dependencies:
-    zen-observable "0.8.15"
-
-zen-observable@0.8.15:
-  version "0.8.15"
-  resolved "https://registry.npmjs.org/zen-observable/-/zen-observable-0.8.15.tgz"
-  integrity sha512-PQ2PC7R9rslx84ndNBZB/Dkv8V8fZEpk83RLgXtYd0fwUgEjseMn1Dgajh2x6S8QbZAFa9p2qVCEuYZNgve0dQ==
 
 zod@3.22.4:
   version "3.22.4"

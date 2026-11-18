@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { ApplicationRef, Injectable, inject } from '@angular/core';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
 
 import { environment } from 'src/environments/environment';
@@ -53,7 +53,7 @@ export class SocketService extends Socket {
   // pendingInscriptionShas$ = this.fromEvent<Map<string, string>, 'pendingInscriptionShas'>('pendingInscriptionShas');
 
   constructor() {
-    super(socketConfig);
+    super(socketConfig, inject(ApplicationRef));
 
     this.onMessage().subscribe(({ id, message }) => {
       console.log('received message', { id, message });
