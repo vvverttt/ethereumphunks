@@ -1,13 +1,14 @@
 # V67 Auction setup: Dysto-only pool (2167 pieces)
 
-Send every step from quantumphunks.eth (0x19d57A31b982d3d75c16358795A4D19c803e4A72), in order. Scan block 26445705.
+Send every step from quantumphunks.eth (0x19d57A31b982d3d75c16358795A4D19c803e4A72), in order. Scan block 26445705. Every step was replayed OK on a mainnet fork.
 For each step: open the "to" contract on Etherscan -> Write (as Proxy) -> the function -> paste the args. Or paste "to" + "data" into a raw transaction / Safe transaction builder.
 
 ## Step 1.1: V66 lottery: withdrawItems to quantumphunks.eth (batch 1/8, 300 pieces)
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 4734284
+gas limit (set this if your wallet's estimate fails): 6250000  
+used on the fork rehearsal: 4734284
 
 arg 1:
 
@@ -31,7 +32,8 @@ data:
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 4735124
+gas limit (set this if your wallet's estimate fails): 6250000  
+used on the fork rehearsal: 4735124
 
 arg 1:
 
@@ -55,7 +57,8 @@ data:
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 4735100
+gas limit (set this if your wallet's estimate fails): 6250000  
+used on the fork rehearsal: 4735100
 
 arg 1:
 
@@ -79,7 +82,8 @@ data:
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 4735124
+gas limit (set this if your wallet's estimate fails): 6250000  
+used on the fork rehearsal: 4735124
 
 arg 1:
 
@@ -103,7 +107,8 @@ data:
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 4735100
+gas limit (set this if your wallet's estimate fails): 6250000  
+used on the fork rehearsal: 4735100
 
 arg 1:
 
@@ -127,7 +132,8 @@ data:
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 4735112
+gas limit (set this if your wallet's estimate fails): 6250000  
+used on the fork rehearsal: 4735112
 
 arg 1:
 
@@ -151,7 +157,8 @@ data:
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 4735088
+gas limit (set this if your wallet's estimate fails): 6250000  
+used on the fork rehearsal: 4735088
 
 arg 1:
 
@@ -175,7 +182,8 @@ data:
 
 to: `0x988D066A0fad76a89DDc87bBF16e92E1187A477c`  
 function: `withdrawItems(address,uint256[])`  
-fork gas: 1084541
+gas limit (set this if your wallet's estimate fails): 1570000  
+used on the fork rehearsal: 1084541
 
 arg 1:
 
@@ -199,7 +207,8 @@ data:
 
 to: `0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3`  
 function: `setApprovedOperator(address,bool)`  
-fork gas: 53002
+gas limit (set this if your wallet's estimate fails): 120000  
+used on the fork rehearsal: 53002
 
 arg 1:
 
@@ -223,7 +232,8 @@ data:
 
 to: `0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3`  
 function: `setApprovalForAll(address,bool)`  
-fork gas: 58832
+gas limit (set this if your wallet's estimate fails): 120000  
+used on the fork rehearsal: 58832
 
 arg 1:
 
@@ -247,7 +257,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10866941
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10866941
 
 arg 1:
 
@@ -265,7 +276,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10838369
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10838369
 
 arg 1:
 
@@ -283,7 +295,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10816469
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10816469
 
 arg 1:
 
@@ -301,7 +314,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10838369
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10838369
 
 arg 1:
 
@@ -319,7 +333,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10838381
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10838381
 
 arg 1:
 
@@ -337,7 +352,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10816457
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10816457
 
 arg 1:
 
@@ -355,7 +371,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10838381
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10838381
 
 arg 1:
 
@@ -373,7 +390,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 10816445
+gas limit (set this if your wallet's estimate fails): 14150000  
+used on the fork rehearsal: 10816445
 
 arg 1:
 
@@ -391,7 +409,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `deposit(uint256[])`  
-fork gas: 7266054
+gas limit (set this if your wallet's estimate fails): 9585000  
+used on the fork rehearsal: 7266054
 
 arg 1:
 
@@ -409,7 +428,8 @@ data:
 
 to: `0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2`  
 function: `start()`  
-fork gas: 159093
+gas limit (set this if your wallet's estimate fails): 300000  
+used on the fork rehearsal: 159093
 
 data:
 

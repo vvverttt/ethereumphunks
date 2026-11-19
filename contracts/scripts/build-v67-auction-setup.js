@@ -114,7 +114,8 @@ async function main() {
     `For each step: open the "to" contract on Etherscan -> Write (as Proxy) -> the function -> paste the args. ` +
     `Or paste "to" + "data" into a raw transaction / Safe transaction builder.\n\n`;
   for (const s of steps) {
-    md += `## Step ${s.step}: ${s.title}\n\nto: \`${s.to}\`  \nfunction: \`${s.fn}\`${s.gasUsed ? `  \nfork gas: ${s.gasUsed}` : ''}\n\n`;
+    md += `## Step ${s.step}: ${s.title}\n\nto: \`${s.to}\`  \nfunction: \`${s.fn}\`  \n` +
+      `gas limit (set this if your wallet's estimate fails): ${s.gasLimit}${s.gasUsed ? `  \nused on the fork rehearsal: ${s.gasUsed}` : ''}\n\n`;
     if (s.args.length) md += s.args.map((a, i) => `arg ${i + 1}:\n\n\`\`\`\n${Array.isArray(a) ? `[${a.join(',')}]` : a}\n\`\`\`\n`).join('\n') + '\n';
     md += `data:\n\n\`\`\`\n${s.data}\n\`\`\`\n\n`;
   }
