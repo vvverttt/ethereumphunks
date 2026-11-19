@@ -114,6 +114,9 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    // The ERC-721 house always wears the blue QuantumPhunks (v67) theme, never the Halloween one,
+    // from first paint, whatever piece is up or whichever page was visited before.
+    this.applyTheme(null);
     try {
       await this.loadHistory();
       await this.showNewest();
@@ -232,9 +235,9 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
     }
   }
 
-  private applyTheme(slug: string | null) {
-    this.themeSvc.setActiveCollection(slug || '');
-    if (!slug) return;
+  private applyTheme(_slug: string | null) {
+    const slug = 'cryptophunksv67';
+    this.themeSvc.setActiveCollection(slug);
     firstValueFrom(this.store.select(dataStateSelectors.selectCollections)).then((collections) => {
       const c = collections?.find((x: any) => x.slug === slug);
       if (c) this.store.dispatch(dataStateActions.setActiveCollection({ activeCollection: { ...c } }));

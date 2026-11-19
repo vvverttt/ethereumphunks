@@ -5,7 +5,7 @@
     <p>{{ hasActiveAuction && !auction()?.settled ? t('a721Rules') : (isDysto() ? t('a721DystoClosed') : t('a721Closed')) }}</p>
   </div>
 
-  <section class="auction" [style.background-image]="accentColor() ? 'linear-gradient(rgba(' + accentColor() + ', 0.15), rgba(' + accentColor() + ', 0.15))' : null">
+  <section class="auction quantum">
     <div class="inner">
 
       <div class="auction-house-header">
