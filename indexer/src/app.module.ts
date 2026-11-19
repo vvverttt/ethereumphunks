@@ -9,6 +9,7 @@ import { QueueModule } from '@/modules/queue/queue.module';
 import { NotifsModule } from '@/modules/notifs/notifs.module';
 import { EthscriptionsModule } from '@/modules/ethscriptions/ethscriptions.module';
 import { LotteryModule } from '@/modules/lottery/lottery.module';
+import { Auction721Module } from '@/modules/auction721/auction721.module';
 import { NftModule } from '@/modules/nft/nft.module';
 import { TxPoolModule } from '@/modules/tx-pool/tx-pool.module';
 import { MintModule } from '@/modules/mint/mint.module';
@@ -30,6 +31,7 @@ import { ApiKeyMiddleware } from '@/middleware/api-key.middleware';
 
     EthscriptionsModule,
     LotteryModule,
+    Auction721Module,
     NftModule,
     QueueModule,
 

@@ -8,6 +8,7 @@ import { UtilityService } from '@/modules/shared/services/utility.service';
 import { TimeService } from '@/modules/shared/services/time.service';
 import { EthscriptionsService } from '@/modules/ethscriptions/ethscriptions.service';
 import { LotteryService } from '@/modules/lottery/lottery.service';
+import { Auction721Service } from '@/modules/auction721/auction721.service';
 import { CommentsService } from '@/modules/comments/comments.service';
 import { NftService } from '@/modules/nft/nft.service';
 
@@ -41,6 +42,7 @@ export class ProcessingService {
     private readonly timeSvc: TimeService,
     private readonly ethsSvc: EthscriptionsService,
     private readonly lotterySvc: LotteryService,
+    private readonly auction721Svc: Auction721Service,
     private readonly commentsSvc: CommentsService,
     private readonly nftSvc: NftService,
     private readonly telegramSvc: TelegramService
@@ -242,6 +244,13 @@ export class ProcessingService {
 
     // Process lottery events
     await this.lotterySvc.processLotteryEvents(
+      receipt,
+      transaction.hash,
+      createdAt
+    );
+
+    // Process V67AuctionHouse (ERC-721 auction) history
+    await this.auction721Svc.processAuction721Events(
       receipt,
       transaction.hash,
       createdAt

@@ -106,6 +106,14 @@ export const auction2AddressL1: string =
     ? process.env.AUCTION2_ADDRESS_MAINNET
     : '')?.toLowerCase() || '';
 
+// V67AuctionHouse (ERC-721 auctions: v67 Dysto pool + featured queue for other collections).
+// Deployed 2026-11-19; env can override. Not part of auctionAddressesL1: those are the ethscription
+// auction houses, decoded with a different ABI.
+export const auction721AddressL1: string =
+  (chain === 'mainnet'
+    ? (process.env.AUCTION721_ADDRESS_MAINNET || '0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2')
+    : (process.env.AUCTION721_ADDRESS_SEPOLIA || ''))?.toLowerCase() || '';
+
 export const auctionAddressesL1 = new Set(
   [auctionAddressL1, auction2AddressL1].filter(Boolean)
 );
