@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -14,8 +14,9 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 @Component({
   selector: 'app-lottery-wins',
   standalone: true,
-  imports: [CommonModule, RouterModule, LazyLoadImageModule, PhunkImageComponent],
+  imports: [RouterModule, LazyLoadImageModule, PhunkImageComponent],
   templateUrl: './lottery-wins.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./lottery-wins.component.scss']
 })
 export class LotteryWinsComponent implements OnInit, OnDestroy {

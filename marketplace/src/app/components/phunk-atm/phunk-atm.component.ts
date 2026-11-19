@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, computed, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -49,6 +49,7 @@ type Missing = { slug: string; name: string; logo?: string | null };
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, PhunkImageComponent, TokenNumberPipe],
   templateUrl: './phunk-atm.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./phunk-atm.component.scss'],
 })
 export class PhunkAtmComponent implements OnChanges, OnInit {

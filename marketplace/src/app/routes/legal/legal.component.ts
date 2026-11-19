@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { InternalLinksDirective } from '@/directives/internal-links.directive';
@@ -17,9 +17,10 @@ import { InternalLinksDirective } from '@/directives/internal-links.directive';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, InternalLinksDirective],
+  imports: [RouterModule, InternalLinksDirective],
   selector: 'app-legal',
   templateUrl: './legal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./legal.component.scss'],
 })
 export class LegalComponent {

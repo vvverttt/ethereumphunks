@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -59,6 +59,7 @@ import { environment } from '@/../environments/environment';
     style: 'transform: translateX(100%);',
   },
   templateUrl: './menu.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent {

@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, Inject, OnInit, signal, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
+
 import { NavigationEnd, NavigationStart, Router, RouterModule, Scroll } from '@angular/router';
 
 import { Store } from '@ngrx/store';
@@ -33,20 +33,19 @@ import { environment } from 'src/environments/environment';
 @Component({
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     WaIntersectionObserver,
-
     MenuComponent,
     HeaderComponent,
     FooterComponent,
     NotificationsComponent,
     ModalComponent,
     ChatComponent,
-    ConnectDialogComponent,
-  ],
+    ConnectDialogComponent
+],
   selector: 'app-root',
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app.component.scss'],
 })
 

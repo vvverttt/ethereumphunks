@@ -1,14 +1,13 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
 @Component({
   standalone: true,
-  imports: [
-    CommonModule
-  ],
+  imports: [],
   selector: 'app-timer',
   templateUrl: './timer.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./timer.component.scss']
 })
 

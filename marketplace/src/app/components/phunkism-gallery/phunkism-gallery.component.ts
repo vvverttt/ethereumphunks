@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { PhunkImageComponent } from '@/components/phunk-image/phunk-image.component';
@@ -29,6 +29,7 @@ export function isPhunkismFilter(filters: Record<string, unknown> | null | undef
   standalone: true,
   imports: [RouterModule, PhunkImageComponent, TokenNumberPipe],
   templateUrl: './phunkism-gallery.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './phunkism-gallery.component.scss',
 })
 export class PhunkismGalleryComponent {

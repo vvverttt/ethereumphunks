@@ -2,7 +2,7 @@ import { FiatPipe } from '@/pipes/fiat.pipe';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ViewChild, ViewChildren, ElementRef, QueryList, Component, signal, inject } from '@angular/core';
+import { ViewChild, ViewChildren, ElementRef, QueryList, Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { formatEther } from 'viem';
 import { HttpClient } from '@angular/common/http';
@@ -94,6 +94,7 @@ interface ActionsState {
   ],
   selector: 'app-phunk-item-view',
   templateUrl: './item-view.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./item-view.component.scss']
 })
 export class ItemViewComponent {

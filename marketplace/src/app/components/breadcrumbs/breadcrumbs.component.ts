@@ -1,5 +1,5 @@
-import { CommonModule, Location } from '@angular/common';
-import { Component, ElementRef, ViewChild, effect, input, signal } from '@angular/core';
+import { Location } from '@angular/common';
+import { Component, ElementRef, ViewChild, effect, input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -15,13 +15,13 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 @Component({
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    TokenNumberPipe,
-  ],
+    TokenNumberPipe
+],
   selector: 'app-breadcrumbs',
   templateUrl: './breadcrumbs.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./breadcrumbs.component.scss']
 })
 export class BreadcrumbsComponent {

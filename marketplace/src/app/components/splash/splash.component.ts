@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, input, viewChild } from '@angular/core';
+import { Component, effect, ElementRef, input, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { AsyncPipe, CommonModule } from '@angular/common';
 
 import { LazyLoadImageModule } from 'ng-lazyload-image';
@@ -31,6 +31,7 @@ interface Image {
     AsyncPipe
   ],
   templateUrl: './splash.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./splash.component.scss'],
 })
 export class SplashComponent {

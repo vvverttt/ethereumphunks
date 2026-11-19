@@ -1,5 +1,5 @@
-import { Inject, Injectable, signal } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Inject, Injectable, signal, DOCUMENT } from '@angular/core';
+
 import { BASE_ID } from '@/i18n/base.id';
 import { UI } from '@/i18n/ui';
 import { CONTENT, Content } from '@/i18n/content';

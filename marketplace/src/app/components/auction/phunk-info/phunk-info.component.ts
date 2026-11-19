@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, signal, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { DataService } from '@/services/data.service';
@@ -13,6 +13,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
   standalone: true,
   imports: [CommonModule, TraitCountPipe, RarityTierPipe],
   templateUrl: './phunk-info.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./phunk-info.component.scss'],
 })
 export class PhunkInfoComponent implements OnChanges {

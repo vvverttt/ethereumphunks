@@ -1,5 +1,5 @@
-import { Component, effect, input, signal, untracked, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, effect, input, signal, untracked, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 
 import { LazyLoadImageModule } from 'ng-lazyload-image';
@@ -14,11 +14,11 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
   selector: 'app-phunk-billboard',
   standalone: true,
   imports: [
-    CommonModule,
     LazyLoadImageModule,
     RouterModule
-  ],
+],
   templateUrl: './phunk-billboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./phunk-billboard.component.scss']
 })
 export class PhunkBillboardComponent {

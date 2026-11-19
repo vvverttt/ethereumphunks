@@ -1,5 +1,5 @@
-import { Component, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnChanges, SimpleChanges, signal, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -18,7 +18,7 @@ import { Collection } from '@/models/data.state';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   selector: 'app-collection-search',
   template: `
     <h3>{{ prefs.t('searchCollection', { name: collection.name }) }}</h3>
@@ -29,6 +29,7 @@ import { Collection } from '@/models/data.state';
     </form>
     @if (error()) { <p class="error">{{ error() }}</p> }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; }
     h3 { margin: 0; padding-bottom: 2rem; font-size: 2.4rem; }

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, isDevMode } from '@angular/core';
+import { Component, DestroyRef, inject, isDevMode, ChangeDetectionStrategy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -32,6 +32,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
   imports: [CommonModule, RouterModule, PhunkAtmComponent],
   selector: 'app-my-phunks',
   templateUrl: './my-phunks.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./my-phunks.component.scss'],
 })
 export class MyPhunksComponent {

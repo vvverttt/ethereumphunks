@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { parseEther } from 'viem';
@@ -19,6 +19,7 @@ const SEEN_KEY = 'EtherPhunks_bid_eggs_seen';
   selector: 'app-bid-easter-egg',
   standalone: true,
   templateUrl: './bid-easter-egg.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./bid-easter-egg.component.scss'],
 })
 export class BidEasterEggComponent implements OnInit, OnChanges, OnDestroy {

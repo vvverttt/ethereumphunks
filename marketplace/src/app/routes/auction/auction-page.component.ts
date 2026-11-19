@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal, effect } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -62,6 +62,7 @@ const BUYNOW_TIER2_ETH = '0.167';
   ],
   providers: [AuctionService],
   templateUrl: './auction-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./auction-page.component.scss'],
 })
 export class AuctionPageComponent implements OnInit, OnDestroy {

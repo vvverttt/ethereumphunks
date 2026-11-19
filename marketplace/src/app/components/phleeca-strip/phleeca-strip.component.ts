@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, inject, signal } from '@angular/core';
+import { Component, Input, OnChanges, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -22,6 +22,7 @@ import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
   imports: [CommonModule, WalletAddressDirective, FiatPipe],
   selector: 'app-phleeca-strip',
   templateUrl: './phleeca-strip.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./phleeca-strip.component.scss'],
 })
 export class PhleecaStripComponent implements OnChanges {

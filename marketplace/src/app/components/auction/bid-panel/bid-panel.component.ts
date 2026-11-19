@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, computed, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { formatEther } from 'viem';
 
@@ -15,16 +15,16 @@ import { KeepInViewDirective } from '@/directives/keep-in-view.directive';
   selector: 'app-bid-panel',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TimerComponent,
     WalletAddressDirective,
     WeiToEthPipe,
     BidWordPipe,
     BidEggPartsPipe,
-    KeepInViewDirective,
-  ],
+    KeepInViewDirective
+],
   templateUrl: './bid-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./bid-panel.component.scss'],
 })
 export class BidPanelComponent {

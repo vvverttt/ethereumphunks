@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, input, OnDestroy, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, OnDestroy, signal, untracked, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AsyncPipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { Subscription, map, startWith } from 'rxjs';
@@ -33,6 +33,7 @@ import { environment } from 'src/environments/environment';
     LoggerComponent
   ],
   templateUrl: './status-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './status-bar.component.scss',
 })
 export class StatusBarComponent implements OnDestroy {

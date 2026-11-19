@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -33,6 +33,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
   standalone: true,
   imports: [CommonModule, RouterModule, PhunkGridComponent],
   templateUrl: './sales-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./sales-page.component.scss'],
 })
 export class SalesPageComponent {

@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, effect, input, viewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, effect, input, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, LowerCasePipe } from '@angular/common';
 
 import { LogItem } from '@/services/socket.service';
@@ -14,6 +14,7 @@ import { TimeagoModule } from 'ngx-timeago';
   ],
   selector: 'app-logger',
   templateUrl: './logger.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './logger.component.scss'
 })
 export class LoggerComponent implements AfterViewInit {

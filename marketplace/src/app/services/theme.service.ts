@@ -1,5 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, signal } from '@angular/core';
+
+import { Inject, Injectable, signal, DOCUMENT } from '@angular/core';
 
 import { Theme, ThemeProperties, ThemeStyles } from '@/models/theme';
 

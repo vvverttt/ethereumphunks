@@ -5,7 +5,7 @@ import { selectMarketSlug } from '@/state/selectors/market-state.selectors';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { filter, map, startWith } from 'rxjs';
@@ -19,6 +19,7 @@ import { ERC721C_CONTRACT_SETS } from '@/constants/erc721c';
   imports: [CommonModule, RouterModule, WalletAddressDirective],
   selector: 'app-footer',
   templateUrl: './footer.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./footer.component.scss']
 })
 

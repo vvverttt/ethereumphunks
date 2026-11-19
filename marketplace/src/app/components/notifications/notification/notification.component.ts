@@ -1,4 +1,4 @@
-import { Component, Input, effect, input } from '@angular/core';
+import { Component, Input, effect, input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -38,9 +38,10 @@ import { setChat } from '@/state/actions/chat.actions';
   ],
   templateUrl: './notification.component.html',
   styleUrls: ['./notification.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
-    '(mouseenter)': 'onMouseEnter(txn.id)',
-    '(mouseleave)': 'onMouseLeave(txn.id)'
+    '(mouseenter)': 'onMouseEnter($safeNavigationMigration(txn()?.id))',
+    '(mouseleave)': 'onMouseLeave($safeNavigationMigration(txn()?.id))'
   }
 })
 export class NotificationComponent {
@@ -81,13 +82,13 @@ export class NotificationComponent {
     this.store.dispatch(removeNotification({ txId: txn.id }));
   }
 
-  onMouseEnter(notificationId: string) {
-    if (this.isMenu()) return;
+  onMouseEnter(notificationId: string | undefined) {
+    if (this.isMenu() || !notificationId) return;
     this.store.dispatch(setNotifHoverState({ notifHoverState: { [notificationId]: true } }));
   }
 
-  onMouseLeave(notificationId: string) {
-    if (this.isMenu()) return;
+  onMouseLeave(notificationId: string | undefined) {
+    if (this.isMenu() || !notificationId) return;
     this.store.dispatch(setNotifHoverState({ notifHoverState: { [notificationId]: false } }));
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { formatEther } from 'viem';
 
@@ -23,6 +23,7 @@ import { auctionPoll } from '@/utils/visible-interval';
   // without this the card failed to construct and vanished from the menu.
   providers: [AuctionService],
   templateUrl: './menu-auction.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./menu-auction.component.scss'],
 })
 export class MenuAuctionComponent implements OnInit, OnDestroy {

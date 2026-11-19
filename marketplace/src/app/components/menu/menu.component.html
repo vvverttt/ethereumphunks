@@ -29,11 +29,11 @@
         @if ((leaderboard$ | async); as leaderboard) {
           @if (leaderboard.length) {
             <span class="top-points">
-              <div class="value">{{ leaderboard[0]?.points | formatCash }}</div>
+              <div class="value">{{ $safeNavigationMigration(leaderboard[0]?.points) | formatCash }}</div>
               <div class="label">{{ t('farts') }}</div>
             </span>
             <div class="top-holder">
-              <app-address [address]="leaderboard[0]?.address" />
+              <app-address [address]="$safeNavigationMigration(leaderboard[0]?.address)" />
               <div class="label">{{ t('topFartHolder') }}</div>
             </div>
           }

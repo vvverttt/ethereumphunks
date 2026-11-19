@@ -1,5 +1,5 @@
-import { Component, ElementRef, HostListener, Input, ViewChild, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, HostListener, Input, ViewChild, signal, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router } from '@angular/router';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 
@@ -14,7 +14,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   selector: 'app-collection-map',
   template: `
     <div class="map" #map [style.height.px]="boxH()"
@@ -51,6 +51,7 @@ import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; width: 100%; }
     .map {

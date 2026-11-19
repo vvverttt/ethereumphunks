@@ -1,5 +1,5 @@
-import { Component, effect, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, effect, input, signal, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
@@ -37,15 +37,15 @@ import { startWith, switchMap } from 'rxjs';
   selector: 'app-collection-sales',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     LazyLoadImageModule,
     TimeagoModule,
     PhunkImageComponent,
     WeiToEthPipe,
-    FormatCashPipe,
-  ],
+    FormatCashPipe
+],
   templateUrl: './collection-sales.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./collection-sales.component.scss'],
 })
 export class CollectionSalesComponent {

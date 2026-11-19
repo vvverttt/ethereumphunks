@@ -1,14 +1,15 @@
-import { Component, ElementRef, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+
 
 import anime from 'animejs';
 
 @Component({
   selector: 'app-slideout',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './slideout.component.html',
   styleUrl: './slideout.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '[class.active]': 'active',
     'style': 'transform: translateX(100%);',

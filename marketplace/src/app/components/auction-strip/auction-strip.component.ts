@@ -1,6 +1,6 @@
 import { IS_BOT } from '@/utils/is-bot';
-import { Component, OnDestroy, OnInit, inject, input, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, inject, input, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { formatEther } from 'viem';
@@ -35,13 +35,14 @@ import { KeepInViewDirective } from '@/directives/keep-in-view.directive';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TimerComponent, BidWordPipe, BidEggPartsPipe, KeepInViewDirective],
+  imports: [RouterModule, FormsModule, TimerComponent, BidWordPipe, BidEggPartsPipe, KeepInViewDirective],
   // AuctionService is deliberately NOT providedIn:'root' — the auction page supplies its
   // own instance. Without this the injector has nothing to resolve, inject() throws during
   // construction, and the failure takes the whole collection page down with it.
   providers: [AuctionService],
   selector: 'app-auction-strip',
   templateUrl: './auction-strip.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./auction-strip.component.scss'],
 })
 export class AuctionStripComponent implements OnInit, OnDestroy {

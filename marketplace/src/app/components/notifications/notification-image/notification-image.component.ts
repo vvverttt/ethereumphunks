@@ -1,5 +1,5 @@
-import { Component, effect, input, signal, untracked } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, effect, input, signal, untracked, ChangeDetectionStrategy } from '@angular/core';
+
 import { HttpClient } from '@angular/common/http';
 
 import { LazyLoadImageModule } from 'ng-lazyload-image';
@@ -17,11 +17,11 @@ const imageReads = new Map<string, Promise<string>>();
 @Component({
   standalone: true,
   imports: [
-    CommonModule,
-    LazyLoadImageModule,
-  ],
+    LazyLoadImageModule
+],
   selector: 'app-notification-image',
   templateUrl: './notification-image.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./notification-image.component.scss'],
 })
 export class NotificationImageComponent {

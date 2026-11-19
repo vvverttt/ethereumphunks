@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, input, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, input, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -54,6 +54,7 @@ import { firstValueFrom, map, tap } from 'rxjs';
   ],
   selector: 'app-recent-activity',
   templateUrl: './recent-activity.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./recent-activity.component.scss']
 })
 export class RecentActivityComponent {

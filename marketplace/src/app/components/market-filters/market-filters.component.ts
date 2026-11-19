@@ -1,4 +1,4 @@
-import { Component, effect, input } from '@angular/core';
+import { Component, effect, input, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpParams } from '@angular/common/http';
 import { CommonModule, Location, TitleCasePipe } from '@angular/common';
@@ -25,6 +25,7 @@ import { tap } from 'rxjs';
     TitleCasePipe,
   ],
   templateUrl: './market-filters.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./market-filters.component.scss']
 })
 

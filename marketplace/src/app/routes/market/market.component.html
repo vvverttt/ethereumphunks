@@ -174,7 +174,7 @@
           </button>
 
           <aside class="filter-wrapper" [class.mobile-hidden]="!mobileFiltersOpen">
-            <app-market-filters [slug]="(activeCollection$ | async)?.slug" />
+            <app-market-filters [slug]="$safeNavigationMigration((activeCollection$ | async)?.slug)" />
           </aside>
 
           <div class="results-area">
@@ -262,7 +262,7 @@
                   <input
                     type="number"
                     [id]="item.value.phunkId"
-                    [placeholder]="item.value.listing ? ((item.value.listing?.minValue | weiToEth) + 'Ξ') : 'ETH'"
+                    [placeholder]="item.value.listing ? (($safeNavigationMigration(item.value.listing?.minValue) | weiToEth) + 'Ξ') : 'ETH'"
                     formControlName="listPrice"
                   />
                   @if (selectedPhunksFormArray.controls[i].get('listPrice')?.value) {
@@ -377,11 +377,11 @@
               #{{ item.value.phunkId }}
             </span>
             <span class="eth">
-              {{ (item.value.listing?.minValue | weiToEth) | number }}Ξ
+              {{ ($safeNavigationMigration(item.value.listing?.minValue) | weiToEth) | number }}Ξ
             </span>
             @if (usd$ | async; as usd) {
               <span class="usd">
-                {{ ((item.value.listing?.minValue | weiToEth) * usd) | fiat }}
+                {{ (($safeNavigationMigration(item.value.listing?.minValue) | weiToEth) * usd) | fiat }}
               </span>
             }
           </div>

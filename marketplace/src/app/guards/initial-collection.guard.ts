@@ -1,4 +1,4 @@
-import { Component, Injectable } from '@angular/core';
+import { Component, Injectable, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 
 import { Observable, of } from 'rxjs';
@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 })
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 export class InitialCollectionGuard implements CanActivate {

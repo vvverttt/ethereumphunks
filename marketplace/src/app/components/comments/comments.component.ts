@@ -1,4 +1,4 @@
-import { Component, input, model, signal } from '@angular/core';
+import { Component, input, model, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +35,7 @@ import { upsertNotification } from '@/state/actions/notification.actions';
     AvatarComponent,
   ],
   templateUrl: './comments.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./comments.component.scss']
 })
 export class CommentsComponent {

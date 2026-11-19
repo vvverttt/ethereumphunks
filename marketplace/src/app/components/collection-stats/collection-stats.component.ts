@@ -1,4 +1,4 @@
-import { Component, Input, signal, computed, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, signal, computed, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -115,6 +115,7 @@ function rarityTier(count: number, pct: number): string {
   imports: [CommonModule, RouterModule, DecimalPipe],
   selector: 'app-collection-stats',
   templateUrl: './collection-stats.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./collection-stats.component.scss'],
 })
 export class CollectionStatsComponent implements OnChanges {

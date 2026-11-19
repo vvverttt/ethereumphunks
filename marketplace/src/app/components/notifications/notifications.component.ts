@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -23,6 +23,7 @@ export type TxFunction = 'sendToEscrow' | 'phunkNoLongerForSale' | 'offerPhunkFo
     NotificationComponent,
   ],
   templateUrl: './notifications.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./notifications.component.scss']
 })
 export class NotificationsComponent {
