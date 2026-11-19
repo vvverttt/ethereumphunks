@@ -1,0 +1,39 @@
+[profile.default]
+src = 'contracts'
+out = 'foundry-out'
+libs = ['lib', 'node_modules']
+test = 'foundry-test'
+solc = '0.8.20'
+via_ir = true
+optimizer = true
+optimizer_runs = 200
+remappings = [
+  'forge-std/=lib/forge-std/src/',
+  '@openzeppelin/contracts-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/',
+  '@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/',
+  '@chainlink/=node_modules/@chainlink/',
+]
+[invariant]
+runs = 200
+depth = 40
+fail_on_revert = false
+
+# V67AuctionHouse fuzz + invariant suite only, on the same compiler the deploy uses (0.8.36).
+# Run: FOUNDRY_PROFILE=v67auction forge test
+[profile.v67auction]
+src = 'foundry-test/v67auction'
+test = 'foundry-test/v67auction'
+out = 'foundry-out-v67auction'
+solc = '0.8.36'
+evm_version = 'paris'
+via_ir = true
+optimizer = true
+optimizer_runs = 200
+
+[profile.v67auction.fuzz]
+runs = 5000
+
+[profile.v67auction.invariant]
+runs = 500
+depth = 60
+fail_on_revert = true
