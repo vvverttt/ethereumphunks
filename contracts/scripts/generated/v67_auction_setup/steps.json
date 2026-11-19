@@ -4591,6 +4591,17 @@
       "gasUsed": "7266054"
     },
     {
+      "step": "4.10",
+      "title": "Auction: set auction length to 3.67 days (317088 s) before the first auction opens",
+      "to": "0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2",
+      "fn": "setDuration(uint256)",
+      "args": [
+        317088
+      ],
+      "data": "0xf6be71d1000000000000000000000000000000000000000000000000000000000004d6a0",
+      "gasLimit": 60000
+    },
+    {
       "step": "5",
       "title": "Auction: start (opens auction #1)",
       "to": "0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2",
