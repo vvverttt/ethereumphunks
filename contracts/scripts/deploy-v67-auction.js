@@ -87,6 +87,8 @@ async function main() {
     nft: [await h.nft(), V67], weth: [await h.weth(), WETH], payout: [await h.payout(), PAYOUT],
     guardian: [await h.guardian(), GUARDIAN], owner: [await h.owner(), OWNER],
     duration: [await h.duration(), 144288n], started: [await h.started(), false],
+    minOpeningBid: [await h.minOpeningBid(), ethers.parseEther('0.001')], queueEvery: [await h.queueEvery(), 2n],
+    poolSinceQueue: [await h.poolSinceQueue(), 65535n],
   };
   let ok = true;
   for (const [k, [got, want]] of Object.entries(checks)) {
