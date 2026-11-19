@@ -1,129 +1,88 @@
-<div class="a721" [class.dysto]="isDysto()">
+<!-- Same structure and classes as the Ethscriptions auction page (shares its stylesheet). -->
+<div class="auction-page" [ngStyle]="{'--auction-accent': accentColor() || null}">
 
-  <!-- ========== HEADER ========== -->
-  <header class="a721-head">
-    @if (isDysto()) {
-      <h1 class="title">{{ t('a721DystoTitle') }}</h1>
-      <p class="sub">{{ t('a721DystoSub') }}</p>
-      <div class="stats">
-        <div class="stat"><span class="v">{{ dystoLeft() }}</span><span class="k">{{ t('a721DystoLeft') }}</span></div>
-        <div class="stat"><span class="v">{{ soldCount() }}</span><span class="k">{{ t('a721Sold') }}</span></div>
-        <div class="stat">
-          <span class="v">{{ topSale() ? eth(topSale()!.amount) + ' Ξ' : '—' }}</span>
-          <span class="k">{{ t('a721TopSale') }}</span>
+  <div class="auction-notice">
+    <p>{{ hasActiveAuction && !auction()?.settled ? t('a721Rules') : (isDysto() ? t('a721DystoClosed') : t('a721Closed')) }}</p>
+  </div>
+
+  <section class="auction" [style.background-image]="accentColor() ? 'linear-gradient(rgba(' + accentColor() + ', 0.15), rgba(' + accentColor() + ', 0.15))' : null">
+    <div class="inner">
+
+      <div class="auction-house-header">
+        <div class="auction-house-brand">
+          <img src="assets/images/beam.png" alt="QuantumPhunks" class="auction-house-logo" />
+          <div class="auction-house-title">
+            <span class="auction-house-name">{{ isDysto() ? 'Dysto' : 'QuantumPhunks' }}</span>
+            <span class="auction-house-sub">{{ t('auctionHouse') }}</span>
+            @if (isDysto()) {
+              <span class="auction-house-tag">ERC-721</span>
+            } @else {
+              <app-auction-switch current="erc721" />
+            }
+          </div>
         </div>
       </div>
-    } @else {
-      <h1 class="title">{{ t('a721Title') }}</h1>
-      <p class="sub">{{ t('a721Sub') }}</p>
-    }
-  </header>
 
-  @if (!loaded()) {
-    <div class="state">{{ t('auctionLoading') }}</div>
-  } @else {
+      <div class="phunk-image-wrapper" [class.is-phunk]="true">
+        @if (phunkImage()) {
+          <img [src]="phunkImage()" class="phunk-fallback" crossorigin="anonymous" (load)="onMainImageLoad($event)" />
+        } @else {
+          <div class="placeholder"></div>
+        }
+      </div>
 
-    <!-- ========== LIVE AUCTION ========== -->
-    @if (current(); as cur) {
-      <section class="live">
-        <a class="art" [routerLink]="link(cur)">
-          @if (pieceOf(cur)?.sha) {
-            <app-phunk-image [sha]="pieceOf(cur)!.sha" />
-          } @else {
-            <div class="art-placeholder">#{{ cur.tokenId }}</div>
-          }
-        </a>
+      <app-phunk-info
+        [style.opacity]="loading() ? 0 : null" [style.pointer-events]="loading() ? 'none' : null"
+        [collectionName]="collectionName()"
+        [tokenId]="phunkTokenId()"
+        [slug]="phunkSlug()"
+        [sha]="phunkSha()"
+        [poolSize]="poolSize()"
+        [canGoPrev]="canGoPrev()"
+        [canGoNext]="canGoNext()"
+        (prevAuction)="prevAuction()"
+        (nextAuction)="nextAuction()"
+      />
 
-        <div class="panel">
-          <div class="piece-name">
-            <span class="coll">{{ collectionLabel(cur.collection) }}</span>
-            <span class="id">#{{ cur.tokenId }}</span>
-            <span class="aid">{{ t('a721AuctionNo', { n: cur.auctionId }) }}</span>
-          </div>
-
-          @if (live(); as l) {
-            <div class="row">
-              <div class="cell">
-                <span class="k">{{ l.bidder === '0x0000000000000000000000000000000000000000' ? t('a721OpeningBid') : t('a721CurrentBid') }}</span>
-                <span class="v">{{ l.bidder === '0x0000000000000000000000000000000000000000' ? eth(l.minNextBid) : eth(l.amount) }} Ξ</span>
-              </div>
-              <div class="cell">
-                <span class="k">{{ ended() ? t('a721Ended') : t('a721EndsIn') }}</span>
-                <span class="v mono">{{ ended() ? '00:00:00' : remaining() }}</span>
-              </div>
-            </div>
-            @if (l.bidder !== '0x0000000000000000000000000000000000000000') {
-              <div class="leader">{{ t('a721Leader') }} <a [href]="'https://etherscan.io/address/' + l.bidder" target="_blank" rel="noopener">{{ short(l.bidder) }}</a></div>
-            }
-
-            @if (!ended()) {
-              <form class="bid" (ngSubmit)="bid()">
-                <input type="text" inputmode="decimal" name="bid" [(ngModel)]="bidValue" [placeholder]="eth(l.minNextBid, 6) + ' Ξ ' + t('a721OrMore')" [disabled]="txPending()" />
-                <button type="button" class="ghost" (click)="fillMin()" [disabled]="txPending()">{{ t('a721Min') }}</button>
-                <button type="submit" [disabled]="txPending() || !(connected$ | async)">
-                  {{ txPending() ? t('a721Pending') : ((connected$ | async) ? t('a721PlaceBid') : t('a721ConnectFirst')) }}
-                </button>
-              </form>
-              <p class="fine">{{ t('a721Rules') }}</p>
-            } @else {
-              <button class="settle" (click)="settle()" [disabled]="txPending() || !(connected$ | async)">
-                {{ txPending() ? t('a721Pending') : t('a721Settle') }}
-              </button>
-              <p class="fine">{{ t('a721SettleNote') }}</p>
-            }
-            @if (txError()) { <p class="err">{{ txError() }}</p> }
-          } @else {
-            <div class="state small">{{ t('auctionLoading') }}</div>
-          }
-
-          <!-- bids for the live auction (Supabase) -->
-          @if (bids().length) {
-            <ul class="bids">
-              @for (b of bids(); track b.txHash) {
-                <li>
-                  <a [href]="'https://etherscan.io/address/' + b.bidder" target="_blank" rel="noopener">{{ short(b.bidder) }}</a>
-                  <a class="amt" [href]="'https://etherscan.io/tx/' + b.txHash" target="_blank" rel="noopener">{{ eth(b.amount) }} Ξ</a>
-                </li>
-              }
-            </ul>
-          }
-        </div>
-      </section>
-    } @else {
-      <section class="closed">
-        <p>{{ isDysto() ? t('a721DystoClosed') : t('a721Closed') }}</p>
-      </section>
-    }
-
-    <!-- ========== HISTORY (always shown, Supabase only) ========== -->
-    <section class="history">
-      <h2>{{ t('a721History') }}</h2>
-      @if (!past().length) {
-        <p class="empty">{{ t('a721NoHistory') }}</p>
-      } @else {
-        <div class="grid">
-          @for (r of past(); track r.auctionId) {
-            <a class="tile" [routerLink]="link(r)" [class.unsold]="r.outcome !== 'sold'">
-              <div class="img">
-                @if (pieceOf(r)?.sha) { <app-phunk-image [sha]="pieceOf(r)!.sha" /> } @else { <span>#{{ r.tokenId }}</span> }
-              </div>
-              <div class="meta">
-                <span class="id">#{{ r.tokenId }}</span>
-                @if (r.outcome === 'sold') {
-                  <span class="amt">{{ eth(r.amount) }} Ξ</span>
-                  <span class="who">{{ short(r.winner) }}</span>
-                } @else {
-                  <span class="who">{{ r.outcome === 'skipped' ? t('a721Skipped') : t('a721NoSale') }}</span>
-                }
-              </div>
-            </a>
-          }
-        </div>
+      @if (updating()) {
+        <div class="updating-indicator">{{ t('auctionNewBidUpdating') }}</div>
       }
-      <p class="contract">
-        {{ t('a721Contract') }}
-        <a [href]="'https://etherscan.io/address/' + auctionAddress + '#code'" target="_blank" rel="noopener">{{ short(auctionAddress) }}</a>
-      </p>
-    </section>
-  }
+    </div>
+  </section>
+
+  <section class="auction-history">
+    <div class="history-inner" [style.--bid-count]="bids().length">
+      <app-auction-slider
+        [settledAuctions]="allAuctions()"
+        [loaded]="settledLoaded()"
+        (selectAuction)="navigateToAuction($event)"
+      />
+
+      <app-bid-easter-egg [bids]="bids()" />
+
+      <app-bid-panel
+        [style.opacity]="loading() ? 0 : null" [style.pointer-events]="loading() ? 'none' : null"
+        [auction]="auction()"
+        [bids]="bids()"
+        [connected]="!!(connected$ | async)"
+        [auctionEnded]="auctionEnded()"
+        [reservePrice]="reservePrice()"
+        [minBidIncrement]="minBidIncrement"
+        [minBidOverride]="minBidExact()"
+        [txPending]="txPending()"
+        [txHash]="txHash()"
+        [errorMessage]="errorMessage()"
+        [explorerUrl]="explorerUrl"
+        [isHistorical]="isHistorical()"
+        [noAuction]="!hasActiveAuction && !isHistorical()"
+        [poolSize]="poolSize()"
+        (placeBid)="onPlaceBid($event)"
+        (settle)="onSettle()"
+        (connect)="web3Svc.connect()"
+        (closeError)="closeError()"
+        (closeTx)="txHash.set('')"
+        (timerEvent)="handleTimerEvent($event)"
+      />
+    </div>
+  </section>
 </div>

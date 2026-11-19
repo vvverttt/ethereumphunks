@@ -26,6 +26,7 @@ export interface Auction721Row {
   winner: string | null;
   amount: string | null;
   settledTx: string | null;
+  settledAt?: string | null;
 }
 
 export interface Bid721 {
@@ -71,13 +72,35 @@ export class Auction721Service {
   async history(limit = 60, collection?: string): Promise<Auction721Row[]> {
     let q = supabase
       .from('auctions721' + suffix)
-      .select('auctionId,collection,tokenId,startTime,endTime,settled,outcome,winner,amount,settledTx')
+      .select('auctionId,collection,tokenId,startTime,endTime,settled,outcome,winner,amount,settledTx,settledAt')
       .order('auctionId', { ascending: false })
       .limit(limit);
     if (collection) q = q.eq('collection', collection.toLowerCase());
     const { data, error } = await q;
     if (error) { console.warn('auctions721', error.message); return []; }
     return (data || []).map((r: any) => ({ ...r, tokenId: Number(r.tokenId) }));
+  }
+
+  /** One auction by id (for browsing back past the loaded page of history). */
+  async byId(auctionId: number): Promise<Auction721Row | null> {
+    const { data } = await supabase
+      .from('auctions721' + suffix)
+      .select('auctionId,collection,tokenId,startTime,endTime,settled,outcome,winner,amount,settledTx,settledAt')
+      .eq('auctionId', auctionId)
+      .limit(1);
+    const r: any = data?.[0];
+    return r ? { ...r, tokenId: Number(r.tokenId) } : null;
+  }
+
+  /** The collection's display name (same lookup the Ethscriptions house uses). */
+  async collectionName(slug: string | null): Promise<string> {
+    if (!slug) return 'Phunk';
+    try {
+      const { data } = await supabase.from('collections' + suffix).select('singleName').eq('slug', slug).limit(1);
+      return data?.[0]?.singleName ?? 'Phunk';
+    } catch {
+      return 'Phunk';
+    }
   }
 
   /** Bids for one auction, highest first. */

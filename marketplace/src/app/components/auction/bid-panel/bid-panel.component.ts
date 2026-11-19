@@ -43,6 +43,9 @@ export class BidPanelComponent {
   @Input() noAuction = false;
   /** Remaining items in the auction pool — used to offer "Start Next Auction" after a buy-now. */
   @Input() poolSize = 0;
+  /** Exact smallest accepted bid in ETH, read from the contract (ERC-721 house). When set it replaces the
+   *  local estimate, which rounds to 6 decimals and could land a hair under the contract's rounded-up minimum. */
+  @Input() minBidOverride = '';
 
   // ─── Buy-now (two tiers) ────────────────────────────────────────────────────
   // Each tier: Live = enabled on-chain AND bundle root matches; Eligible = wallet has a proof.
@@ -79,6 +82,7 @@ export class BidPanelComponent {
   }
 
   get minNextBid(): string {
+    if (this.minBidOverride) return this.minBidOverride;
     const a = this.auction;
     if (!a) return this.reservePrice;
     if (!a.bidder || a.bidder === '0x0000000000000000000000000000000000000000') {
