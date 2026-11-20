@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createPublicClient, http, isAddress, parseAbi, recoverMessageAddress } from 'viem';
+import { createPublicClient, http, isAddress, keccak256, parseAbi, recoverMessageAddress, stringToBytes } from 'viem';
 
 const OWNER_ABI = parseAbi([
   'function owner() view returns (address)',
@@ -15,14 +15,14 @@ function stableStringify(value) {
   return JSON.stringify(value);
 }
 
-function hashString(input) {
-  let hash = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return `fnv1a_${(hash >>> 0).toString(16)}`;
+// keccak256, not a short checksum: the signature covers this hash, so it has to be
+// infeasible to find a different `updates` object that produces the same one.
+function hashPayload(input) {
+  return keccak256(stringToBytes(input));
 }
+
+// a signed request is only good for a few minutes after it was made
+const MAX_SIGNATURE_LIFETIME_MS = 10 * 60 * 1000;
 
 function buildAdminConfigMessage(auth) {
   return [
@@ -90,7 +90,15 @@ export async function onRequestPost(context) {
       return json(401, { error: 'Admin signature issued in the future' });
     }
 
-    const expectedPayloadHash = hashString(stableStringify(updates));
+    if (auth.expiresAt - auth.issuedAt > MAX_SIGNATURE_LIFETIME_MS || now - auth.issuedAt > MAX_SIGNATURE_LIFETIME_MS) {
+      return json(401, { error: 'Admin signature lifetime too long' });
+    }
+
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return json(400, { error: 'Invalid updates' });
+    }
+
+    const expectedPayloadHash = hashPayload(stableStringify(updates));
     if (auth.payloadHash !== expectedPayloadHash) {
       return json(400, { error: 'Payload hash mismatch' });
     }
@@ -134,7 +142,8 @@ export async function onRequestPost(context) {
       .select('*');
 
     if (error) {
-      return json(500, { error: error.message });
+      console.error('admin-config update failed', error);
+      return json(500, { error: 'Config update failed' });
     }
 
     if (!data?.length) {
@@ -143,6 +152,7 @@ export async function onRequestPost(context) {
 
     return json(200, { ok: true, config: data[0] });
   } catch (error) {
-    return json(500, { error: error instanceof Error ? error.message : 'Unknown admin config error' });
+    console.error('admin-config error', error);
+    return json(500, { error: 'Admin config error' });
   }
 }

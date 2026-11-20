@@ -20,7 +20,6 @@ import * as marketStateActions from '@/state/actions/market-state.actions';
 import * as dataStateActions from '@/state/actions/data-state.actions';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
 
-import { ChatService } from '@/services/chat.service';
 
 import { environment } from 'src/environments/environment';
 import { formatEther } from 'viem';
@@ -76,7 +75,6 @@ export class AppStateEffects {
       return [
         appStateActions.fetchUserPoints({ address }),
         appStateActions.checkHasWithdrawal(),
-        appStateActions.reconnectChat(),
       ];
     }),
   ));
@@ -266,13 +264,6 @@ export class AppStateEffects {
     })
   ));
 
-  onReconnectChat$ = createEffect(() => this.actions$.pipe(
-    ofType(appStateActions.reconnectChat),
-    withLatestFrom(this.store.select(appStateSelectors.selectWalletAddress)),
-    filter(([action, address]) => !!address),
-    switchMap(([action, address]) => from(this.chatSvc.reconnectXmtp(address!))),
-  ), { dispatch: false });
-
   onSetLinkedAccounts$ = createEffect(() => this.actions$.pipe(
     ofType(appStateActions.setWalletAddress),
     filter(({ walletAddress }) => !!walletAddress),
@@ -311,7 +302,6 @@ export class AppStateEffects {
     private actions$: Actions,
     private web3Svc: Web3Service,
     private themeSvc: ThemeService,
-    private chatSvc: ChatService,
     private dataSvc: DataService,
     private socketSvc: SocketService,
     private storageSvc: StorageService,

@@ -12,7 +12,6 @@ import { FooterComponent } from '@/components/footer/footer.component';
 import { MenuComponent } from '@/components/menu/menu.component';
 import { NotificationsComponent } from '@/components/notifications/notifications.component';
 import { ModalComponent } from '@/components/modal/modal.component';
-import { ChatComponent } from '@/components/chat/chat.component';
 import { ConnectDialogComponent } from '@/components/connect-dialog/connect-dialog.component';
 
 import { Web3Service } from '@/services/web3.service';
@@ -40,7 +39,6 @@ import { environment } from 'src/environments/environment';
     FooterComponent,
     NotificationsComponent,
     ModalComponent,
-    ChatComponent,
     ConnectDialogComponent
 ],
   selector: 'app-root',

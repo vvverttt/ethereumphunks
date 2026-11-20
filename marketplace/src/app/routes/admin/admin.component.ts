@@ -3,7 +3,7 @@ import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
-import { formatEther, parseEther } from 'viem';
+import { formatEther, keccak256, parseEther, stringToBytes } from 'viem';
 
 import { GlobalState } from '@/models/global-state';
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
@@ -663,7 +663,7 @@ export class AdminComponent implements OnInit {
 
     const now = Date.now();
     const expiresAt = now + 5 * 60 * 1000;
-    const payloadHash = this.hashString(this.stableStringify(updates));
+    const payloadHash = keccak256(stringToBytes(this.stableStringify(updates)));
 
     const auth = {
       address: address.toLowerCase(),
@@ -721,17 +721,6 @@ export class AdminComponent implements OnInit {
     }
 
     return JSON.stringify(value);
-  }
-
-  private hashString(input: string): string {
-    let hash = 2166136261;
-
-    for (let i = 0; i < input.length; i++) {
-      hash ^= input.charCodeAt(i);
-      hash = Math.imul(hash, 16777619);
-    }
-
-    return `fnv1a_${(hash >>> 0).toString(16)}`;
   }
 
   // Pause All (Market, Auction, Lottery, Evolve)
@@ -889,12 +878,13 @@ export class AdminComponent implements OnInit {
 
   async checkHealth() {
     const rpcs = [
-      { name: 'Ankr A',      url: 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8' },
-      { name: 'Alchemy A (backup)', url: (environment as any).frontendBackupRpcUrl || '' },
-      { name: 'Alchemy B (receipt)', url: (environment as any).receiptRpcUrl || environment.rpcHttpProvider },
-      { name: 'Primary RPC', url: environment.rpcHttpProvider },
+      { name: 'Primary RPC (proxy)', url: environment.rpcHttpProvider },
+      { name: 'Backup RPC', url: (environment as any).frontendBackupRpcUrl || '' },
+      { name: 'Receipt RPC', url: (environment as any).receiptRpcUrl || '' },
+      { name: '1RPC (public)', url: 'https://1rpc.io/eth' },
+      { name: 'LlamaRPC (public)', url: 'https://eth.llamarpc.com' },
       { name: 'Relay (indexer)', url: `${environment.relayUrl}/rpc` },
-    ].filter(r => r.url);
+    ].filter((r, i, all) => r.url && all.findIndex(o => o.url === r.url) === i);
 
     this.healthChecking.set(true);
     this.healthResults.set(rpcs.map(r => ({ ...r, status: 'pending' as const })));

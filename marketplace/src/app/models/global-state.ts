@@ -2,7 +2,8 @@ import { DataState } from './data.state';
 import { MarketState } from './market.state';
 
 import { Theme } from './theme';
-import { Conversation } from '@xmtp/xmtp-js';
+// conversation objects came from the old XMTP V2 SDK (removed); the chat panel is off
+type Conversation = unknown;
 
 export interface GlobalState {
   appState: AppState;

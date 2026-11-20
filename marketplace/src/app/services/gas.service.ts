@@ -25,8 +25,8 @@ export class GasService {
   private gasRpcUrls = [
     (environment as any).receiptRpcUrl || environment.rpcHttpProvider,
     environment.rpcHttpProvider,
+    'https://1rpc.io/eth',
     this.relayRpcUrl,
-    'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8',
   ].filter((url, index, arr) => !!url && arr.indexOf(url) === index);
 
   private gasSubject = new BehaviorSubject<GasData>({

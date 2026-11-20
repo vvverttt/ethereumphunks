@@ -26,7 +26,6 @@ import { AppStateEffects } from '@/state/effects/app-state.effects';
 import { DataStateEffects } from '@/state/effects/data-state.effects';
 import { MarketStateEffects } from '@/state/effects/market-state.effects';
 import { NotificationEffects } from '@/state/effects/notification.effects';
-import { ChatEffects } from '@/state/effects/chat.effects';
 
 import { TokenIdParsePipe } from '@/pipes/token-id-parse.pipe';
 import { WeiToEthPipe } from '@/pipes/wei-to-eth.pipe';
@@ -59,7 +58,6 @@ export const config = {
       DataStateEffects,
       MarketStateEffects,
       NotificationEffects,
-      ChatEffects
     ]),
     provideStoreDevtools({
       maxAge: 25,

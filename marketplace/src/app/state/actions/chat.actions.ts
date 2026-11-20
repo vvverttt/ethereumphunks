@@ -1,6 +1,7 @@
 import { ChatState } from '@/models/global-state';
 import { createAction, props } from '@ngrx/store';
-import { Conversation } from '@xmtp/xmtp-js';
+// conversation objects came from the old XMTP V2 SDK (removed); the chat panel is off
+type Conversation = unknown;
 
 export const setChat = createAction(
   '[Chat] Set Chat Active',

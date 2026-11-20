@@ -23,14 +23,10 @@ const MAX_BLOCK_RANGE = 10n;
 const logsClient = createPublicClient({
   chain: mainnet,
   transport: fallback([
-    // Ankr stays FIRST here, unlike the continuously-polling clients. This path is
-    // eth_getLogs for auction bid history — occasional, not a loop — and the comment
-    // above is why: Alchemy Free caps a getLogs range at 10 blocks. Demoting Ankr here
-    // would push every bid-history read onto that cap for no quota saving worth having.
-    http('https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8'),
-    ...((environment as any).frontendBackupRpcUrl ? [http((environment as any).frontendBackupRpcUrl)] : []),
-    http((environment as any).receiptRpcUrl || environment.rpcHttpProvider),
-    http(environment.rpcHttpProvider),
+    // The /rpc proxy sends eth_getLogs to Ankr first (Alchemy Free caps a getLogs range
+    // at 10 blocks), so the keyed endpoint comes first here, then a keyless one.
+    ...[...new Set([environment.rpcHttpProvider, (environment as any).frontendBackupRpcUrl].filter(Boolean))].map((u: string) => http(u)),
+    http('https://1rpc.io/eth'),
   ], { rank: false, retryCount: 0 }),
 });
 

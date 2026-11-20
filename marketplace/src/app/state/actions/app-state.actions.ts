@@ -162,10 +162,6 @@ export const setIsSearchResult = createAction(
   props<{ isSearchResult: boolean }>()
 );
 
-export const reconnectChat = createAction(
-  '[App State] Reconnect Chat'
-);
-
 export const setModalActive = createAction(
   '[App State] Set Modal Active',
   props<{ modalActive: boolean }>()

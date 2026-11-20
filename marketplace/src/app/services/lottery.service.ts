@@ -310,8 +310,11 @@ export class LotteryService {
   // Owned-NFT lookup for the surrender picker (Alchemy NFT API)
   // =========================================================
 
-  /** Base URL + key for Alchemy's NFT API, derived from the configured RPC (domain-locked key). */
+  /** Base URL of the NFT API: our own proxy (functions/nft), which holds the Alchemy key.
+   *  Builds that still point straight at Alchemy (sepolia) derive it from the RPC url. */
   private alchemyNftBase(): string | null {
+    const proxy = (environment as any).nftApiUrl as string | undefined;
+    if (proxy) return proxy;
     const rpc = ((environment as any).frontendBackupRpcUrl || environment.rpcHttpProvider || '') as string;
     if (!rpc.includes('alchemy.com') || !rpc.includes('/v2/')) return null;
     return rpc.replace('/v2/', '/nft/v3/');

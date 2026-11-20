@@ -35,11 +35,11 @@ import { magma } from '@/constants/magmaChain';
 import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPublicClient, decodeFunctionData, encodeFunctionData, fallback, formatEther, isAddress, keccak256, parseEther, stringToBytes, toHex, zeroAddress } from 'viem';
 
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
-// The ONE Ankr endpoint. Ankr's terms (effective 2026-11-15) allow a single Freemium
-// account per organisation, so the second and third keys were retired — two of them were
-// here in the bundle, the third only in the indexer's Render env. Declared once so a
-// future key rotation is a one-line change rather than a hunt through four files.
-const ANKR = 'https://rpc.ankr.com/eth/545e600765426a4f17b1d59db878210f81e6fecbe581c0a745a7068c62fc1eb8';
+// Keyless public endpoints. The keyed Alchemy/Ankr endpoints sit behind our own /rpc proxy
+// (environment.rpcHttpProvider) so no key ships in the bundle.
+const PUBLIC_RPCS = ['https://eth.llamarpc.com', 'https://1rpc.io/eth', 'https://rpc.mevblocker.io'];
+/** each url once, in order: several env slots can point at the same proxy */
+const uniqueUrls = (urls: string[]) => [...new Set(urls.filter(Boolean))];
 
 const marketAddress = environment.marketAddress;
 
@@ -89,7 +89,7 @@ export class Web3Service {
   l1Client!: PublicClient;
   l1PollingClient!: PublicClient;
   l1ReceiptClient!: PublicClient;
-  l1DedicatedClient!: PublicClient; // Lottery + auction reads — uses domain-locked jjWbKkRb first
+  l1DedicatedClient!: PublicClient; // Lottery + auction reads
   l2Client!: PublicClient;
 
   config!: Config;
@@ -117,15 +117,13 @@ export class Web3Service {
     this.l1Client = createPublicClient({
       chain: this.chains[0],
       batch: { multicall: true },
-      transport: fallback([
-        http(environment.rpcHttpProvider),
-        http(receiptRpcUrl),
-        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-        http('https://eth.llamarpc.com'),
-        http('https://1rpc.io/eth'),
-        http(ANKR),
-        http(relayRpcUrl),
-      ], { rank: false }),
+      transport: fallback(uniqueUrls([
+        environment.rpcHttpProvider,
+        receiptRpcUrl,
+        frontendBackupRpcUrl,
+        ...PUBLIC_RPCS,
+        relayRpcUrl,
+      ]).map((u) => http(u)), { rank: false }),
     });
 
     this.l1PollingClient = createPublicClient({
@@ -143,39 +141,37 @@ export class Web3Service {
       // Ankr, which keeps Alchemy's per-second headroom free for the bursty eth_call
       // reads that actually threaten the cap. Moving polling onto Alchemy added baseline
       // to the one meter with no room left.
-      transport: fallback([
-        http(ANKR),
-        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-        http('https://eth.llamarpc.com'),
-        http('https://1rpc.io/eth'),
-        http(receiptRpcUrl),
-        http(environment.rpcHttpProvider),
-      ], { rank: false, retryCount: 0 }),
+      //
+      // Since the keys moved behind /rpc (a Cloudflare function with a daily request quota),
+      // this steady polling goes to the keyless public RPCs first and the proxy last.
+      transport: fallback(uniqueUrls([
+        ...PUBLIC_RPCS,
+        frontendBackupRpcUrl,
+        receiptRpcUrl,
+        environment.rpcHttpProvider,
+      ]).map((u) => http(u)), { rank: false, retryCount: 0 }),
     });
 
     // Dedicated client for receipt polling — uses the backup Alchemy key to
     // spread load and avoid hitting the primary key's rate limit.
     this.l1ReceiptClient = createPublicClient({
       chain: this.chains[0],
-      transport: http(frontendBackupRpcUrl || receiptRpcUrl),
+      transport: fallback(uniqueUrls([frontendBackupRpcUrl || receiptRpcUrl, ...PUBLIC_RPCS]).map((u) => http(u)), { rank: false }),
     });
 
     // Dedicated client for lottery + auction state reads.
-    // jjWbKkRb is domain-locked to quantumphunks.com / .eth.limo so it gets its
-    // own per-user CU budget without burning the shared primary key (C2mkw).
-    // Falls back to C2mkw, Ankr, and the indexer /rpc proxy if jjWbKkRb fails.
+    // Goes through the /rpc proxy (which spreads calls over both Alchemy keys),
+    // then the keyless public RPCs and the indexer's /rpc relay.
     this.l1DedicatedClient = createPublicClient({
       chain: this.chains[0],
       batch: { multicall: true },
-      transport: fallback([
-        ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-        http('https://eth.llamarpc.com'),
-        http('https://1rpc.io/eth'),
-        http(environment.rpcHttpProvider),
-        http(receiptRpcUrl),
-        http(ANKR),
-        http(relayRpcUrl),
-      ], { rank: false, retryCount: 0 }),
+      transport: fallback(uniqueUrls([
+        frontendBackupRpcUrl,
+        environment.rpcHttpProvider,
+        receiptRpcUrl,
+        ...PUBLIC_RPCS,
+        relayRpcUrl,
+      ]).map((u) => http(u)), { rank: false, retryCount: 0 }),
     });
 
     this.l2Client = createPublicClient({
@@ -186,15 +182,13 @@ export class Web3Service {
     this.config = createConfig({
       chains: this.chains,
       transports: {
-        [environment.chainId]: fallback([
-          http(environment.rpcHttpProvider),
-          http(receiptRpcUrl),
-          ...(frontendBackupRpcUrl ? [http(frontendBackupRpcUrl)] : []),
-          http('https://eth.llamarpc.com'),
-          http('https://1rpc.io/eth'),
-          http(ANKR),
-          http(relayRpcUrl),
-        ]),
+        [environment.chainId]: fallback(uniqueUrls([
+          environment.rpcHttpProvider,
+          receiptRpcUrl,
+          frontendBackupRpcUrl,
+          ...PUBLIC_RPCS,
+          relayRpcUrl,
+        ]).map((u) => http(u))),
         6969696969: http(environment.magmaRpcHttpProvider)
       },
       connectors: [
