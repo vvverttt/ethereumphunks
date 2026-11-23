@@ -27,6 +27,7 @@ const CONTRACT_NAMES: Record<string, string> = {
   '0x298771ecc338de242ada11e49e2b8224c33bf620': 'Lottery 2',
   '0xc1fa86b53e8e101c93c570f276bc5177832bd031': 'Auction House',
   '0x2132622ff3178ef2574af25d8efdf94d6b7cc630': 'Auction House 2',
+  '0xe3c8d1cf63456535ad41e47932af1fe1708e84c2': 'QuantumPhunks Auction House',
   '0x6a85c501b16e8c7be34eea409dab590a5b037cb8': 'EthsRocks',
 };
 
