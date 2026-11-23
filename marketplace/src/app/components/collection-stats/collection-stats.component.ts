@@ -20,7 +20,7 @@ const TYPE_TRAIT_KEYS = ['type', 'phunk type', 'punk type', 'skin type', 'gender
 // Note this deliberately does NOT track collection-attributes' CACHE_VERSION even though both
 // read `{slug}__attr_page`: only that component writes the entry, so the mismatch means this
 // panel always recomputes from the attributes file rather than trusting a cached table.
-const CACHE_VERSION = 20;
+const CACHE_VERSION = 21;  // 21: 69 OG DystoPhunkz swapped into v67 (traits changed)
 const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'ethsrocks': 'EthsRocks',
   'cryptophunksv67': 'QuantumPhunks',
@@ -46,11 +46,16 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
   // 34,741 — off by 4, which the one extra image that now decodes accounts for.
   //
   // No longer '8,919 / 10,000': the collection is complete, so the display is just the total.
+  //
+  // Recounted 2026-11-22 after the 69 OG DystoPhunkz were written over tokens 570..9995 (each
+  // carries Special = One of One, none of the 69 they replaced did): 676 -> 745 one of ones,
+  // 2,013 -> 2,153 trait values, 72,598 -> 74,983 colours. Same method as above; recounting the
+  // pre-swap file with it reproduces the old figures exactly.
   'cryptophunksv67': {
     totalSupply: 10000,
     totalSupplyDisplay: '10,000',
-    uniqueTraitValues: 2013,
-    oneOfOnes: 676,
+    uniqueTraitValues: 2153,
+    oneOfOnes: 745,
   },
   'quantummissingphunksv67': {
     totalSupplyDisplay: '17 / 250',
@@ -75,8 +80,8 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
 };
 const EXTRA_STATS_BY_SLUG: Record<string, Array<{ label: string; display: string }>> = {
   'cryptophunksv67': [
-    { label: 'Unique Colors', display: '72,598' },
-    { label: 'Colored Pixels', display: '3,207,850 / 5,758,848' },
+    { label: 'Unique Colors', display: '74,983' },
+    { label: 'Colored Pixels', display: '3,207,624 / 5,758,848' },
   ],
   'quantummissingphunksv67': [
     { label: 'Unique Colors', display: '93' },
