@@ -17,6 +17,7 @@ export const UI_JA: Record<string, string> = {
 
   // collection intro
   colourBlue: '青',
+  colourBlueGrey: '青灰色',
   colourLime: 'ライム',
   colourAqua: 'アクア',
   colourViolet: 'バイオレット',

@@ -154,6 +154,24 @@ $menu-status-height: 4.5rem;
   --m-auc-title: 224, 165, 38;
 }
 
+// Phunksmas: evergreen glass over the green page, candy-cane red accent; each link its own
+// Christmas colour (snow, blue-grey from the art's background, gold, holly), on ink shadows.
+:host-context([data-collection='phunksmas']) {
+  --m-bank-ee: 255, 40, 60;
+  --m-panel: 8, 48, 24;             // #083018
+  --m-panel-alpha: .94;
+  --m-accent: 255, 40, 60;          // #ff283c
+  --m-accent-fg: 255, 255, 255;
+  --m-toggle-border: 255, 40, 60;
+  --m-shadow: 4, 24, 12;            // ink
+  --m-lead-bg: 255, 255, 255;  --m-lead-fg: 8, 48, 24;
+  --m-lead-title: 255, 40, 60; --m-lead-badge: 255, 40, 60; --m-lead-badge-fg: 255, 255, 255;
+  --m-ext-bg: 99, 133, 150;    --m-ext-fg: 255, 255, 255;  --m-ext-shadow: 4, 24, 12;   // #638596
+  --m-dys-bg: 255, 199, 44;    --m-dys-fg: 8, 48, 24;      // #ffc72c gold
+  --m-lot-bg: 255, 40, 60;     --m-lot-fg: 255, 255, 255;  // candy-cane red
+  --m-auc-bg: 8, 48, 24;       --m-auc-alpha: .9;          --m-auc-title: 255, 40, 60;
+}
+
 // Gas + blocks, in a strip of its own along the bottom of the panel. The sections stop where
 // it starts (see `section` below), so nothing ever scrolls underneath it, on any screen.
 // the main panel stacks its blocks so the PHUNKEM emblem can sit at the very bottom, right above

@@ -15,6 +15,7 @@ export const UI_ID: Record<string, string> = {
 
   // collection intro
   colourBlue: 'biru',
+  colourBlueGrey: 'biru keabuan',
   colourLime: 'hijau limau',
   colourAqua: 'aqua',
   colourViolet: 'ungu',

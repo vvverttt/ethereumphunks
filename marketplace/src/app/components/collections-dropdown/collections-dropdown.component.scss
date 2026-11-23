@@ -7,7 +7,9 @@
 
 // cryptophunksv67: match the collection button to the bright #67cdff header (base-color);
 // black text stays from the base rule, and the pink drop-shadow keeps it distinct.
-:host-context([data-collection='cryptophunksv67']) .curated-wrapper .curated-button {
+:host-context([data-collection='cryptophunksv67']) .curated-wrapper .curated-button,
+// Phunksmas: the button in its header's blue-grey (#638596), like v67's
+:host-context([data-collection='phunksmas']) .curated-wrapper .curated-button {
   background-color: rgba(var(--base-color), 1);
 }
 
@@ -18,8 +20,7 @@
 :host-context([data-collection='dysto-phunks']),
 :host-context([data-collection='ethsrocks']),
 :host-context([data-collection='phikings']),
-:host-context([data-collection='phunklloween']),
-:host-context([data-collection='phunksmas']) {
+:host-context([data-collection='phunklloween']) {
   .curated-wrapper .curated-button {
     background-color: #c3ff00;
   }
@@ -232,7 +233,7 @@
       }
 
       &[data-slug='phunksmas'] {
-        --row-bg: 255, 40, 60;   // #ff283c
+        --row-bg: 99, 133, 150;  // #638596 — the contract's blue-grey
         --row-fg: 255, 255, 255;
       }
 

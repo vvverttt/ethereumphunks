@@ -16,6 +16,7 @@ export const UI_ES: Record<string, string> = {
 
   // intro de colección
   colourBlue: 'azul',
+  colourBlueGrey: 'gris azulado',
   colourLime: 'lima',
   colourAqua: 'aqua',
   colourViolet: 'violeta',

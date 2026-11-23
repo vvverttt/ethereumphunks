@@ -117,11 +117,11 @@ export class ThemeService {
       '--header-highlight': '92, 68, 0',
       '--header-highlight-active': '224, 165, 38',
     },
-    // Christmas: bright evergreen page, candy-cane red accents, snow-white panels; tiles on the
-    // contract's own blue-punk background. Falling snow is in main.scss. Mirrored there for first paint.
+    // Christmas: bright evergreen page, candy-cane red accents; header, panels and tiles on the
+    // contract's own blue-punk background (#638596). Mirrored in main.scss for first paint.
     'phunksmas': {
       '--phunk-bg': '99, 133, 150',          // #638596 — the background the contract renders behind every piece
-      '--base-color': '255, 255, 255',       // snow white panels / status bar (was lime)
+      '--base-color': '99, 133, 150',        // #638596 — header, panels and status bar in the contract's blue-grey
       '--highlight': '255, 255, 255',        // white labels and links on the green
       '--background': '22, 122, 62',         // #167a3e — bright evergreen
       '--pink': '255, 40, 60',                // #ff283c — candy-cane red, every pink accent

@@ -16,6 +16,7 @@ export const UI_ZH: Record<string, string> = {
 
   // collection intro
   colourBlue: '蓝色',
+  colourBlueGrey: '蓝灰色',
   colourLime: '青柠色',
   colourAqua: '水绿色',
   colourViolet: '紫罗兰色',

@@ -168,7 +168,7 @@
 
 :root[data-collection='phunksmas'] {
   --phunk-bg: 99, 133, 150;     // #638596 — the contract's blue-punk background
-  --base-color: 255, 255, 255;  // snow white
+  --base-color: 99, 133, 150;   // #638596 — header and panels in the contract's blue-grey
   --highlight: 255, 255, 255;
   --background: 22, 122, 62;    // #167a3e — bright evergreen
   --pink: 255, 40, 60;           // #ff283c — candy-cane red
@@ -178,50 +178,6 @@
   --header-highlight-active: 255, 40, 60;
 }
 
-// Phunksmas: pixel snow falling over the page. Two fixed layers that never take clicks: fine
-// pixel snow and 7x7 pixel snowflakes. Each layer is a repeating tile that MOVES (transform), not
-// one whose background is redrawn every frame, so the browser slides it on the GPU with no
-// repaint, which is what made the first version flicker. Each layer is one tile taller than the
-// screen and slides down exactly one tile per loop, so the loop has no seam.
-// Off for visitors who ask for reduced motion.
-$snow-dots: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' shape-rendering='crispEdges'%3E%3Cg fill='%23fff'%3E%3Crect x='20' y='30' width='3' height='3'/%3E%3Crect x='96' y='12' width='2' height='2'/%3E%3Crect x='160' y='60' width='3' height='3'/%3E%3Crect x='56' y='110' width='2' height='2'/%3E%3Crect x='200' y='122' width='3' height='3'/%3E%3Crect x='30' y='190' width='2' height='2'/%3E%3Crect x='150' y='208' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E");
-// one 7x7 flake on a 3px grid: centre cross + four diagonal points
-$snow-flakes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480' shape-rendering='crispEdges'%3E%3Cdefs%3E%3Cg id='f' fill='%23fff'%3E%3Crect x='9' y='0' width='3' height='21'/%3E%3Crect x='0' y='9' width='21' height='3'/%3E%3Crect x='3' y='3' width='3' height='3'/%3E%3Crect x='15' y='3' width='3' height='3'/%3E%3Crect x='3' y='15' width='3' height='3'/%3E%3Crect x='15' y='15' width='3' height='3'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23f' x='60' y='48'/%3E%3Cuse href='%23f' x='330' y='120'/%3E%3Cuse href='%23f' x='180' y='276'/%3E%3Cuse href='%23f' x='420' y='390'/%3E%3C/svg%3E");
-
-@keyframes phunksmas-snow-fall  { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 240px, 0); } }
-@keyframes phunksmas-flake-fall { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 480px, 0); } }
-
-:root[data-collection='phunksmas'] body::before,
-:root[data-collection='phunksmas'] body::after {
-  content: '';
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 9999;
-  background-repeat: repeat;
-  image-rendering: pixelated;
-  will-change: transform;
-}
-:root[data-collection='phunksmas'] body::before {
-  top: -240px;                       // one tile above the screen
-  background-image: $snow-dots;
-  background-size: 240px 240px;
-  opacity: .5;
-  animation: phunksmas-snow-fall 9s linear infinite;
-}
-:root[data-collection='phunksmas'] body::after {
-  top: -480px;
-  background-image: $snow-flakes;
-  background-size: 480px 480px;
-  opacity: .5;
-  animation: phunksmas-flake-fall 20s linear infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  :root[data-collection='phunksmas'] body::before,
-  :root[data-collection='phunksmas'] body::after { animation: none; }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // cryptophunksv67 (ERC-721C) — scoped #648595 blue-grey scheme. Applied only when

@@ -96,10 +96,12 @@ export class CollectionIntroComponent implements OnChanges {
   get slug() { return this.collection.slug; }
 
   /** Names for the status colours (scss/abstracts/_variables.scss): the same for every
-   *  collection, only the not-for-sale tile differs (v67 blue, the Ethscriptions lime). */
+   *  collection, only the not-for-sale tile differs: it is the collection's --phunk-bg
+   *  (v67 blue, Phunksmas the contract's blue-grey #638596, the Ethscriptions lime). */
   get colours() {
     const t = (k: string) => this.prefs.t(k);
-    return { base: t(this.isV67 ? 'colourBlue' : 'colourLime'), listed: t('colourAqua'), bid: t('colourViolet'), escrow: t('colourYellow') };
+    const base = this.isV67 ? 'colourBlue' : this.slug === 'phunksmas' ? 'colourBlueGrey' : 'colourLime';
+    return { base: t(base), listed: t('colourAqua'), bid: t('colourViolet'), escrow: t('colourYellow') };
   }
 
   // ---- translated copy (i18n/content.<lang>.ts), rendered with [innerHTML] + appInternalLinks ----

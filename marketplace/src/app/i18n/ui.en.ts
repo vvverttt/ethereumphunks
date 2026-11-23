@@ -17,6 +17,7 @@ export const UI_EN: Record<string, string> = {
 
   // collection intro
   colourBlue: 'blue',
+  colourBlueGrey: 'blue-grey',
   colourLime: 'lime',
   colourAqua: 'aqua',
   colourViolet: 'violet',

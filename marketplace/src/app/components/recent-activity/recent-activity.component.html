@@ -19,7 +19,7 @@
         @if (isErc721()) {
           <a
             class="standard-badge erc721"
-            href="https://etherscan.io/address/0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3"
+            [href]="'https://etherscan.io/address/' + erc721Contract()"
             target="_blank"
             rel="noopener noreferrer"
             [title]="t('actErc721Title')">
