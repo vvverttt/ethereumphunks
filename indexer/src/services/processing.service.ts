@@ -249,12 +249,15 @@ export class ProcessingService {
       createdAt
     );
 
-    // Process V67AuctionHouse (ERC-721 auction) history
-    await this.auction721Svc.processAuction721Events(
-      receipt,
-      transaction.hash,
-      createdAt
-    );
+    // Process V67AuctionHouse (ERC-721 auction) history. On hold until launch: set
+    // AUCTION721_ENABLED=true on Render (before start()) to record auctions + bids.
+    if (process.env.AUCTION721_ENABLED === 'true') {
+      await this.auction721Svc.processAuction721Events(
+        receipt,
+        transaction.hash,
+        createdAt
+      );
+    }
 
     // Process comments
     await this.commentsSvc.processComments(

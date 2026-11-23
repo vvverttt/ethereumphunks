@@ -20,7 +20,8 @@
             <div class="auction-house-title">
               <span class="auction-house-name">QuantumPhunks</span>
               <span class="auction-house-sub">{{ t('auctionHouse') }}</span>
-              <app-auction-switch current="ethscriptions" />
+              <!-- ERC-721 auction on hold: restore <app-auction-switch current="ethscriptions" /> to bring the toggle back -->
+              <span class="auction-house-tag" [title]="t('auctionEthscriptionsTag')">Ethscriptions</span>
             </div>
           </div>
         </div>
