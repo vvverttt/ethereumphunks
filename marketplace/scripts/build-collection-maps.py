@@ -21,7 +21,7 @@ STORAGE = 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public'
 # columns per collection: wide enough that the map is a few rows of large tiles
 COLS = {
     'missing-phunks': 25, 'dysto-phunks': 23, 'ethsrocks': 27, 'phikings': 23,
-    'phunklloween': 20,
+    'phunklloween': 20, 'phunksmas': 20,
 }
 # Painted (not pixel-art) collections: the rocks are ~700x990 paintings, which a 24px sprite tile
 # turns to mush. Their map is built from the original files at this tile size with smooth
