@@ -37,3 +37,23 @@ runs = 5000
 runs = 500
 depth = 60
 fail_on_revert = true
+
+# Phunksmas fuzz + invariant suite, on the deploy compiler (0.8.36 paris viaIR).
+# Run: FOUNDRY_PROFILE=phunksmas forge test
+[profile.phunksmas]
+src = 'foundry-test/phunksmas'
+test = 'foundry-test/phunksmas'
+out = 'foundry-out-phunksmas'
+solc = '0.8.36'
+evm_version = 'paris'
+via_ir = true
+optimizer = true
+optimizer_runs = 200
+
+[profile.phunksmas.fuzz]
+runs = 5000
+
+[profile.phunksmas.invariant]
+runs = 500
+depth = 60
+fail_on_revert = false

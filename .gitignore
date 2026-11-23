@@ -93,3 +93,6 @@ AUX
 .burner-v67
 .burner-v67-old-*
 v67_new4677/.populate-progress.json
+# throwaway Phunksmas deployer/minter key
+.burner-phunksmas
+.burner-phunksmas-old-*
