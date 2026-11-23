@@ -108,7 +108,8 @@ export class CollectionSearchComponent implements OnChanges {
     // a number: that piece
     const num = q.replace(/^#/, '');
     if (/^\d+$/.test(num)) {
-      if (slug === 'cryptophunksv67') { this.router.navigate(['/details', ERC721C_CONTRACTS[slug], Number(num)]); return; }
+      // on-chain ERC-721s (v67, Phunksmas) route by contract + token id
+      if (ERC721C_CONTRACTS[slug]) { this.router.navigate(['/details', ERC721C_CONTRACTS[slug], Number(num)]); return; }
       try {
         const j = await (await fetch(`assets/maps/${slug}.json`)).json();
         const i = (j.ids || []).indexOf(Number(num));

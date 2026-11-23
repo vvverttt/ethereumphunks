@@ -18,7 +18,8 @@
 :host-context([data-collection='dysto-phunks']),
 :host-context([data-collection='ethsrocks']),
 :host-context([data-collection='phikings']),
-:host-context([data-collection='phunklloween']) {
+:host-context([data-collection='phunklloween']),
+:host-context([data-collection='phunksmas']) {
   .curated-wrapper .curated-button {
     background-color: #c3ff00;
   }
@@ -228,6 +229,11 @@
       &[data-slug='phunklloween'] {
         --row-bg: 255, 140, 26;  // #ff8c1a
         --row-fg: 0, 0, 0;
+      }
+
+      &[data-slug='phunksmas'] {
+        --row-bg: 224, 49, 63;   // #e0313f
+        --row-fg: 15, 61, 36;
       }
 
       &:active {

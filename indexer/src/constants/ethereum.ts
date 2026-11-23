@@ -136,8 +136,22 @@ export const qpMarketAddress: string =
 // collections on the same market are ignored by the v67 owner-transfer path).
 export const v67Slug: string = process.env.V67_SLUG || 'cryptophunksv67';
 
+// Phunksmas: plain ERC-721 (67 Christmas 1/1s, ids 10454-10520), tracked the same way as v67.
+export const phunksmasNftAddress: string =
+  (chain === 'mainnet'
+    ? (process.env.PHUNKSMAS_NFT_ADDRESS_MAINNET || '0x676FfE70d72B64cF505274c6D58975Ef1b2010d5')
+    : process.env.PHUNKSMAS_NFT_ADDRESS_SEPOLIA)?.toLowerCase() || '';
+
+/** Every on-chain ERC-721 collection the indexer follows: NFT contract (lowercase) -> site slug. */
+export const erc721Collections: Map<string, string> = new Map(
+  ([
+    [v67NftAddress, v67Slug],
+    [phunksmasNftAddress, 'phunksmas'],
+  ] as [string, string][]).filter(([addr]) => !!addr)
+);
+
 export const nftAddressesL1 = new Set(
-  [v67NftAddress, qpMarketAddress].filter(Boolean)
+  [...erc721Collections.keys(), qpMarketAddress].filter(Boolean)
 );
 
 const backupUrls = (l1RpcURL_BACKUP || '').split(',').filter(Boolean);

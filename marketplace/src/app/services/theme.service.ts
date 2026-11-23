@@ -117,6 +117,16 @@ export class ThemeService {
       '--header-highlight': '92, 68, 0',
       '--header-highlight-active': '224, 165, 38',
     },
+    // Christmas: pine-green page, Christmas-red accent. Mirrored in main.scss for first paint.
+    'phunksmas': {
+      '--background': '15, 61, 36',          // #0f3d24
+      '--pink': '224, 49, 63',                // #e0313f — every pink accent
+      '--button-color': '224, 49, 63',
+      '--header-text': '224, 49, 63',
+      '--header-text-active': '224, 49, 63',     // menu open: Connect keeps its accent
+      '--header-highlight': '15, 61, 36',
+      '--header-highlight-active': '224, 49, 63',
+    },
   };
   private activeSlug = '';
   private currentTheme: Theme = 'dark';

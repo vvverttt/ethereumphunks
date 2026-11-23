@@ -58,6 +58,7 @@ export class CollectionsComponent {
     'dysto-phunks': [10251, 10319],
     phikings: [10320, 10386],
     phunklloween: [10387, 10453],
+    phunksmas: [10454, 10520],
   };
 
   collections$ = combineLatest([

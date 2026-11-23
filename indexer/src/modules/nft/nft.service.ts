@@ -10,20 +10,20 @@ import {
 import { StorageService } from '@/modules/storage/storage.service';
 
 import {
+  erc721Collections,
   qpMarketAbi,
   qpMarketAddress,
   v67NftAbi,
-  v67NftAddress,
-  v67Slug,
 } from '@/constants/ethereum';
 
 import { Event, EventType } from '@/modules/storage/models/db';
 
 /**
- * Indexes cryptophunksv67 as an on-chain ERC-721C collection:
- *   • ownership   ← the NFT contract's `Transfer` logs (`v67NftAddress`)
+ * Indexes the on-chain ERC-721 collections in `erc721Collections` (cryptophunksv67, phunksmas):
+ *   • ownership   ← each NFT contract's `Transfer` logs (standard ERC-721 event, so the v67 ABI
+ *                   decodes every collection's Transfer)
  *   • market      ← QuantumPhunksMarketMulti logs (`qpMarketAddress`), filtered
- *                   to events whose `collection` == the v67 NFT contract.
+ *                   to events whose `collection` is one of those contracts.
  *
  * Runs inside the existing indexer via ProcessingService.processTransaction.
  * No-ops entirely when the addresses are not configured (env unset), so it is
@@ -35,10 +35,10 @@ export class NftService {
 
   /** Whether this tx has any log from a contract we care about. */
   private relevant(receipt: TransactionReceipt): boolean {
-    if (!v67NftAddress && !qpMarketAddress) return false;
+    if (!erc721Collections.size && !qpMarketAddress) return false;
     return receipt.logs?.some((l) => {
       const a = l.address?.toLowerCase();
-      return a === v67NftAddress || a === qpMarketAddress;
+      return (!!a && erc721Collections.has(a)) || a === qpMarketAddress;
     });
   }
 
@@ -54,6 +54,7 @@ export class NftService {
     // Pre-scan the market logs so a PhunkNoLongerForSale that precedes a
     // PhunkBought for the same token in the same tx can be skipped (mirrors the
     // ethscriptions market path).
+    // Keyed "collection:tokenId", so the same id in two collections can't be confused.
     const boughtTokenIds = new Set<string>();
     for (const log of receipt.logs) {
       if (log.address?.toLowerCase() !== qpMarketAddress) continue;
@@ -62,9 +63,9 @@ export class NftService {
         const a = d.args as any;
         if (
           (d.eventName === 'PhunkBought' || d.eventName === 'CollectionBidAccepted' || d.eventName === 'TraitBidAccepted') &&
-          this.isV67(a?.collection)
+          this.slugOf(a?.collection)
         ) {
-          boughtTokenIds.add(a.tokenId.toString());
+          boughtTokenIds.add(this.tokenKey(a.collection, a.tokenId));
         }
       } catch { /* not our event */ }
     }
@@ -72,8 +73,8 @@ export class NftService {
     for (const log of receipt.logs) {
       const addr = log.address?.toLowerCase();
       try {
-        if (addr === v67NftAddress) {
-          const e = await this.handleNftLog(transaction, createdAt, log);
+        if (addr && erc721Collections.has(addr)) {
+          const e = await this.handleNftLog(transaction, createdAt, log, erc721Collections.get(addr)!);
           if (e) events.push(e);
         } else if (addr === qpMarketAddress) {
           const e = await this.handleMarketLog(transaction, createdAt, log, boughtTokenIds);
@@ -89,13 +90,18 @@ export class NftService {
 
   // ── helpers ────────────────────────────────────────────────────────────────
 
-  private isV67(collection: string | undefined): boolean {
-    return !!collection && collection.toLowerCase() === v67NftAddress;
+  /** Site slug for a tracked NFT contract, or undefined when we don't follow it. */
+  private slugOf(collection: string | undefined): string | undefined {
+    return collection ? erc721Collections.get(String(collection).toLowerCase()) : undefined;
   }
 
-  /** Resolve a v67 tokenId → its ethscription row (hashId keeps the events FK valid). */
-  private async rowForToken(tokenId: bigint | string) {
-    return this.storageSvc.getEthscriptionBySlugAndTokenId(v67Slug, Number(tokenId));
+  private tokenKey(collection: string, tokenId: bigint | string): string {
+    return `${String(collection).toLowerCase()}:${tokenId.toString()}`;
+  }
+
+  /** Resolve (slug, tokenId) → its ethscriptions row (hashId keeps the events FK valid). */
+  private async rowForToken(slug: string, tokenId: bigint | string) {
+    return this.storageSvc.getEthscriptionBySlugAndTokenId(slug, Number(tokenId));
   }
 
   private buildEvent(
@@ -125,7 +131,7 @@ export class NftService {
 
   // ── ERC-721C ownership ──────────────────────────────────────────────────────
 
-  private async handleNftLog(txn: Transaction, createdAt: Date, log: any): Promise<Event | null> {
+  private async handleNftLog(txn: Transaction, createdAt: Date, log: any, slug: string): Promise<Event | null> {
     let decoded: any;
     try {
       decoded = decodeEventLog({ abi: v67NftAbi as any, data: log.data, topics: log.topics });
@@ -134,8 +140,8 @@ export class NftService {
     if (decoded.eventName !== 'Transfer') return null;
     const { from, to, tokenId } = decoded.args as any;
 
-    const row = await this.rowForToken(tokenId);
-    if (!row) return null; // not one of our tracked tokens
+    const row = await this.rowForToken(slug, tokenId);
+    if (!row) return null; // not one of our tracked tokens (e.g. a piece whose row isn't added yet)
 
     const fromAddr = (from as string).toLowerCase();
     const toAddr = (to as string).toLowerCase();
@@ -165,9 +171,10 @@ export class NftService {
 
     const { eventName } = decoded;
     const a = decoded.args as any;
-    if (!eventName || !this.isV67(a?.collection)) return null;
+    const slug = this.slugOf(a?.collection);
+    if (!eventName || !slug) return null;
 
-    const row = await this.rowForToken(a.tokenId);
+    const row = await this.rowForToken(slug, a.tokenId);
     if (!row) return null;
     const hashId = row.hashId;
 
@@ -178,7 +185,7 @@ export class NftService {
         return this.buildEvent(txn, createdAt, log, 'PhunkOffered', hashId, txn.from, a.toAddress, a.minValue);
       }
       case 'PhunkNoLongerForSale': {
-        if (boughtTokenIds.has(a.tokenId.toString())) return null; // buy follows; skip redundant delist
+        if (boughtTokenIds.has(this.tokenKey(a.collection, a.tokenId))) return null; // buy follows; skip redundant delist
         const removed = await this.storageSvc.removeListing(hashId);
         if (!removed) return null;
         return this.buildEvent(txn, createdAt, log, 'PhunkNoLongerForSale', hashId, txn.from, zeroAddress);

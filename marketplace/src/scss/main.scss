@@ -166,6 +166,15 @@
   --header-highlight-active: 224, 165, 38;
 }
 
+:root[data-collection='phunksmas'] {
+  --background: 15, 61, 36;     // #0f3d24
+  --pink: 224, 49, 63;           // #e0313f
+  --button-color: 224, 49, 63;
+  --header-text: 224, 49, 63;
+  --header-highlight: 15, 61, 36;
+  --header-highlight-active: 224, 49, 63;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // cryptophunksv67 (ERC-721C) — scoped #648595 blue-grey scheme. Applied only when
 // documentElement has data-collection="cryptophunksv67" (set by ThemeService), so every

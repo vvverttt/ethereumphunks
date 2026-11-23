@@ -28,6 +28,7 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'quantummissingphunksv67': 'MissingPhunks',
   'dysto-phunks': 'DystoPhunks',
   'quantumdystophunkzv67': 'DystoPhunkz',
+  'phunksmas': 'Phunksmas',
 };
 const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSupplyDisplay?: string; uniqueTraitValues?: number; oneOfOnes?: number }> = {
   // Recounted 2026-09-26 by `recompute-v67-stats.mjs` at the repo root, after the final 1,081
@@ -75,6 +76,10 @@ const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSuppl
   // This is the full collection, not the 23 inscribed so far, so it does not move as the
   // remaining pieces land.
   'phunklloween': {
+    oneOfOnes: 67,
+  },
+  // 67 hand-made Christmas 1/1s; the full collection, so it doesn't move as drops land.
+  'phunksmas': {
     oneOfOnes: 67,
   },
 };

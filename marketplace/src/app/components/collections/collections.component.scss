@@ -88,6 +88,11 @@ h2 {
     --row-fg: 92, 68, 0;       // dark gold
   }
 
+  &[data-row='phunksmas'] {
+    --row-bg: 224, 49, 63;   // #e0313f
+    --row-fg: 15, 61, 36;    // pine green
+  }
+
   &[data-row='phunklloween'] {
     --row-bg: 255, 140, 26;  // #ff8c1a
     --row-fg: 112, 52, 0;     // burnt orange

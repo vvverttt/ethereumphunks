@@ -278,3 +278,7 @@ section {
 :host-context([data-collection='phikings']) .sections-wrapper {
   @include collection-glow(rgb(224, 165, 38), #b08a10, #967000, #5c4400);
 }
+
+:host-context([data-collection='phunksmas']) .sections-wrapper {
+  @include collection-glow(rgb(224, 49, 63), #14502f, #0f3d24, #082616);
+}
