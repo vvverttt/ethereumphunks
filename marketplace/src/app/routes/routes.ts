@@ -62,9 +62,9 @@ export const routes: Routes = [
   {
     path: 'auction',
     canActivate: [featureVisibleGuard('showAuction')],
-    // ERC-721 auction on hold: the Ethscriptions | ERC-721 hub (auction-hub) and the /dysto route
-    // (auction721-page) are switched off until launch. Put them back to bring the ERC-721 house live.
-    loadComponent: () => import('@/routes/auction/auction-page.component').then(mod => mod.AuctionPageComponent)
+    // Ethscriptions | ERC-721 switch; the Ethscriptions side is the original AuctionPageComponent.
+    // (The /dysto page stays off until the Dysto pool auctions start.)
+    loadComponent: () => import('@/routes/auction-hub/auction-hub.component').then(mod => mod.AuctionHubComponent)
   },
   {
     path: 'auction2',

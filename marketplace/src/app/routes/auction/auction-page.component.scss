@@ -282,6 +282,17 @@ $spooky-frame: pixel-frame('ff8c1a');
     background: #fff !important;
     color: #0b3d5c !important;
   }
+
+  // A Phunksmas piece on the block: evergreen hero, candy-cane red pixel frame, white rim.
+  &.xmas {
+    background-color: #167a3e;
+    &::before { border-image: pixel-frame('ff283c') 8 / 4rem stretch; }
+    @media (max-width: $tablet) { &::before { border-image-width: 2.4rem; } }
+    .auction-house-tag {
+      background: #ff283c !important;
+      color: #fff !important;
+    }
+  }
 }
 
 // ─── Phunk Image ──────────────────────────────────────────

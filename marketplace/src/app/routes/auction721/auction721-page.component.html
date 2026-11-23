@@ -5,7 +5,7 @@
     <p>{{ hasActiveAuction && !auction()?.settled ? t('a721Rules') : (isDysto() ? t('a721DystoClosed') : t('a721Closed')) }}</p>
   </div>
 
-  <section class="auction quantum">
+  <section class="auction quantum" [class.xmas]="phunkSlug() === 'phunksmas'">
     <div class="inner">
 
       <div class="auction-house-header">

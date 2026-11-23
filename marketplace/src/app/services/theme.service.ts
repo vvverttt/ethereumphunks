@@ -117,15 +117,19 @@ export class ThemeService {
       '--header-highlight': '92, 68, 0',
       '--header-highlight-active': '224, 165, 38',
     },
-    // Christmas: pine-green page, Christmas-red accent. Mirrored in main.scss for first paint.
+    // Christmas: bright evergreen page, candy-cane red accents, snow-white panels; tiles on the
+    // contract's own blue-punk background. Falling snow is in main.scss. Mirrored there for first paint.
     'phunksmas': {
-      '--background': '15, 61, 36',          // #0f3d24
-      '--pink': '224, 49, 63',                // #e0313f — every pink accent
-      '--button-color': '224, 49, 63',
-      '--header-text': '224, 49, 63',
-      '--header-text-active': '224, 49, 63',     // menu open: Connect keeps its accent
-      '--header-highlight': '15, 61, 36',
-      '--header-highlight-active': '224, 49, 63',
+      '--phunk-bg': '99, 133, 150',          // #638596 — the background the contract renders behind every piece
+      '--base-color': '255, 255, 255',       // snow white panels / status bar (was lime)
+      '--highlight': '255, 255, 255',        // white labels and links on the green
+      '--background': '22, 122, 62',         // #167a3e — bright evergreen
+      '--pink': '255, 40, 60',                // #ff283c — candy-cane red, every pink accent
+      '--button-color': '255, 40, 60',
+      '--header-text': '255, 40, 60',
+      '--header-text-active': '255, 40, 60',     // menu open: Connect keeps its accent
+      '--header-highlight': '255, 255, 255',  // white text on the red Connect/Go
+      '--header-highlight-active': '255, 40, 60',
     },
   };
   private activeSlug = '';

@@ -114,8 +114,8 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    // The ERC-721 house always wears the blue QuantumPhunks (v67) theme, never the Halloween one,
-    // from first paint, whatever piece is up or whichever page was visited before.
+    // The ERC-721 house wears the blue QuantumPhunks (v67) theme from first paint, never the Halloween
+    // one; once the piece is known, a Phunksmas piece switches it to the Christmas theme (showRow).
     this.applyTheme(null);
     try {
       await this.loadHistory();
@@ -235,8 +235,11 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
     }
   }
 
-  private applyTheme(_slug: string | null) {
-    const slug = 'cryptophunksv67';
+  /** Collections that bring their own look to the ERC-721 house; everything else wears the v67 blue. */
+  private static readonly OWN_THEME = new Set(['phunksmas']);
+
+  private applyTheme(pieceSlug: string | null) {
+    const slug = pieceSlug && Auction721PageComponent.OWN_THEME.has(pieceSlug) ? pieceSlug : 'cryptophunksv67';
     this.themeSvc.setActiveCollection(slug);
     firstValueFrom(this.store.select(dataStateSelectors.selectCollections)).then((collections) => {
       const c = collections?.find((x: any) => x.slug === slug);

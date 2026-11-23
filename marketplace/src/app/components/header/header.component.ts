@@ -73,7 +73,7 @@ export class HeaderComponent {
   toggleMenu$ = new Subject<void>();
 
   // Collections with a two-colour logo of their own (assets/etherphunks-logo-<slug>.svg).
-  readonly themedLogos = new Set(['ethsrocks', 'missing-phunks', 'dysto-phunks', 'phikings', 'phunklloween']);
+  readonly themedLogos = new Set(['ethsrocks', 'missing-phunks', 'dysto-phunks', 'phikings', 'phunklloween', 'phunksmas']);
 
   isStandaloneMarket = environment.standalone;
   defaultCollection = environment.defaultCollection || 'cryptophunksv67';

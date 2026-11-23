@@ -56,6 +56,16 @@ export const CONTENT_EN: Content = {
         "They trade on the QuantumPhunks market and auction house, with a 5% royalty on each sale."
       ]
     },
+    "phunksmas": {
+      "lead": [
+        "67 unique collectible characters, numbered #10,454–10,520 and stored fully on-chain as an ERC-721 on Ethereum, images and traits included. {total} are out so far, since November 23, 2026; the rest are added as they drop, just like Phunklloween, so the counts below grow with every drop.",
+        "Created by <a class=\"highlight\" href=\"/about\">DystoLabz</a> as a special edition series following Phunklloween: the icons of Christmas from film, television, books and folklore, from Santa Claus, Rudolph and Frosty the Snowman to Kevin McCallister, the Grinch, Gizmo, Buddy the Elf, Ebenezer Scrooge, Krampus and the Mari Lwyd."
+      ],
+      "more": [
+        "Every piece is built from the ground up in the 24×24 punk format on the original blue punk background, following <a class=\"highlight\" href=\"/phunklloween\">Phunklloween</a> in the DystoLabz special edition series.",
+        "Phunksmas were made for the QuantumPhunks market and auction house, where they trade with no royalty: the seller keeps the full price. As plain ERC-721s they can still move anywhere."
+      ]
+    },
     "ethsrocks": {
       "lead": [
         "106 unique collectible characters, 100 normal rocks and 6 infinity stones, inscribed fully on-chain as Ethscriptions on Ethereum between September 14, 2024 and September 2, 2025. The first sold on April 28, 2026.",

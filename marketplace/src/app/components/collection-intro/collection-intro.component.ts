@@ -19,6 +19,7 @@ import { Phunk } from '@/models/db';
 const WORDMARKS: Record<string, [number, number]> = {
   'cryptophunksv67': [3436, 358], 'missing-phunks': [3106, 389], 'dysto-phunks': [2638, 377],
   'ethsrocks': [2048, 299], 'phikings': [1703, 389], 'phunklloween': [2837, 299],
+  'phunksmas': [2328, 299],
 };
 /** One scale for every wordmark so their letters are the same size: QuantumPhunks at 560px. */
 const WORDMARK_SCALE = 560 / 3436;

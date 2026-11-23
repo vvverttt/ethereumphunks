@@ -280,5 +280,5 @@ section {
 }
 
 :host-context([data-collection='phunksmas']) .sections-wrapper {
-  @include collection-glow(rgb(224, 49, 63), #14502f, #0f3d24, #082616);
+  @include collection-glow(rgb(255, 40, 60), #1f9a4e, #167a3e, #0e5a2c);
 }
