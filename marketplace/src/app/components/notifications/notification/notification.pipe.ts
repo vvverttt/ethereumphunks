@@ -3,6 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Notification, TxFunction } from '@/models/global-state';
 import { Collection } from '@/models/data.state';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+import { isErc721c } from '@/constants/erc721c';
 
 type NotificationTexts = {
   titles: {
@@ -55,6 +56,7 @@ export class NotificationPipe implements PipeTransform {
       evolvePhunk: 'Evolve %singleName%',
       devolvePhunk: 'Devolve %singleName%',
       freeClaim: 'Claim Free EthsRock',
+      auctionAdd: 'Add %singleName% to the Auction',
       batch: {
         sendToEscrow: 'Send <span class="highlight">%length%</span> items to Escrow',
         phunkNoLongerForSale: 'Delist <span class="highlight">%length%</span> items',
@@ -65,6 +67,7 @@ export class NotificationPipe implements PipeTransform {
         enterBidForPhunk: 'Enter Bid For <span class="highlight">%length%</span> items',
         transferPhunk: 'Transfer <span class="highlight">%length%</span> items',
         withdrawPhunk: 'Withdraw <span class="highlight">%length%</span> items from Escrow',
+        auctionAdd: 'Add <span class="highlight">%length%</span> items to the Auction',
       },
     },
     body: {
@@ -111,6 +114,7 @@ export class NotificationPipe implements PipeTransform {
       evolvePhunk: 'evolve',
       devolvePhunk: 'devolve',
       freeClaim: 'free-claim',
+      auctionAdd: 'transfer',
     },
   }
 
@@ -136,7 +140,9 @@ export class NotificationPipe implements PipeTransform {
       }
 
       if (notif.slug) {
-        title = title.replace('%singleName%', collections[notif.slug]?.singleName || '');
+        // ERC-721 pieces say so (never "Ethscription"): "Transfer ERC-721 Phunkmas"
+        const name = collections[notif.slug]?.singleName || '';
+        title = title.replace('%singleName%', isErc721c(notif.slug) ? `ERC-721 ${name}`.trim() : name);
       }
 
       if (notif.chatAddress) {

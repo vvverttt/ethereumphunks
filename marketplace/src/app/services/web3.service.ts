@@ -51,6 +51,17 @@ const ERC721_APPROVAL_ABI = [
 const ERC721_TRANSFER_ABI = [
   { type: 'function', name: 'transferFrom', stateMutability: 'nonpayable', inputs: [{ name: 'from', type: 'address' }, { name: 'to', type: 'address' }, { name: 'tokenId', type: 'uint256' }], outputs: [] },
 ] as const;
+/** The ERC-721 auction house. A plain transfer to it strands the piece (it only auctions what comes in through
+ *  deposit/queue), so transfers there are refused and offered as "add to auction" instead. */
+export const AUCTION_HOUSE_721 = '0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2';
+const AUCTION_HOUSE_V67_NFT = '0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3';
+const AUCTION_HOUSE_ADD_ABI = [
+  { type: 'function', name: 'guardian', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }] },
+  { type: 'function', name: 'collectionAllowed', stateMutability: 'view', inputs: [{ name: 'collection', type: 'address' }], outputs: [{ type: 'bool' }] },
+  { type: 'function', name: 'setCollectionAllowed', stateMutability: 'nonpayable', inputs: [{ name: 'collection', type: 'address' }, { name: 'allowed', type: 'bool' }], outputs: [] },
+  { type: 'function', name: 'deposit', stateMutability: 'nonpayable', inputs: [{ name: 'ids', type: 'uint256[]' }], outputs: [] },
+  { type: 'function', name: 'queue', stateMutability: 'nonpayable', inputs: [{ name: 'collection', type: 'address' }, { name: 'ids', type: 'uint256[]' }, { name: 'durations', type: 'uint32[]' }], outputs: [] },
+] as const;
 const oldMarketAddresses: string[] = (environment as any).oldMarketAddresses || [];
 const oldMarketAddressSet = new Set(oldMarketAddresses.map((a) => a.toLowerCase()));
 const ogSlugs: string[] = (environment as any).ogSlugs || [];
@@ -1107,6 +1118,9 @@ export class Web3Service {
   async transferNft(collection: string, tokenId: number | string, toAddress: string): Promise<string | undefined> {
     if (!collection) throw new Error('No collection');
     if (!toAddress) throw new Error('No address provided');
+    if (this.isAuctionHouse(toAddress)) {
+      throw new Error('That is the Auction House. A plain transfer would not auction it: use "Add to auction" instead.');
+    }
     const from = getAccount(this.config).address;
     if (!from) throw new Error('No wallet connected');
     return this._writeMarketContractAt(
@@ -1126,6 +1140,39 @@ export class Web3Service {
    * approval forever — the listing still works and the (likely already-present)
    * approval isn't disturbed.
    */
+  isAuctionHouse(address?: string | null): boolean {
+    return !!address && address.toLowerCase() === AUCTION_HOUSE_721.toLowerCase();
+  }
+
+  /**
+   * Put pieces into the ERC-721 auction house the right way (they are pulled in by the house, so it knows to
+   * auction them): v67 pieces join the random pool (deposit), any other collection joins the back of the
+   * featured queue (queue), in the order given, at the default length. Guardian wallet only. Sends the
+   * collection approval and the auction-house approval first if either is missing. Returns the last tx hash.
+   */
+  async addToAuctionHouse(collection: string, tokenIds: Array<number | string>): Promise<string | undefined> {
+    const me = getAccount(this.config).address;
+    if (!me) throw new Error('No wallet connected');
+    if (!tokenIds.length) throw new Error('Nothing selected');
+    const house = AUCTION_HOUSE_721 as `0x${string}`;
+    const guardian = await this.l1Client.readContract({ address: house, abi: AUCTION_HOUSE_ADD_ABI, functionName: 'guardian' }) as string;
+    if (guardian.toLowerCase() !== me.toLowerCase()) throw new Error('Only the Auction House guardian wallet can add pieces to the auction.');
+    const ids = tokenIds.map(id => BigInt(id));
+    const isV67 = collection.toLowerCase() === AUCTION_HOUSE_V67_NFT.toLowerCase();
+
+    if (!isV67) {
+      const allowed = await this.l1Client.readContract({ address: house, abi: AUCTION_HOUSE_ADD_ABI, functionName: 'collectionAllowed', args: [collection as `0x${string}`] });
+      if (!allowed) {
+        const h = await this._writeMarketContractAt(house, 'setCollectionAllowed', [collection, true], undefined, AUCTION_HOUSE_ADD_ABI as any);
+        if (h) await this.pollReceipt(h);
+      }
+    }
+    await this.qpEnsureApproval(collection, house); // the house pulls each piece with transferFrom
+    return isV67
+      ? this._writeMarketContractAt(house, 'deposit', [ids], undefined, AUCTION_HOUSE_ADD_ABI as any)
+      : this._writeMarketContractAt(house, 'queue', [collection, ids, []], undefined, AUCTION_HOUSE_ADD_ABI as any);
+  }
+
   async qpEnsureApproval(collection: string, market: string): Promise<void> {
     const address = getAccount(this.config).address;
     if (!address) throw new Error('No wallet connected');

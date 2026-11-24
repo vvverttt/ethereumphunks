@@ -1110,18 +1110,36 @@ export class ItemViewComponent {
       hashId,
       tokenId: phunk.tokenId,
     };
+    let cancelled = false;
 
     try {
       let toAddress: string | null = address || this.transferAddress.value;
       toAddress = await this.web3Svc.verifyAddressOrEns(toAddress);
       if (!toAddress) throw new Error(this.t('invalidAddress'));
 
+      const set = this.qpSet(phunk);
+      // A plain transfer to the auction house strands the piece; offer the real way in instead.
+      const toHouse = !!set && this.web3Svc.isAuctionHouse(toAddress);
+      if (toHouse && !confirm(
+        `That address is the Auction House.\n\nA plain transfer would NOT put it up for auction.\n\n` +
+        `OK = add it to the auction (v67 joins the pool, anything else joins the back of the queue)\n` +
+        `Cancel = send nothing`
+      )) {
+        cancelled = true;
+        this.closeTransfer();
+        return;
+      }
+      if (toHouse) {
+        notification = { ...notification, id: this.utilSvc.createIdFromString('auctionAdd' + hashId), function: 'auctionAdd' };
+      }
+
       this.closeTransfer();
       this.store.dispatch(upsertNotification({ notification }));
 
-      const set = this.qpSet(phunk);
       let hash: string | undefined;
-      if (set) {
+      if (toHouse) {
+        hash = await this.web3Svc.addToAuctionHouse(set!.nft, [this.posTokenId(phunk)]);
+      } else if (set) {
         // ERC-721C (e.g. cryptophunksv67): move via transferFrom on the NFT contract.
         // The owner is exempt from the operator whitelist, so a direct transfer works
         // even though third-party marketplace approvals stay blocked.
@@ -1153,7 +1171,7 @@ export class ItemViewComponent {
         detail: err,
       };
     } finally {
-      this.store.dispatch(upsertNotification({ notification }));
+      if (!cancelled) this.store.dispatch(upsertNotification({ notification }));
       this.clearAll();
     }
   }

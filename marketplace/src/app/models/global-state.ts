@@ -136,7 +136,8 @@ export type TxFunction =
   | 'ticDelete'
   | 'evolvePhunk'
   | 'devolvePhunk'
-  | 'freeClaim';
+  | 'freeClaim'
+  | 'auctionAdd';
 
 /**
  * Active trait filters.

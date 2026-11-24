@@ -434,7 +434,18 @@ export class MarketComponent {
     if (erc721cSet) {
       const to = await this.web3Svc.verifyAddressOrEns(this.transferAddress.value);
       if (!to) return;
-      await this.transferBatchErc721c(erc721cSet, entries, to);
+      const slug = selectedPhunks[0]?.slug ?? undefined;
+      if (this.web3Svc.isAuctionHouse(to)) {
+        // A plain transfer to the house strands the pieces; offer the real way in instead.
+        const ok = confirm(
+          `That address is the Auction House.\n\nA plain transfer would NOT put them up for auction.\n\n` +
+          `OK = add these ${entries.length} to the auction (v67 joins the pool, anything else joins the queue in this order)\n` +
+          `Cancel = send nothing`
+        );
+        if (ok) await this.addBatchToAuction(erc721cSet, entries, slug);
+        return;
+      }
+      await this.transferBatchErc721c(erc721cSet, entries, to, slug);
       return;
     }
 
@@ -495,6 +506,7 @@ export class MarketComponent {
     set: CollectionContracts,
     entries: Array<{ phunkId: number; hashId: string }>,
     toAddress: string,
+    slug?: string,
   ): Promise<void> {
     this.closeModal();
     for (const entry of entries) {
@@ -502,6 +514,7 @@ export class MarketComponent {
       let notification: Notification = {
         id: this.utilSvc.createIdFromString('transferPhunk' + entry.hashId),
         timestamp: Date.now(),
+        slug,
         type: 'wallet',
         function: 'transferPhunk',
         hashId: entry.hashId,
@@ -524,6 +537,38 @@ export class MarketComponent {
         break; // user rejected or a tx failed — don't keep firing prompts
       }
     }
+    this.clearSelectedAndClose();
+  }
+
+  /** "Add to auction": the house pulls the selected pieces in itself (one tx for all), so it auctions them. */
+  private async addBatchToAuction(
+    set: CollectionContracts,
+    entries: Array<{ phunkId: number; hashId: string }>,
+    slug?: string,
+  ): Promise<void> {
+    this.closeModal();
+    const hashIds = entries.map(e => e.hashId);
+    let notification: Notification = {
+      id: this.utilSvc.createIdFromString('auctionAdd' + hashIds.map(h => h.substring(2)).join('')),
+      timestamp: Date.now(),
+      slug,
+      type: 'wallet',
+      function: 'auctionAdd',
+      hashId: hashIds[0],
+      ...(entries.length > 1 ? { hashIds, isBatch: true } : { tokenId: Math.abs(Number(entries[0].phunkId)) }),
+    };
+    this.store.dispatch(upsertNotification({ notification }));
+    try {
+      const hash = await this.web3Svc.addToAuctionHouse(set.nft, entries.map(e => Math.abs(Number(e.phunkId))));
+      notification = { ...notification, type: 'pending', hash };
+      this.store.dispatch(upsertNotification({ notification }));
+      const receipt = await this.web3Svc.pollReceipt(hash!);
+      notification = { ...notification, type: 'complete', hash: receipt.transactionHash };
+    } catch (err) {
+      console.log(err);
+      notification = { ...notification, type: 'error', detail: err };
+    }
+    this.store.dispatch(upsertNotification({ notification }));
     this.clearSelectedAndClose();
   }
 

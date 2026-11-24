@@ -8,6 +8,8 @@ import { hexToString } from 'viem';
 
 import { Web3Service } from '@/services/web3.service';
 import { ImageService } from '@/services/image.service';
+import { SpriteService } from '@/services/sprite.service';
+import { supabase } from '@/services/supabase';
 
 import { environment } from 'src/environments/environment';
 
@@ -32,7 +34,8 @@ export class NotificationImageComponent {
   constructor(
     private http: HttpClient,
     private web3Svc: Web3Service,
-    private imageSvc: ImageService
+    private imageSvc: ImageService,
+    private spriteSvc: SpriteService,
   ) {
     effect(async () => {
       const hashId = this.hashId();
@@ -59,6 +62,14 @@ export class NotificationImageComponent {
   }
 
   private async readPhunkByHashId(hashId: string): Promise<string> {
+    // The site's own art first: one small row read, no RPC. This is also the only way to picture an ERC-721
+    // piece (its hashId is a site id, not a transaction, so there is nothing on-chain to read by it).
+    try {
+      const suffix = environment.chainId === 1 ? '' : '_sepolia';
+      const { data } = await supabase.from('ethscriptions' + suffix).select('sha').eq('hashId', hashId).maybeSingle();
+      if (data?.sha) return await this.spriteSvc.url(data.sha);
+    } catch { /* fall back to the inscription itself */ }
+
     const tx = await this.web3Svc.getTransactionL1(hashId);
     const isDevMode = environment.chainId === 11155111;
 

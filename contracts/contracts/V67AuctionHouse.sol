@@ -215,6 +215,7 @@ contract V67AuctionHouse is UUPSUpgradeable, Ownable2StepUpgradeable, Reentrancy
     error BadPosition();
     error LengthMismatch();
     error NotReceived(address collection, uint256 tokenId);
+    error NotHeld(address collection, uint256 tokenId);
     error TokenIdTooLarge(uint256 tokenId);
     error NotUpForAuction();
     error AuctionExpired();
@@ -300,6 +301,27 @@ contract V67AuctionHouse is UUPSUpgradeable, Ownable2StepUpgradeable, Reentrancy
         for (uint256 k; k < len; ++k) n.transferFrom(msg.sender, address(this), ids[k]);
     }
 
+    /// @notice Put v67 pieces this contract ALREADY HOLDS into the pool (sent in by a plain transfer instead of
+    ///         deposit(), or released by a skip), so they never have to be rescued out and deposited again. Same
+    ///         rules as deposit(); each piece must be held here right now and not already a pool, queue or live
+    ///         piece. Nothing moves.
+    // slither-disable-next-line calls-loop
+    function depositHeld(uint256[] calldata ids) external onlyGuardian nonReentrant {
+        IERC721 n = nft;
+        uint256 len = ids.length;
+        for (uint256 k; k < len; ++k) {
+            uint256 id = ids[k];
+            if (id > type(uint16).max) revert TokenIdTooLarge(id);
+            if (inPool[id]) revert AlreadyInPool(id);
+            if (inQueue[address(n)][id]) revert AlreadyQueued(address(n), id);
+            if (n.ownerOf(id) != address(this)) revert NotHeld(address(n), id);
+            inPool[id] = true;
+            _pool.push(uint16(id));
+            emit Deposited(id, address(this));
+        }
+        if (started && !paused && !_auction.active) _openNext();
+    }
+
     /// @notice Pieces must come in through deposit() / queue(). A safe transfer sent here by mistake bounces.
     function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {
         revert DirectSafeTransferRejected();
@@ -336,6 +358,34 @@ contract V67AuctionHouse is UUPSUpgradeable, Ownable2StepUpgradeable, Reentrancy
         onlyGuardian
         nonReentrant
     {
+        _addToQueue(collection, ids, durations, false);
+
+        IERC721 c = IERC721(collection);
+        uint256 len = ids.length;
+        for (uint256 k; k < len; ++k) {
+            c.transferFrom(msg.sender, address(this), ids[k]);
+            // Belt and braces for a collection we did not write: the piece must really be here now.
+            if (c.ownerOf(ids[k]) != address(this)) revert NotReceived(collection, ids[k]);
+        }
+    }
+
+    /// @notice Line up pieces this contract ALREADY HOLDS (sent in by a plain transfer instead of queue(), or
+    ///         released by a skip), so they never have to be rescued out and queued again. Same rules as queue():
+    ///         approved collection, same order, same optional lengths, opens the next auction if idle. Each piece
+    ///         must be held here right now and must not already be a pool, queue or live piece. Nothing moves.
+    function queueHeld(address collection, uint256[] calldata ids, uint32[] calldata durations)
+        external
+        onlyGuardian
+        nonReentrant
+    {
+        _addToQueue(collection, ids, durations, true);
+    }
+
+    /// @dev Shared by queue() and queueHeld(): checks, then appends to the queue. `held` = every piece must
+    ///      already be owned by this contract (ownerOf is a view call: STATICCALL, so it cannot re-enter).
+    // False positive (timestamp): these compare queue lengths and durations, not times (taint via _openNext).
+    // slither-disable-next-line calls-loop,timestamp
+    function _addToQueue(address collection, uint256[] calldata ids, uint32[] calldata durations, bool held) internal {
         if (!collectionAllowed[collection]) revert CollectionNotAllowed(collection);
         uint256 len = ids.length;
         if (durations.length != 0 && durations.length != len) revert LengthMismatch();
@@ -348,18 +398,12 @@ contract V67AuctionHouse is UUPSUpgradeable, Ownable2StepUpgradeable, Reentrancy
             if (d != 0 && (d < MIN_DURATION || d > MAX_DURATION)) revert DurationOutOfRange();
             if (inQueue[collection][id]) revert AlreadyQueued(collection, id);
             if (isV67 && inPool[id]) revert AlreadyInPool(id);
+            if (held && IERC721(collection).ownerOf(id) != address(this)) revert NotHeld(collection, id);
             inQueue[collection][id] = true;
             _queue.push(QueueItem({collection: collection, duration: d, tokenId: id}));
             emit Queued(collection, id, _queue.length - 1 - _qHead, d);
         }
         if (started && !paused && !_auction.active) _openNext();
-
-        IERC721 c = IERC721(collection);
-        for (uint256 k; k < len; ++k) {
-            c.transferFrom(msg.sender, address(this), ids[k]);
-            // Belt and braces for a collection we did not write: the piece must really be here now.
-            if (c.ownerOf(ids[k]) != address(this)) revert NotReceived(collection, ids[k]);
-        }
     }
 
     /// @notice How the queue mixes with the v67 pool: every `every`-th auction is a queue piece (1 = all queue
