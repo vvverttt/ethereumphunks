@@ -235,6 +235,15 @@
       &[data-slug='phunksmas'] {
         --row-bg: 99, 133, 150;  // #638596 — the contract's blue-grey
         --row-fg: 255, 255, 255;
+
+        // Its art sits on the punk blue, not the Ethscriptions lime.
+        .image-wrapper { background-color: #638596; }
+
+        &.active {
+          background-color: #638596;
+
+          .image-wrapper { background: none; }
+        }
       }
 
       &:active {

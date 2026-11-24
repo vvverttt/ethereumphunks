@@ -5,32 +5,11 @@ import { RouterModule } from '@angular/router';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 
 import { Phunk } from '@/models/db';
-import { environment } from 'src/environments/environment';
 import { DecodedData } from '@/models/ethscriptions';
 
 import { EthscriptionService } from '@/services/ethscription.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
-
-/** Collections whose pieces can have a creation animation: Storage static/animations/{tokenId}.gif
- *  (token ids are unique across collections). Bundled into the build when staticUrl is '', so
- *  playing one costs no RPC and no Supabase egress. A piece without a GIF just shows its image. */
-const ANIMATED_SLUGS = new Set(['phunksmas']);
-const animCache = new Map<number, Promise<string | null>>();
-function animationFor(phunk: Phunk): Promise<string | null> {
-  const id = phunk.tokenId;
-  if (!phunk.slug || id == null || !ANIMATED_SLUGS.has(phunk.slug)) return Promise.resolve(null);
-  const n = Math.abs(Number(id));
-  if (!animCache.has(n)) {
-    const url = `${environment.staticUrl}/static/animations/${n}.gif`;
-    animCache.set(n, new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(url);
-      img.onerror = () => resolve(null);
-      img.src = url;
-    }));
-  }
-  return animCache.get(n)!;
-}
+import { animationFor } from '@/utils/phunk-animation';
 
 @Component({
   selector: 'app-phunk-billboard',

@@ -30,6 +30,7 @@ import { BidPanelComponent } from '@/components/auction/bid-panel/bid-panel.comp
 import { BidEasterEggComponent } from '@/components/auction/bid-easter-egg/bid-easter-egg.component';
 import { AuctionSliderComponent } from '@/components/auction/auction-slider/auction-slider.component';
 import { AuctionSwitchComponent } from '@/components/auction/auction-switch/auction-switch.component';
+import { AuctionAboutComponent } from '@/components/auction/auction-about/auction-about.component';
 
 import * as appStateSelectors from '@/state/selectors/app-state.selectors';
 import * as dataStateSelectors from '@/state/selectors/data-state.selectors';
@@ -61,6 +62,7 @@ const BUYNOW_TIER2_ETH = '0.167';
     AuctionSliderComponent,
     PhunkImageComponent,
     AuctionSwitchComponent,
+    AuctionAboutComponent,
   ],
   providers: [AuctionService],
   templateUrl: './auction-page.component.html',
@@ -152,6 +154,8 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
   staticUrl = environment.staticUrl;
   explorerUrl = environment.explorerUrl;
+  /** The Ethscriptions auction house contract (for the about section's link). */
+  get auctionAddress(): string { return this.auctionSvc.address; }
 
   isAdmin = signal(false);
 

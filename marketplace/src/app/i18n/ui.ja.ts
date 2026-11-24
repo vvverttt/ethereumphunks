@@ -60,7 +60,8 @@ export const UI_JA: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks オークションハウス',
   introForked: 'Chopperdad からフォークしてアップグレードしました。',
-  introPhunklloween: '全19回の Phunklloween オークションはすべて決済済みです。入札し、コレクトし、参加してくれたすべての皆さんに感謝します。残りの作品はマーケットに 0.0367 ETH と 0.067 ETH で出品中で、最後の11点もまもなく加わります。オークションハウスの灯りはいったん消えます。でも、それも長くはありません。',
+  introPhunklloween: '全19回の Phunklloween オークションはすべて決済済みです。入札し、コレクトし、参加してくれたすべての皆さんに感謝します。Phunkmas は現在 ERC-721 オークションハウスで開催中です。',
+  introPhunkmas: 'Phunkmas 開催中：DystoLabz によるクリスマスの1点もの67点、完全オンチェーン ERC-721 です。最初の17点が1点ずつ、各1.67日、0.001 ETH から出品されます。残りはマーケットに出品されます。',
   introBidRules: '各入札は直前の入札を少なくとも10%上回る必要があります。終了前の10分以内に入札があると時間が10分延長されるため、終了間際の滑り込みはできません。上回る入札があった場合、あなたの ETH は引き出し可能残高に戻ります。タイマー終了後は誰でも決済でき、アイテムは落札者に渡り、次のオークションが始まります。',
   introMadeBy: '制作: DystoLabz、別名',
   introAndMe: 'と私。',

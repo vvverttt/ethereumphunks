@@ -55,6 +55,17 @@
 :host-context([data-collection='phikings']) .phupreme-logo.glow { @include collection-glow(rgb(224, 165, 38), #b08a10, #967000, #5c4400); }
 :host-context([data-collection='phunksmas']) .phupreme-logo.glow { @include collection-glow(rgb(255, 40, 60), #1f9a4e, #167a3e, #0e5a2c); }
 
+// Auction pages: the strip carries on the history section's colour (its gradient ends on these),
+// and the badge takes the section's accent, since the usual accent is the strip colour itself.
+:host-context([data-collection='phunklloween']) .phupreme-logo.auction {
+  background: #f07a0a;
+  .mark { background: #4500b0; }
+}
+:host-context([data-collection='phunksmas']) .phupreme-logo.auction {
+  background: #e01a2e;
+  .mark { background: #167a3e; }
+}
+
 .inner {
   // Top and bottom only: the sides keep .inner's own padding, so the footer lines up with the
   // page's content column the way cryptopunks.app's does.

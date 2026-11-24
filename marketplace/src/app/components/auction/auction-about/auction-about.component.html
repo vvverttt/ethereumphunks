@@ -1,0 +1,9 @@
+<div class="about">
+  <div class="story">
+    @for (p of paragraphs(); track $index) {
+      <p [class.dropcap]="$first">{{ p }}</p>
+    }
+    <p>{{ t('introMadeBy') }} <a href="https://x.com/ArkanaRuzain" target="_blank" rel="noopener noreferrer">&#64;ArkanaRuzain</a> {{ t('introAndMe') }}</p>
+    <p>{{ t('introQuestions') }} <a href="https://x.com/Vvverttt" target="_blank" rel="noopener noreferrer">&#64;Vvverttt</a> {{ t('introOnX') }}</p>
+  </div>
+</div>

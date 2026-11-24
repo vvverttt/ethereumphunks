@@ -79,7 +79,7 @@
             },
             "sepolia": {
               "outputPath": {
-                "base": "dist/etherphunks-market-sepolia_nov1"
+                "base": "dist/etherphunks-market-sepolia_nov24"
               },
               "budgets": [
                 {
@@ -107,7 +107,7 @@
             },
             "mainnet": {
               "outputPath": {
-                "base": "dist/etherphunks-market-mainnet_nov1"
+                "base": "dist/etherphunks-market-mainnet_nov24"
               },
               "budgets": [
                 {
@@ -163,7 +163,7 @@
             },
             "mainnet-ipfs": {
               "outputPath": {
-                "base": "dist/etherphunks-market-ipfs_nov1"
+                "base": "dist/etherphunks-market-ipfs_nov24"
               },
               "budgets": [
                 {

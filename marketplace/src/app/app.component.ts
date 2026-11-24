@@ -60,6 +60,8 @@ export class AppComponent implements OnInit {
 
   // Intro notice shown on entering the auction house.
   showIntro = signal(false);
+  /** The pop-up on the ERC-721 house (/auction?type=erc721) talks about Phunkmas instead. */
+  introErc721 = signal(false);
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -81,7 +83,9 @@ export class AppComponent implements OnInit {
   // Pages (by first URL segment) that show an intro notice on entry. Only the
   // auction house now; the collection notices (V67, EthsRocks, Missing/Dysto)
   // were retired once those collections went live.
-  private readonly noticeSlugs = new Set(['auction', 'auction2']);
+  // The auction pop-up is retired: its text now sits in the page under the auction history
+  // (AuctionAboutComponent). Add a page here to bring a notice back.
+  private readonly noticeSlugs = new Set<string>([]);
 
   dismissIntro(): void {
     this.showIntro.set(false);
@@ -147,6 +151,7 @@ export class AppComponent implements OnInit {
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map((e) => e.urlAfterRedirects),
       startWith(this.router.url),
+      tap((url) => this.introErc721.set(/[?&]type=erc721(&|#|$)/.test(url))),
       map((url) => url.split(/[?#]/)[0].split('/').filter(Boolean)[0] || ''),
       distinctUntilChanged(),
     ).subscribe((firstSegment: string) => {

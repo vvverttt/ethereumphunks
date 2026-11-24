@@ -59,7 +59,8 @@ export const UI_ES: Record<string, string> = {
   // popup de introducción
   introTitle: 'Casa de Subastas QuantumPhunks',
   introForked: 'Un fork de Chopperdad, mejorado.',
-  introPhunklloween: 'Las 19 subastas de Phunklloween ya se liquidaron. Gracias a todos los que pujaron, coleccionaron y participaron. Las piezas restantes están listadas en el mercado a 0.0367 y 0.067 ETH, y las últimas 11 se suman muy pronto. La casa de subastas está a oscuras por ahora. No por mucho tiempo.',
+  introPhunklloween: 'Las 19 subastas de Phunklloween ya se liquidaron. Gracias a todos los que pujaron, coleccionaron y participaron. Phunkmas ya está en vivo en la casa de subastas ERC-721.',
+  introPhunkmas: 'Phunkmas ya está en vivo: 67 piezas únicas de Navidad de DystoLabz, ERC-721 totalmente on-chain. Las primeras 17 salen una tras otra, 1.67 días cada una, desde 0.001 ETH. El resto se listará en el mercado.',
   introBidRules: 'Cada puja debe superar a la anterior por al menos 10%, y una puja en los últimos 10 minutos extiende el reloj 10 minutos, así que nadie te gana en el último segundo. Si te superan, tu ETH regresa a tu saldo retirable. Cuando el temporizador termina, cualquiera puede liquidarla: el item va al ganador y empieza el siguiente.',
   introMadeBy: 'Hecho por DystoLabz, alias',
   introAndMe: 'y yo.',

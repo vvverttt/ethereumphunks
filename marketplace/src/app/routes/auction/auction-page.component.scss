@@ -1,11 +1,18 @@
 @use 'abstracts/variables' as *;
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
+// The history section grows to the bottom of the page, so its colour (Phunklloween orange,
+// Phunkmas red) runs straight into the footer's logo strip instead of leaving a band of the
+// page background under it.
 .auction-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .auction-notice {
@@ -283,9 +290,16 @@ $spooky-frame: pixel-frame('ff8c1a');
     color: #0b3d5c !important;
   }
 
-  // A Phunksmas piece on the block: evergreen hero, candy-cane red pixel frame, white rim.
+  // A Phunkmas piece on the block, built like the Phunklloween hero: an evergreen night with
+  // a warm candle-gold glow behind the piece, a candy-cane red pixel frame and a red rim.
+  // Ends on #167a3e, the page green ThemeService sets, so it runs into the page above.
   &.xmas {
-    background-color: #167a3e;
+    background-color: #0f6a33;
+    background-image:
+      radial-gradient(ellipse 50% 42% at 50% 32%, rgba(255, 214, 102, .40), transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 45%, rgba(46, 184, 98, .55), transparent 75%),
+      linear-gradient(180deg, #167a3e 0%, #1f9a4e 50%, #167a3e 100%) !important;
+    box-shadow: inset 0 -.4rem 0 0 #ff283c;
     &::before { border-image: pixel-frame('ff283c') 8 / 4rem stretch; }
     @media (max-width: $tablet) { &::before { border-image-width: 2.4rem; } }
     .auction-house-tag {
@@ -317,6 +331,54 @@ $spooky-frame: pixel-frame('ff8c1a');
     height: clamp(30rem, 32vw, 42rem);
   }
 
+  // Phunkmas: the item page's viewer (still / creation animation / mirror tray on hover, click
+  // flips). The tray is sized in cqmin of the picture, as on the item page and on-chain.
+  .viewer {
+    position: relative;
+    container-type: size;
+    width: clamp(30rem, 32vw, 42rem);
+    height: clamp(30rem, 32vw, 42rem);
+    user-select: none;
+
+    .phunk-fallback { width: 100%; height: 100%; cursor: pointer; transition: transform .25s; }
+    .phunk-fallback.flipped { transform: scaleX(-1); }
+
+    .tray {
+      position: absolute;
+      bottom: 2.5cqmin;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: .9cqmin;
+      padding: .9cqmin;
+      border-radius: 1.6cqmin;
+      background: rgba(0, 0, 0, .45);
+      opacity: 0;
+      transition: opacity .3s;
+
+      button {
+        width: 5cqmin;
+        height: 5cqmin;
+        min-width: 2.4rem;
+        min-height: 2.4rem;
+        padding: 0;
+        border: 0;
+        border-radius: .9cqmin;
+        cursor: pointer;
+        background: #638596 center / contain no-repeat;
+        image-rendering: pixelated;
+        outline: .3cqmin solid transparent;
+
+        &.on { outline-color: #fff; }
+        &.mirror { transform: scaleX(-1); }
+      }
+    }
+
+    &:hover .tray { opacity: 1; }
+    // touch screens have no hover: keep the tray showing
+    @media (hover: none) { .tray { opacity: 1; } }
+  }
+
   // QuantumPhunks only: drop them down so their feet sit on the divider line
   // above Auction History. Rocks (no .is-phunk) stay exactly where they were.
   // Transform is visual-only, so it doesn't reflow or squish anything else.
@@ -345,7 +407,8 @@ $spooky-frame: pixel-frame('ff8c1a');
 
     canvas,
     .phunk-fallback,
-    .placeholder {
+    .placeholder,
+    .viewer {
       width: 34rem;
       height: 34rem;
     }
@@ -354,7 +417,8 @@ $spooky-frame: pixel-frame('ff8c1a');
   @media (max-width: $mobile) {
     canvas,
     .phunk-fallback,
-    .placeholder {
+    .placeholder,
+    .viewer {
       width: 28rem;
       height: 28rem;
     }
@@ -365,8 +429,11 @@ $spooky-frame: pixel-frame('ff8c1a');
 
 .auction-history {
   position: relative;
-  // the page's own bottom space is main's padding (see app.component.scss)
-  padding-bottom: 0;
+  flex: 1;
+  // Main's 5rem bottom padding (app.component.scss) is drawn inside the section, so the
+  // themed colour reaches the footer.
+  padding-bottom: 5rem;
+  margin-bottom: -5rem;
 
   .history-inner {
     position: relative;
@@ -402,6 +469,25 @@ $spooky-frame: pixel-frame('ff8c1a');
 :host-context([data-collection='phunklloween']) .auction-history ::ng-deep app-auction-slider {
   .slide-item img,
   .slide-item .img-placeholder { background-color: #c3ff00 !important; }
+  .phunk-id { color: rgb(var(--text-color)) !important; }
+}
+
+// Phunkmas: same flip as Phunklloween. The hero is evergreen, so the bottom half goes
+// candy-cane red with white text and green accents.
+:host-context([data-collection='phunksmas']) .auction-history {
+  --text-color: 255, 255, 255;
+  --auction-accent: 22, 122, 62;        // #167a3e — the hero green
+  --pink: 22, 122, 62;
+  --background: 255, 40, 60;            // panels that paint --background blend into the red
+  color: rgb(var(--text-color));
+  background-color: #ff283c;
+  background-image: linear-gradient(180deg, #ff3d4f 0%, #ff283c 50%, #e01a2e 100%);
+}
+
+// On red: thumbnails on the Phunkmas punk blue (#638596), white numbers.
+:host-context([data-collection='phunksmas']) .auction-history ::ng-deep app-auction-slider {
+  .slide-item img,
+  .slide-item .img-placeholder { background-color: #638596 !important; }
   .phunk-id { color: rgb(var(--text-color)) !important; }
 }
 

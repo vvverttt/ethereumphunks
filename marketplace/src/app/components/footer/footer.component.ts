@@ -40,6 +40,16 @@ export class FooterComponent {
       return [':slug', 'details/:hashId', 'details/:contract/:tokenId'].includes(r.routeConfig?.path || '');
     }),
   ), { initialValue: false });
+  /** Auction pages: the logo strip continues the auction history section's colour. */
+  auctionPage = toSignal(this.router.events.pipe(
+    filter((e) => e instanceof NavigationEnd),
+    startWith(null),
+    map(() => {
+      let r = this.router.routerState.snapshot.root;
+      while (r.firstChild) r = r.firstChild;
+      return ['auction', 'auction2'].includes(r.routeConfig?.path || '');
+    }),
+  ), { initialValue: false });
   config$ = this.store.select(appStateSelectors.selectConfig);
   slug$ = this.store.select(selectMarketSlug);
   collection$ = this.store.select(dataStateSelectors.selectActiveCollection);

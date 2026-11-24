@@ -76,6 +76,17 @@
       // the popup's light panel.
       color: rgba(0, 0, 0, 1);
     }
+
+    // ERC-721 house pop-up: Phunkmas evergreen panel, candy-cane red shadow and button.
+    &.xmas {
+      background-color: #167a3e;
+      box-shadow: -.6rem .6rem 0 0 #ff283c;
+
+      h2 { color: #fff; }
+      p { color: #fff; a { color: #ffd666; } }
+      button { color: #fff; background-color: #ff283c; }
+      .popup-version { color: rgba(255, 255, 255, .8); }
+    }
   }
 }
 

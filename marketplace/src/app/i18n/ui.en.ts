@@ -60,7 +60,8 @@ export const UI_EN: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks Auction House',
   introForked: 'Forked from Chopperdad and upgraded.',
-  introPhunklloween: 'All 19 Phunklloween auctions have settled. Thank you to everyone who bid, collected and took part. The remaining pieces are listed on the market at 0.0367 and 0.067 ETH, with the last 11 joining shortly. The auction house is dark for now. Not for long.',
+  introPhunklloween: 'All 19 Phunklloween auctions have settled. Thank you to everyone who bid, collected and took part. Phunkmas are live now in the ERC-721 auction house.',
+  introPhunkmas: 'Phunkmas are live now: 67 Christmas one of ones by DystoLabz, fully on-chain ERC-721s. The first 17 go up one after another, 1.67 days each, opening at 0.001 ETH. The rest will be listed on the market.',
   introBidRules: 'Each bid must beat the last by at least 10%, and a bid in the final 10 minutes extends the clock by 10 minutes, so nothing gets sniped at the buzzer. Outbid and your ETH returns to your withdrawable balance. When the timer ends anyone can settle it: the item goes to the winner and the next one starts.',
   introMadeBy: 'Made by DystoLabz, aka',
   introAndMe: 'and me.',

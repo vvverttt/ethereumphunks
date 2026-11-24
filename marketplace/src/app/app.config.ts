@@ -1,5 +1,5 @@
 import { isDevMode } from '@angular/core';
-import { RouteReuseStrategy, provideRouter, withInMemoryScrolling } from '@angular/router';
+import { RouteReuseStrategy, UrlSerializer, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideHttpClient, withXhr } from '@angular/common/http';
 
@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 
 import { routes } from '@/routes/routes';
 import { CustomReuseStrategy } from '@/routes/route.strategy';
+import { SlugAliasUrlSerializer } from '@/utils/slug-alias-url-serializer';
 
 import { Store, provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
@@ -45,6 +46,7 @@ export const config = {
     { provide: MinMaxPipe, useClass: MinMaxPipe },
     { provide: TokenIdParsePipe, useClass: TokenIdParsePipe },
     { provide: RouteReuseStrategy, useClass: CustomReuseStrategy },
+    { provide: UrlSerializer, useClass: SlugAliasUrlSerializer },   // /phunkmas in the address bar, slug phunksmas inside
     provideStore({
       appState: appStateReducer,
       dataState: dataStateReducer,

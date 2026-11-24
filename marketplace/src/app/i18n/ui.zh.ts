@@ -59,7 +59,8 @@ export const UI_ZH: Record<string, string> = {
   // app intro popup
   introTitle: 'QuantumPhunks 拍卖行',
   introForked: '基于 Chopperdad 的项目分叉并升级。',
-  introPhunklloween: '19 场 Phunklloween 拍卖已全部结算。感谢每一位出价、收藏和参与的朋友。其余作品已在市场上架，价格为 0.0367 和 0.067 ETH，最后 11 件也将很快加入。拍卖行暂时陷入黑暗。但不会太久。',
+  introPhunklloween: '19 场 Phunklloween 拍卖已全部结算。感谢每一位出价、收藏和参与的朋友。Phunkmas 现已在 ERC-721 拍卖行上线。',
+  introPhunkmas: 'Phunkmas 现已上线：DystoLabz 出品的 67 件圣诞主题孤品，完全链上的 ERC-721。前 17 件依次开拍，每件 1.67 天，起拍价 0.001 ETH。其余作品将在市场上架。',
   introBidRules: '每次出价必须比上一次高出至少 10%，在最后 10 分钟内出价会让倒计时延长 10 分钟，因此不会有人在最后一刻抢拍。被超过出价时，你的 ETH 会退回到可提取余额。倒计时结束后任何人都可以结算：物品归赢家所有，下一场拍卖随即开始。',
   introMadeBy: '由 DystoLabz 制作，也就是',
   introAndMe: '和我。',

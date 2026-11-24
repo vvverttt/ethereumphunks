@@ -1,0 +1,62 @@
+@use 'abstracts/variables' as *;
+
+// After phunks.auction (the CryptoPhunks auction house this was forked from): the story sits right
+// under the history thumbnails on the left, with a pixel drop cap. Colours come from --text-color and
+// --auction-accent, which the history section sets per theme (Phunklloween orange, Phunkmas red).
+:host {
+  display: block;
+  width: 100%;
+  // 2rem + the slider track's own 2rem bottom padding = the 4rem between "Auction History" and
+  // its boxes, so the story sits under the boxes at the same distance.
+  padding: 2rem 0 2rem;
+
+  @media (max-width: $tablet) {
+    padding: 4rem 0 1rem;
+  }
+}
+
+.about {
+  // Left column only, clear of the bid panel (absolutely placed at the top right, 48rem wide).
+  max-width: calc(100% - 53rem);
+
+  @media (max-width: $tablet) {
+    max-width: 100%;
+  }
+}
+
+.story {
+  p {
+    margin: 0 0 1.6rem;
+    font-family: var(--primary-font-stack);
+    font-size: 1.6rem;
+    line-height: 1.5;
+    color: rgba(var(--text-color), 1);
+
+    a {
+      font-weight: 600;
+      color: rgba(var(--auction-accent, var(--pink)), 1);
+      text-decoration: none;
+
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  // First paragraph: semibold, opening on a big Retro Computer drop cap in the accent colour.
+  .dropcap {
+    font-weight: 600;
+
+    &::first-letter {
+      float: left;
+      margin-right: 1rem;
+      // Always the pixel font (not the reader's font setting), at its one real weight: a faked
+      // bold smears the pixel edges.
+      font-family: 'Retro Computer', monospace;
+      font-size: 8rem;
+      font-weight: 400;
+      font-synthesis: none;
+      line-height: .9;
+      -webkit-font-smoothing: none;
+      color: rgba(var(--auction-accent, var(--pink)), 1);
+    }
+  }
+}

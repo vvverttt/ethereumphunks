@@ -5,7 +5,7 @@
     <p>{{ hasActiveAuction && !auction()?.settled ? t('a721Rules') : (isDysto() ? t('a721DystoClosed') : t('a721Closed')) }}</p>
   </div>
 
-  <section class="auction quantum" [class.xmas]="phunkSlug() === 'phunksmas'">
+  <section class="auction quantum" [class.xmas]="xmas()">
     <div class="inner">
 
       <div class="auction-house-header">
@@ -24,7 +24,23 @@
       </div>
 
       <div class="phunk-image-wrapper" [class.is-phunk]="true">
-        @if (phunkImage()) {
+        @if (phunkImage() && anim(); as a) {
+          <!-- Phunkmas: same viewer as the item page. Hover shows the tray (still / creation
+               animation / mirror); clicking the picture flips it. -->
+          <div class="viewer">
+            <img [src]="view() === 1 ? a + '#' + playKey() : phunkImage()" class="phunk-fallback" crossorigin="anonymous"
+                 [class.flipped]="flipped()" (click)="flipped.set(!flipped())"
+                 (load)="view() !== 1 && onMainImageLoad($event)" />
+            <div class="tray">
+              <button type="button" [class.on]="view() === 0" (click)="pick(0)" aria-label="Still"
+                      [style.background-image]="'url(' + phunkImage() + ')'"></button>
+              <button type="button" [class.on]="view() === 1" (click)="pick(1)" aria-label="Making of"
+                      [style.background-image]="'url(' + a + ')'"></button>
+              <button type="button" class="mirror" [class.on]="view() === 2" (click)="pick(2)" aria-label="Mirror"
+                      [style.background-image]="'url(' + phunkImage() + ')'"></button>
+            </div>
+          </div>
+        } @else if (phunkImage()) {
           <img [src]="phunkImage()" class="phunk-fallback" crossorigin="anonymous" (load)="onMainImageLoad($event)" />
         } @else {
           <div class="placeholder"></div>
@@ -83,6 +99,9 @@
         (closeTx)="txHash.set('')"
         (timerEvent)="handleTimerEvent($event)"
       />
+
+      <!-- What used to be the pop-up (story + the house's links), as on phunks.auction. -->
+      <app-auction-about house="erc721" [address]="houseAddress" />
     </div>
   </section>
 </div>

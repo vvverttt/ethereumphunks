@@ -45,6 +45,19 @@
 
 }
 
+// Phunkmas: the evergreen-and-red of its auction hero, candle glow centred on the bar.
+:host-context([data-collection='phunksmas']) {
+  .auction-strip {
+    --auction-color: 255, 40, 60;       // #ff283c
+    background-color: #0f6a33;
+    background-image:
+      radial-gradient(ellipse 50% 140% at 50% 50%, rgba(255, 214, 102, .30), transparent 70%),
+      linear-gradient(180deg, #167a3e 0%, #1f9a4e 50%, #0f6a33 100%);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+  }
+}
+
 // ── the item ──────────────────────────────────────────────────────────────────
 .item {
   display: flex;

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, filter, firstValueFrom } from 'rxjs';
 import { formatEther } from 'viem';
 
 import { environment } from 'src/environments/environment';
@@ -15,13 +15,15 @@ import { SpriteService } from '@/services/sprite.service';
 import { ThemeService } from '@/services/theme.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { AuctionData, AuctionBidEvent, SettledAuction } from '@/services/auction.service';
-import { Auction721Row, Auction721Service, Live721, V67_NFT_ADDRESS } from '@/services/auction721.service';
+import { AUCTION721_ADDRESS, Auction721Row, Auction721Service, Live721, V67_NFT_ADDRESS } from '@/services/auction721.service';
 import { PhunkInfoComponent } from '@/components/auction/phunk-info/phunk-info.component';
 import { BidPanelComponent } from '@/components/auction/bid-panel/bid-panel.component';
 import { BidEasterEggComponent } from '@/components/auction/bid-easter-egg/bid-easter-egg.component';
 import { AuctionSliderComponent } from '@/components/auction/auction-slider/auction-slider.component';
 import { AuctionSwitchComponent } from '@/components/auction/auction-switch/auction-switch.component';
+import { AuctionAboutComponent } from '@/components/auction/auction-about/auction-about.component';
 import { IS_BOT } from '@/utils/is-bot';
+import { animationFor } from '@/utils/phunk-animation';
 
 const ZERO = '0x0000000000000000000000000000000000000000';
 type Mode = 'all' | 'dysto';
@@ -39,7 +41,7 @@ type Mode = 'all' | 'dysto';
 @Component({
   selector: 'app-auction721-page',
   standalone: true,
-  imports: [CommonModule, PhunkInfoComponent, BidPanelComponent, BidEasterEggComponent, AuctionSliderComponent, AuctionSwitchComponent],
+  imports: [CommonModule, PhunkInfoComponent, BidPanelComponent, BidEasterEggComponent, AuctionSliderComponent, AuctionSwitchComponent, AuctionAboutComponent],
   templateUrl: './auction721-page.component.html',
   styleUrls: ['../auction/auction-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -59,13 +61,32 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
 
   connected$ = this.store.select(appStateSelectors.selectConnected);
   explorerUrl = environment.explorerUrl;
+  /** The ERC-721 auction house contract (for the about section's link). */
+  readonly houseAddress: string = AUCTION721_ADDRESS;
 
   // ---- same state shape as the Ethscriptions page, so the shared components bind the same way
   auction = signal<AuctionData | null>(null);
   phunkImage = signal('');
   phunkTokenId = signal(0);
   phunkSlug = signal('');
+  /** Christmas look: a Phunkmas piece on the block, or the house with nothing on it yet (Phunkmas are first up). */
+  xmas = computed(() => this.phunkSlug() === 'phunksmas' || (!this.phunkSlug() && !this.isDysto()));
   phunkSha = signal('');
+
+  // Phunkmas viewer, same as the item page: hover shows the tray (still / creation animation /
+  // mirror), clicking the picture flips it.
+  anim = signal<string | null>(null);
+  /** 0 still, 1 creation animation, 2 mirror */
+  view = signal<0 | 1 | 2>(0);
+  flipped = signal(false);
+  /** bumps each time the animation is picked, so it restarts from the first frame */
+  playKey = signal(0);
+
+  pick(v: 0 | 1 | 2) {
+    this.view.set(v);
+    this.flipped.set(v === 2);
+    if (v === 1) this.playKey.update((k) => k + 1);
+  }
   collectionName = signal('');
   poolSize = signal(0);
   reservePrice = signal('0');
@@ -114,8 +135,8 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    // The ERC-721 house wears the blue QuantumPhunks (v67) theme from first paint, never the Halloween
-    // one; once the piece is known, a Phunksmas piece switches it to the Christmas theme (showRow).
+    // The ERC-721 house wears the Phunkmas Christmas theme from first paint (they are first up), never the
+    // Halloween one; once the piece is known, a non-Phunkmas piece switches it to the v67 blue (showRow).
     this.applyTheme(null);
     try {
       await this.loadHistory();
@@ -130,6 +151,7 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.destroyed = true;
+    this.headerSub?.unsubscribe();
     if (this.poll) clearTimeout(this.poll);
   }
 
@@ -192,6 +214,9 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
     this.phunkSlug.set(p.slug ?? '');
     this.phunkSha.set(p.sha ?? '');
     this.phunkImage.set(p.sha ? await this.spriteSvc.url(p.sha) : '');
+    this.view.set(0); this.flipped.set(false); this.anim.set(null);
+    const tokenId = r.tokenId;
+    animationFor({ slug: p.slug, tokenId }).then((a) => { if (this.phunkTokenId() === tokenId) this.anim.set(a); });
     this.collectionName.set(await this.svc.collectionName(p.slug));
     this.applyTheme(p.slug);
     const bids = await this.svc.bids(r.auctionId);
@@ -238,11 +263,27 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
   /** Collections that bring their own look to the ERC-721 house; everything else wears the v67 blue. */
   private static readonly OWN_THEME = new Set(['phunksmas']);
 
+  private headerSub?: Subscription;
+  private headerSlug = '';
+
   private applyTheme(pieceSlug: string | null) {
-    const slug = pieceSlug && Auction721PageComponent.OWN_THEME.has(pieceSlug) ? pieceSlug : 'cryptophunksv67';
+    // No piece yet: the house opens with the Phunkmas, so it wears their Christmas theme (the Dysto page keeps v67 blue).
+    const slug = pieceSlug
+      ? (Auction721PageComponent.OWN_THEME.has(pieceSlug) ? pieceSlug : 'cryptophunksv67')
+      : (this.isDysto() ? 'cryptophunksv67' : 'phunksmas');
     this.themeSvc.setActiveCollection(slug);
+    this.headerSlug = slug;
+    this.setHeaderCollection();
+    // The store's default-collection effect resets the header switcher whenever the collections
+    // list (re)loads, so set it again after each load, one tick later.
+    this.headerSub ??= this.store.select(dataStateSelectors.selectCollections)
+      .pipe(filter((c) => !!c?.length))
+      .subscribe(() => setTimeout(() => { if (!this.destroyed) this.setHeaderCollection(); }));
+  }
+
+  private setHeaderCollection() {
     firstValueFrom(this.store.select(dataStateSelectors.selectCollections)).then((collections) => {
-      const c = collections?.find((x: any) => x.slug === slug);
+      const c = collections?.find((x: any) => x.slug === this.headerSlug);
       if (c) this.store.dispatch(dataStateActions.setActiveCollection({ activeCollection: { ...c } }));
     });
   }

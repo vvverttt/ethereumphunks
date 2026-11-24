@@ -99,6 +99,9 @@
           (closeTx)="txHash.set('')"
           (timerEvent)="handleTimerEvent($event)"
         />
+
+        <!-- What used to be the pop-up (story + the house's links), as on phunks.auction. -->
+        <app-auction-about house="ethscriptions" [address]="auctionAddress" />
       </div>
     </section>
 
