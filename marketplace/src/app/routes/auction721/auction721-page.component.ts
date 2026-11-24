@@ -178,7 +178,9 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
         imageUrl: p?.sha ? await this.spriteSvc.url(p.sha) : '',
         tokenId: r.tokenId,
         slug: p?.slug ?? '',
-        settledTimestamp: new Date(r.settledAt ?? r.endTime).getTime(),
+        // seconds (the timeAgo pipe's unit); an open auction counts from when it started, since its
+        // end time is still ahead
+        settledTimestamp: Math.floor(new Date(r.settledAt ?? (r.settled ? r.endTime : r.startTime)).getTime() / 1000),
       });
     }
     this.history.set(entries.filter((e) => !!e.imageUrl));
