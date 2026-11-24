@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+// 0.8.39: the first release with an empty known-bug list (fixes OverlappingRecursiveStorageStructCopyCorruption
+// (+ViaIR), YulOptimizerKnowledgeBaseStaleBookkeeping, MisorderedNamedParametersInRequireWithCustomErrors,
+// MemoryByteArrayElementDeleteClearsWholeWord, SpillSlotCollisionAcrossMutualRecursion), so Etherscan shows
+// no compiler-bug warnings.
+pragma solidity 0.8.39;
 
 /*
   Phunksmas — 67 handcrafted Christmas 1/1s. ERC-721, fully on-chain, forked from CryptoPhunksV67
@@ -35,7 +39,12 @@ pragma solidity ^0.8.20;
   - Plain fully-on-chain ERC-721 (no ERC-721C transfer validator): image (SSTORE2) + traits, rendered in `tokenURI`.
   - Tradable anywhere (no operator restrictions) and NO royalty: royaltyInfo always returns (0, 0);
     ERC-2981 stays only so markets that call it (ours does, on every sale) don't revert.
-  - Click-to-flip `animation_url` (same as live v67 Flip).
+  - Still image and animation are stored SEPARATELY:
+      `image`         = the still art (crisp SVG wrap)                 -> thumbnails, grids, wallets
+      `animation_url` = a viewer: still / creation animation / mirror, picked from a small tray (no text)
+                        (falls back to the still art for tokens without an animation)
+    Animations are uploaded in chunks (setTokenAnimation + addTokenAnimationChunk), so each tx stays
+    under the 16.7M per-transaction gas cap and each Etherscan paste stays small.
   - Token id = 10453 + position in the drop order (10454..10520, right after Phunklloween's 10387..10453);
     pieces are minted as they're finished.
   - NOT upgradeable: the code is fixed at deploy (no proxy). The owner can mint and edit art/traits until
@@ -90,6 +99,7 @@ contract Phunksmas is
 
     // ===================== Storage: metadata =====================
     mapping(uint256 => address[]) private _imageChunks;   // SSTORE2 ptrs -> exact data URI bytes (chunked for >24KB)
+    mapping(uint256 => address[]) private _animChunks;    // SSTORE2 ptrs -> the animation's data URI (optional)
     string  public description;
     string  public constant singleName = "Phunksmas";   // per-token title: "Phunksmas #10454"
     mapping(uint256 => string[]) private _traitKeys;
@@ -107,6 +117,8 @@ contract Phunksmas is
     event ContractURIUpdated();
     event TokenImageCleared(uint256 indexed tokenId);
     event TokenFrozen(uint256 indexed tokenId);
+    event TokenAnimationSet(uint256 indexed tokenId);
+    event TokenAnimationCleared(uint256 indexed tokenId);
 
     // ERC-4906 (metadata update extension) — tells marketplaces to refresh cached metadata.
     event MetadataUpdate(uint256 _tokenId);
@@ -151,9 +163,16 @@ contract Phunksmas is
     // ===================== Mint / supply =====================
     uint256 public constant FIRST_ID = 10454;   // drop position 1  (Santa Claus)
     uint256 public constant LAST_ID  = 10520;   // drop position 67 (Krampus)
-    uint256 public constant MAX_IMAGE_BYTES = 40_000;   // 24x24 pieces are ~2 KB; caps tokenURI gas forever
+    /// @notice Max still size. tokenURI cost grows faster than linearly with size: the still is encoded twice
+    ///         (thumbnail + viewer page) next to the animation. 4 KB + a 58.5 KB animation reads at ~15.9M gas
+    ///         (tested); 6 KB + 58.5 KB would not fit under the 16.7M cap. Any 24x24 PNG fits (even uncompressed
+    ///         ~3.3 KB as a data URI); the drop's stills are 0.6-2.7 KB.
+    uint256 public constant MAX_IMAGE_BYTES = 4_000;
+    /// @notice Max animation size. Only ONE copy is encoded into tokenURI (inside the viewer page), and with
+    ///         MAX_IMAGE_BYTES this keeps tokenURI readable under the 16.7M per-call gas cap (tested).
+    uint256 public constant MAX_ANIMATION_BYTES = 58_500;   // largest of the 17 (Grinch) is 58,082
 
-    /// @notice Per-token lock: once frozen, that token's image and traits can never change again
+    /// @notice Per-token lock: once frozen, that token's image, animation and traits can never change again
     ///         (protects trait bids / buyers during the drop, before the final renounce).
     mapping(uint256 => bool) public frozen;
 
@@ -171,7 +190,7 @@ contract Phunksmas is
     function ownerMintBatch(address to, uint256[] calldata ids) external onlyOwner {
         for (uint256 i; i < ids.length; ++i) _doMint(to, ids[i]);
     }
-    /// @notice One-way: lock the image + traits of finished pieces. Needs an image (no freezing a blank).
+    /// @notice One-way: lock the image, animation and traits of finished pieces. Needs an image (no freezing a blank).
     function freeze(uint256[] calldata ids) external onlyOwner {
         for (uint256 i; i < ids.length; ++i) {
             uint256 t = ids[i]; _editable(t);
@@ -264,6 +283,65 @@ contract Phunksmas is
         bytes memory out = ""; for (uint256 i; i < n; ++i) out = bytes.concat(out, SSTORE2.read(ch[i]));
         return string(out);
     }
+    // ===================== Animation (separate from the still image) =====================
+    function _animBytes(uint256 t) private view returns (uint256 total) {
+        address[] storage ch = _animChunks[t];
+        for (uint256 i; i < ch.length; ++i) { uint256 sz = ch[i].code.length; if (sz > 0) total += sz - 1; }
+    }
+    function _storeAnim(uint256 t, bytes calldata data) internal {
+        _editable(t);
+        uint256 len = data.length;
+        if (len == 0) revert BadImage();                       // use clearTokenAnimation to remove
+        if (len > MAX_ANIMATION_BYTES) revert ImageTooLarge();
+        if (len < 11 || bytes11(data[0:11]) != bytes11("data:image/")) revert BadImage();
+        _checkImageBytes(data);
+        delete _animChunks[t];
+        for (uint256 off; off < len; off += IMG_CHUNK) {
+            uint256 end = off + IMG_CHUNK < len ? off + IMG_CHUNK : len;
+            _animChunks[t].push(SSTORE2.write(data[off:end]));
+        }
+        emit TokenAnimationSet(t);
+    }
+    /// @notice Set (replace) a token's animation: a full `data:image/...` URI (e.g. an animated GIF), or the
+    ///         FIRST part of one, with the rest appended via addTokenAnimationChunk. Shown as animation_url.
+    function setTokenAnimation(uint256 t, string calldata v) external onlyOwner { _storeAnim(t, bytes(v)); emit MetadataUpdate(t); }
+    /// @notice Set several animations in one tx (keep each tx under the 16.7M gas cap: ~320 gas per byte).
+    function setTokenAnimationBatch(uint256[] calldata ts, string[] calldata vs) external onlyOwner {
+        uint256 n = ts.length; if (n != vs.length) revert LengthMismatch();
+        for (uint256 i; i < n; ++i) _storeAnim(ts[i], bytes(vs[i]));
+        emit BatchMetadataUpdate(FIRST_ID, LAST_ID);
+    }
+    /// @notice Append the next part of an animation started with setTokenAnimation (for big ones / small pastes).
+    function addTokenAnimationChunk(uint256 t, string calldata piece) external onlyOwner {
+        _editable(t);
+        if (_animChunks[t].length == 0) revert BadImage();   // first part must come via setTokenAnimation
+        if (_animBytes(t) + bytes(piece).length > MAX_ANIMATION_BYTES) revert ImageTooLarge();
+        _checkImageBytes(bytes(piece));
+        bytes calldata p = bytes(piece);
+        for (uint256 off; off < p.length; off += IMG_CHUNK) {
+            uint256 end = off + IMG_CHUNK < p.length ? off + IMG_CHUNK : p.length;
+            _animChunks[t].push(SSTORE2.write(p[off:end]));
+        }
+        emit TokenAnimationSet(t); emit MetadataUpdate(t);
+    }
+    /// @notice Remove a token's animation: animation_url falls back to the still image.
+    function clearTokenAnimation(uint256 t) external onlyOwner {
+        _editable(t);
+        delete _animChunks[t]; emit TokenAnimationCleared(t); emit MetadataUpdate(t);
+    }
+    /// @notice The stored animation data URI, byte-identical ("" if none).
+    function tokenAnimation(uint256 t) public view returns (string memory) {
+        address[] storage ch = _animChunks[t]; uint256 n = ch.length;
+        if (n == 0) return ""; if (n == 1) return string(SSTORE2.read(ch[0]));
+        bytes memory out = ""; for (uint256 i; i < n; ++i) out = bytes.concat(out, SSTORE2.read(ch[i]));
+        return string(out);
+    }
+    function hasAnimation(uint256 t) external view returns (bool) { return _animChunks[t].length > 0; }
+    /// @notice Chunk count + total stored bytes of a token's animation (check before/after uploading).
+    function animationInfo(uint256 t) external view returns (uint256 chunks, uint256 bytesStored) {
+        chunks = _animChunks[t].length; bytesStored = _animBytes(t);
+    }
+
     function setDescription(string calldata v) external onlyOwner { description = v; emit BatchMetadataUpdate(FIRST_ID, LAST_ID); }
     function setTraits(uint256 t, string[] calldata keys, string[] calldata vals) external onlyOwner {
         _editable(t);
@@ -288,9 +366,9 @@ contract Phunksmas is
         // ALWAYS wrap the `image` (thumbnail) in a crisp-rendering SVG so it displays SHARP and renders
         // consistently everywhere. Raw bytes are always available byte-identical via tokenImage().
         string memory displayImg = _svgWrap(img);
-        // animation_url = a tiny click-to-flip page (same as live v67 Flip): tap the phunk to mirror it.
-        // A GIF/APNG keeps animating while flipped (CSS transform only), so one page serves every image.
-        string memory anim = string(abi.encodePacked(',"animation_url":"', _flipPage(img), '"'));
+        // animation_url = a small viewer page. With an animation: still / animation / mirror views, no text (opens on
+        // the still). Without one: click-to-flip on the still (byte-identical to live CryptoPhunksV67Flip).
+        string memory anim = string(abi.encodePacked(',"animation_url":"', _flipPage(img, tokenAnimation(tokenId)), '"'));
         string memory bg = bytes(backgroundColor).length > 0 ? string(abi.encodePacked(',"background_color":"', backgroundColor, '"')) : "";
         bytes memory json = abi.encodePacked(
             '{"name":"', label,
@@ -355,17 +433,40 @@ contract Phunksmas is
         );
         return string(abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(svg)));
     }
-    /// @dev Click-to-flip viewer (byte-identical to live CryptoPhunksV67Flip): bg colour + pixelated image,
-    ///      clicking toggles a horizontal mirror.
-    function _flipPage(string memory dataUri) internal view returns (string memory) {
+    /// @dev Viewer page for animation_url. `still` = the image; `animation` = "" or the animation data URI.
+    ///      No animation: click-to-flip (byte-identical to live CryptoPhunksV67Flip).
+    ///      Animation: full-size art, no text; a small tray of three views that shows only on hover (switch from the tray; keyboard arrows too): the still (opens
+    ///      here), the animation (its tray thumbnail plays; picking it plays it big from frame 1) and the mirror.
+    ///      Clicking the picture mirrors whatever is showing. Both URIs sit in quoted attributes and are
+    ///      guaranteed free of " < > by _checkImageBytes.
+    function _flipPage(string memory still, string memory animation) internal view returns (string memory) {
         string memory bg = bytes(backgroundColor).length > 0 ? backgroundColor : "000000";
         bytes memory html = abi.encodePacked(
             '<style>html,body{margin:0;height:100%;background:#', bg,
             '}img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;',
             'image-rendering:pixelated;cursor:pointer;transition:transform .25s}',
-            '.r{transform:scaleX(-1)}</style><img id=p src="', dataUri,
-            '"><script>p.onclick=function(){p.classList.toggle("r")}</script>'
+            '.r{transform:scaleX(-1)}'
         );
+        if (bytes(animation).length == 0) {
+            html = abi.encodePacked(html, '</style><img id=p src="', still,
+                '"><script>p.onclick=function(){p.classList.toggle("r")}</script>');
+        } else {
+            html = abi.encodePacked(html,
+                'html,body{overflow:hidden;user-select:none}#n{opacity:0;transition:opacity .3s}body:hover #n{opacity:1}',
+                '#n{position:absolute;bottom:2.5vmin;left:50%;transform:translateX(-50%);display:flex;gap:.9vmin;',
+                'padding:.9vmin;border-radius:1.6vmin;background:rgba(0,0,0,.45)}',
+                '#n b{position:relative;width:5vmin;height:5vmin;border-radius:.9vmin;cursor:pointer;',
+                'background:#', bg, ' center/contain no-repeat;image-rendering:pixelated;outline:.3vmin solid transparent}',
+                '#n b.on{outline-color:#fff}#n b:nth-child(3){transform:scaleX(-1)}',
+                '</style><img id=p src="', still, '" data-a="', animation,
+                '"><div id=n><b></b><b></b><b></b></div><script>',
+                'var S=p.src,A=p.dataset.a,B=n.children,v=0,c=0;',
+                'function go(i){v=(i+3)%3;p.src=v==1?A+"#"+(++c):S;p.className=v==2?"r":"";',
+                'for(var k=0;k<3;k++)B[k].className=k==v?"on":""}',
+                'for(var k=0;k<3;k++){B[k].style.backgroundImage="url("+(k==1?A:S)+")";B[k].onclick=go.bind(0,k)}',
+                'p.onclick=function(){p.classList.toggle("r")};',
+                'onkeydown=function(e){if(e.key=="ArrowLeft")go(v-1);if(e.key=="ArrowRight")go(v+1)};go(0)</script>');
+        }
         return string(abi.encodePacked("data:text/html;base64,", Base64.encode(html)));
     }
     // ===================== _update: supply counter (mints only; there is no burn) =====================

@@ -5,10 +5,32 @@ import { RouterModule } from '@angular/router';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 
 import { Phunk } from '@/models/db';
+import { environment } from 'src/environments/environment';
 import { DecodedData } from '@/models/ethscriptions';
 
 import { EthscriptionService } from '@/services/ethscription.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
+
+/** Collections whose pieces can have a creation animation: Storage static/animations/{tokenId}.gif
+ *  (token ids are unique across collections). Bundled into the build when staticUrl is '', so
+ *  playing one costs no RPC and no Supabase egress. A piece without a GIF just shows its image. */
+const ANIMATED_SLUGS = new Set(['phunksmas']);
+const animCache = new Map<number, Promise<string | null>>();
+function animationFor(phunk: Phunk): Promise<string | null> {
+  const id = phunk.tokenId;
+  if (!phunk.slug || id == null || !ANIMATED_SLUGS.has(phunk.slug)) return Promise.resolve(null);
+  const n = Math.abs(Number(id));
+  if (!animCache.has(n)) {
+    const url = `${environment.staticUrl}/static/animations/${n}.gif`;
+    animCache.set(n, new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = () => resolve(null);
+      img.src = url;
+    }));
+  }
+  return animCache.get(n)!;
+}
 
 @Component({
   selector: 'app-phunk-billboard',
@@ -33,6 +55,20 @@ export class PhunkBillboardComponent {
   phunk = input.required<Phunk | null>();
   contentData = signal<DecodedData | null>(null);
 
+  /** Phunkmas creation animation (bundled GIF), or null for pieces without one. */
+  anim = signal<string | null>(null);
+  /** 0 still, 1 creation animation, 2 mirror */
+  view = signal<0 | 1 | 2>(0);
+  flipped = signal(false);
+  /** bumps each time the animation is picked, so it restarts from the first frame */
+  playKey = signal(0);
+
+  pick(v: 0 | 1 | 2) {
+    this.view.set(v);
+    this.flipped.set(v === 2);
+    if (v === 1) this.playKey.update((k) => k + 1);
+  }
+
   constructor(
     private ethscriptionSvc: EthscriptionService
   ) {
@@ -41,8 +77,10 @@ export class PhunkBillboardComponent {
       if (!phunk) return;
 
       untracked(async () => {
+        this.anim.set(null); this.view.set(0); this.flipped.set(false);
         const data = await this.ethscriptionSvc.processImage(phunk);
         this.contentData.set(data);
+        this.anim.set(await animationFor(phunk));
       });
     });
   }

@@ -575,7 +575,16 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
 
   async loadAuction() {
     try {
-      const { auction: auctionData, poolSize: poolSizeRaw, reservePrice: globalReserve, minBidIncrement: minBidInc } = await this.auctionSvc.getInitialData();
+      // Ethscriptions auctions are off (AUCTIONS_LIVE): show the last auction from the DB only, no RPC.
+      // The ERC-721 auction is the only one that reads the chain while this side is idle.
+      let auctionData: AuctionData, poolSizeRaw: bigint | number = 0n, globalReserve = 0n, minBidInc = this.minBidIncrement();
+      if (AUCTIONS_LIVE) {
+        ({ auction: auctionData, poolSize: poolSizeRaw, reservePrice: globalReserve, minBidIncrement: minBidInc } = await this.auctionSvc.getInitialData());
+      } else {
+        const fromDb = await this.auctionSvc.getCurrentAuctionFromDB();
+        if (!fromDb) return;
+        auctionData = fromDb;
+      }
 
       this.auction.set(auctionData);
       this.poolSize.set(Number(poolSizeRaw));
@@ -591,7 +600,7 @@ export class AuctionPageComponent implements OnInit, OnDestroy {
       if (hasHashId) {
         // Load image/reserve first (fast), then bid history separately so it can't block.
         const [itemReserve, eth] = await Promise.all([
-          this.auctionSvc.getItemReservePrice(auctionData.hashId),
+          AUCTIONS_LIVE ? this.auctionSvc.getItemReservePrice(auctionData.hashId) : Promise.resolve(0n),
           this.auctionSvc.getEthscriptionByHashId(auctionData.hashId),
         ]);
 

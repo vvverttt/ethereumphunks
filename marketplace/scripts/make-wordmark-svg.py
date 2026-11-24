@@ -26,7 +26,7 @@ TRACK = -0.02                 # letter-spacing, em
 PINK = '#ff04b4'
 WORDS = {
     'cryptophunksv67': 'QuantumPhunks', 'missing-phunks': 'Missing Phunks', 'dysto-phunks': 'DystoPhunks',
-    'ethsrocks': 'EthsRocks', 'phikings': 'Phikings', 'phunklloween': 'Phunklloween', 'phunksmas': 'Phunksmas',
+    'ethsrocks': 'EthsRocks', 'phikings': 'Phikings', 'phunklloween': 'Phunklloween', 'phunksmas': 'Phunkmas',
 }
 
 font = instantiateVariableFont(TTFont(sys.argv[1]), {'wght': 600})

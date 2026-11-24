@@ -6,7 +6,7 @@
 export const ERC721C_CONTRACTS: { [slug: string]: string } = {
   cryptophunksv67: '0x67B850C3C8790cc7ec76261b65fde60eFb6F1fe3',
   // plain ERC-721 (not 721C), but traded and routed exactly the same way: by contract + tokenId
-  phunksmas: '0x676FfE70d72B64cF505274c6D58975Ef1b2010d5',
+  phunksmas: '0x677bec0663F66EffEF56C6DC31d64616C29526F9',
 };
 
 export function isErc721c(slug?: string | null): boolean {
@@ -31,7 +31,7 @@ export const ERC721C_CONTRACT_SETS: { [slug: string]: CollectionContracts } = {
     lottery: '0x702862d4cb2E55452170814AAb9117cDE8287e61',
   },
   phunksmas: {
-    nft: '0x676FfE70d72B64cF505274c6D58975Ef1b2010d5',
+    nft: '0x677bec0663F66EffEF56C6DC31d64616C29526F9',
     marketplace: '0xe977EaD9f08cC450FBb54B8f80D2E92b27714b44',
   },
 };

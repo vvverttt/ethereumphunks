@@ -17,7 +17,7 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const { ethers } = require('ethers');
 
 const SLUG = 'phunksmas';
-const NFT = '0x676FfE70d72B64cF505274c6D58975Ef1b2010d5';
+const NFT = '0x677bec0663F66EffEF56C6DC31d64616C29526F9';   // Phunkmas (renamed redeploy; was 0x676F…10d5)
 const FIRST = 10454, LAST = 10520;
 const OUT = path.join(__dirname, '..', '..', 'phunksmas_site');
 const STATIC = 'https://kfnprbhoodmgfhqojmqp.supabase.co/storage/v1/object/public/static/images/';
@@ -95,7 +95,7 @@ function storedPng(image) {
     + `-- Safe to re-run after each drop: existing rows are left alone.\nbegin;\n`;
   // id given explicitly (next free), in case the identity sequence is behind hand-set ids
   sql += `insert into public.collections (id, slug, name, "singleName", description, image, supply, active, hidden, standalone, "isMinting", "hasBackgrounds", notifications, "mintEnabled", "defaultBackground")\n`
-    + `select (select coalesce(max(id), 0) + 1 from public.collections), '${SLUG}', 'Phunksmas', 'Phunksmas', ${q('Phunksmas: 67 hand-made Christmas 1/1s, fully on-chain ERC-721.')}, ${q(STATIC + first.sha)}, 67, true, false, false, false, false, false, false, '#638596'\n`
+    + `select (select coalesce(max(id), 0) + 1 from public.collections), '${SLUG}', 'Phunkmas', 'Phunkmas', ${q('Phunkmas: 67 hand-made Christmas 1/1s, fully on-chain ERC-721.')}, ${q(STATIC + first.sha)}, 67, true, false, false, false, false, false, false, '#638596'\n`
     + `where not exists (select 1 from public.collections where slug = '${SLUG}');\n\n`;
   for (const x of plan) {
     sql += `insert into public.ethscriptions ("hashId", sha, "tokenId", slug, creator, owner, "prevOwner", "createdAt", locked)\n`

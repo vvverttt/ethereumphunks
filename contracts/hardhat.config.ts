@@ -48,9 +48,15 @@ const config: HardhatUserConfig = {
       'contracts/V2MainnetUpgrade/EtherPhunksAuctionHouseV3.sol': {
         version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
       },
-      // Phunksmas (fork of v67 minus provenance) — fresh impl on the bug-fixed compiler.
+      // Phunksmas (fork of v67 minus provenance; separate still + animation). 0.8.39 = first release with an
+      // empty known-bug list, so Etherscan shows no compiler-bug warnings. (The first deploy, 0x676F…10d5,
+      // was 0.8.36 — its source is commit 892b8da4.)
       'contracts/V2MainnetUpgrade/QuantumCollections/Phunksmas.sol': {
-        version: '0.8.36', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+        version: '0.8.39', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
+      },
+      // Phunkmas (renamed redeploy of Phunksmas; same code, same settings)
+      'contracts/V2MainnetUpgrade/QuantumCollections/Phunkmas.sol': {
+        version: '0.8.39', settings: { evmVersion: 'paris', optimizer: { enabled: true, runs: 200 }, viaIR: true },
       },
       // V4 (second buy-now tier) — fresh impl, same bug-fixed compiler as V3.
       'contracts/V2MainnetUpgrade/EtherPhunksAuctionHouseV4.sol': {

@@ -6,8 +6,12 @@ import { map } from 'rxjs';
 import { AuctionPageComponent } from '@/routes/auction/auction-page.component';
 import { Auction721PageComponent } from '@/routes/auction721/auction721-page.component';
 import { AUCTION_KIND_KEY, AuctionKind } from '@/components/auction/auction-switch/auction-switch.component';
+import { AUCTIONS_LIVE } from '@/services/auction.service';
 
 function remembered(): AuctionKind {
+  // While the Ethscriptions auction house is idle, /auction opens on the ERC-721 (Phunkmas) side;
+  // ?type=ethscriptions still shows the other one.
+  if (!AUCTIONS_LIVE) return 'erc721';
   try {
     const v = localStorage.getItem(AUCTION_KIND_KEY);
     if (v === 'erc721' || v === 'ethscriptions') return v;

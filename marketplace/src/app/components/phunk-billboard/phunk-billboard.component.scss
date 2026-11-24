@@ -19,6 +19,49 @@
       width: var(--inscription-size);
       height: var(--inscription-size);
 
+      // Phunkmas: the on-chain animation_url viewer, 1:1. Sizes are the contract's vmin values as
+      // cqmin of this square, so the tray sits exactly where it does on-chain at any size.
+      &.viewer {
+        position: relative;
+        container-type: size;
+        user-select: none;
+
+        img { cursor: pointer; transition: transform .25s; }
+        img.flipped { transform: scaleX(-1); }
+
+        .tray {
+          position: absolute;
+          bottom: 2.5cqmin;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: .9cqmin;
+          padding: .9cqmin;
+          border-radius: 1.6cqmin;
+          background: rgba(0, 0, 0, .45);
+          opacity: 0;
+          transition: opacity .3s;
+
+          button {
+            position: relative;
+            width: 5cqmin;
+            height: 5cqmin;
+            padding: 0;
+            border: 0;
+            border-radius: .9cqmin;
+            cursor: pointer;
+            background: #638596 center / contain no-repeat;
+            image-rendering: pixelated;
+            outline: .3cqmin solid transparent;
+
+            &.on { outline-color: #fff; }
+            &.mirror { transform: scaleX(-1); }
+          }
+        }
+
+        &:hover .tray { opacity: 1; }
+      }
+
       img {
         display: block;
         width: 100%;

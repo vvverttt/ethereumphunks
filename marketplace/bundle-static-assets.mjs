@@ -12,6 +12,7 @@
 // Layout produced (matches the URLs the app builds when staticUrl is ''):
 //   <buildDir>/static/images/{sha}              — no extension, as Supabase serves it
 //   <buildDir>/data/{slug}_attributes.json
+//   <buildDir>/static/animations/{tokenId}.gif: creation animations (Phunkmas)
 //   <buildDir>/data/collections.json            — logo + preview pool per collection
 //   <buildDir>/static/collections/{slug}-{hash}.{ext}   — the logos, named by content
 //
@@ -172,6 +173,35 @@ async function main() {
   if (attrMissing) {
     console.error(`\n${attrMissing} collection(s) have no attributes file — refusing to ship a build whose trait filters silently do nothing`);
     process.exit(1);
+  }
+
+  // Creation animations (Phunkmas): Storage static/animations/{tokenId}.gif, one per piece that has
+  // one (token ids are unique across collections). Bundled like the images, so the details-page
+  // viewer plays them with no RPC and no Supabase egress. A piece without a GIF is simply skipped.
+  const ANIM_SLUGS = ['phunksmas'];
+  {
+    const dir = path.join(BUILD, 'static', 'animations');
+    const cdir = path.join(CACHE, 'animations');
+    fs.mkdirSync(dir, { recursive: true }); fs.mkdirSync(cdir, { recursive: true });
+    for (const slug of ANIM_SLUGS) {
+      const tr = await get(c0, `/rest/v1/ethscriptions?slug=eq.${slug}&select=tokenId&apikey=${KEY}`);
+      if (tr.status !== 200) throw new Error(`${slug} token ids: ${tr.status}`);
+      const ids = JSON.parse(tr.body.toString('utf8')).map(r => Math.abs(Number(r.tokenId)));
+      let got = 0, bytes = 0;
+      for (const id of ids) {
+        const cached = path.join(cdir, `${id}.gif`);
+        let body = fs.existsSync(cached) ? fs.readFileSync(cached) : null;
+        for (let k = 0; !body && k < 6; k++) {
+          const r = await get(c0, `${PREFIX}/static/animations/${id}.gif`).catch(() => null);
+          if (r?.status === 200 && r.body.subarray(0, 6).toString() === 'GIF89a') { body = r.body; fs.writeFileSync(cached, body); }
+          else if (r && (r.status === 400 || r.status === 404)) break;     // this piece has no animation
+          else await sleep(1000 * (k + 1));                                // rate limit / network: retry
+        }
+        if (!body) continue;
+        fs.writeFileSync(path.join(dir, `${id}.gif`), body); got++; bytes += body.length;
+      }
+      console.log(`  animations ${slug}: ${got}/${ids.length} pieces have one, ${(bytes / 1024).toFixed(0)} KB`);
+    }
   }
   console.log('');
 

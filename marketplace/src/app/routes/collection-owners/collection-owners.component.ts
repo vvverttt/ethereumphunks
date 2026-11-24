@@ -38,7 +38,7 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'quantummissingphunksv67': 'MissingPhunks',
   'dysto-phunks': 'DystoPhunks',
   'quantumdystophunkzv67': 'DystoPhunkz',
-  'phunksmas': 'Phunksmas',
+  'phunksmas': 'Phunkmas',
 };
 
 @Component({

@@ -3,9 +3,26 @@
 
   @if (contentData(); as data) {
     @if (data.type === 'image') {
-      <div class="image-wrapper">
-        <img [src]="data.data" [alt]="data.mimeType" />
-      </div>
+      @if (anim(); as a) {
+        <!-- Phunkmas: same viewer as the on-chain animation_url. Hover shows the tray
+             (still / creation animation / mirror); clicking the picture flips it. -->
+        <div class="image-wrapper viewer">
+          <img [src]="view() === 1 ? a + '#' + playKey() : data.data" [alt]="data.mimeType"
+               [class.flipped]="flipped()" (click)="flipped.set(!flipped())" />
+          <div class="tray">
+            <button type="button" [class.on]="view() === 0" (click)="pick(0)" aria-label="Still"
+                    [style.background-image]="'url(' + data.data + ')'"></button>
+            <button type="button" [class.on]="view() === 1" (click)="pick(1)" aria-label="Making of"
+                    [style.background-image]="'url(' + a + ')'"></button>
+            <button type="button" class="mirror" [class.on]="view() === 2" (click)="pick(2)" aria-label="Mirror"
+                    [style.background-image]="'url(' + data.data + ')'"></button>
+          </div>
+        </div>
+      } @else {
+        <div class="image-wrapper">
+          <img [src]="data.data" [alt]="data.mimeType" />
+        </div>
+      }
     } @else if (data.type === 'json') {
       <div class="json-wrapper" [title]="data.mimeType">
         <pre>{{ data.data }}</pre>

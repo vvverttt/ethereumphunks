@@ -28,7 +28,7 @@ const OWNER_LABEL_BY_SLUG: Record<string, string> = {
   'quantummissingphunksv67': 'MissingPhunks',
   'dysto-phunks': 'DystoPhunks',
   'quantumdystophunkzv67': 'DystoPhunkz',
-  'phunksmas': 'Phunksmas',
+  'phunksmas': 'Phunkmas',
 };
 const STATS_OVERRIDES_BY_SLUG: Record<string, { totalSupply?: number; totalSupplyDisplay?: string; uniqueTraitValues?: number; oneOfOnes?: number }> = {
   // Recounted 2026-09-26 by `recompute-v67-stats.mjs` at the repo root, after the final 1,081
