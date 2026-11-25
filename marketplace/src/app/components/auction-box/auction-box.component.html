@@ -1,0 +1,57 @@
+@if (open()) {
+  @if (expanded()) {
+    <div class="box" role="dialog" [attr.aria-label]="t('auctionHouse')">
+      <div class="top">
+        <span class="live">LIVE</span>
+        <a class="name" routerLink="/auction" [queryParams]="{ type: 'erc721' }">{{ name() }} #{{ tokenId() }}</a>
+        <button type="button" class="close" (click)="close()" aria-label="Close">×</button>
+      </div>
+
+      <div class="body">
+        <a class="art" routerLink="/auction" [queryParams]="{ type: 'erc721' }">
+          <img [src]="image()" alt="" />
+        </a>
+
+        <div class="stats">
+          <div class="stat">
+            <span class="label">{{ t('bids') }}</span>
+            <span class="value">{{ bidCount() }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">{{ t('current') }}</span>
+            <span class="value">Ξ{{ bidEth() }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">{{ t('timeRemaining') }}</span>
+            <span class="value">{{ left() }}</span>
+          </div>
+        </div>
+      </div>
+
+      @if (!ended()) {
+        <form class="bid" (ngSubmit)="placeBid()">
+          <label>
+            <span class="eth">Ξ</span>
+            <input type="number" name="bid" step="any" min="0" inputmode="decimal"
+                   [(ngModel)]="bidValue" [placeholder]="minBid()" [disabled]="pending()"
+                   (focus)="readExactMin()" />
+          </label>
+          <button type="submit" [disabled]="pending()">{{ pending() ? '…' : t('placeBid') }}</button>
+        </form>
+        <div class="hint">{{ t('stripMinBidIs', { min: minBid() }) }}</div>
+      }
+
+      @if (txHash()) {
+        <a class="msg" [href]="'https://etherscan.io/tx/' + txHash()" target="_blank" rel="noopener noreferrer">{{ t('atmViewTx') }} ↗</a>
+      }
+      @if (done()) { <div class="msg ok">✓ {{ t('atmLogBidPlaced') }}</div> }
+      @if (error()) { <div class="msg err">{{ error() }}</div> }
+    </div>
+  } @else {
+    <button type="button" class="tab" (click)="reopen()" [attr.aria-label]="t('auctionHouse')">
+      <span class="live">LIVE</span>
+      <img [src]="image()" alt="" />
+      <span class="time">{{ left() }}</span>
+    </button>
+  }
+}

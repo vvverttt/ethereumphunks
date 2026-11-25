@@ -8,6 +8,7 @@ import { GlobalState } from '@/models/global-state';
 import { DataService } from '@/services/data.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { tokenNumber } from '@/pipes/token-number.pipe';
+import { isErc721c } from '@/constants/erc721c';
 
 import { PhunkGridComponent } from '../phunk-grid/phunk-grid.component';
 import { selectCollections } from '@/state/selectors/data-state.selectors';
@@ -32,6 +33,7 @@ export class CollectionsComponent {
   // The heading was hardcoded English while the menu entry for the same page used
   // t('curatedCollections'), so the two could say different things. Both read the key now.
   private readonly preferences = inject(PhunkPreferencesService);
+  readonly isErc721c = isErc721c;
 
   t(key: string): string {
     return this.preferences.t(key);

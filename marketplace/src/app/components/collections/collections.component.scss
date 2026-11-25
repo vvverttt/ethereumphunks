@@ -88,9 +88,11 @@ h2 {
     --row-fg: 92, 68, 0;       // dark gold
   }
 
+  // Phunkmas: a deep Christmas red, darker than EthsRocks' pinker red so the two rows don't read
+  // as the same colour; its range and arrow in a deep shade of that red, like every row.
   &[data-row='phunksmas'] {
-    --row-bg: 255, 40, 60;   // #ff283c
-    --row-fg: 255, 255, 255; // snow white
+    --row-bg: 196, 18, 48;   // #c41230
+    --row-fg: 84, 4, 18;     // deep crimson, a dark shade of its red like the other rows
 
     .header .collection-details .collection-image img { background-color: #638596; } // punk blue, not lime
   }
@@ -135,6 +137,50 @@ h2 {
       .title {
         font-size: 1.36rem;
         font-family: var(--secondary-font-stack);
+      }
+    }
+
+    .end {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    // ERC-721 rows: the diamond with the standard's name beside it, in the title's pixel font. Same
+    // box as the Ethscriptions lockup (icon the full 1.5rem height, text beside it, 9.2rem wide), so
+    // the marks line up row to row whichever standard it is.
+    .erc {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      width: 9.2rem;
+      font-family: var(--secondary-font-stack);
+      font-size: 1.2rem;
+      line-height: 1;
+      white-space: nowrap;
+      color: rgba(var(--row-fg), 1);
+    }
+
+    // The chain mark, drawn as a mask so it takes the row's text colour like the title and arrow
+    // (the Ethscriptions lockup has no fill of its own; the Ethereum diamond, without its blue circle,
+    // keeps its facets as shades).
+    .standard {
+      display: block;
+      flex-shrink: 0;
+      background-color: rgba(var(--row-fg), 1);
+
+      &.eths {
+        height: 1.5rem;
+        width: 9.2rem;  // the lockup is ~6.1:1
+        -webkit-mask: url('/assets/ethscriptions-lockup.svg') no-repeat center / contain;
+        mask: url('/assets/ethscriptions-lockup.svg') no-repeat center / contain;
+      }
+
+      &.eth {
+        height: 1.5rem;
+        width: .94rem;  // the diamond alone, no circle (15:24)
+        -webkit-mask: url('/assets/ethereum-diamond.svg') no-repeat center / contain;
+        mask: url('/assets/ethereum-diamond.svg') no-repeat center / contain;
       }
     }
 

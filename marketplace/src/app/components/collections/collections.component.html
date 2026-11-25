@@ -14,8 +14,16 @@
           <div class="title" [title]="collection.name">{{ collection.label }}</div>
         </div>
 
-        <div class="arrow">
-          <ng-container *ngTemplateOutlet="menuIcon"></ng-container>
+        <div class="end">
+          <!-- what the collection is on: the Ethscriptions wordmark, or the Ethereum mark for ERC-721s -->
+          @if (isErc721c(collection.slug)) {
+            <span class="erc"><span class="standard eth" aria-hidden="true"></span>ERC-721</span>
+          } @else {
+            <span class="standard eths" role="img" aria-label="Ethscriptions" title="Ethscriptions"></span>
+          }
+          <div class="arrow">
+            <ng-container *ngTemplateOutlet="menuIcon"></ng-container>
+          </div>
         </div>
       </a>
 

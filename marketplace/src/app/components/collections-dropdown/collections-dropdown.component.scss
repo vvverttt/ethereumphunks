@@ -136,20 +136,30 @@
       position: relative;
       isolation: isolate;
 
+      // The rainbow drifts in an overlay blend; the diagonal foil lines sit on their own layer
+      // (plain white, normal blend) so they read the same on every row colour. In the overlay
+      // they all but vanished on the reds and on the lime selected row.
       &::after {
         content: '';
         position: absolute;
         inset: 0;
         z-index: 0;
         pointer-events: none;
-        background:
-          repeating-linear-gradient(115deg, rgba(255, 255, 255, 0) 0 5px, rgba(255, 255, 255, .2) 5px 6px),
-          linear-gradient(90deg, #ff7ad9, #ffe36e, #7dffb0, #6fd3ff, #b48cff, #ff7ad9);
-        background-size: 100% 100%, 300% 100%;
+        background: linear-gradient(90deg, #ff7ad9, #ffe36e, #7dffb0, #6fd3ff, #b48cff, #ff7ad9);
+        background-size: 300% 100%;
         mix-blend-mode: overlay;
         opacity: .6;
-        animation: holo-foil 9s linear infinite;
+        animation: holo-foil-one 9s linear infinite;
         transition: opacity .2s ease;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0) 0 5.5px, rgba(255, 255, 255, .12) 5.5px 6px);
       }
 
       > * { position: relative; z-index: 1; }
@@ -233,16 +243,20 @@
       }
 
       &[data-slug='phunksmas'] {
-        --row-bg: 99, 133, 150;  // #638596 — the contract's blue-grey
-        --row-fg: 255, 255, 255;
+        --row-bg: 255, 40, 60;   // #ff283c — the Phunkmas red of its menu panel and auction box
+        --row-fg: 0, 0, 0;
 
         // Its art sits on the punk blue, not the Ethscriptions lime.
         .image-wrapper { background-color: #638596; }
 
+        // Selected: exactly the plain row pattern of the ones above (black text, same top
+        // highlight, same flowing foil, its art tile kept), not the boxed lime selected style.
         &.active {
-          background-color: #638596;
+          color: rgba(0, 0, 0, 1);
+          background-color: rgba(var(--row-bg), 1);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
 
-          .image-wrapper { background: none; }
+          .image-wrapper { background-color: #638596; }
         }
       }
 
@@ -299,6 +313,11 @@
       }
     }
   }
+}
+
+@keyframes holo-foil-one {
+  from { background-position: 0 0; }
+  to { background-position: 300% 0; }
 }
 
 @keyframes holo-foil {

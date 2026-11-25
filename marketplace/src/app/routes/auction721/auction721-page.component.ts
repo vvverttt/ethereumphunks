@@ -226,12 +226,21 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
     if (!this.minBidExact()) this.reservePrice.set(formatEther(BigInt(r.amount ?? '0') || 1_000_000_000_000_000n));
   }
 
-  /** Contract reads for the open auction; reschedules itself (30 s, 10 s in the last 5 minutes). */
+  /** Contract reads for the open auction; reschedules itself (60 s, 10 s in the last 2 minutes,
+   *  the same cadence as the Ethscriptions house). No reads while the tab is hidden: it checks
+   *  back every 10 s for free and reads at once when the visitor returns. */
   private async refreshLive() {
     if (this.destroyed || this.isHistorical()) return;
+    if (document.hidden) {
+      this.poll = setTimeout(() => this.refreshLive(), 10_000);
+      return;
+    }
     try {
-      this.updating.set(true);
       const l = await this.svc.live();
+      // "New bid detected" only when the standing bid actually moved since the last read, not on
+      // every poll.
+      const prev = this.live();
+      if (prev && prev.tokenId === l.tokenId && l.amount !== prev.amount) this.updating.set(true);
       this.live.set(l);
       const newest = this.rows()[0];
       if (!newest || newest.tokenId !== l.tokenId || newest.collection.toLowerCase() !== l.collection.toLowerCase()) {
@@ -253,7 +262,7 @@ export class Auction721PageComponent implements OnInit, OnDestroy {
       }
       if (l.settled) return; // nothing open any more: stop all RPC
       const left = l.endTime - Math.floor(Date.now() / 1000);
-      this.poll = setTimeout(() => this.refreshLive(), left < 300 ? 10_000 : 30_000);
+      this.poll = setTimeout(() => this.refreshLive(), left < 120 ? 10_000 : 60_000);
     } catch (e) {
       console.warn('auction721 live read failed', e);
       this.poll = setTimeout(() => this.refreshLive(), 60_000);

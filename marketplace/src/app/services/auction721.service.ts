@@ -51,6 +51,16 @@ export interface Live721 {
   queueSize: number;
 }
 
+/** The open auction as the small live views show it (see Auction721Service.snapshot). */
+export interface Snapshot721 {
+  row: Auction721Row;
+  piece: Piece721;
+  bidCount: number;
+  topBid: bigint;
+  startTime: number;
+  endTime: number;
+}
+
 /** What a piece looks like on the site: resolved from the `ethscriptions` table by slug + tokenId. */
 export interface Piece721 {
   slug: string | null;
@@ -65,6 +75,33 @@ export class Auction721Service {
   private readonly pieceCache = new Map<string, Piece721>();
 
   readonly address = AUCTION721_ADDRESS;
+
+  // ------------------------------------------------------------------ live snapshot (Supabase, no RPC)
+
+  private snap?: { at: number; p: Promise<Snapshot721 | null> };
+
+  /**
+   * The open auction for the small live views (header ticker, menu card): piece, art, bid count,
+   * top bid and end time, all from the indexer's tables. One read shared by every caller within
+   * `maxAgeMs`, so the header and the menu card together cost one. Null when nothing is open.
+   */
+  snapshot(maxAgeMs = 20_000): Promise<Snapshot721 | null> {
+    if (this.snap && Date.now() - this.snap.at < maxAgeMs) return this.snap.p;
+    const p = (async () => {
+      const [row] = await this.history(1);
+      if (!row || row.settled) return null;
+      const [piece, bids] = await Promise.all([this.piece(row.collection, row.tokenId), this.bids(row.auctionId)]);
+      if (!piece.sha) return null;
+      const top = bids.reduce((m, b) => (b.amount > m ? b.amount : m), 0n);
+      return {
+        row, piece, bidCount: bids.length, topBid: top,
+        startTime: Math.floor(new Date(row.startTime).getTime() / 1000),
+        endTime: Math.floor(new Date(row.endTime).getTime() / 1000),
+      };
+    })().catch(() => null);
+    this.snap = { at: Date.now(), p };
+    return p;
+  }
 
   // ------------------------------------------------------------------ history (Supabase, no RPC)
 

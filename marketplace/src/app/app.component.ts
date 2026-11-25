@@ -1,3 +1,4 @@
+import { AuctionBoxComponent } from '@/components/auction-box/auction-box.component';
 import { Component, Inject, OnInit, signal, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
 
 import { NavigationEnd, NavigationStart, Router, RouterModule, Scroll } from '@angular/router';
@@ -39,7 +40,8 @@ import { environment } from 'src/environments/environment';
     FooterComponent,
     NotificationsComponent,
     ModalComponent,
-    ConnectDialogComponent
+    ConnectDialogComponent,
+    AuctionBoxComponent
 ],
   selector: 'app-root',
   templateUrl: './app.component.html',

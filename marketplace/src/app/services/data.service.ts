@@ -19,7 +19,7 @@ import { AttributeItem } from '@/models/attributes';
 import { Observable, of, from, combineLatest, forkJoin, firstValueFrom, EMPTY, merge, mergeMap, filter, share, catchError, debounceTime, distinctUntilChanged, expand, map, reduce, startWith, switchMap, take, tap, shareReplay, timeout } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
-import { isErc721c } from '@/constants/erc721c';
+import { isErc721c, ERC721C_CONTRACTS } from '@/constants/erc721c';
 import { supabase } from './supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { IS_BOT } from '@/utils/is-bot';
@@ -746,6 +746,27 @@ export class DataService {
         }
         return result;
       }),
+      // ERC-721 collections: their auction bids live in the ERC-721 auction house's own table
+      // (auctionBids721), not in events, so the All / Bids / Auction filters add them here.
+      switchMap((result: Event[] | undefined) => {
+        const withBids = isBidsFilter || type === 'AuctionBid' || !type || type === 'All';
+        if (!withBids || !isErc721c(slug)) return of(result as Event[]);
+        return from(this.fetchAuction721BidEvents(slug)).pipe(
+          map((bids) => {
+            const rows = result ?? [];
+            const ts = (e: any) => new Date(e.blockTimestamp).getTime();
+            let keep = bids;
+            // All is paged by 48: each page takes the bids that fall in its own time span (the
+            // first page everything newer, the last page everything older), so none repeat.
+            if (!isBidsFilter && type !== 'AuctionBid' && rows.length) {
+              const newest = offset === 0 ? Infinity : ts(rows[0]);
+              const oldest = rows.length < limit ? -Infinity : ts(rows[rows.length - 1]);
+              keep = bids.filter((b) => ts(b) <= newest && ts(b) > oldest);
+            }
+            return [...rows, ...keep].sort((a: any, b: any) => ts(b) - ts(a));
+          }),
+        );
+      }),
     );
 
     const result$ = merge(
@@ -765,6 +786,43 @@ export class DataService {
 
     this.eventsCache.set(cacheKey, { data: result$, timestamp: Date.now() });
     return result$;
+  }
+
+  /** ERC-721 auction bids for one collection, shaped like rows from fetch_events. */
+  private async fetchAuction721BidEvents(slug: string): Promise<Event[]> {
+    const contract = ERC721C_CONTRACTS[slug]?.toLowerCase();
+    if (!contract) return [];
+    const { data: bids, error } = await supabase
+      .from('auctionBids721' + this.suffix)
+      .select('tokenId,bidder,amount,txHash,logIndex,createdAt')
+      .eq('collection', contract)
+      .order('createdAt', { ascending: false })
+      .limit(500);
+    if (error || !bids?.length) return [];
+    const ids = [...new Set(bids.map((b: any) => Number(b.tokenId)))];
+    const { data: items } = await supabase
+      .from('ethscriptions' + this.suffix)
+      .select('hashId,tokenId,sha')
+      .eq('slug', slug)
+      .in('tokenId', ids);
+    const byId = new Map((items ?? []).map((i: any) => [Number(i.tokenId), i]));
+    const house = '0xE3C8d1cf63456535Ad41E47932AF1Fe1708E84C2'.toLowerCase(); // V67AuctionHouse
+    return bids.map((b: any) => {
+      const item = byId.get(Number(b.tokenId));
+      return {
+        hashId: item?.hashId ?? '',
+        sha: item?.sha ?? '',
+        slug,
+        tokenId: Number(b.tokenId),
+        type: 'AuctionBid',
+        from: String(b.bidder).toLowerCase(),
+        to: house,
+        value: BigInt(b.amount).toString(),
+        txHash: b.txHash,
+        txId: `${b.txHash}-auction721-bid-${b.logIndex}`,
+        blockTimestamp: b.createdAt,
+      } as unknown as Event;
+    }).filter((e: any) => !!e.hashId);
   }
 
   /**

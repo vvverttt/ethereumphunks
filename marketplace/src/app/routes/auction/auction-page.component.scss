@@ -46,7 +46,9 @@ $gutter: clamp(4rem, 9vw, 16rem);
 
 .auction-house-header {
   position: absolute;
-  top: 1rem;
+  // Up in the hero's top padding, inside the frame: at 1rem it sat over the top of a full-size
+  // piece (the art starts 7rem down and runs ~6rem tall at this width).
+  top: -4.5rem;
   left: clamp(3rem, 7vw, 13rem);
   z-index: 10;
 

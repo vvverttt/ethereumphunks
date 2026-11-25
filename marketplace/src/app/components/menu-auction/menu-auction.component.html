@@ -1,4 +1,4 @@
-<a class="auction-card" [class.idle]="!live()" routerLink="/auction" (click)="navigate.emit()">
+<a class="auction-card" [class.idle]="!live()" routerLink="/auction" [queryParams]="erc721() ? { type: 'erc721' } : null" (click)="navigate.emit()">
   <div class="title">
     <span>{{ title() }}</span>
     <!-- Same arrow as the other menu links: this card is a link to the auction house. -->
@@ -8,7 +8,7 @@
   @if (live()) {
     <div class="body">
       <div class="item">
-        <img [src]="image()" alt="" />
+        <img [src]="image()" alt="" [class.erc721]="erc721()" />
         <span class="id">#{{ tokenId() }}</span>
       </div>
 

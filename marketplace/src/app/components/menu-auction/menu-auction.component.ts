@@ -3,6 +3,7 @@ import { Router, RouterModule } from '@angular/router';
 import { formatEther } from 'viem';
 
 import { AUCTIONS_LIVE, AuctionService, AuctionData } from '@/services/auction.service';
+import { Auction721Service } from '@/services/auction721.service';
 import { SpriteService } from '@/services/sprite.service';
 import { PhunkPreferencesService } from '@/services/phunk-preferences.service';
 import { TimerComponent } from '@/components/auction/timer/timer.component';
@@ -32,6 +33,7 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
   private readonly spriteSvc = inject(SpriteService);
   private readonly preferences = inject(PhunkPreferencesService);
   private readonly router = inject(Router);
+  private readonly a721 = inject(Auction721Service);
 
   title = input.required<string>();
   /** Clicked through to the auction house. */
@@ -41,6 +43,8 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
   image = signal('');
   tokenId = signal(0);
   bidCount = signal(0);
+  /** The card shows the ERC-721 auction house (Phunkmas), so it links to that side of /auction. */
+  erc721 = signal(false);
 
   live = computed(() => {
     const a = this.auction();
@@ -63,19 +67,43 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    // no auctions running: the card is just the link, with no reads
-    if (!AUCTIONS_LIVE) return;
-    await this.load();
+    // The Ethscriptions house is closed: show the ERC-721 house's live auction instead (Supabase
+    // only, no RPC: the indexer keeps the end time and every bid).
+    const load = AUCTIONS_LIVE ? () => this.load() : () => this.load721();
+    await load();
     // On the auction page itself the page shows the auction live, so the card keeps its first
     // read (its countdown still ticks) instead of polling alongside it.
-    // Every 60 s, tightening to 10 s in the last 5 minutes.
+    // Every 60 s, tightening to 10 s in the last 2 minutes.
     this.stopPoll = auctionPoll(() => {
-      if (!this.router.url.startsWith('/auction')) this.load();
+      if (!this.router.url.startsWith('/auction')) load();
     }, () => this.endTimeMs());
   }
 
   ngOnDestroy() {
     this.stopPoll?.();
+  }
+
+  private async load721() {
+    try {
+      const snap = await this.a721.snapshot();
+      if (!snap) { this.auction.set(null); return; }
+      const image = await this.spriteSvc.url(snap.piece.sha!);
+      this.erc721.set(true);
+      this.auction.set({
+        hashId: snap.piece.hashId ?? '',
+        amount: snap.topBid,
+        startTime: snap.startTime,
+        endTime: snap.endTime,
+        bidder: '',
+        settled: false,
+        auctionId: snap.row.auctionId,
+      });
+      this.tokenId.set(snap.row.tokenId);
+      this.image.set(image);
+      this.bidCount.set(snap.bidCount);
+    } catch {
+      // Keep the last good read; with none, the card is just the link.
+    }
   }
 
   private async load() {

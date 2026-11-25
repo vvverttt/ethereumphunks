@@ -115,7 +115,11 @@ export class RecentActivityComponent {
   events$ = this.rawEvents$.pipe(
     map(events => (events ?? []).filter(e => e.type !== 'Evolved' && e.type !== 'Devolved')),
   );
-  hasMore$ = this.rawEvents$.pipe(map(events => !!events && events.length > 0 && events.length % 48 === 0));
+  // Pages are 48 events; ERC-721 auction bids merged in on top (txId '…-auction721-bid-…') don't count.
+  hasMore$ = this.rawEvents$.pipe(map(events => {
+    const n = (events ?? []).filter((e: any) => !String(e.txId ?? '').includes('-auction721-')).length;
+    return n > 0 && n % 48 === 0;
+  }));
 
   constructor(
     private store: Store<GlobalState>,

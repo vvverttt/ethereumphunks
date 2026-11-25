@@ -65,7 +65,9 @@
       width: 5rem;
       height: 5rem;
       image-rendering: pixelated;
-      background-color: #c3ff00;   // auctions are ethscriptions: their lime, on every theme
+      background-color: #c3ff00;   // Ethscriptions auctions: their lime, on every theme
+
+      &.erc721 { background-color: #638596; }  // ERC-721 house (Phunkmas): the punk blue-grey
     }
 
     .id {
