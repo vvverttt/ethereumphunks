@@ -7,13 +7,11 @@ export const environment = {
   production: true,
   chainId: 1,
 
-  // No provider keys in the bundle: the .eth.limo build pins it to IPFS, public forever.
-  // The Alchemy/Ankr keys are Cloudflare Pages secrets behind these two functions
-  // (functions/rpc.js, functions/nft/getNFTsForOwner.js). Absolute URLs so the IPFS
-  // build, which has no server of its own, reaches them too.
-  rpcHttpProvider: 'https://quantumphunks.com/rpc',
-  receiptRpcUrl: 'https://quantumphunks.com/rpc',
-  frontendBackupRpcUrl: '',
+  // Alchemy URLs straight in the bundle for now: the /rpc proxy (functions/rpc.js) has no keys
+  // set in Cloudflare Pages yet. Switch back to 'https://quantumphunks.com/rpc' once it has.
+  rpcHttpProvider: 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO',
+  receiptRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/C2mkwU9xTr2HarApFpqbO',
+  frontendBackupRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/jjWbKkRb85Zf4w1MmRTSR',
   nftApiUrl: 'https://quantumphunks.com/nft',
   explorerUrl: 'https://etherscan.io',
   externalMarketUrl: 'https://ethscriptions.com',
