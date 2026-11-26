@@ -882,7 +882,8 @@ export class AdminComponent implements OnInit {
       { name: 'Backup RPC', url: (environment as any).frontendBackupRpcUrl || '' },
       { name: 'Receipt RPC', url: (environment as any).receiptRpcUrl || '' },
       { name: '1RPC (public)', url: 'https://1rpc.io/eth' },
-      { name: 'LlamaRPC (public)', url: 'https://eth.llamarpc.com' },
+      { name: 'dRPC (public)', url: 'https://eth.drpc.org' },
+      { name: 'MEV Blocker (public)', url: 'https://rpc.mevblocker.io' },
       { name: 'Relay (indexer)', url: `${environment.relayUrl}/rpc` },
     ].filter((r, i, all) => r.url && all.findIndex(o => o.url === r.url) === i);
 

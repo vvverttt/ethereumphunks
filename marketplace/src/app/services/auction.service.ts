@@ -26,7 +26,8 @@ const logsClient = createPublicClient({
     // The /rpc proxy sends eth_getLogs to Ankr first (Alchemy Free caps a getLogs range
     // at 10 blocks), so the keyed endpoint comes first here, then a keyless one.
     ...[...new Set([environment.rpcHttpProvider, (environment as any).frontendBackupRpcUrl].filter(Boolean))].map((u: string) => http(u)),
-    http('https://1rpc.io/eth'),
+    http('https://eth.drpc.org'),
+    http('https://rpc.mevblocker.io'),
   ], { rank: false, retryCount: 0 }),
 });
 

@@ -115,7 +115,7 @@ async function forwardWithFallback(body: object): Promise<{ ok: boolean; status:
         const errMsg = String((payload as any).error?.message || '').toLowerCase();
         const errCode = (payload as any).error?.code;
         const isProviderAuthFailure =
-          /origin|whitelist|forbidden|unauthorized|api[_ ]?key|access[_ ]?denied/.test(errMsg) ||
+          /origin|whitelist|forbidden|unauthorized|api[_ ]?key|access[_ ]?denied|limit|quota|exceeded|upgrade/.test(errMsg) ||
           errCode === -32079 ||
           errCode === -32099;
         if (isProviderAuthFailure) continue;

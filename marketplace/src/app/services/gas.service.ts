@@ -25,7 +25,8 @@ export class GasService {
   private gasRpcUrls = [
     (environment as any).receiptRpcUrl || environment.rpcHttpProvider,
     environment.rpcHttpProvider,
-    'https://1rpc.io/eth',
+    'https://eth.drpc.org',
+    'https://rpc.mevblocker.io',
     this.relayRpcUrl,
   ].filter((url, index, arr) => !!url && arr.indexOf(url) === index);
 
