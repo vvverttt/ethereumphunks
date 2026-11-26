@@ -37,7 +37,7 @@ import { PublicClient, TransactionReceipt, WatchBlockNumberReturnType, createPub
 import { selectIsBanned } from '@/state/selectors/app-state.selectors';
 // Keyless public endpoints. The keyed Alchemy/Ankr endpoints sit behind our own /rpc proxy
 // (environment.rpcHttpProvider) so no key ships in the bundle.
-const PUBLIC_RPCS = ['https://eth.drpc.org', 'https://rpc.mevblocker.io', 'https://1rpc.io/eth'];
+const PUBLIC_RPCS = ['https://eth.drpc.org', 'https://rpc.mevblocker.io', 'https://1rpc.io/eth', 'https://eth.llamarpc.com'];
 /** each url once, in order: several env slots can point at the same proxy */
 const uniqueUrls = (urls: string[]) => [...new Set(urls.filter(Boolean))];
 

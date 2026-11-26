@@ -28,6 +28,8 @@ const logsClient = createPublicClient({
     ...[...new Set([environment.rpcHttpProvider, (environment as any).frontendBackupRpcUrl].filter(Boolean))].map((u: string) => http(u)),
     http('https://eth.drpc.org'),
     http('https://rpc.mevblocker.io'),
+    http('https://1rpc.io/eth'),
+    http('https://eth.llamarpc.com'),
   ], { rank: false, retryCount: 0 }),
 });
 

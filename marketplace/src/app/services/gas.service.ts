@@ -27,6 +27,8 @@ export class GasService {
     environment.rpcHttpProvider,
     'https://eth.drpc.org',
     'https://rpc.mevblocker.io',
+    'https://1rpc.io/eth',
+    'https://eth.llamarpc.com',
     this.relayRpcUrl,
   ].filter((url, index, arr) => !!url && arr.indexOf(url) === index);
 
