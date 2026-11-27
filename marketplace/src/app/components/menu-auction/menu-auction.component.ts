@@ -51,11 +51,11 @@ export class MenuAuctionComponent implements OnInit, OnDestroy {
     return !!a && !a.settled && a.startTime > 0 && !!this.image();
   });
 
-  /** Standing bid, at most 4 decimals ("0.0081"); 0 before the first bid. */
+  /** Standing bid, exact (bids step by 5%, so rounding hid real amounts); 0 before the first bid. */
   currentEth = computed(() => {
     const a = this.auction();
     if (!a || a.amount === 0n) return '0';
-    return String(parseFloat(Number(formatEther(a.amount)).toFixed(4)));
+    return formatEther(a.amount);
   });
 
   endTimeMs = computed(() => (this.auction()?.endTime ?? 0) * 1000);

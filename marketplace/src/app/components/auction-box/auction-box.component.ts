@@ -73,7 +73,8 @@ export class AuctionBoxComponent implements OnInit, OnDestroy {
 
   bidEth = computed(() => {
     const v = this.topBid();
-    return v === 0n ? '0' : String(parseFloat(Number(formatEther(v)).toFixed(4)));
+    // exact: bids step by 5%, so rounding hid real amounts (0.00105 showed as 0.001)
+    return v === 0n ? '0' : formatEther(v);
   });
 
   /** "1d 03:12:45", "03:12:45", or the ended label once the clock runs out. */
